@@ -1,0 +1,5 @@
+[submodule "mindspore"]
+	path = src/mindspore-lite
+	url = https://gitee.com/HiSpark/mindspore-lite.git
+	shallow = true
+	branch = master
