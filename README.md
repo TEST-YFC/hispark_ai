@@ -76,48 +76,130 @@ bash build.sh -I x86_64 -j32
 
 - **准备hispark_ai工具链**  
 从[HiSpark.AI官方下载链接]()获取Release版本的MSLite工具链，或根据上述源码编译指南进行编译。MSLite安装包目录结构如下：
-```
-├── runtime
-│   ├── include
-│   │   ├── api
-│   │   ├── c_api
-│   │   └── ...
-│   ├── lib
-│   │   ├── libmindspore-lite.so
-│   │   └── ...
-│   └── third_party
-└── tools
-    ├── benchmark
-    ├── codegen
+    ```
+    ├── runtime
     │   ├── include
-    │   │   ├── nnacl_c
-    │   │   └── wrapper
-    │   └── lib
-    │       ├── cpu
-    │       └── riscv
-    └── converter
-        ├── converter
-        │   └── converter_lite
-        ├── include
-        │   ├── api
-        │   └── ...
-        ├── lib
-        │   ├── libmindspore_converter.so
-        │   ├── libmindspore_core.so
-        │   └── ...
-        └── third_party
-            └── proto
-```
+    │   │   ├── api
+    │   │   ├── c_api
+    │   │   └── ...
+    │   ├── lib
+    │   │   ├── libmindspore-lite.so
+    │   │   └── ...
+    │   └── third_party
+    └── tools
+        ├── benchmark
+        ├── codegen
+        │   ├── include
+        │   │   ├── nnacl_c
+        │   │   └── wrapper
+        │   └── lib
+        │       ├── cpu
+        │       └── riscv
+        └── converter
+            ├── converter
+            │   └── converter_lite
+            ├── include
+            │   ├── api
+            │   └── ...
+            ├── lib
+            │   ├── libmindspore_converter.so
+            │   ├── libmindspore_core.so
+            │   └── ...
+            └── third_party
+                └── proto
+    ```
 
 - **准备待部署模型与数据**
   - 准备好待部署模型。可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的mnist-12.onnx以及GRU_S_STREAM.onnx。
   - 准备好量化数据。**无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式，可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的 运行数据预处理脚本之后的npy_data文件夹。
 
-- **模型编译**
+- **准备SDK**
+  - 从开源社区下载fbb_ws63的源码
+    ```
+      git clone https://gitee.com/HiSpark/fbb_ws63.git
+    ```
 
-- **准备SDK与Sample**
+- **模型编译**
+  - 使用MSLite包中带的converter_lite工具进行模型转换，生成目标代码
+    ```
+     # mslite_pkg_path变量为解压的HiSpark.AI MSLite压缩包路径，一级文件夹名称为mindspore-xxx-lite-{version}-linux-64
+     # model_path为原始模型路径，如mnist-12.onnx
+     # generate_code_path为生成代码路径
+     # cfg_path为配置文件路径
+     export PATH=${mslite_pkg_path}/tools/converter/converter:$PATH
+     export LD_LIBRARY_PATH=${mslite_pkg_path}/tools/converter/lib:$LD_LIBRARY_PATH
+     converter_lite --fmk=ONNX --modelFile={model_path} --outputFile={generate_code_path} --configFile={cfg_path} --encryption=false --inputDataFormat=NCHW --outputDataFormat=NCHW
+    ```
+    其中cfg_path所配置的文件内容如下：
+    ```
+    [micro_param]
+    enable_micro=true
+    target=RISCV
+    support_parallel=false
+    ```
+  - 自动代码生成的目录如下
+    ```
+    {generate_code_path}
+    ├── benchmark
+    ├── CMakeLists.txt
+    ├── include
+    │   ├── model_handle.h
+    │   └── ...
+    └── src
+        ├── allocator.c
+        ├── allocator.h
+        ├── CMakeLists.txt
+        ├── context.c
+        ├── context.h
+        ├── model0
+        │   ├── model0.c
+        │   ├── net0.c
+        │   ├── net0.h
+        │   ├── weight0.c
+        │   └── weight0.h
+        ├── model.c
+        ├── model.h
+        ├── net.cmake
+        ├── tensor.c
+        └── tensor.h
+    ```
+  - 静态链接库编译
+    ```
+    # sdk_path为下载的SDK路径
+    # mslite_pkg_path为HiSpark.AI的工具链路径
+    # generate_code_path为生成代码路径
+    cd {generate_code_path}
+    rm -rf build
+    cmake -S . -B build \
+            -D OP_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libnnacl.a" \
+            -D WRAPPER_LIB="${{mslite_pkg_path}}/tools/codegen/lib/riscv/libwrapper.a" \
+            -D RISCV_TOOLCHAIN_PATH="${sdk_path}/src/tools/bin/compiler/riscv/cc_riscv32_musl_xxx/cc_riscv32_musl/bin" \
+            -D PKG_PATH="${mslite_pkg_path}"
+    cd build
+    make -j4
+    ```
+    编译产物存放于build文件夹下，目录结构如下。**libnet.a**以及**libmicro_runtime.a**分别放置在build/src路径以及build路径下：
+    ```
+    {generate_code_path}/build
+    ├── CMakeCache.txt
+    ├── CMakeFiles
+    │   ├── x.xx.x
+    │   ├── Makefile2
+    │   └── ...
+    ├── cmake_install.cmake
+    ├── libmicro_runtime.a
+    ├── Makefile
+    └── src
+        ├── CMakeFiles
+        ├── cmake_install.cmake
+        ├── libnet.a
+        └── Makefile
+    ```
+
+- **Samples准备**
 
 - **SDK编译**
+
 
 - **烧录调试**
 
