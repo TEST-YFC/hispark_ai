@@ -1,7 +1,7 @@
-# HiSpark.AI 开源项目
+# HiSpark AI 开源项目
 
 ## 项目介绍 && 资源
-HiSaprk.AI项目是HiSpark全系列AI解决方案，目前已支持ws63，3322等型号芯片，适用于用户定制化部署AI工程。该HiSpark.AI代码包包含了Mindspore Lite Micro RISC-V工具链 以及 CANN工具链，芯片定制AI适配组件 以及 相应的AI Sample。Sample目前已支持LeNet-5手写数组识别 及 Gru-S固定词语音识别相关应用。软件文档在线化链接：[https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master)
+HiSaprk AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数组识别 及 Gru-S固定词语音识别相关应用。软件文档在线化链接：[https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master)
 
 ## SDK目录介绍
 
@@ -19,30 +19,23 @@ HiSaprk.AI项目是HiSpark全系列AI解决方案，目前已支持ws63，3322�
 
   购买链接请参考WS63项目介绍的**购买渠道**页面。
 
-- **3322系列单板**:  3322系列是OpenHarmony Watch应用和表盘解决方案，项目介绍如下：[3322项目介绍](https://xxx)。 
-
-  购买链接请参考3322项目介绍的**购买渠道**页面。
-
 ## Sample案例说明
 HiSpark.AI提供了一下Sample供开发参考：
 | 平台 | 应用 | AI功能 |
 | ---- | ---- | ---- |
 | ws63 | LeNet-5手写数字图像识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
-| 3322 | LeNet-5手写数字图像识别 | CANN工具链量化，转换，编译，SDK集成 |
 | ws63 | Gru-S音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
-| 3322 | Gru-S音频固定词识别 | CANN工具链量化，转换，编译，SDK集成 |
 
 ### **HiSpark.AI CPU系列平台介绍**
-
-MindSpore Lite Micro工具链支持Linx CPU核加速的RISC-V AI工具链。
+超轻量的模型部署平台，支持KB级RAM嵌入式设备；使用说明参考XX和XX使用文档。
 
 ### **HiSpark.AI NPU系列平台介绍**
-CPU平台支持Nano核加速的CANN AI工具链。
+待发布。
 
 ### **HiSpark.AI 平台Samples使用说明**
 - 从官网分别下载SDK源码放置到某一个路径
 
-- 将HiSpark.AI项目自带的Adaptor目录拷贝到${SDK_PATH}/middleware/utils下
+- 将Hispark_ai开源仓的Adaptor目录拷贝到${SDK_PATH}/middleware/utils下
 
 - CPU平台将对应的静态链接库拷贝到对应的${SDK_PATH}/middleware/utils/ai_mcu/lib目录下，NPU平台将对应的exeom文件传输到对应的/user路径下。
 ```
