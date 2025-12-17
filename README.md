@@ -74,9 +74,44 @@ bash build.sh -I x86_64 -j32
 
 ## **HiSpark.AI 平台快速入门指南**
 
-- **准备hispark_ai工具链**
+- **准备hispark_ai工具链**  
+从[HiSpark.AI官方下载链接]()获取Release版本的MSLite工具链，或根据上述源码编译指南进行编译。MSLite安装包目录结构如下：
+```
+├── runtime
+│   ├── include
+│   │   ├── api
+│   │   ├── c_api
+│   │   └── ...
+│   ├── lib
+│   │   ├── libmindspore-lite.so
+│   │   └── ...
+│   └── third_party
+└── tools
+    ├── benchmark
+    ├── codegen
+    │   ├── include
+    │   │   ├── nnacl_c
+    │   │   └── wrapper
+    │   └── lib
+    │       ├── cpu
+    │       └── riscv
+    └── converter
+        ├── converter
+        │   └── converter_lite
+        ├── include
+        │   ├── api
+        │   └── ...
+        ├── lib
+        │   ├── libmindspore_converter.so
+        │   ├── libmindspore_core.so
+        │   └── ...
+        └── third_party
+            └── proto
+```
 
 - **准备待部署模型与数据**
+  - 准备好待部署模型。可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的mnist-12.onnx以及GRU_S_STREAM.onnx。
+  - 准备好量化数据。**无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式，可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的 运行数据预处理脚本之后的npy_data文件夹。
 
 - **模型编译**
 
