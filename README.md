@@ -29,21 +29,19 @@ HiSpark.AI提供了一下Sample供开发参考：
 ### **HiSpark.AI CPU系列平台介绍**
 超轻量的模型部署平台，支持KB级RAM嵌入式设备；使用说明参考XX和XX使用文档。
 
-### **HiSpark.AI NPU系列平台介绍**
-待发布。
+### **HiSpark.AI 平台快速入门指南**
 
-### **HiSpark.AI 平台Samples使用说明**
-- 从官网分别下载SDK源码放置到某一个路径
+- **准备hispark_ai工具链**
 
-- 将Hispark_ai开源仓的Adaptor目录拷贝到${SDK_PATH}/middleware/utils下
+- **准备待部署模型与数据**
 
-- CPU平台将对应的静态链接库拷贝到对应的${SDK_PATH}/middleware/utils/ai_mcu/lib目录下，NPU平台将对应的exeom文件传输到对应的/user路径下。
-```
-cd ${sample_dir}
-export SDK_PATH=${sdk_dir}
-./build.sh
-```
-可烧录固件将自动保存到${SDK_PATH}/output/fwpkg目录下。
+- **模型编译**
+
+- **准备SDK与Sample**
+
+- **SDK编译**
+
+- **烧录调试**
 
 ## 参与贡献
 
