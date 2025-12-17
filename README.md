@@ -47,10 +47,10 @@ git clone https://gitee.com/HiSpark/mindspore-lite.git
 ### 获取毕昇编译器
 - 点击[毕昇编译器官方下载链接](https://developers.hisilicon.com/cn/developerTool)并登录华为开发者账号。
 - 在资源下载页面，选择 Toolchain 分类下的 Linux 系统版本。
-- 查找并下载适用于 RISC-V 架构 的编译器软件包，其名称为：BiSheng-llvm-15.0.4-riscv-aarch64-linux（或最新版本）。
+- 查找并下载适用于 RISC-V 架构 的编译器软件包，其名称为：	BiSheng-llvm-15.0.4-riscv-x86-linux（或最新版本）。
 - 下载完成后，使用以下命令解压（请确保命令实际文件名与下载文件一致）。
 ```
-tar -xzvf BiSheng-llvm-15.0.4-riscv-aarch64-linux-25.09.1.tar.gz
+tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
 ```
 
 ### 编译MindSpore
