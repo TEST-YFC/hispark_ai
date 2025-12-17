@@ -29,7 +29,50 @@ HiSpark.AI提供了一下Sample供开发参考：
 ### **HiSpark.AI CPU系列平台介绍**
 超轻量的模型部署平台，支持KB级RAM嵌入式设备；使用说明参考XX和XX使用文档。
 
-### **HiSpark.AI 平台快速入门指南**
+## 源码编译
+### 环境依赖
+| 软件名称   | 版本 | 作用                                                             |
+| ------ | ------  | ------------------------------------------------------------     |
+| Ubuntu |   22.04  |编译和运行MindSpore的操作系统                                      |
+| GCC    | 11.3.0-12.3.0 |用于编译MindSpore的C++编译器                                  |
+| CMake  | 3.22.2及以上	 |编译构建MindSpore的工具                                       |
+| Python | 3.11 | MindSpore的使用依赖Python环境                                         |
+| PyYAML | 6.0及以上 | MindSpore里的算子编译功能依赖PyYAML模块                           |
+| Numpy  | 1.19.3及以上 | MindSpore里的Numpy相关功能依赖Numpy模块                        |
+
+### 从代码仓下载源码
+```
+git clone https://gitee.com/HiSpark/mindspore-lite.git
+```
+### 获取毕昇编译器
+- 点击[毕昇编译器官方下载链接](https://developers.hisilicon.com/cn/developerTool)并登录华为开发者账号。
+- 在资源下载页面，选择 Toolchain 分类下的 Linux 系统版本。
+- 查找并下载适用于 RISC-V 架构 的编译器软件包，其名称为：BiSheng-llvm-15.0.4-riscv-aarch64-linux（或最新版本）。
+- 下载完成后，使用以下命令解压（请确保命令实际文件名与下载文件一致）。
+```
+tar -xzvf BiSheng-llvm-15.0.4-riscv-aarch64-linux-25.09.1.tar.gz
+```
+
+### 编译MindSpore
+进入mindspore-lite目录
+```
+cd mindspore-lite
+```
+设置环境变量，/path替换为毕昇编译器解压后对应的目录
+```
+export MSLITE_ENABLE_MICRO=ON
+export MSLITE_ENABLE_INT8=ON
+export MSLITE_ENABLE_TRAIN=OFF
+export MSLITE_ENABLE_TESTCASES=OFF
+export MSLITE_TARGET_RISCV=ON
+export HISPARK_RISCV_TOOLCHAIN_PATH=/path/BiSheng-llvm-binary-release-musl/
+```
+执行编译脚本，可在执行中修改-j{线程数}来修改线程数量
+```
+bash build.sh -I x86_64 -j32
+```
+
+## **HiSpark.AI 平台快速入门指南**
 
 - **准备hispark_ai工具链**
 
