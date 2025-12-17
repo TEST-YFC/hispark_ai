@@ -119,6 +119,25 @@ bash build.sh -I x86_64 -j32
       git clone https://gitee.com/HiSpark/fbb_ws63.git
     ```
 
+- **准备Samples**
+  进入sample一级目录，如LeNet-5就进入${hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入${hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
+    ```
+    {sample_path}
+    ├── build.sh
+    ├── CMakeLists.txt
+    ├── model
+    │   ├── xxx.onnx
+    │   └── README.md
+    ├── README.md
+    ├── scripts
+    │   ├── preproc_xxx_data.py
+    │   └── README.md
+    └── src
+        ├── ai_main.c
+        ├── ai_main.h
+        └── CMakeLists.txt
+    ```
+
 - **模型编译**
   - 使用MSLite包中带的converter_lite工具进行模型转换，生成目标代码
     ```
@@ -196,12 +215,27 @@ bash build.sh -I x86_64 -j32
         └── Makefile
     ```
 
-- **Samples准备**
-
 - **SDK编译**
-
+    配置对应环境变量，在samples下运行build.sh脚本，即可完成编译
+    ```
+    cd ${sample_path}
+    export SDK_PATH=${sdk_path}
+    export ADAPTOR_PATH=${adaptor_path}
+    ./build.sh
+    ```
+    编译成功后，ws63-ai-liteos-sample.fwpkg镜像文件会生成在${sample_path}/output目录下
 
 - **烧录调试**
+    使用BurnTool工具进行ws63-ai-liteos-sample.fwpkg的烧录。
+    烧录成功运行后，会看到串口打印的运行成功信息，如下：
+    ```
+    [AI_MCU] Get Tcxo Time 13 ms
+    [AI_MCU] Data size: [12]
+    Shape: [1 3 ]
+    DataType: 43
+    [AI_MCU] Data: [-12.61998][-8.90126][-5.37811]
+    [AI_MCU] ai_mcu_sample_process
+    ```
 
 ## 参与贡献
 
