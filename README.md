@@ -53,7 +53,7 @@ tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
 - **拉取mindspore-lite仓submodule**  
 运行以下命令：
     ```
-    git submodule update --init --remote src/mindspore-lite
+    git submodule update --init --remote --progress src/mindspore-lite
     ```
 
 - **编译mindspore-lite**
