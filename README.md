@@ -45,9 +45,9 @@ HiSpark.AI提供了一下Sample供开发参考：
 - 在资源下载页面，选择 Toolchain 分类下的 Linux 系统版本。
 - 查找并下载适用于 RISC-V 架构 的编译器软件包，其名称为：	BiSheng-llvm-15.0.4-riscv-x86-linux（或最新版本）。
 - 下载完成后，使用以下命令解压（请确保命令实际文件名与下载文件一致）。
-```
-tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
-```
+    ```
+    tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
+    ```
 
 ### 编译MindSpore
 - **拉取mindspore-lite仓submodule**  
@@ -68,6 +68,7 @@ tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
     export MSLITE_TARGET_RISCV=ON
     export HISPARK_RISCV_TOOLCHAIN_PATH=${bisheng-compiler-bin-path}/BiSheng-llvm-binary-release-musl/
     bash build.sh -I x86_64 -j32 # 执行编译脚本，可在执行中修改-j{线程数}来修改线程数量
+    # 若需增量编译，使用bash build.sh -I x86_64 -j32 -i命令
     ```
 
 ## **HiSpark.AI 平台快速入门指南**
@@ -118,7 +119,7 @@ tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
     ```
 
 - **准备Samples**
-  进入sample一级目录，如LeNet-5就进入${hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入${hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
+  进入sample一级目录，如LeNet-5就进入${hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入\${hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
     ```
     {sample_path}
     ├── build.sh
@@ -195,7 +196,7 @@ tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
     cd build
     make -j4
     ```
-    编译产物存放于build文件夹下，目录结构如下。**libnet.a**以及**libmicro_runtime.a**分别放置在build/src路径以及build路径下：
+    编译产物存放于build文件夹下，目录结构如下。libnet.a以及libmicro_runtime.a分别放置在build/src路径以及build路径下：
     ```
     {generate_code_path}/build
     ├── CMakeCache.txt
@@ -211,6 +212,13 @@ tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
         ├── cmake_install.cmake
         ├── libnet.a
         └── Makefile
+    ```
+    将libnet.a以及libmicro_runtime.a拷贝到${sdk_path}/src/middleware/utils/ai_mcu/lib目录下。
+    ```
+    # sdk_path为SDK的源码目录 (https://gitee.com/HiSpark/fbb_ws63)
+    mkdir -p ${sdk_path}/src/middleware/utils/ai_mcu/lib
+    cp -rf {generate_code_path}/build/libmicro_runtime.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
+    cp -rf {generate_code_path}/build/src/libnet.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
     ```
 
 - **SDK编译**
