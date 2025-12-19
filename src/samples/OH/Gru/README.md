@@ -5,7 +5,6 @@ Gru固定词识别Sample基于Google开源的Open-Speech数据集 以及 ARM Sof
 
 支持的芯片列表如下：
 - **Hi3863**: 基于MSLite-Micro平台进行模型部署，依靠RISC-V CPU核进行AI推理。
-- **Hi3322**: 基于CANN平台进行模型部署，依靠Nano NPU核进行AI推理。
 
 ## 数据处理 & 量化指南
 ### 预处理
@@ -19,8 +18,7 @@ Gru固定词识别Sample基于Google开源的Open-Speech数据集 以及 ARM Sof
 python scripts/preproc_wav_data.py --data_root_dir ./data/origin_data --quant_data_dir ./data/quant_data --validation_data_dir ./data/validation_data --onnx_model_path ./model/GRU_S_STREAM.onnx --sample_num 50 [--fp16 true]
 ```
 Tips:
-1. 如果为Nano平台需要在之后加上 [--fp16 true] 选项，RISC-V平台则不需要。
-2. 网络问题导致下载出现问题，可以手动创建./data/origin_data文件夹，并下载数据包 [speech_commands_v0.02.tar.gz](http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz)到origin_data下，再执行脚本。
+1. 网络问题导致下载出现问题，可以手动创建./data/origin_data文件夹，并下载数据包 [speech_commands_v0.02.tar.gz](http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz)到./data/origin_data下，再执行脚本。
 
 ### 模型量化
 
@@ -46,22 +44,6 @@ enable_all_ops=false
 ```
 Tips:
 1. 这一步完成了量化转换前的配置工作，模型转换操作参考 RISC-V平台模型转换指南。
-
-- **Nano平台量化指南**
-```
-amct_onnx calibration --model "./GRU_S_STREAM.onnx" --save_path "./output/GRU_S" --input_shape "mfcc_input:1,10;hidden_states:1,154" --data_dir "./data/quant_data/quant_mfcc_input/;./data/quant_data/quant_hidden_states/" --data_types "float32;float32" --batch_num 92575
-```
-参数说明：
-- --model：原始ONNX模型路径
-- --save_path: 量化后模型的存放路径
-- --input_shape: 指定模型输入的shape
-- --data_dir: 与模型匹配的bin格式数据集路径
-- --data_types: 输入数据的类型
-- --batch_num: 训练后量化推理阶段的batch数
-
-运行成功后生成
-- ./output/GRU_S_fake_quant_model.onnx
-- ./output/GRU_S_deploy_model.onnx
 
 ## RISC-V平台模型转换指南
 - **模型代码生成**
@@ -99,23 +81,6 @@ cp {OUTPUT_PATH}/build/src/libnet.a {SDK}/middleware/utils/ai_mcu/lib
 ```
 之后参考运行指南，完成samples的修改，以及samples的编译：
 
-## Nano平台模型转换指南
-```
-atc --model=./output/GRU_S_deploy_model.onnx --framework=5 --output=./output/GRU_S --input_fp16_nodes="mfcc_input;hidden_states" --output_type=FP16 --soc_version=Ascend035A --input_shape="mfcc_input:1,10;hidden_states:1,154" --mode=30
-```
-参数说明
-- --model: 网络模型文件路径与文件名
-- --framework: 原始网络模型框架类型。5表示ONNX
-- --output：存放转换后的离线模型的路径以及文件名
-- --input_fp16_nodes：指定输入数据类型为FP16的输入节点名称
-- --output_type：指定网络输出数据类型
-- --soc_version：指定模型转换时昇腾AI处理器的版本
-- --input_shape：指定模型输入数据的shape
-- --mode：运行模式
-
-运行成功后生成
-- ./output/GRU_S.exeom
-- ./output/GRU_S.dbg
 
 ## RISC-V平台编译指南
 1. 获取Hi3863 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
@@ -145,56 +110,6 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 ```
 7. 获取编译成功的fwpkg文件，在${SDK_PATH}/output/ws63/fwpkg/ws63-liteos-app/ws63-liteos-app_all.fwpkg路径下
 
-## 成功运行信息
-
-## Nano平台编译指南
-1. 获取Hi3322 SDK的代码，保存在用户指定路径
-    路径如下表示解压成功，且目录正确：
-    {SDK_PATH}
-        |---- application
-        |---- bootloader
-        |---- build
-        |---- drivers
-        |---- ....
-        |---- build.py
-2. 获取HiSpark.AI Adaptor包，并进行解压
-    解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
-    路径如下表示解压成功，且目录正确：
-    {ADAPTOR_PATH}
-        |---- adaptor
-        |---- include
-3. 获取此HiSpark.AI Samples包，并进行解压
-    解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
-    路径如下表示解压成功，且目录正确：
-    {SAMPLE_PATH}
-        |---- OH
-        |---- CMakeLists.txt
-4. 切换到Gru目录，在命令行输入：
-```
-export SDK_PATH=${SDK_PATH}
-export ADAPTOR_PATH=${ADAPTOR_PATH}
-bash ${SAMPLE_PATH}/OH/Gru/build_npu.sh
-```
-5. 获取编译成功的fwpkg文件，在{SAMPLE_PATH}/OH/Gru/output路径下
-
-**烧录指南**
-1. 使用burntool工具将fwpkg镜像烧录到3322单板
-
-**文件上传指南**
-1. 使用Debugkits工具将输入数据上传到板端如下路径/user/sample_mfcc.bin
-    在Debugkits中依次选择 System / Uploading And Downloading / To Board
-    在Local File Path中选择要上传的数据文件, 即preprocess_wave_data脚本生成的验证集数据文件，如./data/validation_data/down/0c40e715_nohash_0.bin
-    在Board File Path中填入：/user/sample_mfcc.bin
-2. 使用Debugkits工具将模型上传到板端如下路径/user/gru.exeom
-    在Debugkits中依次选择 System / Uploading And Downloading / To Board
-    在Local File Path中选择要上传的模型文件，如模型转换指南中生成的./output/GRU_S.exeom
-    在Board File Path中填入：/user/gru.exeom
-
-**运行指南**
-1. 使用sscom发送AT指令：AT^SAMPLE
-2. 运行结束后可以看到[AI_MCU] Data相关日志，其结果即各个标签预测结果
-    LABELS = ["silence", "unknown", "yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"]
-
 ## 目录结构
 Gru Samples的目录结构如下所示：
 samples
@@ -217,7 +132,7 @@ samples
 │   │       └── CMakeLists.txt
 │   └── ......
 └── README.md
-- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。Hi3863 以及 Hi3322的SDK下载链接为(https://xxx)。
+- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。
 - **CMakeLists.txt**: Sample的编译框架，C代码实现。
 - **model目录**: 用于存放对应的onnx原始模型。
 - **scripts目录**: 用于存放对应的数据处理脚本，自动生成量化以及验证数据。
