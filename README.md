@@ -54,28 +54,30 @@ tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
 ```
 
 ### 编译MindSpore
-进入mindspore-lite目录
-```
-cd mindspore-lite
-```
-设置环境变量，/path替换为毕昇编译器解压后对应的目录
-```
-export MSLITE_ENABLE_MICRO=ON
-export MSLITE_ENABLE_INT8=ON
-export MSLITE_ENABLE_TRAIN=OFF
-export MSLITE_ENABLE_TESTCASES=OFF
-export MSLITE_TARGET_RISCV=ON
-export HISPARK_RISCV_TOOLCHAIN_PATH=/path/BiSheng-llvm-binary-release-musl/
-```
-执行编译脚本，可在执行中修改-j{线程数}来修改线程数量
-```
-bash build.sh -I x86_64 -j32
-```
+- **拉取mindspore-lite仓submodule**  
+运行以下命令：
+    ```
+    git submodule update --init --remote src/mindspore-lite
+    ```
+
+- **编译mindspore-lite**
+进入mindspore-lite目录,设置环境变量，/path替换为毕昇编译器解压后对应的目录
+    ```
+    # bisheng-compiler-bin-path为bisheng编译器的二进制文件目录，如/path/BiSheng-llvm-binary-release-musl/bin
+    cd src/mindspore-lite
+    export MSLITE_ENABLE_MICRO=ON
+    export MSLITE_ENABLE_INT8=ON
+    export MSLITE_ENABLE_TRAIN=OFF
+    export MSLITE_ENABLE_TESTCASES=OFF
+    export MSLITE_TARGET_RISCV=ON
+    export HISPARK_RISCV_TOOLCHAIN_PATH=${bisheng-compiler-bin-path}/BiSheng-llvm-binary-release-musl/
+    bash build.sh -I x86_64 -j32 # 执行编译脚本，可在执行中修改-j{线程数}来修改线程数量
+    ```
 
 ## **HiSpark.AI 平台快速入门指南**
 
 - **准备hispark_ai工具链**  
-从[HiSpark.AI官方下载链接]()获取Release版本的MSLite工具链，或根据上述源码编译指南进行编译。MSLite安装包目录结构如下：
+获取MSLite工具链，或根据上述源码编译指南进行编译。MSLite安装包目录结构如下：
     ```
     ├── runtime
     │   ├── include
