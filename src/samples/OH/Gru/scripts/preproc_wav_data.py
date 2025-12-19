@@ -18,6 +18,7 @@ import sys
 import urllib
 import tarfile
 import argparse
+import random
 import logging
 
 import onnx
@@ -155,12 +156,15 @@ def maybe_download_and_extract_dataset(dest_directory,
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
 
 
-def preprocess_calibrate_data(data_root_dir, output_root_dir, onnx_model):
+def preprocess_calibrate_data(data_root_dir, output_root_dir, onnx_model, sample_num):
     calibrate_list = []
     with open(os.path.join(data_root_dir, "validation_list.txt"), "r") as fr:
         lines = fr.readlines()
         for line in lines:
             calibrate_list.append(line[:-1])
+    random.shuffle(calibrate_list)
+    if sample_num != -1 or sample_num < len(calibrate_list):
+        calibrate_list = calibrate_list[0:sample_num]
     label_dirs = os.listdir(data_root_dir)
     for label in label_dirs:
         if os.path.isfile(os.path.join(data_root_dir, label)):
@@ -213,10 +217,11 @@ if __name__ == '__main__':
     parser.add_argument('--validation_data_dir', help='validation data', default="./valid_data", required=False)
     parser.add_argument('--onnx_model_path', help='onnx model path', default="../model/GRU_S_STREAM.onnx",
         required=False)
+    parser.add_argument('--sample_num', help='sample number', default=-1, required=False)
     parser.add_argument('--fp16', help='fp16 validation data', default=True, required=False)
     args = parser.parse_args()
     maybe_download_and_extract_dataset(dest_directory=args.data_root_dir)
     preprocess_calibrate_data(data_root_dir=args.data_root_dir, output_root_dir=args.quant_data_dir,
-        onnx_model=args.onnx_model_path)
+        onnx_model=args.onnx_model_path, sample_num=int(args.sample_num))
     preprocess_validation_data(data_root_dir=args.data_root_dir, output_root_dir=args.validation_data_dir,
         is_fp16=args.fp16)

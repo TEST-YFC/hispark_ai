@@ -40,10 +40,6 @@ HiSpark.AI提供了一下Sample供开发参考：
 | PyYAML | 6.0及以上 | MindSpore里的算子编译功能依赖PyYAML模块                           |
 | Numpy  | 1.19.3及以上 | MindSpore里的Numpy相关功能依赖Numpy模块                        |
 
-### 从代码仓下载源码
-```
-git clone https://gitee.com/HiSpark/mindspore-lite.git
-```
 ### 获取毕昇编译器
 - 点击[毕昇编译器官方下载链接](https://developers.hisilicon.com/cn/developerTool)并登录华为开发者账号。
 - 在资源下载页面，选择 Toolchain 分类下的 Linux 系统版本。
