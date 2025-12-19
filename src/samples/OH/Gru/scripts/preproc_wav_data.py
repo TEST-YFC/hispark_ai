@@ -177,8 +177,6 @@ def preprocess_calibrate_data(data_root_dir, output_root_dir, onnx_model, sample
                 continue
             data = preprocess(os.path.join(data_root_dir, label, wav))
             _ = onnx_infer(data, label + "_" + wav, onnx_model, output_root_dir)
-            if not _:
-                logging.error("Error Onnx Infer")
 
 
 def preprocess_validation_data(data_root_dir, output_root_dir, is_fp16=False):
