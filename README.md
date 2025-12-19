@@ -146,7 +146,7 @@ HiSpark.AI提供了一下Sample供开发参考：
      # cfg_path为配置文件路径
      export PATH=${mslite_pkg_path}/tools/converter/converter:$PATH
      export LD_LIBRARY_PATH=${mslite_pkg_path}/tools/converter/lib:$LD_LIBRARY_PATH
-     converter_lite --fmk=ONNX --modelFile={model_path} --outputFile={generate_code_path} --configFile={cfg_path} --encryption=false --inputDataFormat=NCHW --outputDataFormat=NCHW
+     converter_lite --fmk=ONNX --modelFile={model_path} --outputFile={generate_code_path} --configFile={cfg_path} --inputDataFormat=NCHW --outputDataFormat=NCHW
     ```
     其中cfg_path所配置的文件内容如下：
     ```
@@ -186,12 +186,13 @@ HiSpark.AI提供了一下Sample供开发参考：
     # sdk_path为下载的SDK路径
     # mslite_pkg_path为HiSpark.AI的工具链路径
     # generate_code_path为生成代码路径
+    # hcc_version为SDK编译器版本，如cc_riscv32_musl_105
     cd {generate_code_path}
     rm -rf build
     cmake -S . -B build \
             -D OP_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libnnacl.a" \
             -D WRAPPER_LIB="${{mslite_pkg_path}}/tools/codegen/lib/riscv/libwrapper.a" \
-            -D RISCV_TOOLCHAIN_PATH="${sdk_path}/src/tools/bin/compiler/riscv/cc_riscv32_musl_xxx/cc_riscv32_musl/bin" \
+            -D RISCV_TOOLCHAIN_PATH="${sdk_path}/src/tools/bin/compiler/riscv/{hcc_version}/cc_riscv32_musl/bin" \
             -D PKG_PATH="${mslite_pkg_path}"
     cd build
     make -j4

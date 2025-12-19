@@ -5,7 +5,6 @@ LeNet-5手写数字识别Sample基于Yann LeCun团队开源的MNIST数据集 以
 
 支持的芯片列表如下：
 - **Hi3863**: 基于MSLite-Micro平台进行模型部署，依靠RISC-V CPU核进行AI推理。
-- **Hi3322**: 基于CANN平台进行模型部署，依靠Nano NPU核进行AI推理。
 
 
 ## 数据处理 & 量化指南
@@ -107,25 +106,6 @@ cp {OUTPUT_PATH}/build/src/libnet.a {SDK}/middleware/utils/ai_mcu/lib
 ```
 之后参考运行指南，完成samples的修改，以及samples的编译
 
-## Nano平台模型转换指南
-```
-atc --model=./output/mnist_deploy_model.onnx --framework=5 --output=./output/mnist --input_fp16_nodes="Input3" --output_type=FP16 --soc_version=Ascend035A --input_shape=Input3:1,1,28,28 --mode=30
-```
-
-参数说明
-- --model: 网络模型文件路径与文件名
-- --framework: 原始网络模型框架类型。5表示ONNX
-- --output：存放转换后的离线模型的路径以及文件名
-- --input_fp16_nodes：指定输入数据类型为FP16的输入节点名称
-- --output_type：指定网络输出数据类型
-- --soc_version：指定模型转换时昇腾AI处理器的版本
-- --input_shape：指定模型输入数据的shape
-- --mode：运行模式
-
-运行成功后生成
-- ./output/mnist.exeom
-- ./output/mnist.dbg
-
 ## RISC-V平台编译指南
 1. 获取Hi3863 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
     路径如下表示解压成功，且目录正确：
@@ -154,51 +134,8 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 ```
 7. 获取编译成功的fwpkg文件，在${SDK_PATH}/output/ws63/fwpkg/ws63-liteos-app/ws63-liteos-app_all.fwpkg路径下
 
-## Nano平台编译指南
-1. 获取Hi3322 SDK的代码，保存在用户指定路径
-    路径如下表示解压成功，且目录正确：
-    {SDK_PATH}
-        |---- application
-        |---- bootloader
-        |---- build
-        |---- drivers
-        |---- ....
-        |---- build.py
-2. 获取HiSpark.AI Adaptor包，并进行解压
-    解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
-    路径如下表示解压成功，且目录正确：
-    {ADAPTOR_PATH}
-        |---- adaptor
-        |---- include
-3. 获取此HiSpark.AI Samples包，并进行解压
-    解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
-    路径如下表示解压成功，且目录正确：
-    {SAMPLE_PATH}
-        |---- OH
-        |---- CMakeLists.txt
-4. 切换到Lenet5目录，在命令行输入：
-```
-export SDK_PATH=${SDK_PATH}
-export ADAPTOR_PATH=${ADAPTOR_PATH}
-bash ${SAMPLE_PATH}/OH/Lenet5/build_npu.sh
-```
-5. 获取编译成功的fwpkg文件，在${SAMPLE_PATH}/OH/Lenet5/output路径下
-
 **烧录指南**
-1. 使用burntool工具将fwpkg镜像烧录到3322单板
-
-**文件上传指南**
-1. 使用Debugkits工具将输入数据上传到板端如下路径/user/sample_mnist.bin
-    在Debugkits中依次选择 System / Uploading And Downloading / To Board
-    在Local File Path中选择要上传的数据文件，即preprocess_mnist_data脚本生成的验证集数据文件，如./test_data/bin/sample_00000_7.bin
-    在Board File Path中填入：/user/sample_mnist.bin
-2. 使用Debugkits工具将模型上传到板端如下路径/user/mnist.exeom
-    在Debugkits中依次选择 System / Uploading And Downloading / To Board
-    在Local File Path中选择要上传的数据文件，如模型转换指南中生成的./output/mnist.exeom
-    在Board File Path中填入：/user/mnist.exeom
-
-**运行指南**
-1. 使用sscom发送AT指令：AT^SAMPLE
+1. 使用burntool工具将fwpkg镜像烧录到单板
 
 ## 目录结构
 Lenet5 Samples的目录结构如下所示：
@@ -207,7 +144,6 @@ samples
 ├── OH
 │   ├── Lenet5
 │   │   ├── build.sh
-│   │   ├── build_npu.sh
 │   │   ├── CMakeLists.txt
 │   │   ├── data
 │   │   │   └── README.md
@@ -218,10 +154,7 @@ samples
 │   │   ├── scripts
 │   │   │   └── preproc_mnist_data.py
 │   │   └── src
-│   │       └── ai_deploy_main_npu.c
 │   │       └── ai_main.c
-│   │       └── ai_main.h
-│   │       └── CMakeLists.txt
 │   └── ......
 └── README.md
 - **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。Hi3863 以及 Hi3322的SDK下载链接为(https://xxx)。

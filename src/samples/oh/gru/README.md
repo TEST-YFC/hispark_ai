@@ -85,6 +85,7 @@ cp {OUTPUT_PATH}/build/src/libnet.a {SDK}/middleware/utils/ai_mcu/lib
 ## RISC-V平台编译指南
 1. 获取Hi3863 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
     路径如下表示解压成功，且目录正确：
+    ```
     {SDK_PATH}
         |---- application
         |---- drivers
@@ -92,12 +93,15 @@ cp {OUTPUT_PATH}/build/src/libnet.a {SDK}/middleware/utils/ai_mcu/lib
         |---- protocol
         |---- ....
         |---- build.py
+    ```
 2. 获取HiSpark.AI Adaptor包，并进行解压,其以及路径为{ADAPTOR_PATH}。
     解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz -C ${ADAPTOR_PATH}
     路径如下表示解压成功，且目录正确：
+    ```
     {ADAPTOR_PATH}
         |---- adaptor
         |---- include
+    ```
 3. 获取此HiSpark.AI Samples包
 4. 根据业务修改Sample包，根据下方新版本Sample的说明
 5. 将HiSpark.AI MSLite Micro工具链编译出的libmicro_runtime.a libnet.a复制到SDK的路径下
@@ -112,6 +116,7 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 
 ## 目录结构
 Gru Samples的目录结构如下所示：
+```
 samples
 ├── CMakeLists.txt
 ├── OH
@@ -132,6 +137,7 @@ samples
 │   │       └── CMakeLists.txt
 │   └── ......
 └── README.md
+```
 - **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。
 - **CMakeLists.txt**: Sample的编译框架，C代码实现。
 - **model目录**: 用于存放对应的onnx原始模型。
