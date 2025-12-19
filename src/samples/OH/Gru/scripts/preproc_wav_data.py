@@ -144,14 +144,14 @@ def maybe_download_and_extract_dataset(dest_directory,
         try:
             filepath, _ = urllib.request.urlretrieve(data_url, filepath, _progress)
         except:
-            tf.logging.error('Failed to download URL: %s to folder: %s', data_url,
+            logging.error('Failed to download URL: %s to folder: %s', data_url,
                             filepath)
-            tf.logging.error('Please make sure you have enough free space and'
+            logging.error('Please make sure you have enough free space and'
                             ' an internet connection')
             raise
 
         statinfo = os.stat(filepath)
-        tf.logging.info('Successfully downloaded %s (%d bytes)', filename,
+        logging.info('Successfully downloaded %s (%d bytes)', filename,
                         statinfo.st_size)
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
 

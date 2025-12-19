@@ -16,7 +16,7 @@ Gru固定词识别Sample基于Google开源的Open-Speech数据集 以及 ARM Sof
 - **preprocess_wave_data**
 运行Scripts目录下的预处理脚本，在samples一级目录下自动下载对应的原始Google Open-speech数据集。
 ```
-python scripts/preproc_wav_data.py --data_root_dir ./data/origin_data --quant_data_dir ./data/quant_data --validation_data_dir ./data/validation_data --onnx_model_path ./model/GRU_S_STREAM.onnx [--fp16 true]
+python scripts/preproc_wav_data.py --data_root_dir ./data/origin_data --quant_data_dir ./data/quant_data --validation_data_dir ./data/validation_data --onnx_model_path ./model/GRU_S_STREAM.onnx --sample_num 50 [--fp16 true]
 ```
 Tips:
 1. 如果为Nano平台需要在之后加上 [--fp16 true] 选项，RISC-V平台则不需要。
@@ -37,7 +37,7 @@ quant_type=FULL_QUANT
 bit_num=8
 [data_preprocess_param]
 calibrate_path=mfcc_input:data/quant_data/quant_mfcc_input,hidden_states:data/quant_data/quant_hidden_states
-calibrate_size=64825
+calibrate_size=750
 input_type=BIN
 [full_quant_param]
 activation_quant_method=MAX_MIN
