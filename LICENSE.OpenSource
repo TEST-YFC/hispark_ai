@@ -1,6 +1,5 @@
 (1) The directories below are licensed under Apache License, Version 2.0.
-./src/samples
-./src/adaptor
+./src/mindspore-lite
 
 (a)
                                  Apache License
