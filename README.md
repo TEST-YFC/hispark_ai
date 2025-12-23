@@ -119,7 +119,7 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
 
 - **准备Samples**
-  进入sample一级目录，如LeNet-5就进入\$\{hispark_ai_root\}/src/samples/OH/Lenet5目录，而Gru就进入\$\{hispark_ai_root\}/src/samples/OH/Gru目录。Sample目录结构如下：
+  进入sample一级目录，如LeNet-5就进入{hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入{hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
     ```
     {sample_path}
     ├── build.sh
