@@ -1,7 +1,7 @@
 # HiSpark AI 开源项目
 
 ## 项目介绍 && 资源
-HiSaprk AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数组识别 及 Gru-S固定词语音识别相关应用。软件文档在线化链接：[https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master)
+HiSaprk AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数组识别 及 Gru-S固定词语音识别相关应用。
 
 ## SDK目录介绍
 
@@ -119,7 +119,7 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
 
 - **准备Samples**
-  进入sample一级目录，如LeNet-5就进入${hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入\${hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
+  进入sample一级目录，如LeNet-5就进入{hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入{hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
     ```
     {sample_path}
     ├── build.sh
@@ -140,7 +140,7 @@ HiSpark.AI提供了一下Sample供开发参考：
 - **模型编译**
   - 使用MSLite包中带的converter_lite工具进行模型转换，生成目标代码
     ```
-     # mslite_pkg_path变量为解压的HiSpark.AI MSLite压缩包路径，一级文件夹名称为mindspore-xxx-lite-{version}-linux-64
+     # mslite_pkg_path变量为解压的HiSpark.AI MSLite压缩包路径，一级文件夹名称为mindspore-{package_item}-lite-{version}-linux-64
      # model_path为原始模型路径，如mnist-12.onnx
      # generate_code_path为生成代码路径
      # cfg_path为配置文件路径
@@ -226,7 +226,7 @@ HiSpark.AI提供了一下Sample供开发参考：
     配置对应环境变量，在samples下运行build.sh脚本，即可完成编译
     ```
     cd ${sample_path}
-    export SDK_PATH=${sdk_path}
+    export SDK_PATH=${sdk_path}/src
     export ADAPTOR_PATH=${adaptor_path}
     ./build.sh
     ```
@@ -234,13 +234,13 @@ HiSpark.AI提供了一下Sample供开发参考：
 
 - **烧录调试**
     使用BurnTool工具进行ws63-ai-liteos-sample.fwpkg的烧录。
-    烧录成功运行后，会看到串口打印的运行成功信息，如下：
+    烧录成功运行后，会看到串口打印的运行成功信息，如Gru下：
     ```
-    [AI_MCU] Get Tcxo Time 13 ms
-    [AI_MCU] Data size: [12]
-    Shape: [1 3 ]
+    [AI_MCU] Get Tcxo Time 115 ms
+    [AI_MCU] Data size: [48]
+    Shape: [1 12 ]
     DataType: 43
-    [AI_MCU] Data: [-12.61998][-8.90126][-5.37811]
+    [AI_MCU] Data: [0.95731][0.00266][0.00294][0.00590][0.00286][0.00374][0.00285][0.00685][0.00231][0.00307][0.00654][0.00292]
     [AI_MCU] ai_mcu_sample_process
     ```
 
