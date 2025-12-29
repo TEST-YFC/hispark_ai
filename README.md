@@ -1,9 +1,9 @@
 # HiSpark AI 开源项目
 
 ## 项目介绍 && 资源
-HiSaprk AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数组识别 及 Gru-S固定词语音识别相关应用。
+HiSaprk AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别 及 Gru-S固定词语音识别相关应用。
 
-## SDK目录介绍
+## HiSpark AI目录介绍
 
 | 目录   | 二级目录 | 介绍                                                             |
 | ------ | ------  | ------------------------------------------------------------     |
@@ -27,7 +27,7 @@ HiSpark.AI提供了一下Sample供开发参考：
 | ws63 | Gru-S音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
 
 ### **HiSpark.AI CPU系列平台介绍**
-超轻量的模型部署平台，支持KB级RAM嵌入式设备；使用说明参考XX和XX使用文档。
+超轻量的模型部署平台，支持KB级RAM嵌入式设备。
 
 ## 源码编译
 ### 环境依赖
@@ -189,11 +189,7 @@ HiSpark.AI提供了一下Sample供开发参考：
     # hcc_version为SDK编译器版本，如cc_riscv32_musl_105
     cd {generate_code_path}
     rm -rf build
-    cmake -S . -B build \
-            -D OP_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libnnacl.a" \
-            -D WRAPPER_LIB="${{mslite_pkg_path}}/tools/codegen/lib/riscv/libwrapper.a" \
-            -D RISCV_TOOLCHAIN_PATH="${sdk_path}/src/tools/bin/compiler/riscv/{hcc_version}/cc_riscv32_musl/bin" \
-            -D PKG_PATH="${mslite_pkg_path}"
+    cmake -S . -B build -D OP_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libnnacl.a" -D WRAPPER_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libwrapper.a" -D RISCV_TOOLCHAIN_PATH="${sdk_path}/src/tools/bin/compiler/riscv/${hcc_version}/cc_riscv32_musl/bin" -D PKG_PATH="${mslite_pkg_path}"
     cd build
     make -j4
     ```
