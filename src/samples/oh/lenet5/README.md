@@ -96,3 +96,6 @@ ln -s libstdc++.so.6.0.30 libstdc++.so.6
 # 3. 最后链接gcc的lib
 export LD_LIBRARY_PATH={gcc_lib}:$LD_LIBRARY_PATH
 ```
+
+## 引用和致谢
+本项目部分模型与代码参考或修改自以下开源项目：https://github.com/onnx/models
