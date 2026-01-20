@@ -115,7 +115,7 @@ HiSpark.AI提供了一下Sample供开发参考：
 - **准备SDK**
   - 从开源社区下载fbb_ws63的源码
     ```
-      git clone https://gitee.com/HiSpark/fbb_ws63.git
+      git clone https://gitcode.com/HiSpark/fbb_ws63.git
     ```
 
 - **准备Samples**
