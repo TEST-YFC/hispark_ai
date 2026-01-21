@@ -212,7 +212,7 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
     将libnet.a以及libmicro_runtime.a拷贝到${sdk_path}/src/middleware/utils/ai_mcu/lib目录下。
     ```
-    # sdk_path为SDK的源码目录 (https://gitee.com/HiSpark/fbb_ws63)
+    # sdk_path为SDK的源码目录 (https://gitcode.com/HiSpark/fbb_ws63)
     mkdir -p ${sdk_path}/src/middleware/utils/ai_mcu/lib
     cp -rf {generate_code_path}/build/libmicro_runtime.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
     cp -rf {generate_code_path}/build/src/libnet.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
