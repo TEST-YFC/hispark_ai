@@ -50,31 +50,34 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
 
 ### 编译MindSpore
-- **拉取mindspore-lite仓submodule**  
+- **拉取mindspore-lite代码**  
 运行以下命令：
     ```
     git submodule update --init --remote --progress src/mindspore-lite
     ```
 
 - **编译mindspore-lite**
-进入mindspore-lite目录,设置环境变量，/path替换为毕昇编译器解压后对应的目录
     ```
-    # bisheng-compiler-bin-path为bisheng编译器的二进制文件目录，如/path/BiSheng-llvm-binary-release-musl/bin
+    # 步骤1: 进入 mindspore-lite 源码目录
     cd src/mindspore-lite
+    # 步骤2: 设置编译环境变量
     export MSLITE_ENABLE_MICRO=ON
     export MSLITE_ENABLE_INT8=ON
     export MSLITE_ENABLE_TRAIN=OFF
     export MSLITE_ENABLE_TESTCASES=OFF
     export MSLITE_TARGET_RISCV=ON
-    export HISPARK_RISCV_TOOLCHAIN_PATH=${bisheng-compiler-bin-path}/BiSheng-llvm-binary-release-musl/
-    bash build.sh -I x86_64 -j32 # 执行编译脚本，可在执行中修改-j{线程数}来修改线程数量
-    # 若需增量编译，使用bash build.sh -I x86_64 -j32 -i命令
+    # 设置毕昇编译器路径变量（关键！需将 bisheng_compiler_root_path 替换为编译器实际解压目录）
+    export HISPARK_RISCV_TOOLCHAIN_PATH=${bisheng_compiler_root_path}
+    # 步骤3: 执行编译（-j 后接线程数，根据CPU核心数调整，如 -j16、-j32）
+    bash build.sh -I x86_64 -j32
+    # 若需增量编译，使用:
+    # bash build.sh -I x86_64 -j32 -i
     ```
 
 ## **HiSpark.AI 平台快速入门指南**
 
-- **准备hispark_ai工具链**  
-获取MSLite工具链，或根据上述源码编译指南进行编译。MSLite安装包目录结构如下：
+- **准备工具链**  
+获取mindspore-lite工具链，需参考上述源码编译指南自行编译mindspore-lite源码，工具链为编译产物，其目录结构如下：
     ```
     ├── runtime
     │   ├── include
@@ -119,9 +122,9 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
 
 - **准备Samples**
-  进入sample一级目录，如LeNet-5就进入{hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入{hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
+  进入sample一级目录，如LeNet-5就进入${hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入${hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
     ```
-    {sample_path}
+    ${sample_path}
     ├── build.sh
     ├── CMakeLists.txt
     ├── model
@@ -138,26 +141,34 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
 
 - **模型编译**
-  - 使用MSLite包中带的converter_lite工具进行模型转换，生成目标代码
+  - 解压mindspore-lite编译产物得到MS Lite工具链
     ```
-     # mslite_pkg_path变量为解压的HiSpark.AI MSLite压缩包路径，一级文件夹名称为mindspore-{package_item}-lite-{version}-linux-64
-     # model_path为原始模型路径，如mnist-12.onnx
-     # generate_code_path为生成代码路径
-     # cfg_path为配置文件路径
-     export PATH=${mslite_pkg_path}/tools/converter/converter:$PATH
-     export LD_LIBRARY_PATH=${mslite_pkg_path}/tools/converter/lib:$LD_LIBRARY_PATH
-     converter_lite --fmk=ONNX --modelFile={model_path} --outputFile={generate_code_path} --configFile={cfg_path} --inputDataFormat=NCHW --outputDataFormat=NCHW
+    cd ${hispark_ai_root}/src/mindspore-lite/output
+    # version 为 mindspore-lite 的版本号,随版本迭代变化，实际压缩包名称格式示例: mindspore-lite-2.8.0-linux-x64.tar.gz
+    tar zxvf mindspore-lite-${version}-linux-x64.tar.gz
+    # 将MS Lite工具链目录路径保存为 mslite_pkg_path 变量
+    export mslite_pkg_path=$(pwd)/mindspore-lite-${version}-linux-x64
     ```
-    其中cfg_path所配置的文件内容如下：
+  - 创建模型转换配置文件（文件名可自定义，如 micro_config.cfg），文件内容如下：
     ```
     [micro_param]
     enable_micro=true
     target=RISCV
     support_parallel=false
     ```
+  - 使用编译产物中的converter_lite工具进行模型转换，生成目标代码
+    ```
+     # model_path为原始模型路径，如mnist-12.onnx
+     # generate_code_path为代码生成目标路径
+     # mslite_pkg_pat为MS Lite工具链目录路径
+     # cfg_path为模型转换配置文件路径
+     export PATH=${mslite_pkg_path}/tools/converter/converter:$PATH
+     export LD_LIBRARY_PATH=${mslite_pkg_path}/tools/converter/lib:$LD_LIBRARY_PATH
+     converter_lite --fmk=ONNX --modelFile=${model_path} --outputFile=${generate_code_path} --configFile=${cfg_path} --inputDataFormat=NCHW --outputDataFormat=NCHW
+    ```
   - 自动代码生成的目录如下
     ```
-    {generate_code_path}
+    ${generate_code_path}
     ├── benchmark
     ├── CMakeLists.txt
     ├── include
@@ -183,11 +194,9 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
   - 静态链接库编译
     ```
-    # sdk_path为下载的SDK路径
-    # mslite_pkg_path为HiSpark.AI的工具链路径
-    # generate_code_path为生成代码路径
+    # sdk_path为fbb_ws63工程根目录路径
     # hcc_version为SDK编译器版本，如cc_riscv32_musl_105
-    cd {generate_code_path}
+    cd ${generate_code_path}
     rm -rf build
     cmake -S . -B build -D OP_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libnnacl.a" -D WRAPPER_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libwrapper.a" -D RISCV_TOOLCHAIN_PATH="${sdk_path}/src/tools/bin/compiler/riscv/${hcc_version}/cc_riscv32_musl/bin" -D PKG_PATH="${mslite_pkg_path}"
     cd build
@@ -195,7 +204,7 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
     编译产物存放于build文件夹下，目录结构如下。libnet.a以及libmicro_runtime.a分别放置在build/src路径以及build路径下：
     ```
-    {generate_code_path}/build
+    ${generate_code_path}/build
     ├── CMakeCache.txt
     ├── CMakeFiles
     │   ├── x.xx.x
@@ -214,8 +223,8 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
     # sdk_path为SDK的源码目录 (https://gitcode.com/HiSpark/fbb_ws63)
     mkdir -p ${sdk_path}/src/middleware/utils/ai_mcu/lib
-    cp -rf {generate_code_path}/build/libmicro_runtime.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
-    cp -rf {generate_code_path}/build/src/libnet.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
+    cp -rf ${generate_code_path}/build/libmicro_runtime.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
+    cp -rf ${generate_code_path}/build/src/libnet.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
     ```
 
 - **SDK编译**

@@ -73,7 +73,7 @@ function build_cfbb()
         sed -i '/COMPONENT_NAME/a\\nset(CONFIG_ENABLE_AI_CUSTOM_SAMPLE "$ENV{ENABLE_AI_CUSTOM_SAMPLE}")' $SDK_PATH/application/samples/CMakeLists.txt
     fi
     if ! grep -q "if(DEFINED CONFIG_ENABLE_AI_CUSTOM_SAMPLE)" "$SDK_PATH/application/samples/CMakeLists.txt"; then
-        sed -i "/add_subdirectory_if_exist(custom)/i\if(DEFINED CONFIG_ENABLE_AI_CUSTOM_SAMPLE)\n\ \ add_subdirectory(\n\ \ \ \ ${CUR_DIR}\n\ \ \ \ \$\{CMAKE_CURRENT_BINARY_DIR\}/midea_build\n\ \ )\nendif()\n" $SDK_PATH/application/samples/CMakeLists.txt
+        sed -i "/add_subdirectory_if_exist(custom)/i\if(DEFINED CONFIG_ENABLE_AI_CUSTOM_SAMPLE)\n\ \ add_subdirectory(\n\ \ \ \ ${CUR_DIR}\n\ \ \ \ \$\{CMAKE_CURRENT_BINARY_DIR\}/lenet5_build\n\ \ )\nendif()\n" $SDK_PATH/application/samples/CMakeLists.txt
     fi
     if ! grep -q "ai_adaptor_cpu" "$SDK_PATH/build/config/target_config/ws63/config.py"; then
         config_content=$(< "$SDK_PATH/build/config/target_config/ws63/config.py")
