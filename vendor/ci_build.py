@@ -1,0 +1,239 @@
+# Copyright (c) HiSilicon (Shanghai) Technologies Co., Ltd. 2025-2025. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
+import subprocess
+import os
+import re
+import sys
+import json
+import tarfile
+import shutil
+from pathlib import Path
+from typing import List, Dict, Union, Set, Optional
+
+
+# 定义要执行的脚本文件和目录
+data_dir = './..' #docker存放路径
+hiSpark_ai_path = '' #hispark_ai项目路径
+script_to_execute = 'vendor/WS63/build.sh'
+gen_to_execute = 'gen_dataset.py'
+
+BUILD_INFO_FILENAME = 'gate_build_config.json'
+DAILY_INFO_FILENAME = 'daily_build_config.json'
+
+# log复制
+error_info = 'build fail cause:'
+result_path = 'archives'
+
+def prepare_bisheng_compiler(hiSpark_ai_path):
+    """准备毕昇编译器"""
+    cur_path = os.getcwd()
+    # 查找最新的BiSheng压缩包
+    archive_pattern = "BiSheng-llvm-*.tar.gz"
+    archives = list(Path(data_dir).glob(archive_pattern))
+    if not archives:
+        print(f"{error_info}未找到匹配 {archive_pattern} 的压缩包")
+        exit(1)
+    # 获取最新的文件（按修改时间排序）
+    latest_archive = max(archives, key=lambda x: x.stat().st_mtime)
+    basename = latest_archive.name.replace('.tar.gz', '')
+    target_dir = Path(cur_path) / "BiSheng-llvm-binary-release-musl"
+    if not target_dir.exists():
+        print(f"正在解压 {latest_archive} ...")
+        with tarfile.open(latest_archive, 'r:gz') as tar:
+            tar.extractall(path=cur_path)
+    print(f"已完成毕昇编译器准备")
+    return target_dir
+
+def prepare_dataset(hiSpark_ai_path):
+    """准备数据集"""
+    # 处理GRU数据
+    gru_target = Path(hiSpark_ai_path) / "src/samples/oh/gru/data/origin_data"
+    gru_source = Path(data_dir) / "gru/speech_commands_v0.02.tar.gz"
+    gru_target.mkdir(parents=True, exist_ok=True)
+    
+    if gru_source.exists():
+        shutil.copy(gru_source, gru_target)
+        print("GRU数据已复制: speech_commands_v0.02.tar.gz")
+    else:
+        print(f"{error_info}未找到GRU数据文件: {gru_source}")
+        exit(1)
+    # 处理LeNet5数据
+    lenet5_target = Path(hiSpark_ai_path) / "src/samples/oh/lenet5/data/MNIST/raw"
+    lenet5_source = Path(data_dir) / "lenet5"
+    
+    lenet5_target.mkdir(parents=True, exist_ok=True)
+    
+    if lenet5_source.exists():
+        archives = list(lenet5_source.glob("*.gz"))
+        if archives:
+            for archive in archives:
+                shutil.copy(archive, lenet5_target)
+            print(f"LeNet5数据已复制: {len(archives)} 个文件")
+        else:
+            print(f"{error_info}未在LeNet5目录中找到压缩包")
+            exit(1)
+    else:
+        print(f"{error_info}LeNet5源目录不存在: {lenet5_source}")
+        exit(1)
+
+# 获取代码仓所有build_info.json文件内容，并拼接在一起
+def process_build_info_files(filename):
+    print(f"start process_build_info_files")
+    result_list = []
+    # 遍历指定目录及其子目录下的所有文件和文件夹
+    for root, dirs, files in os.walk("./"):
+        for file in files:
+            if file == filename:
+                file_path = os.path.join(root, file)
+                print(file_path)
+                # 读取JSON文件内容
+                with open(file_path, 'r') as f:
+                    try:
+                        data = json.load(f)
+                        for item in data:
+                            # 提取需要的字段值
+                            build_target = item.get('buildTarget', '')
+                            relative_path = item.get('relativePath', '').replace('/','-')
+                            chip_name = item.get('chip', '')
+                            # 组合成一个字符串并添加到结果列表
+                            if item.get('buildDef', ''):
+                                build_def = item.get('buildDef', '')
+                                combined_value = f"{build_target}_{relative_path}_{chip_name}_{build_def}"
+                            else:
+                                combined_value = f"{build_target}_{relative_path}_{chip_name}"
+                            result_list.append(combined_value)
+                    except json.JSONDecodeError:
+                        print(f"{error_info}Error decoding JSON in file: {file_path}")
+                        exit(1)
+    return result_list
+
+def process_build_results(result_list, result_path='archives'):
+    # 确保archives目录存在
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
+    
+    # 编译正则表达式
+    pattern1 = re.compile(r'######### Build target:(\S+)')
+    pattern2 = re.compile(r'(\S+) takes (\d+)(\.\d+)? s')
+    
+    for result in result_list:
+        # 构建日志文件名和镜像文件名
+        log_file = os.path.join(result_path, f'build-{result}.log')
+        fwpkg_file = os.path.join(result_path, f'{result}.fwpkg')
+        
+        if os.path.exists(log_file):
+            # 日志文件存在，读取内容并检查
+            with open(log_file, 'r') as f:
+                lines = f.readlines()
+            
+            # 处理每一行
+            modified_lines = []
+            for line in lines:
+                # 检查第一个正则模式
+                match1 = pattern1.match(line)
+                if match1 and match1.group(1) != result:
+                    modified_lines.append(f'++++ Build target:{match1.group(1)}\n')
+                # 检查第二个正则模式
+                elif pattern2.match(line):
+                    match2 = pattern2.match(line)
+                    if match2.group(1) != result:
+                        time_value = match2.group(2) + (match2.group(3) or '')
+                        modified_lines.append(f'{match2.group(1)} Time: {time_value} s\n')
+                    else:
+                        modified_lines.append(line)
+                else:
+                    modified_lines.append(line)
+            
+            # 写回文件
+            with open(log_file, 'w') as f:
+                f.writelines(modified_lines)
+                
+            # 检查镜像文件并追加结果
+            with open(log_file, 'a') as f:
+                if os.path.exists(fwpkg_file):
+                    f.write('\nFinished: SUCCESS')
+                else:
+                    f.write('\nFinished: FAILURE')
+        else:
+            # 日志文件不存在，创建并写入初始内容
+            with open(log_file, 'w') as f:
+                f.write(f'######### Build target:{result}\n')
+                f.write(f'{result} takes 0 s\n')
+                f.write('Finished: FAILURE')
+
+def sample_build_main(bisheng_path, daily=False):
+    print(f"start sample_build_main")
+    try:
+        # 执行build脚本
+        cmd = ["bash", script_to_execute, bisheng_path]
+        if daily:
+            cmd.append("--daily")
+        result = subprocess.run(
+            cmd,
+            check=True,
+            text=True,
+            stdout=sys.stdout,
+            stderr=sys.stderr
+        )
+        return 0
+    except subprocess.CalledProcessError as e:
+        print(f"{error_info} {e}")
+        return -1
+
+def generating_dataset():
+    try:
+        # 执行build脚本
+        result = subprocess.run(
+            ['python', gen_to_execute],
+            check=True,
+            text=True,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+            cwd='vendor/WS63/'
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"{error_info} {e.stderr}")
+        raise
+
+def main():
+    print(f"start main")
+    is_gate = os.environ.get('IS_GATE', '').strip().lower()
+    is_daily = os.environ.get('IS_DAILY', '').strip().lower()
+    
+    # 判断逻辑
+    if is_gate == 'true' and is_daily == 'true':
+        raise ValueError(f"{error_info}IS_GATE and IS_DAILY cannot both be set to True.")
+    elif is_gate == 'true':
+        print(f'Commencing access control!')
+        daily = False
+        input_list = process_build_info_files(BUILD_INFO_FILENAME)
+    elif is_daily == 'true':
+        print(f'Commencing execution of daily!')
+        daily = True
+        generating_dataset()
+        input_list = process_build_info_files(DAILY_INFO_FILENAME)
+    else:
+        daily = False
+        input_list = process_build_info_files(BUILD_INFO_FILENAME)
+    bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
+    prepare_dataset(hiSpark_ai_path)
+    result = sample_build_main(bisheng_path, daily=daily)
+    process_build_results(input_list, result_path='archives')
+    if result == 0:
+        print(f"all build step execute end")
+    else:
+        print(f"build fail")
+        exit(1)
+
+if __name__ == '__main__':
+    sys.exit(main())
