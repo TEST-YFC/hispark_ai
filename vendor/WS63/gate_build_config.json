@@ -1,0 +1,16 @@
+[
+    {
+      "buildTarget": "ws63-ai-liteos",
+      "relativePath": "lenet5",
+      "chip": "WS63",
+      "buildDef": "lenet5",
+      "needSmoke": "false"
+    },
+    {
+      "buildTarget": "ws63-ai-liteos",
+      "relativePath": "gru",
+      "chip": "WS63",
+      "buildDef": "gru",
+      "needSmoke": "false"
+    }
+]
