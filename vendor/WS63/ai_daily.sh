@@ -286,11 +286,37 @@ main_daily() {
         fi
     done
     cp "$hispark_ai_path/ai_main_temp.c" "$sample_path/src/ai_main.c"
-    main_build
+    sample
     echo "All models processed successfully"
 }
 
 main_build() {
+    for model_dir in "$MODEL_PATH"/*; do
+        if [ -d "$model_dir" ]; then
+            model=$(basename "$model_dir")
+            echo "Found model: $model"
+            if ! [[ "$model" =~ ^(NeuralNetwork|MathModel)(_tf)?$ ]]; then
+                echo "Skipping model: $model (not in allowed list)"
+                continue
+            fi
+            if [[ "$model" == *"_tf"* ]]; then
+                process_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1
+                process_quantized_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_tflite_quant_WS63_${model}.log" 2>&1
+            else
+                # Process non-quantized version
+                process_fp32 "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1
+                # Process quantized version
+                process_quantized "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_onnx_quant_WS63_${model}.log" 2>&1
+
+            fi
+        fi
+    done
+    cp "$hispark_ai_path/ai_main_temp.c" "$sample_path/src/ai_main.c"
+    sample
+    echo "All models processed successfully"
+}
+
+sample() {
     #let5
     {
         pushd ${sample_path}
