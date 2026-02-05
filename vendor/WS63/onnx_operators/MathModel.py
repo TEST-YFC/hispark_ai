@@ -18,10 +18,9 @@ from . import create_low_ir_version_model
 logging.basicConfig(level=logging.NOTSET)
 
 
-def create_mathmodel_model(output_path):
+def create_mathmodel_onnx_model(output_path):
     """
-    Gemm, Matmul, Softmax, Relu, Tanh, Sigmoid, Mul, Add, Sub, 
-    Abs, Ceil, Cos, Exp, Floor, Log, Round, Sin, Sqrt, Reshape, Flatten
+    修复 Reshape 错误版本
     """
     logging.info(f"创建数学运算类模型: {output_path}")
     
@@ -30,7 +29,21 @@ def create_mathmodel_model(output_path):
     input_x = helper.make_tensor_value_info('X', TensorProto.FLOAT, input_shape)
     input_y = helper.make_tensor_value_info('Y', TensorProto.FLOAT, input_shape)
     
-    # 1. Gemm (通用矩阵乘法)
+    # 1. 处理 X
+    reshape_to_2d_shape = helper.make_tensor(
+        'reshape_to_2d_shape',
+        TensorProto.INT64,
+        [2],
+        [4, 4]
+    )
+    
+    reshape_to_2d_node = helper.make_node(
+        'Reshape',
+        inputs=['X', 'reshape_to_2d_shape'],
+        outputs=['reshape_to_2d_out']
+    )
+    
+    # 2. Gemm
     gemm_weight = helper.make_tensor(
         'gemm_weight',
         TensorProto.FLOAT,
@@ -47,7 +60,7 @@ def create_mathmodel_model(output_path):
     
     gemm_node = helper.make_node(
         'Gemm',
-        inputs=['X', 'gemm_weight', 'gemm_bias'],
+        inputs=['reshape_to_2d_out', 'gemm_weight', 'gemm_bias'],
         outputs=['gemm_out'],
         alpha=1.0,
         beta=1.0,
@@ -55,40 +68,38 @@ def create_mathmodel_model(output_path):
         transB=0
     )
     
-    # 2. MatMul (矩阵乘法)
+    # 3. 恢复为 3D
+    reshape_to_3d_shape = helper.make_tensor(
+        'reshape_to_3d_shape',
+        TensorProto.INT64,
+        [3],
+        [1, 4, 4]
+    )
+    
+    reshape_to_3d_node = helper.make_node(
+        'Reshape',
+        inputs=['gemm_out', 'reshape_to_3d_shape'],
+        outputs=['gemm_3d_out']
+    )
+    
+    # 4. MatMul
     matmul_weight = helper.make_tensor(
         'matmul_weight',
         TensorProto.FLOAT,
-        [4, 8],
-        np.random.randn(4, 8).astype(np.float32).flatten().tolist()
+        [4, 4],
+        np.random.randn(4, 4).astype(np.float32).flatten().tolist()
     )
     
     matmul_node = helper.make_node(
         'MatMul',
-        inputs=['gemm_out', 'matmul_weight'],
-        outputs=['matmul_out']
+        inputs=['gemm_3d_out', 'matmul_weight'],
+        outputs=['matmul_out']  # 形状保持为 [1, 4, 4]
     )
     
-    # 3. Relu (激活函数)
-    relu_node = helper.make_node(
-        'Relu',
-        inputs=['matmul_out'],
-        outputs=['relu_out']
-    )
-    
-    # 4. Tanh (激活函数)
-    tanh_node = helper.make_node(
-        'Tanh',
-        inputs=['relu_out'],
-        outputs=['tanh_out']
-    )
-    
-    # 5. Sigmoid (激活函数)
-    sigmoid_node = helper.make_node(
-        'Sigmoid',
-        inputs=['tanh_out'],
-        outputs=['sigmoid_out']
-    )
+    # 5. 一系列激活函数
+    relu_node = helper.make_node('Relu', inputs=['matmul_out'], outputs=['relu_out'])
+    tanh_node = helper.make_node('Tanh', inputs=['relu_out'], outputs=['tanh_out'])
+    sigmoid_node = helper.make_node('Sigmoid', inputs=['tanh_out'], outputs=['sigmoid_out'])
     
     # 6. Softmax
     softmax_node = helper.make_node(
@@ -98,125 +109,77 @@ def create_mathmodel_model(output_path):
         axis=2
     )
     
-    # 7. Add (元素加法)
+    # 7. Add
     add_node = helper.make_node(
         'Add',
         inputs=['softmax_out', 'Y'],
         outputs=['add_out']
     )
     
-    # 8. Sub (元素减法)
+    # 8. Sub
     sub_node = helper.make_node(
         'Sub',
         inputs=['add_out', 'Y'],
         outputs=['sub_out']
     )
     
-    # 9. Mul (元素乘法)
+    # 9. Mul
     mul_node = helper.make_node(
         'Mul',
         inputs=['sub_out', 'Y'],
         outputs=['mul_out']
     )
     
-    # 10. Abs (绝对值)
-    abs_node = helper.make_node(
-        'Abs',
-        inputs=['mul_out'],
-        outputs=['abs_out']
-    )
+    # 10. 一系列数学运算
+    abs_node = helper.make_node('Abs', inputs=['mul_out'], outputs=['abs_out'])
+    cos_node = helper.make_node('Cos', inputs=['abs_out'], outputs=['cos_out'])
+    sin_node = helper.make_node('Sin', inputs=['cos_out'], outputs=['sin_out'])
+    exp_node = helper.make_node('Exp', inputs=['sin_out'], outputs=['exp_out'])
+    log_node = helper.make_node('Log', inputs=['exp_out'], outputs=['log_out'])
+    sqrt_node = helper.make_node('Sqrt', inputs=['log_out'], outputs=['sqrt_out'])
+    floor_node = helper.make_node('Floor', inputs=['sqrt_out'], outputs=['floor_out'])
+    ceil_node = helper.make_node('Ceil', inputs=['floor_out'], outputs=['ceil_out'])
+    round_node = helper.make_node('Round', inputs=['ceil_out'], outputs=['round_out'])
     
-    # 11. Cos (余弦)
-    cos_node = helper.make_node(
-        'Cos',
-        inputs=['abs_out'],
-        outputs=['cos_out']
-    )
-    
-    # 12. Sin (正弦)
-    sin_node = helper.make_node(
-        'Sin',
-        inputs=['cos_out'],
-        outputs=['sin_out']
-    )
-    
-    # 13. Exp (指数)
-    exp_node = helper.make_node(
-        'Exp',
-        inputs=['sin_out'],
-        outputs=['exp_out']
-    )
-    
-    # 14. Log (自然对数)
-    log_node = helper.make_node(
-        'Log',
-        inputs=['exp_out'],
-        outputs=['log_out']
-    )
-    
-    # 15. Sqrt (平方根)
-    sqrt_node = helper.make_node(
-        'Sqrt',
-        inputs=['log_out'],
-        outputs=['sqrt_out']
-    )
-    
-    # 16. Floor (向下取整)
-    floor_node = helper.make_node(
-        'Floor',
-        inputs=['sqrt_out'],
-        outputs=['floor_out']
-    )
-    
-    # 17. Ceil (向上取整)
-    ceil_node = helper.make_node(
-        'Ceil',
-        inputs=['floor_out'],
-        outputs=['ceil_out']
-    )
-    
-    # 18. Round (四舍五入)
-    round_node = helper.make_node(
-        'Round',
-        inputs=['ceil_out'],
-        outputs=['round_out']
-    )
-    
-    # 19. Reshape (调整形状)
-    reshape_shape = helper.make_tensor(
-        'reshape_shape',
+    # 11. Reshape 到 [1, 16]
+    final_reshape_shape = helper.make_tensor(
+        'final_reshape_shape',
         TensorProto.INT64,
         [2],
-        [1, 32]
+        [1, 16]
     )
     
-    reshape_node = helper.make_node(
+    final_reshape_node = helper.make_node(
         'Reshape',
-        inputs=['round_out', 'reshape_shape'],
-        outputs=['reshape_out']
+        inputs=['round_out', 'final_reshape_shape'],
+        outputs=['final_reshape_out']
     )
     
-    # 20. Flatten (展平)
+    # 12. Flatten
     flatten_node = helper.make_node(
         'Flatten',
-        inputs=['reshape_out'],
+        inputs=['final_reshape_out'],
         outputs=['Z'],
         axis=1
     )
     
-    # 创建计算图
     graph = helper.make_graph(
         [
-            gemm_node, matmul_node, relu_node, tanh_node,
-            sigmoid_node, softmax_node, add_node, sub_node,
-            mul_node, abs_node, cos_node, sin_node, exp_node,
-            log_node, sqrt_node, floor_node, ceil_node,
-            round_node, reshape_node, flatten_node
+            reshape_to_2d_node, gemm_node, reshape_to_3d_node,
+            matmul_node, relu_node, tanh_node, sigmoid_node,
+            softmax_node, add_node, sub_node, mul_node,
+            abs_node, cos_node, sin_node, exp_node, log_node,
+            sqrt_node, floor_node, ceil_node, round_node,
+            final_reshape_node, flatten_node
         ],
         'math_ops_graph',
         [input_x, input_y],
-        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 32])],
-        initializer=[gemm_weight, gemm_bias, matmul_weight, reshape_shape]
+        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 16])],
+        initializer=[
+            reshape_to_2d_shape, gemm_weight, gemm_bias, 
+            reshape_to_3d_shape, matmul_weight,
+            final_reshape_shape
+        ]
     )
     
     # 创建模型
