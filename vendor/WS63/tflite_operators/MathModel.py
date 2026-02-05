@@ -89,7 +89,12 @@ def create_mathmodel_tflite_model(output_path):
     model = MathOperatorsModel()
     concrete_func = model.__call__.get_concrete_function()
     converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_func])
-    
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS
+    ]
+    converter.allow_custom_ops = True
     tflite_model = converter.convert()
     with open(output_path, "wb") as f:
         f.write(tflite_model)
