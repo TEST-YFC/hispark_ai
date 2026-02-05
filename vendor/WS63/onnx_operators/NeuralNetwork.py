@@ -21,8 +21,7 @@ logging.basicConfig(level=logging.NOTSET)
 def create_neuralnetwork_onnx_model(output_path):
     """
     Conv, InstanceNormalization, MaxPool, AveragePool, Resize, Pad
-    LSTM
-    Reshape、Flatten、Squeeze、Unsqueeze、Tile、Concat、Split、Gather
+    LSTM, Reshape, Flatten, Squeeze, Unsqueeze, Tile, Concat, Split, Gather, Gemm
     """
     logging.info(f"创建卷积池化类模型: {output_path}")
     
@@ -33,15 +32,15 @@ def create_neuralnetwork_onnx_model(output_path):
     conv_weight = helper.make_tensor(
         'conv_weight',
         TensorProto.FLOAT,
-        [16, 3, 3, 3],  # [output_channels, input_channels, height, width]
-        np.random.randn(16, 3, 3, 3).astype(np.float32).flatten().tolist()
+        [8, 3, 3, 3],
+        np.random.randn(8, 3, 3, 3).astype(np.float32).flatten().tolist()
     )
     
     conv_bias = helper.make_tensor(
         'conv_bias',
         TensorProto.FLOAT,
-        [16],
-        np.random.randn(16).astype(np.float32).tolist()
+        [8],
+        np.random.randn(8).astype(np.float32).tolist()
     )
     
     conv_node = helper.make_node(
@@ -58,15 +57,15 @@ def create_neuralnetwork_onnx_model(output_path):
     in_scale = helper.make_tensor(
         'in_scale',
         TensorProto.FLOAT,
-        [16],
-        np.ones(16).astype(np.float32).tolist()
+        [8],
+        np.ones(8).astype(np.float32).tolist()
     )
     
     in_bias = helper.make_tensor(
         'in_bias',
         TensorProto.FLOAT,
-        [16],
-        np.zeros(16).astype(np.float32).tolist()
+        [8],
+        np.zeros(8).astype(np.float32).tolist()
     )
     
     instance_norm_node = helper.make_node(
@@ -107,7 +106,7 @@ def create_neuralnetwork_onnx_model(output_path):
         'resize_scales',
         TensorProto.FLOAT,
         [4],
-        [1.0, 1.0, 2.0, 2.0]  # 放大2倍
+        [1.0, 1.0, 2.0, 2.0]
     )
     
     resize_node = helper.make_node(
@@ -140,11 +139,131 @@ def create_neuralnetwork_onnx_model(output_path):
         mode='constant'
     )
     
-    # 第二个分支：1D序列处理路径 (用于LSTM)
-    lstm_input_shape = [5, 1, 8]  # [seq_length, batch_size, input_size]
-    lstm_input = helper.make_tensor_value_info('LSTM_X', TensorProto.FLOAT, lstm_input_shape)
+    # 7. Flatten
+    flatten_node = helper.make_node(
+        'Flatten',
+        inputs=['pad_out'],
+        outputs=['flatten_out'],
+        axis=1
+    )
     
-    # LSTM参数
+    # 8. Reshape
+    reshape_shape = helper.make_tensor(
+        'reshape_shape',
+        TensorProto.INT64,
+        [2],
+        [1, -1]
+    )
+    
+    reshape_node = helper.make_node(
+        'Reshape',
+        inputs=['flatten_out', 'reshape_shape'],
+        outputs=['reshape_out']
+    )
+    
+    # 9.Slice
+    slice_starts = helper.make_tensor(
+        'slice_starts',
+        TensorProto.INT64,
+        [2],
+        [0, 0]
+    )
+    
+    slice_ends = helper.make_tensor(
+        'slice_ends',
+        TensorProto.INT64,
+        [2],
+        [1, 40]
+    )
+    
+    slice_axes = helper.make_tensor(
+        'slice_axes',
+        TensorProto.INT64,
+        [2],
+        [0, 1]
+    )
+    
+    slice_node = helper.make_node(
+        'Slice',
+        inputs=['reshape_out', 'slice_starts', 'slice_ends', 'slice_axes'],
+        outputs=['slice_out']
+    )
+    
+    # 10. Tile
+    tile_repeats = helper.make_tensor(
+        'tile_repeats',
+        TensorProto.INT64,
+        [2],
+        [1, 1]
+    )
+    
+    tile_node = helper.make_node(
+        'Tile',
+        inputs=['slice_out', 'tile_repeats'],
+        outputs=['tile_out']
+    )
+    
+    # 11. Concat
+    concat_node = helper.make_node(
+        'Concat',
+        inputs=['tile_out', 'tile_out'],
+        outputs=['concat_out'],
+        axis=1
+    )
+    
+    # 12. Split
+    split_node = helper.make_node(
+        'Split',
+        inputs=['concat_out'],
+        outputs=['split_out1', 'split_out2'],
+        axis=1,
+        num_outputs=2
+    )
+    
+    # 13. Gather
+    gather_indices = helper.make_tensor(
+        'gather_indices',
+        TensorProto.INT64,
+        [40],
+        list(range(40))
+    )
+    
+    gather_node = helper.make_node(
+        'Gather',
+        inputs=['split_out1', 'gather_indices'],
+        outputs=['gather_out'],
+        axis=1
+    )
+    
+    # 14. Unsqueeze
+    unsqueeze_axes = helper.make_tensor(
+        'unsqueeze_axes',
+        TensorProto.INT64,
+        [1],
+        [0]
+    )
+    
+    unsqueeze_node = helper.make_node(
+        'Unsqueeze',
+        inputs=['gather_out', 'unsqueeze_axes'],
+        outputs=['unsqueeze_out']
+    )
+    
+    # 15.Squeeze
+    lstm_reshape_shape = helper.make_tensor(
+        'lstm_reshape_shape',
+        TensorProto.INT64,
+        [3],
+        [5, 1, 8]  # [seq_length, batch_size, input_size]
+    )
+    
+    lstm_reshape_node = helper.make_node(
+        'Reshape',
+        inputs=['unsqueeze_out', 'lstm_reshape_shape'],
+        outputs=['lstm_ready_out']
+    )
+    
+    # 16. LSTM
     hidden_size = 16
     num_directions = 1
     
@@ -183,144 +302,55 @@ def create_neuralnetwork_onnx_model(output_path):
         np.zeros([num_directions, 1, hidden_size]).astype(np.float32).flatten().tolist()
     )
     
-    # LSTM节点
     lstm_node = helper.make_node(
         'LSTM',
-        inputs=['LSTM_X', 'lstm_W', 'lstm_R', 'lstm_B', '', 'lstm_initial_h', 'lstm_initial_c'],
+        inputs=['lstm_ready_out', 'lstm_W', 'lstm_R', 'lstm_B', '', 'lstm_initial_h', 'lstm_initial_c'],
         outputs=['lstm_Y', 'lstm_Y_h', 'lstm_Y_c'],
         hidden_size=hidden_size,
         direction='forward'
     )
     
-    # 第三个分支：形状变换操作
-    # 7. Flatten - 将卷积输出展平
-    flatten_node = helper.make_node(
-        'Flatten',
-        inputs=['pad_out'],
-        outputs=['flatten_out'],
-        axis=1
+    # 17. 使用LSTM的最终隐藏状态
+    final_lstm_node = helper.make_node(
+        'Identity',
+        inputs=['lstm_Y_h'],
+        outputs=['final_lstm_out']
     )
     
-    # 8. Reshape
-    reshape_shape = helper.make_tensor(
-        'reshape_shape',
+    # 18. Squeeze LSTM输出
+    lstm_squeeze_axes = helper.make_tensor(
+        'lstm_squeeze_axes',
         TensorProto.INT64,
         [2],
-        [1, -1]
+        [0, 1]
     )
     
-    reshape_node = helper.make_node(
-        'Reshape',
-        inputs=['flatten_out', 'reshape_shape'],
-        outputs=['reshape_out']
+    lstm_squeeze_node = helper.make_node(
+        'Squeeze',
+        inputs=['final_lstm_out', 'lstm_squeeze_axes'],
+        outputs=['lstm_squeeze_out']
     )
     
-    # 9. Tile
-    tile_repeats = helper.make_tensor(
-        'tile_repeats',
-        TensorProto.INT64,
-        [2],
-        [1, 2]
-    )
-    
-    tile_node = helper.make_node(
-        'Tile',
-        inputs=['reshape_out', 'tile_repeats'],
-        outputs=['tile_out']
-    )
-    
-    # 10. Concat
-    concat_node = helper.make_node(
-        'Concat',
-        inputs=['tile_out', 'tile_out'],
-        outputs=['concat_out'],
-        axis=1
-    )
-    
-    # 11. Split
-    split_node = helper.make_node(
-        'Split',
-        inputs=['concat_out'],
-        outputs=['split_out1', 'split_out2'],
-        axis=1,
-        num_outputs=2
-    )
-    
-    # 12. Gather
-    gather_indices = helper.make_tensor(
-        'gather_indices',
-        TensorProto.INT64,
-        [4],
-        [0, 10, 20, 30]
-    )
-    
-    gather_node = helper.make_node(
-        'Gather',
-        inputs=['split_out1', 'gather_indices'],
-        outputs=['gather_out'],
-        axis=1
-    )
-    
-    # 13. 修改Squeeze操作，确保输出是2D用于可能的Gemm操作
-    squeeze_axes = helper.make_tensor(
-        'squeeze_axes',
+    # 19. Unsqueeze
+    gemm_unsqueeze_axes = helper.make_tensor(
+        'gemm_unsqueeze_axes',
         TensorProto.INT64,
         [1],
         [0]
     )
     
-    squeeze_node = helper.make_node(
-        'Squeeze',
-        inputs=['unsqueeze_out', 'squeeze_axes'],
-        outputs=['squeeze_out']  # 形状变为[4, 1]
-    )
-    
-    # 14. 添加一个Reshape确保是2D矩阵 [4, 1] -> [1, 4]
-    gemm_reshape_shape = helper.make_tensor(
-        'gemm_reshape_shape',
-        TensorProto.INT64,
-        [2],
-        [1, 4]
-    )
-    
-    gemm_reshape_node = helper.make_node(
-        'Reshape',
-        inputs=['squeeze_out', 'gemm_reshape_shape'],
-        outputs=['gemm_ready_out']
-    )
-    unsqueeze_axes = helper.make_tensor(
-        'unsqueeze_axes',
-        TensorProto.INT64,
-        [1],
-        [2]
-    )
-    
-    unsqueeze_node = helper.make_node(
+    gemm_unsqueeze_node = helper.make_node(
         'Unsqueeze',
-        inputs=['gather_out', 'unsqueeze_axes'],
-        outputs=['unsqueeze_out']
+        inputs=['lstm_squeeze_out', 'gemm_unsqueeze_axes'],
+        outputs=['gemm_unsqueeze_out']
     )
     
-    # 移除大小为1的维度（从[1,4,1]变为[4]）
-    squeeze_axes = helper.make_tensor(
-        'squeeze_axes',
-        TensorProto.INT64,
-        [2],
-        [0, 2]  # 移除第0维（大小为1）和第2维（大小为1）
-    )
-    
-    squeeze_node = helper.make_node(
-        'Squeeze',
-        inputs=['unsqueeze_out', 'squeeze_axes'],
-        outputs=['squeeze_out']
-    )
-    
-    # 15. Gemm
+    # 20. Gemm
     gemm_weight = helper.make_tensor(
         'gemm_weight',
         TensorProto.FLOAT,
-        [4, 10],
-        np.random.randn(4, 10).astype(np.float32).flatten().tolist()
+        [hidden_size, 10],
+        np.random.randn(hidden_size, 10).astype(np.float32).flatten().tolist()
     )
     
     gemm_bias = helper.make_tensor(
@@ -332,7 +362,7 @@ def create_neuralnetwork_onnx_model(output_path):
     
     gemm_node = helper.make_node(
         'Gemm',
-        inputs=['gemm_ready_out', 'gemm_weight', 'gemm_bias'],
+        inputs=['gemm_unsqueeze_out', 'gemm_weight', 'gemm_bias'],
         outputs=['gemm_out'],
         alpha=1.0,
         beta=1.0,
@@ -340,34 +370,45 @@ def create_neuralnetwork_onnx_model(output_path):
         transB=0
     )
     
-    # 最终输出
-    output1 = helper.make_tensor_value_info('gemm_out', TensorProto.FLOAT, [1, 10])
-    output2 = helper.make_tensor_value_info('lstm_Y', TensorProto.FLOAT, [5, num_directions, 1, hidden_size])
-    output3 = helper.make_tensor_value_info('lstm_Y_h', TensorProto.FLOAT, [num_directions, 1, hidden_size])
-    output4 = helper.make_tensor_value_info('lstm_Y_c', TensorProto.FLOAT, [num_directions, 1, hidden_size])
+    final_reshape_shape = helper.make_tensor(
+        'final_reshape_shape',
+        TensorProto.INT64,
+        [2],
+        [1, 10]
+    )
     
-    # 创建计算图（添加gemm_reshape_node和gemm_node）
+    final_reshape_node = helper.make_node(
+        'Reshape',
+        inputs=['gemm_out', 'final_reshape_shape'],
+        outputs=['final_output']
+    )
+    
+    output = helper.make_tensor_value_info('final_output', TensorProto.FLOAT, [1, 10])
+    
     graph = helper.make_graph(
         [
             conv_node, instance_norm_node, maxpool_node, avgpool_node,
             resize_node, pad_node, flatten_node, reshape_node,
-            tile_node, concat_node, split_node, gather_node,
-            unsqueeze_node, squeeze_node, gemm_reshape_node, gemm_node,
-            lstm_node
+            slice_node, tile_node, concat_node, split_node,
+            gather_node, unsqueeze_node, lstm_reshape_node,
+            lstm_node, final_lstm_node, lstm_squeeze_node,
+            gemm_unsqueeze_node, gemm_node, final_reshape_node
         ],
-        'conv_pool_graph',
-        [input_x, lstm_input],
-        [output1, output2, output3, output4],
+        'single_branch_conv_pool_graph',
+        [input_x],
+        [output],
         initializer=[
             conv_weight, conv_bias, in_scale, in_bias,
             roi, scales, pads, pad_value, reshape_shape,
+            slice_starts, slice_ends, slice_axes,
             tile_repeats, gather_indices, 
-            unsqueeze_axes, squeeze_axes, gemm_reshape_shape,
-            gemm_weight, gemm_bias,
+            unsqueeze_axes, lstm_reshape_shape,
+            lstm_squeeze_axes, gemm_unsqueeze_axes,
+            gemm_weight, gemm_bias, final_reshape_shape,
             lstm_W, lstm_R, lstm_B, lstm_initial_h, lstm_initial_c
         ]
     )
     
     # 创建模型
     model = create_low_ir_version_model(graph, producer_name='conv-pool-generator', output_path=output_path)
-    logging.info(f"✓ 卷积池化类模型已保存: {output_path}")
+    logging.info(f"✓ 卷积池化模型已保存: {output_path}")
