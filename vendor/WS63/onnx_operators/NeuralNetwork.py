@@ -101,10 +101,23 @@ def create_neuralnetwork_onnx_model(output_path):
         [4],
         [1, 8, 16, 16]
     )
-    
+    roi = helper.make_tensor(
+        'resize_roi',
+        TensorProto.FLOAT,
+        [0],
+        []
+    )
+
+    scales = helper.make_tensor(
+        'resize_scales',
+        TensorProto.FLOAT,
+        [0],
+        []
+    )
+
     resize_node = helper.make_node(
         'Resize',
-        inputs=['avgpool_out', '', '', 'resize_sizes'],
+        inputs=['avgpool_out', 'resize_roi', 'resize_scales', 'resize_sizes'],
         outputs=['resize_out'],
         mode='linear',
         coordinate_transformation_mode='half_pixel'
@@ -378,7 +391,7 @@ def create_neuralnetwork_onnx_model(output_path):
     
     output = helper.make_tensor_value_info('final_output', TensorProto.FLOAT, [1, 10])
     
-    initializer_list = [
+    initializer_list = [roi, scales,
         conv_weight, conv_bias, in_scale, in_bias,
         pads, pad_value, reshape_shape,
         slice_starts, slice_ends, slice_axes,
