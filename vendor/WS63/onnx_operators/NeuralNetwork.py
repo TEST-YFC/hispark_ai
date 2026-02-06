@@ -95,28 +95,21 @@ def create_neuralnetwork_onnx_model(output_path):
     )
     
     # 5. Resize
-    roi = helper.make_tensor(
-        'resize_roi',
-        TensorProto.FLOAT,
-        [8],
-        [0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0]
-    )
-    
-    scales = helper.make_tensor(
-        'resize_scales',
-        TensorProto.FLOAT,
+    sizes = helper.make_tensor(
+        'resize_sizes',
+        TensorProto.INT64,
         [4],
-        [1.0, 1.0, 2.0, 2.0]
+        [1, 8, 16, 16]
     )
     
     resize_node = helper.make_node(
         'Resize',
-        inputs=['avgpool_out', 'resize_roi', 'resize_scales'],
+        inputs=['avgpool_out', '', '', 'resize_sizes'],
         outputs=['resize_out'],
         mode='linear',
         coordinate_transformation_mode='half_pixel'
     )
-    
+
     # 6. Pad
     pads = helper.make_tensor(
         'pad_pads',
@@ -152,7 +145,7 @@ def create_neuralnetwork_onnx_model(output_path):
         'reshape_shape',
         TensorProto.INT64,
         [2],
-        [1, -1]
+        [1, 2592]
     )
     
     reshape_node = helper.make_node(
@@ -224,8 +217,8 @@ def create_neuralnetwork_onnx_model(output_path):
     gather_indices = helper.make_tensor(
         'gather_indices',
         TensorProto.INT64,
-        [40],
-        list(range(40))
+        [32],
+        list(range(32))
     )
     
     gather_node = helper.make_node(
@@ -254,7 +247,7 @@ def create_neuralnetwork_onnx_model(output_path):
         'lstm_reshape_shape',
         TensorProto.INT64,
         [3],
-        [5, 1, 8]  # [seq_length, batch_size, input_size]
+        [4, 1, 8]
     )
     
     lstm_reshape_node = helper.make_node(
@@ -385,6 +378,19 @@ def create_neuralnetwork_onnx_model(output_path):
     
     output = helper.make_tensor_value_info('final_output', TensorProto.FLOAT, [1, 10])
     
+    initializer_list = [
+        conv_weight, conv_bias, in_scale, in_bias,
+        pads, pad_value, reshape_shape,
+        slice_starts, slice_ends, slice_axes,
+        tile_repeats, gather_indices, 
+        unsqueeze_axes, lstm_reshape_shape,
+        lstm_squeeze_axes, gemm_unsqueeze_axes,
+        gemm_weight, gemm_bias, final_reshape_shape,
+        lstm_W, lstm_R, lstm_B, lstm_initial_h, lstm_initial_c
+    ]
+    
+    initializer_list.insert(4, sizes)
+    
     graph = helper.make_graph(
         [
             conv_node, instance_norm_node, maxpool_node, avgpool_node,
@@ -397,16 +403,7 @@ def create_neuralnetwork_onnx_model(output_path):
         'single_branch_conv_pool_graph',
         [input_x],
         [output],
-        initializer=[
-            conv_weight, conv_bias, in_scale, in_bias,
-            roi, scales, pads, pad_value, reshape_shape,
-            slice_starts, slice_ends, slice_axes,
-            tile_repeats, gather_indices, 
-            unsqueeze_axes, lstm_reshape_shape,
-            lstm_squeeze_axes, gemm_unsqueeze_axes,
-            gemm_weight, gemm_bias, final_reshape_shape,
-            lstm_W, lstm_R, lstm_B, lstm_initial_h, lstm_initial_c
-        ]
+        initializer=initializer_list
     )
     
     # 创建模型
