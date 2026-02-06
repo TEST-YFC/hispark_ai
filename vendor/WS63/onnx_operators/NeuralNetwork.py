@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.NOTSET)
 def create_neuralnetwork_onnx_model(output_path):
     """
     Conv, InstanceNormalization, MaxPool, AveragePool, Resize, Pad
-    LSTM, Reshape, Flatten, Squeeze, Unsqueeze, Tile, Concat, Split, Gather, Gemm
+    LSTM, Reshape, Flatten, Squeeze, Unsqueeze, Tile, Concat, Gather, Gemm
     """
     logging.info(f"创建卷积池化类模型: {output_path}")
     
@@ -217,16 +217,7 @@ def create_neuralnetwork_onnx_model(output_path):
         axis=1
     )
     
-    # 12. Split
-    split_node = helper.make_node(
-        'Split',
-        inputs=['concat_out'],
-        outputs=['split_out1', 'split_out2'],
-        axis=1,
-        num_outputs=2
-    )
-    
-    # 13. Gather
+    # 12. Gather
     gather_indices = helper.make_tensor(
         'gather_indices',
         TensorProto.INT64,
@@ -236,12 +227,12 @@ def create_neuralnetwork_onnx_model(output_path):
     
     gather_node = helper.make_node(
         'Gather',
-        inputs=['split_out1', 'gather_indices'],
+        inputs=['concat_out', 'gather_indices'],
         outputs=['gather_out'],
         axis=1
     )
     
-    # 14. Unsqueeze
+    # 13. Unsqueeze
     unsqueeze_axes = helper.make_tensor(
         'unsqueeze_axes',
         TensorProto.INT64,
@@ -255,7 +246,7 @@ def create_neuralnetwork_onnx_model(output_path):
         outputs=['unsqueeze_out']
     )
     
-    # 15.Squeeze
+    # 14. 为LSTM准备形状
     lstm_reshape_shape = helper.make_tensor(
         'lstm_reshape_shape',
         TensorProto.INT64,
@@ -269,7 +260,7 @@ def create_neuralnetwork_onnx_model(output_path):
         outputs=['lstm_ready_out']
     )
     
-    # 16. LSTM
+    # 15. LSTM
     hidden_size = 16
     num_directions = 1
     
@@ -316,14 +307,14 @@ def create_neuralnetwork_onnx_model(output_path):
         direction='forward'
     )
     
-    # 17. 使用LSTM的最终隐藏状态
+    # 16. 使用LSTM的最终隐藏状态
     final_lstm_node = helper.make_node(
         'Identity',
         inputs=['lstm_Y_h'],
         outputs=['final_lstm_out']
     )
     
-    # 18. Squeeze LSTM输出
+    # 17. Squeeze LSTM输出
     lstm_squeeze_axes = helper.make_tensor(
         'lstm_squeeze_axes',
         TensorProto.INT64,
@@ -337,7 +328,7 @@ def create_neuralnetwork_onnx_model(output_path):
         outputs=['lstm_squeeze_out']
     )
     
-    # 19. Unsqueeze
+    # 18. Unsqueeze for Gemm
     gemm_unsqueeze_axes = helper.make_tensor(
         'gemm_unsqueeze_axes',
         TensorProto.INT64,
@@ -351,7 +342,7 @@ def create_neuralnetwork_onnx_model(output_path):
         outputs=['gemm_unsqueeze_out']
     )
     
-    # 20. Gemm
+    # 19. Gemm
     gemm_weight = helper.make_tensor(
         'gemm_weight',
         TensorProto.FLOAT,
@@ -408,7 +399,7 @@ def create_neuralnetwork_onnx_model(output_path):
         [
             conv_node, instance_norm_node, maxpool_node, avgpool_node,
             resize_node, pad_node, flatten_node, reshape_node,
-            slice_node, tile_node, concat_node, split_node,
+            slice_node, tile_node, concat_node,
             gather_node, unsqueeze_node, lstm_reshape_node,
             lstm_node, final_lstm_node, lstm_squeeze_node,
             gemm_unsqueeze_node, gemm_node, final_reshape_node
