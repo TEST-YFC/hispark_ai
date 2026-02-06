@@ -19,8 +19,11 @@ logging.basicConfig(level=logging.NOTSET)
 
 def create_mathmodel_tflite_model(output_path):
     """输入 → Abs → Ceil → Cos → Exp → Floor → Log → Round → Rsqrt → Sin
-    → Sqrt → Square → [Gather] → [Split] → [SplitV] → Concatenation → Tile
+    → Sqrt → Square → [Gather] → Concatenation → Tile
     → Pad → PadV2 → Mirror_Pad → Resize_Bilinear → Resize_Nearest_Neighbor → 输出"""
+    import tensorflow as tf
+    import logging
+    
     class MathOperatorsModel(tf.Module):
         def __init__(self):
             super(MathOperatorsModel, self).__init__()
@@ -54,36 +57,32 @@ def create_mathmodel_tflite_model(output_path):
             # 12. Gather
             indices = tf.constant([0, 2, 4], dtype=tf.int32)
             gathered = tf.gather(x, indices, axis=1, name="gather")
-            # 13. Split
-            split_result = tf.split(x, num_or_size_splits=2, axis=1, name="split")
-            # 14. SplitV
-            split_v_result = tf.split(x, [3, 5], axis=2, name="splitv")
-            # 15. Concatenation
-            concat_input1 = split_result[0]
-            concat_input2 = split_v_result[0][:, :, :3]
-            concat_input2_reshaped = concat_input2[:, :3, :]
-            x = tf.concat([concat_input1[:, :, :3], concat_input2_reshaped], axis=2, name="concat")
-            # 16. Tile
+            # 13. Concatenation
+            other_tensor = x[:, :3, :4]
+            gathered_part = gathered[:, :, :4]
+            x = tf.concat([other_tensor, gathered_part], axis=2, name="concat")
+            # 14. Tile
             x = tf.tile(x, [1, 2, 2], name="tile")
-            # 17. Pad
+            # 15. Pad
             paddings = tf.constant([[1, 1], [2, 2], [0, 0]])
             x = tf.pad(x, paddings, mode='CONSTANT', name="pad")
-            # 18. PadV2
+            # 16. PadV2
             x = tf.pad(x, paddings, mode='CONSTANT', constant_values=0.5, name="pad_v2")
-            # 19. Mirror Pad
+            # 17. Mirror Pad
             x = tf.pad(x, paddings, mode='REFLECT', name="mirror_pad")
-            # 20. Resize Bilinear
+            # 18. Resize Bilinear
             if len(x.shape) == 3:
                 x_4d = tf.expand_dims(x, axis=0)
                 x_resized = tf.image.resize(x_4d, [8, 12], method=tf.image.ResizeMethod.BILINEAR, name="resize_bilinear")
                 x = tf.squeeze(x_resized, axis=0)
-            # 21. Resize Nearest Neighbor
+            # 19. Resize Nearest Neighbor
             if len(x.shape) == 3:
                 x_4d = tf.expand_dims(x, axis=0)
                 x_resized = tf.image.resize(x_4d, [8, 12], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, name="resize_nearest")
                 x = tf.squeeze(x_resized, axis=0)
             
             return x
+    
     
     # 创建和转换模型
     model = MathOperatorsModel()
