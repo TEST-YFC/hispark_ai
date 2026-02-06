@@ -16,14 +16,14 @@ import numpy as np
 
 logging.basicConfig(level=logging.NOTSET)
 
+
 def create_neuralnetwork_tflite_model(output_path):
     '''输入 → Conv2D → Relu → MaxPool2D → AveragePool2D → Reshape1 → FullyConnected
-    → Tanh → Sigmoid → Softmax → Batch_Matmul → Add → Sub → Mul → Reshape2 → Split
-    → ExpandDims → Squeeze → 输出'''
+    → Tanh → Sigmoid → Softmax → Batch_Matmul → Add → Sub → Mul → Reshape2 → 
+    ExpandDims → Squeeze → 输出'''
     class NeuralNetworkModel(tf.Module):
         def __init__(self):
             super(NeuralNetworkModel, self).__init__()
-            # 定义可训练的权重
             self.conv_weights = tf.Variable(
                 tf.random.normal([3, 3, 1, 16], dtype=tf.float32),
                 trainable=False
@@ -50,7 +50,12 @@ def create_neuralnetwork_tflite_model(output_path):
             # 4. AveragePool2D
             x = tf.nn.avg_pool2d(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name="avgpool2d")
             # 5. Reshape
-            x = tf.reshape(x, [1, -1], name="reshape1")
+            batch_size = tf.shape(x)[0]
+            height = tf.shape(x)[1]
+            width = tf.shape(x)[2]
+            channels = tf.shape(x)[3]
+            total_size = height * width * channels
+            x = tf.reshape(x, [batch_size, total_size], name="reshape1")
             # 6. FullyConnected (Dense)
             x = tf.matmul(x, self.fc_weights, name="fully_connected")
             # 7. Tanh
@@ -60,33 +65,41 @@ def create_neuralnetwork_tflite_model(output_path):
             # 9. Softmax
             x = tf.nn.softmax(x, name="softmax")
             # 10. Batch Matmul
-            mat_a = tf.reshape(x, [1, 1, 10])
-            mat_b = tf.expand_dims(self.batch_matmul_weights, 0)
-            x = tf.matmul(mat_a, mat_b, name="batch_matmul")  # 形状: [1, 1, 4]
+            x_reshaped = tf.reshape(x, [1, 1, 10], name="reshape_for_batch_matmul")
+            weights_expanded = tf.expand_dims(self.batch_matmul_weights, 0)
+            x = tf.matmul(x_reshaped, weights_expanded, name="batch_matmul")
             # 11. Add
-            bias = tf.constant([0.1], dtype=tf.float32)
-            x = tf.add(x, bias, name="add")
+            bias = tf.constant([[0.1, 0.1, 0.1, 0.1]], dtype=tf.float32)
+            bias_reshaped = tf.reshape(bias, [1, 1, 4])
+            x = tf.add(x, bias_reshaped, name="add")
             # 12. Sub
-            x = tf.subtract(x, tf.constant([0.05], dtype=tf.float32), name="sub")
+            sub_const = tf.constant([[0.05, 0.05, 0.05, 0.05]], dtype=tf.float32)
+            sub_const_reshaped = tf.reshape(sub_const, [1, 1, 4])
+            x = tf.subtract(x, sub_const_reshaped, name="sub")
             # 13. Mul
-            x = tf.multiply(x, tf.constant([2.0], dtype=tf.float32), name="mul")
+            mul_const = tf.constant([[2.0, 2.0, 2.0, 2.0]], dtype=tf.float32)
+            mul_const_reshaped = tf.reshape(mul_const, [1, 1, 4])
+            x = tf.multiply(x, mul_const_reshaped, name="mul")
             # 14. Reshape
-            x = tf.reshape(x, [2, 2], name="reshape2")
-            # 15. Split
-            split_result = tf.split(x, num_or_size_splits=2, axis=0, name="split")
-            x = split_result[0]
-            # 16. ExpandDims
+            x = tf.reshape(x, [1, 4], name="reshape2")
+            # 15. ExpandDims
             x = tf.expand_dims(x, axis=0, name="expand_dims")
-            # 17. Squeeze
+            # 16. Squeeze
             x = tf.squeeze(x, axis=0, name="squeeze")
+            x = tf.identity(x, name="output")
             return x
         
-    # 创建和转换模型
+
     model = NeuralNetworkModel()
-    converter = tf.lite.TFLiteConverter.from_concrete_functions(
-        [model.__call__.get_concrete_function()],
-        model
-    )
+    concrete_func = model.__call__.get_concrete_function()
+    converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_func], model)
+    converter.optimizations = []
+    converter.target_spec.supported_types = [tf.float32]
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS
+    ]
+    converter.allow_custom_ops = True
     
     tflite_model = converter.convert()
     with open(output_path, "wb") as f:
