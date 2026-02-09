@@ -1,3 +1,6 @@
 [submodule "src/mindspore-lite"]
 	path = src/mindspore-lite
 	url = https://gitcode.com/HiSpark/mindspore-lite.git
+[submodule "src/hispark-tflite-micro"]
+	path = src/hispark-tflite-micro
+	url = https://gitcode.com/HiSpark/hispark-tflite-micro.git
