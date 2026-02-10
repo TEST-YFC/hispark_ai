@@ -7,36 +7,37 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 
 | 目录   | 二级目录 | 介绍                                                             |
 | ------ | ------  | ------------------------------------------------------------     |
-| docs   |         |存放AI工具链使用指南，以及AI应用开发指南等文档，帮助客户快速熟悉HiSpark.AI解决方案 |
+| docs   |         |存放AI工具链使用指南，以及AI应用开发指南等文档，帮助客户快速熟悉HiSpark AI解决方案 |
 | src    | adaptor |AI平台所配套的适配层源码                                            |
-| src    | samples |HiSpark.AI提供的Samples，用于指导用户基于基于HiSpark各平台部署AI应用                                                                   |
-| src    | mindspore-lite | 基于RISC-V平台的AI推理框架，用于自动生成AI推理模块代码并 提供对应的RISC-V算子库                  |
+| src    | samples |HiSpark AI提供的Samples，用于指导用户基于HiSpark各平台部署AI应用                                                                   |
+| src    | mindspore-lite | 基于RISC-V平台的AI推理框架，用于自动生成AI推理模块代码并提供对应的RISC-V算子库                  |
+| vendor |         | 存放CI工程所需文件                  |
 
 ## 社区版本介绍（外部链接）
 
 ## 生态板介绍链接
-- **WS63系列单板**:  ws63系列是2.4GHz Wi-Fi 6 星闪多模解决方案，其中ws63E支持2.4GHz的雷达人体活动检测功能，适用于大小家电、电工照明及对人体出没检测有需求的常电类物联网智能场景，项目介绍如下：[WS63项目介绍](https://gitee.com/HiSpark/fbb_ws63)。 
+**WS63系列单板**:  WS63系列是2.4GHz Wi-Fi 6 星闪多模解决方案，其中WS63E支持2.4GHz的雷达人体活动检测功能，适用于大小家电、电工照明及对人体出没检测有需求的常电类物联网智能场景，项目介绍如下：[WS63项目介绍](https://gitcode.com/HiSpark/fbb_ws63)。 
 
-  购买链接请参考WS63项目介绍的**购买渠道**页面。
+购买链接请参考WS63项目介绍的**购买渠道**页面。
 
 ## Sample案例说明
-HiSpark.AI提供了一下Sample供开发参考：
+HiSpark AI提供了以下Sample供开发参考：
 | 平台 | 应用 | AI功能 |
 | ---- | ---- | ---- |
-| ws63 | LeNet-5手写数字图像识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
-| ws63 | Gru-S音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
+| WS63 | LeNet-5手写数字图像识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
+| WS63 | Gru-S音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
 
-### **HiSpark.AI CPU系列平台介绍**
+### **HiSpark AI CPU系列平台介绍**
 超轻量的模型部署平台，支持KB级RAM嵌入式设备。
 
 ## 源码编译
 ### 环境依赖
 | 软件名称   | 版本 | 作用                                                             |
 | ------ | ------  | ------------------------------------------------------------     |
-| Ubuntu |   22.04  |编译和运行MindSpore的操作系统                                      |
-| GCC    | 11.3.0-12.3.0 |用于编译MindSpore的C++编译器                                  |
-| CMake  | 3.22.2及以上	 |编译构建MindSpore的工具                                       |
-| Python | 3.11 | MindSpore的使用依赖Python环境                                         |
+|[Ubuntu](https://old-releases.ubuntu.com/releases/)|   22.04  |编译和运行MindSpore的操作系统|
+|[GCC](https://gcc.gnu.org/pub/gcc/releases/)    | 11.3.0-12.3.0 |用于编译MindSpore的C++编译器                                  |
+|[CMake](https://cmake.org/files/)  | 3.22.2及以上	 |编译构建MindSpore的工具                                       |
+|[Python](https://www.python.org/downloads/) | 3.11 | MindSpore的使用依赖Python环境                                         |
 | PyYAML | 6.0及以上 | MindSpore里的算子编译功能依赖PyYAML模块                           |
 | Numpy  | 1.19.3及以上 | MindSpore里的Numpy相关功能依赖Numpy模块                        |
 
@@ -51,8 +52,9 @@ HiSpark.AI提供了一下Sample供开发参考：
 
 ### 编译MindSpore
 - **拉取mindspore-lite代码**  
-运行以下命令：
+克隆本仓库后，进入根目录并初始化更新子模块src/mindspore-lite：
     ```
+    cd ${hispark_ai_root}
     git submodule update --init --remote --progress src/mindspore-lite
     ```
 
@@ -66,7 +68,7 @@ HiSpark.AI提供了一下Sample供开发参考：
     export MSLITE_ENABLE_TRAIN=OFF
     export MSLITE_ENABLE_TESTCASES=OFF
     export MSLITE_TARGET_RISCV=ON
-    # 设置毕昇编译器路径变量（关键！需将 bisheng_compiler_root_path 替换为编译器实际解压目录）
+    # 设置毕昇编译器路径变量（关键！需将 bisheng_compiler_root_path 替换为毕昇编译器实际解压目录，如~/BiSheng-llvm-binary-release-musl/）
     export HISPARK_RISCV_TOOLCHAIN_PATH=${bisheng_compiler_root_path}
     # 步骤3: 执行编译（-j 后接线程数，根据CPU核心数调整，如 -j16、-j32）
     bash build.sh -I x86_64 -j32
@@ -74,8 +76,35 @@ HiSpark.AI提供了一下Sample供开发参考：
     # bash build.sh -I x86_64 -j32 -i
     ```
 
-## **HiSpark.AI 平台快速入门指南**
-
+## **HiSpark AI 平台快速入门指南**
+- **整体流程视图**  
+  `````
+        [ONNX模型] 
+            │
+            ▼
+        {MSLite工具链} 
+            │ (Micro转换)
+            ▼
+        [C语言工程] + [SDK]
+            │
+            ▼
+        {毕昇编译器} 
+            │ (静态链接库编译)
+            ▼
+        [libnet.a + libmicro_runtime.a]
+            │
+            ▼
+        [SDK & samples模块 & adaptor模块] 
+            │ (SDK编译)
+            ▼
+        [fwpkg镜像] 
+            │
+            ▼
+        [WS63烧录] 
+            │
+            ▼
+        [运行推理]
+  `````
 - **准备工具链**  
 获取mindspore-lite工具链，需参考上述源码编译指南自行编译mindspore-lite源码，工具链为编译产物，其目录结构如下：
     ```
@@ -111,18 +140,19 @@ HiSpark.AI提供了一下Sample供开发参考：
                 └── proto
     ```
 
-- **准备待部署模型与数据**
-  - 准备好待部署模型。可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的mnist-12.onnx以及GRU_S_STREAM.onnx。
-  - 准备好量化数据。**无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式，可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的 运行数据预处理脚本之后的npy_data文件夹。
+- **准备待部署模型与数据**  
+  准备好待部署的ONNX模型。  
+  准备好量化数据。**无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式。  
+**Tips:**  
+模型可使用下述Samples的ONNX模型文件，量化数据生成及配置文件可参考下述Samples的README.md。
 
-- **准备SDK**
-  - 从开源社区下载fbb_ws63的源码
-    ```
-      git clone https://gitcode.com/HiSpark/fbb_ws63.git
-    ```
-
-- **准备Samples**
-  进入sample一级目录，如LeNet-5就进入${hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入${hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
+- **准备Samples**  
+    | Samples | ${sample_path} |
+    | -- | ---- |
+    | LeNet-5 | ${hispark_ai_root}/src/samples/oh/lenet5 |
+    | Gru | ${hispark_ai_root}/src/samples/oh/gru |  
+    
+  Sample目录结构如下：
     ```
     ${sample_path}
     ├── build.sh
@@ -139,6 +169,11 @@ HiSpark.AI提供了一下Sample供开发参考：
         ├── ai_main.h
         └── CMakeLists.txt
     ```
+- **准备SDK**  
+从开源社区下载fbb_ws63的源码
+    ```
+      git clone https://gitee.com/HiSpark/fbb_ws63.git
+    `````
 
 - **模型编译**
   - 解压mindspore-lite编译产物得到MS Lite工具链
@@ -147,7 +182,7 @@ HiSpark.AI提供了一下Sample供开发参考：
     # version 为 mindspore-lite 的版本号,随版本迭代变化，实际压缩包名称格式示例: mindspore-lite-2.8.0-linux-x64.tar.gz
     tar zxvf mindspore-lite-${version}-linux-x64.tar.gz
     # 将MS Lite工具链目录路径保存为 mslite_pkg_path 变量
-    export mslite_pkg_path=$(pwd)/mindspore-lite-${version}-linux-x64
+    export mslite_pkg_path=${hispark_ai_root}/src/mindspore-lite/output/mindspore-lite-${version}-linux-x64
     ```
   - 创建模型转换配置文件（文件名可自定义，如 micro_config.cfg），文件内容如下：
     ```
@@ -194,8 +229,9 @@ HiSpark.AI提供了一下Sample供开发参考：
     ```
   - 静态链接库编译
     ```
-    # sdk_path为fbb_ws63工程根目录路径
-    # hcc_version为SDK编译器版本，如cc_riscv32_musl_105
+    # sdk_path为SDK的源码目录 (https://gitcode.com/HiSpark/fbb_ws63)
+    # hcc_version为SDK编译器版本，需查看路径{sdk_path}/src/tools/bin/compiler/riscv/下对应版本，如cc_riscv32_musl_105
+    
     cd ${generate_code_path}
     rm -rf build
     cmake -S . -B build -D OP_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libnnacl.a" -D WRAPPER_LIB="${mslite_pkg_path}/tools/codegen/lib/riscv/libwrapper.a" -D RISCV_TOOLCHAIN_PATH="${sdk_path}/src/tools/bin/compiler/riscv/${hcc_version}/cc_riscv32_musl/bin" -D PKG_PATH="${mslite_pkg_path}"
@@ -227,17 +263,19 @@ HiSpark.AI提供了一下Sample供开发参考：
     cp -rf ${generate_code_path}/build/src/libnet.a ${sdk_path}/src/middleware/utils/ai_mcu/lib
     ```
 
-- **SDK编译**
+- **SDK编译** 
+
     配置对应环境变量，在samples下运行build.sh脚本，即可完成编译
     ```
     cd ${sample_path}
     export SDK_PATH=${sdk_path}/src
-    export ADAPTOR_PATH=${adaptor_path}
+    export ADAPTOR_PATH=${hispark_ai_root}/src/adaptor
     ./build.sh
     ```
     编译成功后，ws63-ai-liteos-sample.fwpkg镜像文件会生成在${sample_path}/output目录下
 
-- **烧录调试**
+- **烧录调试** 
+
     使用BurnTool工具进行ws63-ai-liteos-sample.fwpkg的烧录。
     烧录成功运行后，会看到串口打印的运行成功信息，如Gru下：
     ```
