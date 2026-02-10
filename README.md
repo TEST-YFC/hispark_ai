@@ -1,7 +1,7 @@
 # HiSpark AI 开源项目
 
 ## 项目介绍 && 资源
-HiSaprk AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别 及 Gru-S固定词语音识别相关应用。
+HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别 及 Gru-S固定词语音识别相关应用。
 
 ## HiSpark AI目录介绍
 
