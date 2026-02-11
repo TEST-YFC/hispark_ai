@@ -16,19 +16,20 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 ## 社区版本介绍（外部链接）
 
 ## 生态板介绍链接
-**WS63系列单板**:  WS63系列是2.4GHz Wi-Fi 6 星闪多模解决方案，其中WS63E支持2.4GHz的雷达人体活动检测功能，适用于大小家电、电工照明及对人体出没检测有需求的常电类物联网智能场景，项目介绍如下：[WS63项目介绍](https://gitcode.com/HiSpark/fbb_ws63)。 
-
-购买链接请参考WS63项目介绍的**购买渠道**页面。
+- **WS63系列单板**:  WS63系列是2.4GHz Wi-Fi 6 星闪多模解决方案，其中WS63E支持2.4GHz的雷达人体活动检测功能，适用于大小家电、电工照明及对人体出没检测有需求的常电类物联网智能场景，项目介绍如下：[WS63项目介绍](https://gitcode.com/HiSpark/fbb_ws63)。
+ 
+  购买链接请参考WS63项目介绍的**购买渠道**页面。
 
 ## Sample案例说明
-HiSpark AI提供了以下Sample供开发参考：
-| 平台 | 应用 | AI功能 |
-| ---- | ---- | ---- |
-| WS63 | LeNet-5手写数字图像识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
-| WS63 | Gru-S音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
+- HiSpark AI提供了以下Sample供开发参考： 
 
-### **HiSpark AI CPU系列平台介绍**
-超轻量的模型部署平台，支持KB级RAM嵌入式设备。
+    | 平台 | 应用 | AI功能 |
+    | ---- | ---- | ---- |
+    | WS63 | LeNet-5手写数字图像识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
+    | WS63 | Gru-S音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
+
+## HiSpark AI CPU系列平台介绍
+- 超轻量的模型部署平台，支持KB级RAM嵌入式设备。
 
 ## 源码编译
 ### 环境依赖
@@ -106,7 +107,7 @@ HiSpark AI提供了以下Sample供开发参考：
         [运行推理]
   `````
 - **准备工具链**  
-获取mindspore-lite工具链，需参考上述源码编译指南自行编译mindspore-lite源码，工具链为编译产物，其目录结构如下：
+获取mindspore-lite工具链，需参考上述[源码编译](#源码编译)自行编译mindspore-lite源码，工具链为编译产物，其目录结构如下：
     ```
     ├── runtime
     │   ├── include
@@ -172,11 +173,12 @@ HiSpark AI提供了以下Sample供开发参考：
 - **准备SDK**  
 从开源社区下载fbb_ws63的源码
     ```
-      git clone https://gitee.com/HiSpark/fbb_ws63.git
+      git clone https://gitcode.com/HiSpark/fbb_ws63.git
     `````
 
-- **模型编译**
-  - 解压mindspore-lite编译产物得到MS Lite工具链
+- **模型编译** 
+
+  解压mindspore-lite编译产物得到MS Lite工具链
     ```
     cd ${hispark_ai_root}/src/mindspore-lite/output
     # version 为 mindspore-lite 的版本号,随版本迭代变化，实际压缩包名称格式示例: mindspore-lite-2.8.0-linux-x64.tar.gz
@@ -184,14 +186,14 @@ HiSpark AI提供了以下Sample供开发参考：
     # 将MS Lite工具链目录路径保存为 mslite_pkg_path 变量
     export mslite_pkg_path=${hispark_ai_root}/src/mindspore-lite/output/mindspore-lite-${version}-linux-x64
     ```
-  - 创建模型转换配置文件（文件名可自定义，如 micro_config.cfg），文件内容如下：
+  创建模型转换配置文件（文件名可自定义，如 micro_config.cfg），文件内容如下：
     ```
     [micro_param]
     enable_micro=true
     target=RISCV
     support_parallel=false
     ```
-  - 使用编译产物中的converter_lite工具进行模型转换，生成目标代码
+  使用编译产物中的converter_lite工具进行模型转换，生成目标代码
     ```
      # model_path为原始模型路径，如mnist-12.onnx
      # generate_code_path为代码生成目标路径
@@ -201,7 +203,7 @@ HiSpark AI提供了以下Sample供开发参考：
      export LD_LIBRARY_PATH=${mslite_pkg_path}/tools/converter/lib:$LD_LIBRARY_PATH
      converter_lite --fmk=ONNX --modelFile=${model_path} --outputFile=${generate_code_path} --configFile=${cfg_path} --inputDataFormat=NCHW --outputDataFormat=NCHW
     ```
-  - 自动代码生成的目录如下
+  自动代码生成的目录如下
     ```
     ${generate_code_path}
     ├── benchmark
@@ -227,7 +229,7 @@ HiSpark AI提供了以下Sample供开发参考：
         ├── tensor.c
         └── tensor.h
     ```
-  - 静态链接库编译
+- **静态链接库编译** 
     ```
     # sdk_path为SDK的源码目录 (https://gitcode.com/HiSpark/fbb_ws63)
     # hcc_version为SDK编译器版本，需查看路径{sdk_path}/src/tools/bin/compiler/riscv/下对应版本，如cc_riscv32_musl_105
@@ -276,7 +278,7 @@ HiSpark AI提供了以下Sample供开发参考：
 
 - **烧录调试** 
 
-    使用BurnTool工具进行ws63-ai-liteos-sample.fwpkg的烧录。
+    使用[BurnTool工具](https://developers.hisilicon.com/cn/developerTool)进行ws63-ai-liteos-sample.fwpkg的烧录。
     烧录成功运行后，会看到串口打印的运行成功信息，如Gru下：
     ```
     [AI_MCU] Get Tcxo Time 115 ms
