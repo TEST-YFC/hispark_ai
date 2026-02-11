@@ -1,7 +1,7 @@
 # HiSpark AI 开源项目
 
 ## 项目介绍 && 资源
-HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别 及 Gru-S固定词语音识别相关应用。
+HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别及Gru-S固定词语音识别相关应用。
 
 ## HiSpark AI目录介绍
 
@@ -151,7 +151,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     | Sample | ${sample_path} |
     | -- | ---- |
     | LeNet-5 | ${hispark_ai_root}/src/samples/oh/lenet5 |
-    | Gru | ${hispark_ai_root}/src/samples/oh/gru |  
+    | Gru-S | ${hispark_ai_root}/src/samples/oh/gru |  
     
   Sample目录结构如下：
     ```
@@ -197,7 +197,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     ```
      # model_path为原始模型路径，如mnist-12.onnx
      # generate_code_path为代码生成目标路径
-     # mslite_pkg_pat为MS Lite工具链目录路径
+     # mslite_pkg_path为MS Lite工具链目录路径
      # cfg_path为模型转换配置文件路径
      export PATH=${mslite_pkg_path}/tools/converter/converter:$PATH
      export LD_LIBRARY_PATH=${mslite_pkg_path}/tools/converter/lib:$LD_LIBRARY_PATH
@@ -232,7 +232,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 - **静态链接库编译** 
     ```
     # sdk_path为SDK的源码目录 (https://gitcode.com/HiSpark/fbb_ws63)
-    # hcc_version为SDK编译器版本，需查看路径{sdk_path}/src/tools/bin/compiler/riscv/下对应版本，如cc_riscv32_musl_105
+    # hcc_version为SDK编译器版本，需查看路径${sdk_path}/src/tools/bin/compiler/riscv/下对应版本，如cc_riscv32_musl_105
     
     cd ${generate_code_path}
     rm -rf build
