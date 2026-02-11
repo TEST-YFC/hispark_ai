@@ -325,7 +325,7 @@ def main():
     prepare_dataset(hiSpark_ai_path)
     result = sample_build_main(bisheng_path, daily=daily)
     process_build_results(input_list, result_path='archives')
-    samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
+    move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target)
     if result == 0:
         print(f"all build step execute end")
     else:
