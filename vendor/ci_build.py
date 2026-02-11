@@ -1,4 +1,4 @@
-# Copyright (c) HiSilicon (Shanghai) Technologies Co., Ltd. 2025-2025. All rights reserved.
+# Copyright (c) 2025-2026 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -209,7 +209,7 @@ def main():
     print(f"start main")
     is_gate = os.environ.get('IS_GATE', '').strip().lower()
     is_daily = os.environ.get('IS_DAILY', '').strip().lower()
-    
+    generating_dataset()
     # 判断逻辑
     if is_gate == 'true' and is_daily == 'true':
         raise ValueError(f"{error_info}IS_GATE and IS_DAILY cannot both be set to True.")
@@ -220,7 +220,6 @@ def main():
     elif is_daily == 'true':
         print(f'Commencing execution of daily!')
         daily = True
-        generating_dataset()
         input_list = process_build_info_files(DAILY_INFO_FILENAME)
     else:
         daily = False
