@@ -156,7 +156,7 @@ def process_build_results(result_list, result_path='archives'):
     # 编译正则表达式
     pattern1 = re.compile(r'######### Build target:(\S+)')
     pattern2 = re.compile(r'(\S+) takes (\d+)(\.\d+)? s')
-    
+    special_targets = ['samples', 'adaptor', 'mindspore-lite-2.8.0-linux-x64']
     for result in result_list:
         # 构建日志文件名和镜像文件名
         log_file = os.path.join(result_path, f'build-{result}.log')
@@ -200,7 +200,20 @@ def process_build_results(result_list, result_path='archives'):
             with open(log_file, 'w') as f:
                 f.write(f'######### Build target:{result}\n')
                 f.write(f'{result} takes 0 s\n')
-                f.write('Finished: FAILURE')
+                
+                # 判断Finished状态
+                if os.path.exists(fwpkg_file):
+                    f.write('Finished: SUCCESS')
+                elif result in special_targets:
+                    # 检查是否存在对应的tar.gz文件
+                    tar_file = os.path.join(result_path, f'{result}.tar.gz')
+                    if os.path.exists(tar_file):
+                        f.write('Finished: SUCCESS')
+                    else:
+                        f.write('Finished: FAILURE')
+                else:
+                    f.write('Finished: FAILURE')
+
 
 def sample_build_main(bisheng_path, daily=False):
     print(f"start sample_build_main")
@@ -324,8 +337,8 @@ def main():
     bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
     prepare_dataset(hiSpark_ai_path)
     result = sample_build_main(bisheng_path, daily=daily)
-    process_build_results(input_list, result_path='archives')
     move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target)
+    process_build_results(input_list, result_path='archives')
     if result == 0:
         print(f"all build step execute end")
     else:
