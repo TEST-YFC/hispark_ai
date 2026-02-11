@@ -95,7 +95,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
         [libnet.a + libmicro_runtime.a]
             │
             ▼
-        [SDK & samples模块 & adaptor模块] 
+        [SDK & sample模块 & adaptor模块] 
             │ (SDK编译)
             ▼
         [fwpkg镜像] 
@@ -145,10 +145,10 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
   准备好待部署的ONNX模型。  
   准备好量化数据。**无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式。  
 **Tips:**  
-模型可使用下述Samples的ONNX模型文件，量化数据生成及配置文件可参考下述Samples的README.md。
+模型可使用下述Sample的ONNX模型文件，量化数据生成及配置文件可参考下述Sample目录下的README.md。
 
-- **准备Samples**  
-    | Samples | ${sample_path} |
+- **准备Sample**  
+    | Sample | ${sample_path} |
     | -- | ---- |
     | LeNet-5 | ${hispark_ai_root}/src/samples/oh/lenet5 |
     | Gru | ${hispark_ai_root}/src/samples/oh/gru |  
