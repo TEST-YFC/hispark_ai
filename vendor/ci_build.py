@@ -142,6 +142,7 @@ def process_build_info_files(filename):
                                 combined_value = f"{build_target}_{relative_path}_{chip_name}_{build_def}"
                             else:
                                 combined_value = f"{build_target}_{relative_path}_{chip_name}"
+                            combined_value = combined_value.rstrip('_')
                             result_list.append(combined_value)
                     except json.JSONDecodeError:
                         print(f"{error_info}Error decoding JSON in file: {file_path}")
