@@ -34,6 +34,37 @@ DAILY_INFO_FILENAME = 'daily_build_config.json'
 error_info = 'build fail cause:'
 result_path = 'archives'
 
+
+def prepare_tar_gz(hiSpark_ai_path):
+    """压缩指定目录"""
+    
+    # 将src/samples目录压缩为samples.tar.gz
+    samples_source = Path(hiSpark_ai_path) / "src/samples"
+    samples_target = Path.cwd() / "samples.tar.gz"
+    
+    if samples_source.exists():
+        print(f"正在压缩 {samples_source} 为 samples.tar.gz...")
+        with tarfile.open(samples_target, "w:gz") as tar:
+            tar.add(samples_source, arcname="samples")
+        print(f"samples.tar.gz 创建成功，大小: {samples_target.stat().st_size / 1024 / 1024:.2f} MB")
+    else:
+        print(f"{error_info} 目录不存在: {samples_source}")
+    
+    # 将src/adaptor目录压缩为adaptor.tar.gz
+    adaptor_source = Path(hiSpark_ai_path) / "src/adaptor"
+    adaptor_target = Path.cwd() / "adaptor.tar.gz"
+    
+    if adaptor_source.exists():
+        print(f"正在压缩 {adaptor_source} 为 adaptor.tar.gz...")
+        with tarfile.open(adaptor_target, "w:gz") as tar:
+            tar.add(adaptor_source, arcname="adaptor")
+        print(f"adaptor.tar.gz 创建成功，大小: {adaptor_target.stat().st_size / 1024 / 1024:.2f} MB")
+    else:
+        print(f"{error_info} 目录不存在: {adaptor_source}")
+    
+    return samples_target, adaptor_target
+
+
 def prepare_bisheng_compiler(hiSpark_ai_path):
     """准备毕昇编译器"""
     cur_path = os.getcwd()
@@ -205,10 +236,76 @@ def generating_dataset():
         print(f"{error_info} {e.stderr}")
         raise
 
+
+def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, result_path='archives'):
+    """
+    移动和复制压缩包到指定目录
+    
+    参数:
+    - hiSpark_ai_path: 项目根路径
+    - samples_target: samples.tar.gz的路径
+    - adaptor_target: adaptor.tar.gz的路径
+    - result_path: 目标目录，默认为'archives'
+    """
+    
+    # 创建目标目录
+    archives_dir = Path(result_path)
+    archives_dir.mkdir(parents=True, exist_ok=True)
+    print(f"目标目录: {archives_dir.absolute()}")
+    
+    # 移动samples.tar.gz
+    if samples_target and samples_target.exists():
+        target_path = archives_dir / samples_target.name
+        try:
+            shutil.move(str(samples_target), str(target_path))
+            print(f"移动成功: {samples_target.name} -> {target_path}")
+        except Exception as e:
+            print(f"{error_info}移动失败 {samples_target.name}: {e}")
+    else:
+        print(f"{error_info} samples.tar.gz不存在: {samples_target}")
+    
+    # 移动adaptor.tar.gz
+    if adaptor_target and adaptor_target.exists():
+        target_path = archives_dir / adaptor_target.name
+        try:
+            shutil.move(str(adaptor_target), str(target_path))
+            print(f"移动成功: {adaptor_target.name} -> {target_path}")
+        except Exception as e:
+            print(f"{error_info}移动失败 {adaptor_target.name}: {e}")
+    else:
+        print(f"{error_info} adaptor.tar.gz不存在: {adaptor_target}")
+    
+    # 复制mindspore-lite/output下的所有.tar.gz文件
+    mindspore_output_dir = Path(hiSpark_ai_path) / "src/mindspore-lite/output"
+    
+    if mindspore_output_dir.exists():
+        tar_files = list(mindspore_output_dir.glob("*.tar.gz"))
+        
+        if tar_files:
+            print(f"在 {mindspore_output_dir} 中找到 {len(tar_files)} 个.tar.gz文件")
+            
+            for tar_file in tar_files:
+                target_path = archives_dir / tar_file.name
+                try:
+                    shutil.copy2(str(tar_file), str(target_path))
+                    print(f"复制成功: {tar_file.name} -> {target_path}")
+                except Exception as e:
+                    print(f"{error_info}复制失败 {tar_file.name}: {e}")
+        else:
+            print(f"{error_info} 在 {mindspore_output_dir} 中未找到.tar.gz文件")
+    else:
+        print(f"{error_info} 目录不存在: {mindspore_output_dir}")
+    
+    # 返回所有已处理的文件列表
+    result_files = list(archives_dir.glob("*.tar.gz"))
+    print(f"总共处理了 {len(result_files)} 个压缩包")
+
+
 def main():
     print(f"start main")
     is_gate = os.environ.get('IS_GATE', '').strip().lower()
     is_daily = os.environ.get('IS_DAILY', '').strip().lower()
+    samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
     generating_dataset()
     # 判断逻辑
     if is_gate == 'true' and is_daily == 'true':
@@ -228,6 +325,7 @@ def main():
     prepare_dataset(hiSpark_ai_path)
     result = sample_build_main(bisheng_path, daily=daily)
     process_build_results(input_list, result_path='archives')
+    samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
     if result == 0:
         print(f"all build step execute end")
     else:
