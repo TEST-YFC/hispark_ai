@@ -68,5 +68,26 @@
       "chip": "WS63",
       "buildDef": "MathModel_tf",
       "needSmoke": "false"
+    },
+    {
+      "buildTarget": "samples",
+      "relativePath": "",
+      "chip": "",
+      "buildDef": "",
+      "needSmoke": "false"
+    },
+    {
+      "buildTarget": "adaptor",
+      "relativePath": "",
+      "chip": "",
+      "buildDef": "",
+      "needSmoke": "false"
+    },
+    {
+      "buildTarget": "mindspore-lite-2.8.0-linux-x64",
+      "relativePath": "",
+      "chip": "",
+      "buildDef": "",
+      "needSmoke": "false"
     }
 ]
