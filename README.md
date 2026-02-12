@@ -201,7 +201,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
      # cfg_path为模型转换配置文件路径
      export PATH=${mslite_pkg_path}/tools/converter/converter:$PATH
      export LD_LIBRARY_PATH=${mslite_pkg_path}/tools/converter/lib:$LD_LIBRARY_PATH
-     converter_lite --fmk=ONNX --modelFile=${model_path} --outputFile=${generate_code_path} --configFile=${cfg_path} --inputDataFormat=NCHW --outputDataFormat=NCHW
+     converter_lite --fmk=ONNX --modelFile=${model_path} --outputFile=${generate_code_path} --configFile=${cfg_path} --inputDataFormat=NCHW --encryption=false --outputDataFormat=NCHW
     ```
   自动代码生成的目录如下
     ```
