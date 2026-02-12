@@ -35,7 +35,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 ### 环境依赖
 | 软件名称   | 版本 | 作用                                                             |安装教程|
 | ------ | ------  | ------------------------------------------------------------     |------------------------------|
-|[Ubuntu](https://old-releases.ubuntu.com/releases/)|   22.04  |编译和运行mindspore-lite的操作系统|[Ubuntu 22.04.5 官方安装指南](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview)|
+|[Ubuntu](https://old-releases.ubuntu.com/releases/)|   22.04  |编译和运行mindspore-lite的操作系统|[Ubuntu 官方安装指南](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview)|
 |[GCC](https://gcc.gnu.org/pub/gcc/releases/)    | 11.3.0-12.3.0 |用于编译mindspore-lite的C++编译器 |[GCC官方安装文档](https://gcc.gnu.org/install/)|
 |[CMake](https://cmake.org/files/)  | 3.22.2及以上	 |编译构建mindspore-lite的工具 |[CMake官方安装教程](https://cmake.org/resources/)|
 |[Python](https://www.python.org/downloads/) | 3.11 | mindspore-lite的使用依赖Python环境  |[Python官方安装指南](https://docs.python.org/3/using/unix.html)|
