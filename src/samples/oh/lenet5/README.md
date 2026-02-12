@@ -77,7 +77,7 @@ Tips:
     ```
 
 ## 模型转换&编译&烧录调试
-参考[HiSpark AI工具](https://gitee.com/HiSpark/hispark_ai/tree/master)README.md中"HiSpark.AI 平台快速入门指南"小节完成模型转换、编译、烧录调试  
+参考[HiSpark.AI开源项目](https://gitcode.com/HiSpark/hispark_ai)README.md中"HiSpark.AI 平台快速入门指南"小节完成模型转换、编译、烧录调试  
 其中模型转换时使用的cfg_path更改为上述准备的配置文件
 
 ## 常见问题

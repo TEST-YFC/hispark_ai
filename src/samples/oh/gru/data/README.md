@@ -5,8 +5,8 @@
 
 ## 数据来源 && License
 原始数据下载链接：[speech_commands_v0.02.tar.gz](http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz)。Label主要涉及口语唤醒词的语音。
-- **_Silence_**
-- **_unkown_**
+- **Silence**
+- **unkown**
 - **Yes**
 - **No**
 - **Up**

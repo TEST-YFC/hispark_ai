@@ -1,7 +1,7 @@
 # HiSpark.AI 开源项目
 
 ## 项目介绍 && 资源
-HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别及Gru-S固定词语音识别相关应用。
+HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别及Gru固定词语音识别相关应用。
 
 ## HiSpark.AI目录介绍
 
@@ -26,7 +26,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     | 平台 | 应用 | AI功能 |
     | ---- | ---- | ---- |
     | WS63 | LeNet-5手写数字图像识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
-    | WS63 | Gru-S音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
+    | WS63 | Gru音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
 
 ## HiSpark.AI CPU系列平台介绍
 - 超轻量的模型部署平台，支持KB级RAM嵌入式设备。
@@ -151,7 +151,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     | Sample | ${sample_path} |
     | -- | ---- |
     | LeNet-5 | ${hispark_ai_root}/src/samples/oh/lenet5 |
-    | Gru-S | ${hispark_ai_root}/src/samples/oh/gru |  
+    | Gru | ${hispark_ai_root}/src/samples/oh/gru |  
     
   Sample目录结构如下：
     ```
