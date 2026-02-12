@@ -1,15 +1,15 @@
-# HiSpark AI 开源项目
+# HiSpark.AI 开源项目
 
 ## 项目介绍 && 资源
-HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别及Gru-S固定词语音识别相关应用。
+HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可以结合社区已开源的WS63 SDK集成，开发AI应用。Sample目前已支持LeNet-5手写数字识别及Gru固定词语音识别相关应用。
 
-## HiSpark AI目录介绍
+## HiSpark.AI目录介绍
 
 | 目录   | 二级目录 | 介绍                                                             |
 | ------ | ------  | ------------------------------------------------------------     |
-| docs   |         |存放AI工具链使用指南，以及AI应用开发指南等文档，帮助客户快速熟悉HiSpark AI解决方案 |
+| docs   |         |存放AI工具链使用指南，以及AI应用开发指南等文档，帮助客户快速熟悉HiSpark.AI解决方案 |
 | src    | adaptor |AI平台所配套的适配层源码                                            |
-| src    | samples |HiSpark AI提供的Samples，用于指导用户基于HiSpark各平台部署AI应用                                                                   |
+| src    | samples |HiSpark.AI提供的Samples，用于指导用户基于HiSpark各平台部署AI应用                                                                   |
 | src    | mindspore-lite | 基于RISC-V平台的AI推理框架，用于自动生成AI推理模块代码并提供对应的RISC-V算子库                  |
 | vendor |         | 存放CI工程所需文件                  |
 
@@ -21,26 +21,26 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
   购买链接请参考WS63项目介绍的**购买渠道**页面。
 
 ## Sample案例说明
-- HiSpark AI提供了以下Sample供开发参考： 
+- HiSpark.AI提供了以下Sample供开发参考： 
 
     | 平台 | 应用 | AI功能 |
     | ---- | ---- | ---- |
     | WS63 | LeNet-5手写数字图像识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
-    | WS63 | Gru-S音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
+    | WS63 | Gru音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
 
-## HiSpark AI CPU系列平台介绍
+## HiSpark.AI CPU系列平台介绍
 - 超轻量的模型部署平台，支持KB级RAM嵌入式设备。
 
 ## 源码编译
 ### 环境依赖
-| 软件名称   | 版本 | 作用                                                             |
-| ------ | ------  | ------------------------------------------------------------     |
-|[Ubuntu](https://old-releases.ubuntu.com/releases/)|   22.04  |编译和运行MindSpore的操作系统|
-|[GCC](https://gcc.gnu.org/pub/gcc/releases/)    | 11.3.0-12.3.0 |用于编译MindSpore的C++编译器                                  |
-|[CMake](https://cmake.org/files/)  | 3.22.2及以上	 |编译构建MindSpore的工具                                       |
-|[Python](https://www.python.org/downloads/) | 3.11 | MindSpore的使用依赖Python环境                                         |
-| PyYAML | 6.0及以上 | MindSpore里的算子编译功能依赖PyYAML模块                           |
-| Numpy  | 1.19.3及以上 | MindSpore里的Numpy相关功能依赖Numpy模块                        |
+| 软件名称   | 版本 | 作用                                                             |安装教程|
+| ------ | ------  | ------------------------------------------------------------     |------------------------------|
+|[Ubuntu](https://old-releases.ubuntu.com/releases/)|   22.04  |编译和运行mindspore-lite的操作系统|[Ubuntu 官方安装指南](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview)|
+|[GCC](https://gcc.gnu.org/pub/gcc/releases/)    | 11.3.0-12.3.0 |用于编译mindspore-lite的C++编译器 |[GCC官方安装文档](https://gcc.gnu.org/install/)|
+|[CMake](https://cmake.org/files/)  | 3.22.2及以上	 |编译构建mindspore-lite的工具 |[CMake官方安装教程](https://cmake.org/resources/)|
+|[Python](https://www.python.org/downloads/) | 3.11 | mindspore-lite的使用依赖Python环境  |[Python官方安装指南](https://docs.python.org/3/using/unix.html)|
+| PyYAML | 6.0及以上 | mindspore-lite里的算子编译功能依赖PyYAML模块 |[PyYAML官方文档](https://pyyaml.org/wiki/PyYAMLDocumentation)|
+| Numpy  | 1.19.3及以上 | mindspore-lite里的Numpy相关功能依赖Numpy模块 |[NumPy官方文档](https://numpy.org/install/)|
 
 ### 获取毕昇编译器
 - 点击[毕昇编译器官方下载链接](https://developers.hisilicon.com/cn/developerTool)并登录华为开发者账号。
@@ -51,7 +51,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
     ```
 
-### 编译MindSpore
+### 编译mindspore-lite
 - **拉取mindspore-lite代码**  
 克隆本仓库后，进入根目录并初始化更新子模块src/mindspore-lite：
     ```
@@ -77,7 +77,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     # bash build.sh -I x86_64 -j32 -i
     ```
 
-## **HiSpark AI 平台快速入门指南**
+## **HiSpark.AI 平台快速入门指南**
 - **整体流程视图**  
   `````
         [ONNX模型] 
@@ -151,7 +151,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     | Sample | ${sample_path} |
     | -- | ---- |
     | LeNet-5 | ${hispark_ai_root}/src/samples/oh/lenet5 |
-    | Gru-S | ${hispark_ai_root}/src/samples/oh/gru |  
+    | Gru | ${hispark_ai_root}/src/samples/oh/gru |  
     
   Sample目录结构如下：
     ```
@@ -201,7 +201,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
      # cfg_path为模型转换配置文件路径
      export PATH=${mslite_pkg_path}/tools/converter/converter:$PATH
      export LD_LIBRARY_PATH=${mslite_pkg_path}/tools/converter/lib:$LD_LIBRARY_PATH
-     converter_lite --fmk=ONNX --modelFile=${model_path} --outputFile=${generate_code_path} --configFile=${cfg_path} --inputDataFormat=NCHW --outputDataFormat=NCHW
+     converter_lite --fmk=ONNX --modelFile=${model_path} --outputFile=${generate_code_path} --configFile=${cfg_path} --inputDataFormat=NCHW --encryption=false --outputDataFormat=NCHW
     ```
   自动代码生成的目录如下
     ```
@@ -279,7 +279,7 @@ HiSpark AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 - **烧录调试** 
 
     使用[BurnTool工具](https://developers.hisilicon.com/cn/developerTool)进行ws63-ai-liteos-sample.fwpkg的烧录。
-    烧录成功运行后，会看到串口打印的运行成功信息，如Gru下：
+    烧录成功运行后，会看到串口打印的运行成功信息，Gru打印如下：
     ```
     [AI_MCU] Get Tcxo Time 115 ms
     [AI_MCU] Data size: [48]

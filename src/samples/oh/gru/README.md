@@ -1,7 +1,7 @@
 # HiSpark.AI GRU 音频固定词识别 Sample
 
 ## 介绍
-Gru固定词识别Sample基于Google开源的Open-Speech数据集 以及 ARM Softmax开源的KWS-MCU Benchmark的开源GRU模型，为海思智能终端芯片提供适配的量化，模型转换 以及 端侧部署的Sample。客户可以基于此Sample为范式迁移部署相应的固定词识别模型。
+Gru固定词识别Sample基于Google开源的Open-Speech数据集 以及 ARM Softmax开源的KWS-MCU Benchmark的开源GRU模型，为海思智能终端芯片提供适配的量化、模型转换以及端侧部署的Sample。客户可以基于此Sample为范式迁移部署相应的固定词识别模型。
 
 支持的芯片列表如下：
 - **Hi3863**: 基于MSLite-Micro平台进行模型部署，依靠RISC-V CPU核进行AI推理。
