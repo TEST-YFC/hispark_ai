@@ -89,5 +89,12 @@
       "chip": "",
       "buildDef": "",
       "needSmoke": "false"
+    },
+    {
+      "buildTarget": "result",
+      "relativePath": "",
+      "chip": "",
+      "buildDef": "",
+      "needSmoke": "false"
     }
 ]
