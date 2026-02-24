@@ -266,24 +266,21 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
     archives_dir = Path(result_path)
     archives_dir.mkdir(parents=True, exist_ok=True)
     print(f"目标目录: {archives_dir.absolute()}")
+
+    # 创建result.tar.gz
     if archives_dir.exists():
-        # 查找所有.fwpkg文件
         fwpkg_files = list(archives_dir.glob("*.fwpkg"))
         files_to_compress = []
-        
-        # 添加.fwpkg文件
         if fwpkg_files:
             files_to_compress.extend(fwpkg_files)
             print(f"找到 {len(fwpkg_files)} 个.fwpkg文件")
         else:
             print(f"{error_info} 未找到.fwpkg文件")
-        # 如果有文件需要压缩
         if files_to_compress:
             result_tar_gz = archives_dir / "result.tar.gz"
             try:
                 with tarfile.open(result_tar_gz, "w:gz") as tar:
                     for file_path in files_to_compress:
-                        # 添加到tar包中，使用文件名作为arcname，避免包含路径
                         tar.add(file_path, arcname=file_path.name)
                         print(f"添加到压缩包: {file_path.name}")
                 print(f"成功创建 {result_tar_gz}")
