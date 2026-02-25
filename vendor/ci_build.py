@@ -270,12 +270,14 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
     # 创建result.tar.gz
     if archives_dir.exists():
         fwpkg_files = list(archives_dir.glob("*.fwpkg"))
+        npy_files = list(archives_dir.glob("*.npy"))
         files_to_compress = []
         if fwpkg_files:
             files_to_compress.extend(fwpkg_files)
             print(f"找到 {len(fwpkg_files)} 个.fwpkg文件")
-        else:
-            print(f"{error_info} 未找到.fwpkg文件")
+        if npy_files:
+            files_to_compress.extend(npy_files)
+            print(f"找到 {len(npy_files)} 个.npy文件")
         if files_to_compress:
             result_tar_gz = archives_dir / "result.tar.gz"
             try:
