@@ -118,7 +118,7 @@ def prepare_dataset(hiSpark_ai_path):
         exit(1)
 
 # 获取代码仓所有build_info.json文件内容，并拼接在一起
-def process_build_info_files(filename):
+def process_build_info_files(filename, result_files):
     print(f"start process_build_info_files")
     result_list = []
     # 遍历指定目录及其子目录下的所有文件和文件夹
@@ -131,6 +131,22 @@ def process_build_info_files(filename):
                 with open(file_path, 'r') as f:
                     try:
                         data = json.load(f)
+                        for file_name in result_files:
+                            new_entry = {
+                                "buildTarget": file_name,
+                                "relativePath": "",
+                                "chip": "",
+                                "buildDef": "",
+                                "needSmoke": "false"
+                            }
+                            data.append(new_entry)
+                            print(f"添加条目: {file_name}")
+                        
+                        # 将更新后的数据写回文件
+                        with open(file_path, 'w', encoding='utf-8') as f:
+                            json.dump(data, f, indent=2, ensure_ascii=False)
+                        print(f"成功更新文件: {file_path}")
+
                         for item in data:
                             # 提取需要的字段值
                             build_target = item.get('buildTarget', '')
@@ -149,7 +165,8 @@ def process_build_info_files(filename):
                         exit(1)
     return result_list
 
-def process_build_results(result_list, result_path='archives'):
+
+def process_build_results(result_list, special_targets, result_path='archives'):
     # 确保archives目录存在
     if not os.path.exists(result_path):
         os.makedirs(result_path)
@@ -157,7 +174,6 @@ def process_build_results(result_list, result_path='archives'):
     # 编译正则表达式
     pattern1 = re.compile(r'######### Build target:(\S+)')
     pattern2 = re.compile(r'(\S+) takes (\d+)(\.\d+)? s')
-    special_targets = ['samples', 'adaptor', 'mindspore-lite-2.8.0-linux-x64', 'result']
     for result in result_list:
         # 构建日志文件名和镜像文件名
         log_file = os.path.join(result_path, f'build-{result}.log')
@@ -337,35 +353,37 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
         print(f"{error_info} 目录不存在: {mindspore_output_dir}")
     
     # 返回所有已处理的文件列表
-    result_files = list(archives_dir.glob("*.tar.gz"))
+    result_files = [f.name.replace('.tar.gz', '') for f in list(archives_dir.glob("*.tar.gz"))]
     print(f"总共处理了 {len(result_files)} 个压缩包")
+    return result_files
 
 
 def main():
     print(f"start main")
+    build_filename = ''
     is_gate = os.environ.get('IS_GATE', '').strip().lower()
     is_daily = os.environ.get('IS_DAILY', '').strip().lower()
     samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
     generating_dataset()
-    # 判断逻辑
     if is_gate == 'true' and is_daily == 'true':
         raise ValueError(f"{error_info}IS_GATE and IS_DAILY cannot both be set to True.")
     elif is_gate == 'true':
         print(f'Commencing access control!')
         daily = False
-        input_list = process_build_info_files(BUILD_INFO_FILENAME)
+        build_filename = BUILD_INFO_FILENAME
     elif is_daily == 'true':
         print(f'Commencing execution of daily!')
         daily = True
-        input_list = process_build_info_files(DAILY_INFO_FILENAME)
+        build_filename = DAILY_INFO_FILENAME
     else:
         daily = False
-        input_list = process_build_info_files(BUILD_INFO_FILENAME)
+        build_filename = BUILD_INFO_FILENAME
     bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
     prepare_dataset(hiSpark_ai_path)
     result = sample_build_main(bisheng_path, daily=daily)
-    move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target)
-    process_build_results(input_list, result_path='archives')
+    result_files = move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target)
+    input_list = process_build_info_files(build_filename, result_files)
+    process_build_results(input_list, result_files, result_path='archives')
     if result == 0:
         print(f"all build step execute end")
     else:
