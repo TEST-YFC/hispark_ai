@@ -105,6 +105,21 @@ build_save()
     fi
     cp "${sample_path}/output/ws63-ai-liteos-sample.fwpkg" \
         "${RESULT_PATH}/ws63-ai-liteos_${temp}_WS63_${model}.fwpkg"
+    files=($(find "$MODEL_PATH/$model/" -type f -name "output*.npy"))
+    # Check the number of documents
+    if [ ${#files[@]} -eq 0 ]; then
+        echo "Error: No output*.npy files found in $MODEL_PATH/$model/" >&2
+        exit 1
+    elif [ ${#files[@]} -eq 1 ]; then
+        # Only one file → Copy and rename it to {model}.npy
+        cp -v "${files[0]}" "${RESULT_PATH}/ws63-ai-liteos_${temp}_WS63_${model}.npy"
+    else
+        # Multiple files → Copy entire directory structure
+        first_file=$(find "$MODEL_PATH/$model/" -type f -name "output_0.npy" | head -1)
+        if [ -n "$first_file" ]; then
+            cp -v "$first_file" "${RESULT_PATH}/ws63-ai-liteos_${temp}_WS63_${model}.npy"
+        fi
+    fi
 }
 
 process_fp32() {
