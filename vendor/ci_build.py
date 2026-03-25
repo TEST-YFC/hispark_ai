@@ -332,7 +332,7 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
         customer_dir.mkdir()
 
         # 创建最终的压缩包: HiSpark.AI.r1.0.0.tar.gz
-        version_name = os.environ.get('VERSION_NAME', '').strip().lower()
+        version_name = os.environ.get('VERSION_NAME', '')
         if version_name != '':
             final_archive_name = f"{version_name}.tar.gz"
         else:
