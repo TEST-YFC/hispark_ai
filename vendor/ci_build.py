@@ -373,7 +373,8 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
         if build_type == 'release':
             samples_dir = customer_dir / "samples"
             samples_dir.mkdir()
-            target_path = samples_dir / samples_target.name
+            samples_tar_name = f'{version_name}_{samples_target.name}'
+            target_path = samples_dir / samples_tar_name
         else:
             target_path = archives_dir / samples_target.name
         try:
@@ -389,7 +390,8 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
         if build_type == 'release':
             adaptor_dir = customer_dir / "adaptor"
             adaptor_dir.mkdir()
-            target_path = adaptor_dir / adaptor_target.name
+            adaptor_tar_name = f'{version_name}_{adaptor_target.name}'
+            target_path = adaptor_dir / adaptor_tar_name
         else:
             target_path = archives_dir / adaptor_target.name
         try:
