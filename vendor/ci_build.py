@@ -128,8 +128,8 @@ def process_build_info_files(filename, result_files, build_type='gate'):
                 file_path = os.path.join(root, file)
                 print(file_path)
 
-                if build_type == 'release':
-                    # Release构建：JSON文件只保留result_files的内容
+                if build_type in ('release', 'daily'):
+                    # Release/Daily构建：JSON文件只保留result_files的内容
                     new_data = []
                     for file_name in result_files:
                         new_entry = {
@@ -161,7 +161,7 @@ def process_build_info_files(filename, result_files, build_type='gate'):
                         combined_value = combined_value.rstrip('_')
                         result_list.append(combined_value)
                 else:
-                    # Gate/Daily构建：保持原有逻辑，追加result_files到现有数据
+                    # Gate构建：保持原有逻辑，追加result_files到现有数据
                     with open(file_path, 'r') as f:
                         try:
                             data = json.load(f)
