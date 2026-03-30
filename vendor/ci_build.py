@@ -28,7 +28,6 @@ script_to_execute = 'vendor/WS63/build.sh'
 gen_to_execute = 'gen_dataset.py'
 
 BUILD_INFO_FILENAME = 'gate_build_config.json'
-DAILY_INFO_FILENAME = 'daily_build_config.json'
 
 # log复制
 error_info = 'build fail cause:'
