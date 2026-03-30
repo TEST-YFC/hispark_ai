@@ -454,27 +454,19 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
 
 def main():
     print(f"start main")
-    build_filename = ''
+    build_filename = BUILD_INFO_FILENAME
     build_type = os.environ.get('BUILD_TYPE', '').strip().lower()
     samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
     generating_dataset()
-    if build_type == 'gate':
-        print(f'Commencing access control!')
+    if build_type in ('gate', 'release'):
+        print(f'Commencing build!')
         daily = False
-        build_filename = BUILD_INFO_FILENAME
     elif build_type == 'daily':
         print(f'Commencing execution of daily!')
         daily = True
-        build_filename = DAILY_INFO_FILENAME
-    elif build_type == 'release':
-        print(f'Commencing release build!')
-        daily = False
-        build_filename = BUILD_INFO_FILENAME  # or maybe a different file? keep as is for now
     else:
-        # default to gate build
         print(f'BUILD_TYPE not set or invalid, defaulting to gate build')
         daily = False
-        build_filename = BUILD_INFO_FILENAME
     bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
     prepare_dataset(hiSpark_ai_path)
     result = sample_build_main(bisheng_path, daily=daily)
