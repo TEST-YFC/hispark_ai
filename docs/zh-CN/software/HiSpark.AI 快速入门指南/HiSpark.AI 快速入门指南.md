@@ -2,7 +2,7 @@
 
 **概述<a name="section4537382116410"></a>**
 
-本文档主要描述HiSpark Studio AI for VS Code插件的安装及使用。该工具主要用于模型压缩、模型转换、应用开发，端侧部署、性能调优等。
+本文档主要描述HiSpark Studio AI for VS Code插件的安装及使用。该工具主要用于模型压缩、模型转换、应用开发、端侧部署、性能调优等。
 
 **HiSpark AI Studio功能架构图**<a name="fig3550176194110"></a>  
 ![](figures/HiSpark-AI-Fmk.png "HiSpark-Studio插件")
@@ -132,7 +132,7 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 ## Hi3863环境准备<a name="ZH-CN_TOPIC_0000002498843814"></a>
 
-HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1429717521912)、[图2](#fig55781161195)所示。若需要使用命令行工具进行模型的量化与转换，请参考《HiSpark AI转换工具 使用指南》 以及 《HiSpark.AI API 开发指南》，进行环境准备。
+HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1429717521912)、[图2](#fig55781161195)所示。若需要使用命令行工具进行模型的量化与转换，请参考《HiSpark.AI 转换工具使用指南》 以及 《HiSpark.AI API 开发指南》，进行环境准备。
 
 整个CPU侧环境准备步骤大致如下所示。
 
@@ -143,13 +143,6 @@ HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用
 ![](figures/CPU环境准备（Linux侧）.png "CPU环境准备（Linux侧）")
 
 
-
-
-### Windows侧环境准备（仅Windows端用户关注）<a name="ZH-CN_TOPIC_0000002498685596"></a>
-
-将mindspore-lite Windows侧工具包放置于工具链安装目录中的tools目录下。名字需严格为“mindspore-enterprise-lite-2.4.0-win-x64”，如下所示：
-
-![](figures/zh-cn_image_0000002561463335.png)
 
 ### Linux服务器端AI环境准备（仅Linux端用户关注）<a name="ZH-CN_TOPIC_0000002504198312"></a>
 
@@ -306,7 +299,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
 ## Hi3322环境准备<a name="ZH-CN_TOPIC_0000002530443753"></a>
 
-HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化与转换，请参考《Nano应用 开发指南》，进行环境准备。
+HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化与转换，请参考《Nano AI应用开发指南》，进行环境准备。
 
 **图 1**  NPU环境准备（Linux通路）<a name="fig1560816183209"></a>  
 ![](figures/NPU环境准备（Linux通路）.png "NPU环境准备（Linux通路）")
@@ -643,7 +636,7 @@ GPU加速版环境准备步骤如下：
 
 ### 模型量化<a name="ZH-CN_TOPIC_0000002536042417"></a>
 
-1.  进入模型量化页面，将“Validation”配置为FILE，在Calibration Inputs选择“Input3”（模型输入名称）对应的Path选择框架，选择量化数据所对应的npy文件目录路径，在Validation Inputs输入框选择“Validation Input1”对应的Path选择框架，选择验证数据所对应的npy目录，在Validation Labels文本框选择为含标签的label文件。
+1.  进入模型量化页面，在Calibration Inputs选择“Input3”（模型输入名称）对应的Path选择框架；如需要进行数据验证，将Validation开关打开，选择量化数据所对应的npy文件目录路径，在Validation Inputs输入框选择“Validation Input1”对应的Path选择框架，选择验证数据所对应的npy目录，在Validation Labels文本框选择为含标签的label文件。
 
     Label文件数据结构如[表1](#table112929412576)所示。
 
@@ -706,13 +699,13 @@ GPU加速版环境准备步骤如下：
 
 ![](figures/zh-cn_image_0000002563052133.png)
 
-配置串口、波特率等信息，如[图2](#fig229585011181)，点击性能验证，输出上板验证的推理时间、占用RAM、FLASH的值。
+配置串口、波特率等信息，如[图2](#fig229585011181)，点击Performance Evaluation按钮，输出上板验证的推理时间、占用RAM、FLASH的值。
 
 **图 2**  模型性能评估示意图<a name="fig229585011181"></a>  
 
 ![](figures/zh-cn_image_0000002563053035.png)
 
-选择Validation Input的验证数据文件，选择Validation Output的label文件的值，配置项如[图3](#fig10382812161711)，单击精度验证。
+选择Accuracy Evaluation Config中对应的路径，并选择Validation Labels的label文件的值，配置项如[图3](#fig10382812161711)，单击Accuracy Evaluation按钮。
 
 **图 3**  模型精度评估选项示意图<a name="fig10382812161711"></a>  
 
@@ -881,7 +874,7 @@ GPU加速版环境准备步骤如下：
 1.  在“Quantization Config”中配置输入参数。
 
     1.  “Calibration Inputs”的Path列文件选择框中输入量化校准数据：选择“[模型与数据获取](模型与数据获取-1.md)”下载的训练数据文件夹下的npy子文件夹，若当前为Linux通路，则从Linux服务器上选择文件夹，如“train\_data/npy”。若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\train\_data\\\\npy”。
-    2.  打开“validation”开关。
+    2.  打开“Validation”开关。
     3.  在“Validation Inputs”的Path列文件选择框中输入验证数据：选择“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的npy子文件夹。若当前为Linux通路，则从Linux服务器上选择文件夹，如“test\_data/npy”。若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\test\_data\\\\npy”。
     4.  “Validation Labels”下拉框选择对应的输出节点。并在文件输入验证数据的真值：选择框选择“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的“label.csv”文件。
     5.  其他参数保持默认，或按需调整。
@@ -1037,15 +1030,15 @@ HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能
     **图 1**  串口配置<a name="fig157065321908"></a>  
     ![](figures/串口配置.png "串口配置")
 
-2.  单击“性能验证”按钮，完成模型上板性能验证。验证完成后，在性能验证窗口显示推理时间、和模型大小。
+2.  单击“Performance Evaluation”按钮，完成模型上板性能验证。验证完成后，在性能验证窗口显示推理时间、和模型大小。
 
     **图 2**  性能验证结果<a name="fig665111488016"></a>  
     
     ![](figures/zh-cn_image_0000002530799408.png)
 
 3.  在“Accuracy Evaluation Config”窗口配置精度验证数据集。
-    -   将“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的npy子文件夹，如“test\_data/npy”，拷贝到Windows侧。“Validatioin Inputs”文件选择框中该文件夹。
-    -   将“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的“label.csv”文件拷贝到Windows侧。“Validation Output”文件选择框选择该文件。
+    -   将“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的npy子文件夹，如“test\_data/npy”，拷贝到Windows侧。Accuracy Evaluation Config中对应的路径文本框中选择该文件夹。
+    -   将“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的“label.csv”文件拷贝到Windows侧。“Validation Labels” 文件选择框中选该文件。
 
         **图 3**  精度验证数据集配置界面<a name="fig8526185973510"></a>  
         ![](figures/精度验证数据集配置界面.png "精度验证数据集配置界面")
