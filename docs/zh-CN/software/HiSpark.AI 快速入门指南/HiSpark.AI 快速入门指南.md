@@ -4,9 +4,6 @@
 
 本文档主要描述HiSpark Studio AI for VS Code插件的安装及使用。该工具主要用于模型压缩、模型转换、应用开发、端侧部署、性能调优等。
 
-**HiSpark AI Studio功能架构图**<a name="fig3550176194110"></a>  
-![](figures/HiSpark-AI-Fmk.png "HiSpark-Studio插件")
-
 **读者对象<a name="section4378592816410"></a>**
 
 本文档主要适用于基于海思芯片进行嵌入式开发的相关人员：
