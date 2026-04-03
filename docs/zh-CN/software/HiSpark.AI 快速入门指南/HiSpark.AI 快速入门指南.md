@@ -125,7 +125,6 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
     **图 2**  下载成功提示<a name="fig96701933161720"></a>  
     ![](figures/下载成功提示.png "下载成功提示")
 
-2.  将用户通过单击“Download Toolchain”下载环境中cmake路径配置到环境变量，路径如下：D:\\xxxxxx\\tools\\python\\Scripts
 
 ## Hi3863环境准备<a name="ZH-CN_TOPIC_0000002498843814"></a>
 
@@ -296,7 +295,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
 ## Hi3322环境准备<a name="ZH-CN_TOPIC_0000002530443753"></a>
 
-HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化与转换，请参考《Nano AI应用开发指南》，进行环境准备。
+HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化与转换，请参考《Nano AI应用开发指导书》，进行环境准备。
 
 **图 1**  NPU环境准备（Linux通路）<a name="fig1560816183209"></a>  
 ![](figures/NPU环境准备（Linux通路）.png "NPU环境准备（Linux通路）")
@@ -633,7 +632,7 @@ GPU加速版环境准备步骤如下：
 
 ### 模型量化<a name="ZH-CN_TOPIC_0000002536042417"></a>
 
-1.  进入模型量化页面，在Calibration Inputs选择“Input3”（模型输入名称）对应的Path选择框架；如需要进行数据验证，将Validation开关打开，选择量化数据所对应的npy文件目录路径，在Validation Inputs输入框选择“Validation Input1”对应的Path选择框架，选择验证数据所对应的npy目录，在Validation Labels文本框选择为含标签的label文件。
+1.  进入模型量化页面，在Calibration Inputs选择“Input3”（模型输入名称）对应的Path选择框架；如需要进行数据验证，将Validation开关打开，选择量化数据所对应的npy文件目录路径，在Validation Inputs输入框选择“Input3”对应的Path选择框架，选择验证数据所对应的npy目录，在Validation Labels文本框选择为含标签的label文件。
 
     Label文件数据结构如[表1](#table112929412576)所示。
 
@@ -727,7 +726,7 @@ GPU加速版环境准备步骤如下：
 
 ## Hi3322样例运行<a name="ZH-CN_TOPIC_0000002530583195"></a>
 
-本章节以LeNet5模型为例，介绍如何使用HiSpark Studio AI工具进行模型量化、转换、性能评估以及精度评估。如果需要使用命令行工具进行如上操作，请参考《Nano应用开发指南》。
+本章节以LeNet5模型为例，介绍如何使用HiSpark Studio AI工具进行模型量化、转换、性能评估以及精度评估。如果需要使用命令行工具进行如上操作，请参考《Nano AI应用开发指导书》。
 
 
 
@@ -1046,7 +1045,7 @@ HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能
     **图 4**  精度评估结果显示界面<a name="fig2919151812810"></a>  
     ![](figures/精度评估结果显示界面.png "精度评估结果显示界面")
 
-6.  在“Validation Data”窗口查看验证集各个样本的验证结果。
+6.  在“Evaluation Data”窗口查看验证集各个样本的验证结果。
 
     **图 5**  验证样本的评估精度显示界面<a name="fig5517202171220"></a>  
     
