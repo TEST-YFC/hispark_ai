@@ -289,13 +289,13 @@ main_daily() {
             model=$(basename "$model_dir")
             echo "Found model: $model"
             if [[ "$model" == *"_tf"* ]]; then
-                process_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1
-                process_quantized_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_tflite_quant_WS63_${model}.log" 2>&1
+                process_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1 || true
+                process_quantized_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_tflite_quant_WS63_${model}.log" 2>&1 || true
             else
                 # Process non-quantized version
-                process_fp32 "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1
+                process_fp32 "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1 || true
                 # Process quantized version
-                process_quantized "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_onnx_quant_WS63_${model}.log" 2>&1
+                process_quantized "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_onnx_quant_WS63_${model}.log" 2>&1 || true
 
             fi
         fi
