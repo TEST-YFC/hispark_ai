@@ -170,7 +170,11 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
     
     # Set boundary values
     total_elements = np.prod(shape)
-
+    if total_elements > 0: 
+        # 将最后一个元素设为5 
+        random_data.flat[-1] = high_val 
+        # 将第一个元素设为-5
+        random_data.flat[0] = low_val
     # Validate data range
     min_val = np.min(random_data)
     max_val = np.max(random_data)
@@ -332,7 +336,7 @@ def generate_c_files(folder_path, current_path):
     input_count = len(input_files)
     output_files = glob(os.path.join(folder_path, "output*.npy"))
     output_count = len(output_files)
-
+    is_int_output = 'ArgMin' in folder_path or 'ArgMax' in folder_path or 'Cast' in folder_path
     input_sizes, input_data = load_input_data(input_files)
     # Generate both versions of the file
     versions = [
@@ -342,7 +346,7 @@ def generate_c_files(folder_path, current_path):
     
     for filename, not_quant, micro_quant, tflite_quant in versions:
         modified_lines = []
-        input_line = output_line = ret_line = -10
+        input_line = output_line = ret_line = float_line = -10
         for i, line in enumerate(template, 1):
             if re.search(r'void \*input_data = OH_AI_TensorGetMutableData', line):
                 input_line = i
@@ -350,6 +354,8 @@ def generate_c_files(folder_path, current_path):
                 output_line = i
             if re.search(r'ret = ai_mcu_sample_print_output_tensor\(output, AI_MCU_SAMPLE_TFLITE_OUTPUT_1_QUANT_MULTIPILER,', line):
                 ret_line = i
+            if re.search(r'OH_AI_TensorGetElementNum', line):
+                float_line = i
             # Line modifications
             if re.search(r'#define AI_MCU_SAMPLE_NOT_QUANT \b', line):
                 line = f"#define AI_MCU_SAMPLE_NOT_QUANT {not_quant}\n"
@@ -419,6 +425,15 @@ def generate_c_files(folder_path, current_path):
                     modified_lines.append("        return ret;\n")
                     modified_lines.append("    }\n")
                 line = ""
+            elif re.search(r'OH_AI_TensorGetElementNum', line) and is_int_output:
+                modified_lines.append(line)
+                modified_lines.append("        unused(scale);\n")
+                modified_lines.append("        unused(zp);\n")
+                modified_lines.append("        unused(ai_mcu_sample_printf_float);\n")
+                modified_lines.append("        int x = ((int *)out_data)[i];\n")
+                modified_lines.append("        osal_printk(\"[%d]\", x);\n")
+            if is_int_output and i <= float_line+15 and float_line != -10:
+                continue
             modified_lines.append(line)
         
         # Write the modified file
