@@ -1,0 +1,25 @@
+Log:
+  low:
+    0.000001
+  high:
+    5
+Sqrt:
+  low:
+    0.000001
+  high:
+    5
+Rsqrt:
+  low:
+    0.000001
+  high:
+    5
+BatchNorm:
+  low:
+    0.000001
+  high:
+    5
+Div:
+  low:
+    0.5
+  high:
+    5

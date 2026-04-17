@@ -74,6 +74,58 @@ def discover_operators():
             tflite_operators.append(op_name)
     return onnx_operators, tflite_operators
 
+def map_dtype_from_model(model_type, model_dtype):
+    """Map ONNX/TFLite data type to numpy data type.
+
+    Args:
+        model_type: "onnx" or "tflite"
+        model_dtype: For ONNX: string like "tensor(float)" or integer enum.
+                     For TFLite: numpy.dtype or tf.dtypes.DType.
+
+    Returns:
+        numpy.dtype: Corresponding numpy data type.
+    """
+    if model_type == "onnx":
+        # ONNX Runtime provides type as string, e.g., "tensor(float)"
+        if isinstance(model_dtype, str):
+            if "float" in model_dtype:
+                return np.float32
+            elif "int8" in model_dtype:
+                return np.int8
+            elif "uint8" in model_dtype:
+                return np.uint8
+            elif "int32" in model_dtype:
+                return np.int32
+            elif "uint32" in model_dtype:
+                return np.uint32
+            else:
+                print(f"警告: 未知的ONNX数据类型 '{model_dtype}'，默认使用float32")
+                return np.float32
+        else:
+            # Assume it's an integer enum from onnx.TensorProto
+            if model_dtype == onnx.TensorProto.FLOAT:
+                return np.float32
+            elif model_dtype == onnx.TensorProto.INT8:
+                return np.int8
+            elif model_dtype == onnx.TensorProto.UINT8:
+                return np.uint8
+            elif model_dtype == onnx.TensorProto.INT32:
+                return np.int32
+            else:
+                print(f"警告: 未知的ONNX数据类型枚举值 {model_dtype},默认使用float32")
+                return np.float32
+    else:  # TFLite
+        # Convert tf.dtype to numpy dtype
+        if hasattr(model_dtype, 'as_numpy_dtype'):
+            return model_dtype.as_numpy_dtype
+        elif isinstance(model_dtype, np.dtype):
+            return model_dtype
+        elif isinstance(model_dtype, type):
+            return np.dtype(model_dtype)
+        else:
+            print(f"警告: 无法识别的TFLite数据类型 {model_dtype},默认使用float32")
+            return np.float32
+
 def create_directories(base_path, onnx_operators, tflite_operators):
     """Create main directory, operator directory, configuration file directory"""
     model_path = os.path.join(base_path, "model")
@@ -146,8 +198,17 @@ def generate_all_models(model_path, onnx_operators, tflite_operators):
             
 def generate_random_data(op_name, output_file, shape, dtype=np.float32):
     # Default values
-    low = -5.0
-    high = 5.0
+    if np.issubdtype(dtype, np.unsignedinteger):
+        low = 0
+        high = 5 
+    elif np.issubdtype(dtype, np.integer):
+        # Integer types
+        low = -5
+        high = 5
+    elif np.issubdtype(dtype, np.floating):
+        # Floating point types
+        low = -5.0
+        high = 5.0
     # Check if yaml file exists
     yaml_file = "random_data_set.yaml"
     if os.path.exists(yaml_file):
@@ -157,25 +218,42 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
                 if op_name in config:
                     op_config = config[op_name]
                     if 'high' in op_config:
-                        high = float(op_config['high'])
+                        # Convert to appropriate type based on dtype
+                        raw_high = op_config['high']
+                        if np.issubdtype(dtype, np.integer):
+                            high = int(raw_high)
+                        elif np.issubdtype(dtype, np.floating):
+                            high = float(raw_high)
+                        else:
+                            high = raw_high
                     if 'low' in op_config:
-                        low = float(op_config['low'])
+                        raw_low = op_config['low']
+                        if np.issubdtype(dtype, np.integer):
+                            low = int(raw_low)
+                        elif np.issubdtype(dtype, np.floating):
+                            low = float(raw_low)
+                        else:
+                            low = raw_low
             except yaml.YAMLError as e:
                 print(f"Error reading YAML file: {e}")
     
-    # Generate random numbers in (low, high] range
-    random_data = np.random.uniform(low=low, high=high, size=shape).astype(dtype)
-    # Clip to ensure values are within range
-    random_data = np.clip(random_data, low, high)
+    # Generate random data based on dtype
+    if np.issubdtype(dtype, np.integer) or np.issubdtype(dtype, np.unsignedinteger):
+        # Generate integer random numbers
+        random_data = np.random.randint(low=low, high=high+1, size=shape, dtype=dtype)
+    elif np.issubdtype(dtype, np.floating):
+        # Generate floating point random numbers
+        random_data = np.random.uniform(low=low, high=high, size=shape).astype(dtype)
+        # Clip to ensure values are within range
+        random_data = np.clip(random_data, low, high)
     
     # Set boundary values
     total_elements = np.prod(shape)
-
-    # Validate data range
-    min_val = np.min(random_data)
-    max_val = np.max(random_data)
-    assert min_val >= low, f"Data minimum {min_val} is less than {low}"
-    assert max_val <= high, f"Data maximum {max_val} is greater than {high}"
+    if total_elements > 0: 
+        # 将最后一个元素设为5 
+        random_data.flat[-1] = high
+        # 将第一个元素设为-5
+        random_data.flat[0] = low
     
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -332,7 +410,7 @@ def generate_c_files(folder_path, current_path):
     input_count = len(input_files)
     output_files = glob(os.path.join(folder_path, "output*.npy"))
     output_count = len(output_files)
-
+    is_int_output = 'ArgMin' in folder_path or 'ArgMax' in folder_path or 'Cast' in folder_path
     input_sizes, input_data = load_input_data(input_files)
     # Generate both versions of the file
     versions = [
@@ -342,7 +420,7 @@ def generate_c_files(folder_path, current_path):
     
     for filename, not_quant, micro_quant, tflite_quant in versions:
         modified_lines = []
-        input_line = output_line = ret_line = -10
+        input_line = output_line = ret_line = float_line = -10
         for i, line in enumerate(template, 1):
             if re.search(r'void \*input_data = OH_AI_TensorGetMutableData', line):
                 input_line = i
@@ -350,6 +428,8 @@ def generate_c_files(folder_path, current_path):
                 output_line = i
             if re.search(r'ret = ai_mcu_sample_print_output_tensor\(output, AI_MCU_SAMPLE_TFLITE_OUTPUT_1_QUANT_MULTIPILER,', line):
                 ret_line = i
+            if re.search(r'OH_AI_TensorGetElementNum', line):
+                float_line = i
             # Line modifications
             if re.search(r'#define AI_MCU_SAMPLE_NOT_QUANT \b', line):
                 line = f"#define AI_MCU_SAMPLE_NOT_QUANT {not_quant}\n"
@@ -419,6 +499,15 @@ def generate_c_files(folder_path, current_path):
                     modified_lines.append("        return ret;\n")
                     modified_lines.append("    }\n")
                 line = ""
+            elif re.search(r'OH_AI_TensorGetElementNum', line) and is_int_output:
+                modified_lines.append(line)
+                modified_lines.append("        unused(scale);\n")
+                modified_lines.append("        unused(zp);\n")
+                modified_lines.append("        unused(ai_mcu_sample_printf_float);\n")
+                modified_lines.append("        int x = ((int *)out_data)[i];\n")
+                modified_lines.append("        osal_printk(\"[%d]\", x);\n")
+            if is_int_output and i <= float_line+15 and float_line != -10:
+                continue
             modified_lines.append(line)
         
         # Write the modified file
@@ -462,22 +551,24 @@ def process_model_inputs(op_name, model_file, model_type, folder_path):
     inputs_len = len(inputs)
     
     for i, input_info in enumerate(inputs):
-        input_name, input_shape = get_input_info(input_info, model_type)
+        input_name, input_shape, dtype = get_input_info(input_info, model_type)
         dataset_dir = create_dataset_directory(folder_path, i, inputs_len)
-        generate_input_data(op_name, input_name, input_shape, dataset_dir, input_data_dict, i, inputs_len)
+        generate_input_data(op_name, input_name, input_shape, dtype, dataset_dir, input_data_dict, i, inputs_len)
     
     return input_data_dict if len(input_data_dict) == inputs_len else None
 
 
 def get_input_info(input_info, model_type):
-    """Get input name and shape based on model type."""
+    """Get input name, shape and data type based on model type."""
     if model_type == "onnx":
         input_name = input_info.name
         input_shape = [dim if isinstance(dim, int) else 1 for dim in input_info.shape]
+        dtype = map_dtype_from_model(model_type, input_info.type)
     else:  # TFLite
         input_name = input_info['name']
         input_shape = list(input_info['shape'])
-    return input_name, input_shape
+        dtype = map_dtype_from_model(model_type, input_info['dtype'])
+    return input_name, input_shape, dtype
 
 
 def create_dataset_directory(folder_path, i, inputs_len):
@@ -488,12 +579,12 @@ def create_dataset_directory(folder_path, i, inputs_len):
     return dataset_dir
 
 
-def generate_input_data(op_name, input_name, input_shape, dataset_dir, input_data_dict, i, inputs_len):
+def generate_input_data(op_name, input_name, input_shape, dtype, dataset_dir, input_data_dict, i, inputs_len):
     """Generate input data and save it."""
     for j in range(5):
         data = generate_random_data(op_name,
             os.path.join(dataset_dir, f"{input_name}_{j}_{'_'.join(map(str, input_shape))}.bin"),
-            input_shape
+            input_shape, dtype
         )
         if j == 0:
             save_input_data(op_name, input_name, input_shape, dataset_dir, input_data_dict, i, inputs_len, data)
