@@ -172,9 +172,9 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
     total_elements = np.prod(shape)
     if total_elements > 0: 
         # 将最后一个元素设为5 
-        random_data.flat[-1] = high_val 
+        random_data.flat[-1] = high
         # 将第一个元素设为-5
-        random_data.flat[0] = low_val
+        random_data.flat[0] = low
     # Validate data range
     min_val = np.min(random_data)
     max_val = np.max(random_data)
