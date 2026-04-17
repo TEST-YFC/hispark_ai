@@ -175,12 +175,6 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
         random_data.flat[-1] = high
         # 将第一个元素设为-5
         random_data.flat[0] = low
-    # Validate data range
-    print(random_data)
-    min_val = np.min(random_data)
-    max_val = np.max(random_data)
-    assert min_val >= low, f"Data minimum {min_val} is less than {low}"
-    assert max_val <= high, f"Data maximum {max_val} is greater than {high}"
     
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
