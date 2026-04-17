@@ -176,7 +176,7 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
         # 将第一个元素设为-5
         random_data.flat[0] = low
     # Validate data range
-    random_data[np.abs(random_data - low) < 1e-6] = low
+    random_data = np.round(random_data, decimals=6)
     min_val = np.min(random_data)
     max_val = np.max(random_data)
     assert min_val >= low, f"Data minimum {min_val} is less than {low}"
