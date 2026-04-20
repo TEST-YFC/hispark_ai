@@ -38,6 +38,37 @@ class Tee(io.TextIOBase):
         self.file.flush()
         self.stream.flush()
 
+    def fileno(self):
+        # 尝试原始流的文件描述符
+        if hasattr(self.stream, 'fileno'):
+            try:
+                return self.stream.fileno()
+            except (io.UnsupportedOperation, OSError, AttributeError):
+                pass
+        # 尝试文件的文件描述符
+        if hasattr(self.file, 'fileno'):
+            try:
+                return self.file.fileno()
+            except (io.UnsupportedOperation, OSError, AttributeError):
+                pass
+        # 如果都没有，引发与io.TextIOBase一致的异常
+        raise io.UnsupportedOperation("fileno")
+
+    def isatty(self):
+        # 检查是否为终端
+        if hasattr(self.stream, 'isatty'):
+            return self.stream.isatty()
+        return False
+
+    def readable(self):
+        return False
+
+    def writable(self):
+        return True
+
+    def seekable(self):
+        return False
+
 
 # 定义要执行的脚本文件和目录
 data_dir = './..' #docker存放路径
@@ -389,6 +420,60 @@ def process_build_results(result_list, special_targets, result_path='archives', 
                         f.write('Finished: FAILURE')
 
 
+def run_command_with_tee(cmd, global_log_path, cwd=None):
+    """运行命令并将输出同时写入全局日志文件和终端"""
+    import threading
+
+    # 打开全局日志文件用于追加
+    with open(global_log_path, 'a', encoding='utf-8') as log_file:
+        # 启动子进程，使用管道捕获输出
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,  # 行缓冲
+            universal_newlines=True,
+            cwd=cwd
+        )
+
+        def reader(pipe, pipe_name):
+            """从管道读取并写入日志文件和终端"""
+            try:
+                for line in iter(pipe.readline, ''):
+                    # 写入日志文件
+                    log_file.write(line)
+                    log_file.flush()
+                    # 写入原始终端（避免通过Tee重复写入日志文件）
+                    if pipe_name == 'stdout':
+                        sys.__stdout__.write(line)
+                        sys.__stdout__.flush()
+                    else:
+                        sys.__stderr__.write(line)
+                        sys.__stderr__.flush()
+            except Exception as e:
+                # 错误信息也写入原始终端
+                sys.__stdout__.write(f"Error reading {pipe_name}: {e}\n")
+                sys.__stdout__.flush()
+            finally:
+                pipe.close()
+
+        # 启动读取线程
+        stdout_thread = threading.Thread(target=reader, args=(process.stdout, 'stdout'))
+        stderr_thread = threading.Thread(target=reader, args=(process.stderr, 'stderr'))
+        stdout_thread.start()
+        stderr_thread.start()
+
+        # 等待进程完成
+        return_code = process.wait()
+
+        # 等待读取线程完成
+        stdout_thread.join()
+        stderr_thread.join()
+
+        return return_code
+
+
 def sample_build_main(bisheng_path, daily=False, global_log_path=None):
     print(f"start sample_build_main")
     try:
@@ -397,7 +482,7 @@ def sample_build_main(bisheng_path, daily=False, global_log_path=None):
         if daily:
             cmd.append("--daily")
 
-        # 如果有全局日志文件，则添加分隔符并输出到sys.stdout/sys.stderr（已被重定向）
+        # 如果有全局日志文件，则使用tee方式运行命令
         if global_log_path:
             # 确保目录存在
             os.makedirs(os.path.dirname(global_log_path), exist_ok=True)
@@ -408,14 +493,10 @@ def sample_build_main(bisheng_path, daily=False, global_log_path=None):
                 log_file.write(f"{'='*80}\n")
                 log_file.flush()
 
-            # 使用sys.stdout和sys.stderr（它们已被重定向到全局日志文件和终端）
-            result = subprocess.run(
-                cmd,
-                check=True,
-                text=True,
-                stdout=sys.stdout,
-                stderr=sys.stderr
-            )
+            # 使用tee方式运行命令，捕获所有输出
+            return_code = run_command_with_tee(cmd, global_log_path)
+            if return_code != 0:
+                raise subprocess.CalledProcessError(return_code, cmd)
         else:
             # 保持原有行为
             result = subprocess.run(
@@ -430,19 +511,36 @@ def sample_build_main(bisheng_path, daily=False, global_log_path=None):
         print(f"{error_info} {e}")
         return -1
 
-def generating_dataset():
+def generating_dataset(global_log_path=None):
     try:
         # 执行build脚本
-        result = subprocess.run(
-            ['python', gen_to_execute],
-            check=True,
-            text=True,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-            cwd='vendor/WS63/'
-        )
+        if global_log_path:
+            # 确保目录存在
+            os.makedirs(os.path.dirname(global_log_path), exist_ok=True)
+            # 写入分隔符标识开始执行gen_dataset.py
+            with open(global_log_path, 'a', encoding='utf-8') as log_file:
+                log_file.write(f"\n{'='*80}\n")
+                log_file.write(f"Starting {gen_to_execute} at {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                log_file.write(f"{'='*80}\n")
+                log_file.flush()
+
+            # 使用tee方式运行命令，捕获所有输出
+            cmd = ['python', gen_to_execute]
+            return_code = run_command_with_tee(cmd, global_log_path, cwd='vendor/WS63/')
+            if return_code != 0:
+                raise subprocess.CalledProcessError(return_code, cmd)
+        else:
+            # 保持原有行为
+            result = subprocess.run(
+                ['python', gen_to_execute],
+                check=True,
+                text=True,
+                stdout=sys.stdout,
+                stderr=sys.stderr,
+                cwd='vendor/WS63/'
+            )
     except subprocess.CalledProcessError as e:
-        print(f"{error_info} {e.stderr}")
+        print(f"{error_info} {e}")
         raise
 
 
@@ -625,7 +723,7 @@ def main():
         build_filename = BUILD_INFO_FILENAME
         build_type = os.environ.get('BUILD_TYPE', '').strip().lower()
         samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
-        generating_dataset()
+        generating_dataset(global_log_path)
         if build_type in ('gate', 'release'):
             print(f'Commencing build!')
             daily = False
