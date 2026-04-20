@@ -17,8 +17,26 @@ import sys
 import json
 import tarfile
 import shutil
+import time
 from pathlib import Path
 from typing import List, Dict, Union, Set, Optional
+import io
+
+
+class Tee(io.TextIOBase):
+    """同时写入文件和原始流"""
+    def __init__(self, file, stream):
+        self.file = file
+        self.stream = stream
+
+    def write(self, data):
+        self.file.write(data)
+        self.stream.write(data)
+        return len(data)
+
+    def flush(self):
+        self.file.flush()
+        self.stream.flush()
 
 
 # 定义要执行的脚本文件和目录
@@ -199,86 +217,214 @@ def process_build_info_files(filename, result_files, build_type='gate'):
     return result_list
 
 
-def process_build_results(result_list, special_targets, result_path='archives'):
+def process_build_results(result_list, special_targets, result_path='archives', global_log_path=None):
     # 确保archives目录存在
     if not os.path.exists(result_path):
         os.makedirs(result_path)
-    
+
+    # 如果提供了全局日志文件，读取其内容
+    global_log_content = None
+    if global_log_path and os.path.exists(global_log_path):
+        try:
+            with open(global_log_path, 'r', encoding='utf-8') as f:
+                global_log_content = f.read()
+            print(f"已读取全局日志文件: {global_log_path}，大小: {len(global_log_content)} 字节")
+        except Exception as e:
+            print(f"{error_info} 读取全局日志文件失败: {e}")
+            global_log_content = None
+
     # 编译正则表达式
     pattern1 = re.compile(r'######### Build target:(\S+)')
     pattern2 = re.compile(r'(\S+) takes (\d+)(\.\d+)? s')
+
     for result in result_list:
         # 构建日志文件名和镜像文件名
         log_file = os.path.join(result_path, f'build-{result}.log')
         fwpkg_file = os.path.join(result_path, f'{result}.fwpkg')
-        
-        if os.path.exists(log_file):
-            # 日志文件存在，读取内容并检查
-            with open(log_file, 'r') as f:
-                lines = f.readlines()
-            
-            # 处理每一行
-            modified_lines = []
-            for line in lines:
-                # 检查第一个正则模式
-                match1 = pattern1.match(line)
-                if match1 and match1.group(1) != result:
-                    modified_lines.append(f'++++ Build target:{match1.group(1)}\n')
-                # 检查第二个正则模式
-                elif pattern2.match(line):
-                    match2 = pattern2.match(line)
-                    if match2.group(1) != result:
-                        time_value = match2.group(2) + (match2.group(3) or '')
-                        modified_lines.append(f'{match2.group(1)} Time: {time_value} s\n')
+
+        # 判断是否为压缩包文件（在special_targets中）
+        is_compressed_file = result in special_targets
+
+        # 压缩包文件使用全量日志，其他文件使用原有逻辑
+        if is_compressed_file and global_log_content:
+            # 对于压缩包文件，处理全量日志
+            lines = global_log_content.split('\n')
+            processed_lines = []
+            last_matching_target_line = None
+            matching_line_indices = []
+
+            # 第一遍：查找所有匹配当前result的构建目标行
+            for i, line in enumerate(lines):
+                match = pattern1.match(line)
+                if match:
+                    if match.group(1) == result:
+                        # 记录匹配行的索引
+                        matching_line_indices.append(i)
+                        last_matching_target_line = line
                     else:
-                        modified_lines.append(line)
-                else:
-                    modified_lines.append(line)
-            
-            # 写回文件
-            with open(log_file, 'w') as f:
-                f.writelines(modified_lines)
-                
-            # 检查镜像文件并追加结果
-            with open(log_file, 'a') as f:
+                        # 不匹配当前result，改为++++格式
+                        processed_lines.append(f'++++ Build target:{match.group(1)}\n')
+                        continue
+                # 检查第二个正则模式（时间行）
+                match2 = pattern2.match(line)
+                if match2:
+                    if match2.group(1) == result:
+                        processed_lines.append(line + ('\n' if not line.endswith('\n') else ''))
+                    else:
+                        time_value = match2.group(2) + (match2.group(3) or '')
+                        processed_lines.append(f'{match2.group(1)} Time: {time_value} s\n')
+                    continue
+
+                # 普通行，保留原样
+                processed_lines.append(line + ('\n' if not line.endswith('\n') else ''))
+
+            # 如果找到了匹配的行，只保留最后一个匹配行
+            if matching_line_indices:
+                # 移除除了最后一个匹配行之外的所有匹配行
+                # 我们已经在processed_lines中处理了所有行，所以需要重建
+                # 更简单的方法：重新处理，只保留最后一个匹配行
+                processed_lines = []
+                match_count = 0
+                for i, line in enumerate(lines):
+                    match = pattern1.match(line)
+                    if match:
+                        if match.group(1) == result:
+                            match_count += 1
+                            # 只保留最后一个匹配行
+                            if match_count == len(matching_line_indices):
+                                processed_lines.append(line + ('\n' if not line.endswith('\n') else ''))
+                            else:
+                                # 跳过之前的匹配行
+                                continue
+                        else:
+                            # 不匹配当前result，改为++++格式
+                            processed_lines.append(f'++++ Build target:{match.group(1)}\n')
+                            continue
+                    else:
+                        # 检查时间行
+                        match2 = pattern2.match(line)
+                        if match2:
+                            if match2.group(1) == result:
+                                processed_lines.append(line + ('\n' if not line.endswith('\n') else ''))
+                            else:
+                                time_value = match2.group(2) + (match2.group(3) or '')
+                                processed_lines.append(f'{match2.group(1)} Time: {time_value} s\n')
+                            continue
+
+                    # 普通行
+                    if not (pattern1.match(line) or pattern2.match(line)):
+                        processed_lines.append(line + ('\n' if not line.endswith('\n') else ''))
+
+            with open(log_file, 'w', encoding='utf-8') as f:
+                # 写入处理后的全量日志
+                f.write(''.join(processed_lines))
+
+                # 如果全量日志中没有找到对应的构建目标行，则添加一行
+                if not last_matching_target_line:
+                    f.write(f'######### Build target:{result}\n')
+
+                # 检查镜像文件并追加结果
                 if os.path.exists(fwpkg_file):
                     f.write('\nFinished: SUCCESS')
                 else:
-                    f.write('\nFinished: FAILURE')
-        else:
-            # 日志文件不存在，创建并写入初始内容
-            with open(log_file, 'w') as f:
-                f.write(f'######### Build target:{result}\n')
-                f.write(f'{result} takes 0 s\n')
-                
-                # 判断Finished状态
-                if os.path.exists(fwpkg_file):
-                    f.write('Finished: SUCCESS')
-                elif result in special_targets:
                     # 检查是否存在对应的tar.gz文件
                     tar_file = os.path.join(result_path, f'{result}.tar.gz')
                     if os.path.exists(tar_file):
+                        f.write('\nFinished: SUCCESS')
+                    else:
+                        f.write('\nFinished: FAILURE')
+            print(f"已将处理后的全量日志写入压缩包文件: {log_file}")
+        else:
+            # 非压缩包文件或没有全局日志，使用原有逻辑
+            if os.path.exists(log_file):
+                # 日志文件存在，读取内容并检查
+                with open(log_file, 'r') as f:
+                    lines = f.readlines()
+
+                # 处理每一行
+                modified_lines = []
+                for line in lines:
+                    # 检查第一个正则模式
+                    match1 = pattern1.match(line)
+                    if match1 and match1.group(1) != result:
+                        modified_lines.append(f'++++ Build target:{match1.group(1)}\n')
+                    # 检查第二个正则模式
+                    elif pattern2.match(line):
+                        match2 = pattern2.match(line)
+                        if match2.group(1) != result:
+                            time_value = match2.group(2) + (match2.group(3) or '')
+                            modified_lines.append(f'{match2.group(1)} Time: {time_value} s\n')
+                        else:
+                            modified_lines.append(line)
+                    else:
+                        modified_lines.append(line)
+
+                # 写回文件
+                with open(log_file, 'w') as f:
+                    f.writelines(modified_lines)
+
+                # 检查镜像文件并追加结果
+                with open(log_file, 'a') as f:
+                    if os.path.exists(fwpkg_file):
+                        f.write('\nFinished: SUCCESS')
+                    else:
+                        f.write('\nFinished: FAILURE')
+            else:
+                # 日志文件不存在，创建并写入初始内容
+                with open(log_file, 'w') as f:
+                    f.write(f'######### Build target:{result}\n')
+                    f.write(f'{result} takes 0 s\n')
+
+                    # 判断Finished状态
+                    if os.path.exists(fwpkg_file):
                         f.write('Finished: SUCCESS')
+                    elif result in special_targets:
+                        # 检查是否存在对应的tar.gz文件
+                        tar_file = os.path.join(result_path, f'{result}.tar.gz')
+                        if os.path.exists(tar_file):
+                            f.write('Finished: SUCCESS')
+                        else:
+                            f.write('Finished: FAILURE')
                     else:
                         f.write('Finished: FAILURE')
-                else:
-                    f.write('Finished: FAILURE')
 
 
-def sample_build_main(bisheng_path, daily=False):
+def sample_build_main(bisheng_path, daily=False, global_log_path=None):
     print(f"start sample_build_main")
     try:
         # 执行build脚本
         cmd = ["bash", script_to_execute, bisheng_path]
         if daily:
             cmd.append("--daily")
-        result = subprocess.run(
-            cmd,
-            check=True,
-            text=True,
-            stdout=sys.stdout,
-            stderr=sys.stderr
-        )
+
+        # 如果有全局日志文件，则添加分隔符并输出到sys.stdout/sys.stderr（已被重定向）
+        if global_log_path:
+            # 确保目录存在
+            os.makedirs(os.path.dirname(global_log_path), exist_ok=True)
+            # 写入分隔符标识开始执行build.sh
+            with open(global_log_path, 'a', encoding='utf-8') as log_file:
+                log_file.write(f"\n{'='*80}\n")
+                log_file.write(f"Starting build.sh at {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                log_file.write(f"{'='*80}\n")
+                log_file.flush()
+
+            # 使用sys.stdout和sys.stderr（它们已被重定向到全局日志文件和终端）
+            result = subprocess.run(
+                cmd,
+                check=True,
+                text=True,
+                stdout=sys.stdout,
+                stderr=sys.stderr
+            )
+        else:
+            # 保持原有行为
+            result = subprocess.run(
+                cmd,
+                check=True,
+                text=True,
+                stdout=sys.stdout,
+                stderr=sys.stderr
+            )
         return 0
     except subprocess.CalledProcessError as e:
         print(f"{error_info} {e}")
@@ -452,31 +598,73 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
 
 
 def main():
-    print(f"start main")
-    build_filename = BUILD_INFO_FILENAME
-    build_type = os.environ.get('BUILD_TYPE', '').strip().lower()
-    samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
-    generating_dataset()
-    if build_type in ('gate', 'release'):
-        print(f'Commencing build!')
-        daily = False
-    elif build_type == 'daily':
-        print(f'Commencing execution of daily!')
-        daily = True
-    else:
-        print(f'BUILD_TYPE not set or invalid, defaulting to gate build')
-        daily = False
-    bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
-    prepare_dataset(hiSpark_ai_path)
-    result = sample_build_main(bisheng_path, daily=daily)
-    result_files = move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, build_type=build_type)
-    input_list = process_build_info_files(build_filename, result_files, build_type=build_type)
-    process_build_results(input_list, result_files, result_path='archives')
-    if result == 0:
-        print(f"all build step execute end")
-    else:
-        print(f"build fail")
-        exit(1)
+    # 创建全局日志文件
+    global_log_path = os.path.join('archives', 'full_build.log')
+    os.makedirs(os.path.dirname(global_log_path), exist_ok=True)
+
+    # 打开全局日志文件，使用追加模式以便多次写入
+    global_log_file = open(global_log_path, 'w', encoding='utf-8')
+
+    # 创建Tee对象，同时输出到文件和终端
+    stdout_tee = Tee(global_log_file, sys.stdout)
+    stderr_tee = Tee(global_log_file, sys.stderr)
+
+    # 保存原始的stdout和stderr
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+
+    try:
+        # 重定向stdout和stderr
+        sys.stdout = stdout_tee
+        sys.stderr = stderr_tee
+
+        print(f"start main")
+        print(f"全局日志文件: {global_log_path}")
+        print(f"{'='*80}")
+
+        build_filename = BUILD_INFO_FILENAME
+        build_type = os.environ.get('BUILD_TYPE', '').strip().lower()
+        samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
+        generating_dataset()
+        if build_type in ('gate', 'release'):
+            print(f'Commencing build!')
+            daily = False
+        elif build_type == 'daily':
+            print(f'Commencing execution of daily!')
+            daily = True
+        else:
+            print(f'BUILD_TYPE not set or invalid, defaulting to gate build')
+            daily = False
+        bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
+        prepare_dataset(hiSpark_ai_path)
+        result = sample_build_main(bisheng_path, daily=daily, global_log_path=global_log_path)
+        result_files = move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, build_type=build_type)
+        input_list = process_build_info_files(build_filename, result_files, build_type=build_type)
+
+        # 在调用process_build_results之前恢复原始的stdout/stderr，避免日志文件中包含处理过程
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+        global_log_file.flush()
+
+        # 传递全局日志路径给process_build_results
+        process_build_results(input_list, result_files, result_path='archives', global_log_path=global_log_path)
+
+        # 完成后输出总结
+        print(f"全局日志已保存到: {global_log_path}")
+        print(f"所有构建日志已更新为全量日志")
+
+        if result == 0:
+            print(f"all build step execute end")
+        else:
+            print(f"build fail")
+            exit(1)
+    finally:
+        # 确保恢复原始的stdout/stderr并关闭文件
+        if sys.stdout is not stdout_tee:
+            sys.stdout = original_stdout
+        if sys.stderr is not stderr_tee:
+            sys.stderr = original_stderr
+        global_log_file.close()
 
 if __name__ == '__main__':
     sys.exit(main())
