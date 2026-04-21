@@ -204,20 +204,22 @@ def process_output_lines(content, target_result):
     """处理输出内容, 替换不匹配的build target和时间信息"""
     pattern1 = re.compile(r'######### Build target:(\S+)')
     pattern2 = re.compile(r'(\S+) takes (\d+)(\.\d+)? s')
+    pattern_finished = re.compile(r'Finished:\s*(SUCCESS|FAILURE)$')
     
     processed_lines = []
     for line in content.splitlines(keepends=True):
         line_stripped = line.rstrip('\n')
-        if re.match(r'Finished: (SUCCESS|FAILURE)', line_stripped):
+        
+        # 跳过 Finished 相关的行
+        if pattern_finished.match(line_stripped):
             continue
-        # 检查第一个正则模式
-        match1 = pattern1.match(line_stripped)
+
+        match1 = pattern1.search(line_stripped)
         if match1 and match1.group(1) != target_result:
             processed_lines.append(f'++++ Build target:{match1.group(1)}\n')
             continue
-        
-        # 检查第二个正则模式
-        match2 = pattern2.match(line_stripped)
+
+        match2 = pattern2.search(line_stripped)
         if match2 and match2.group(1) != target_result:
             time_value = match2.group(2) + (match2.group(3) or '')
             processed_lines.append(f'{match2.group(1)} Time: {time_value} s\n')
@@ -235,55 +237,47 @@ def process_build_results(result_list, special_targets, result_path='archives', 
         os.makedirs(result_path)
     
     for result in result_list:
-        # 构建日志文件名和镜像文件名
         log_file = os.path.join(result_path, f'build-{result}.log')
         fwpkg_file = os.path.join(result_path, f'{result}.fwpkg')
+        tar_file = os.path.join(result_path, f'{result}.tar.gz')
+        
+        # 判断构建是否成功
+        build_success = os.path.exists(fwpkg_file) or (result in special_targets and os.path.exists(tar_file))
+        
+        # 检查是否需要更新状态
+        need_update = False
         
         if os.path.exists(log_file):
-            # 日志文件存在，读取内容并检查
             with open(log_file, 'r') as f:
-                lines = f.readlines()
-            
-            # 处理每一行
-            modified_lines = process_output_lines(''.join(lines), result)
-            
-            # 写回文件
-            with open(log_file, 'w') as f:
-                f.writelines(modified_lines)
-                
-            # 检查镜像文件并追加结果
-            with open(log_file, 'a') as f:
-                if os.path.exists(fwpkg_file):
-                    f.write('\nFinished: SUCCESS')
+                content = f.read()
+                # 检查是否已经包含 Finished 行
+                if 'Finished:' not in content:
+                    need_update = True
+                    # 处理现有内容（不包含状态行）
+                    all_lines = process_output_lines(content, result)
                 else:
-                    f.write('\nFinished: FAILURE')
+                    # 文件已经完整，不需要更新
+                    continue
         else:
-            # 日志文件不存在，创建并写入初始内容
+            need_update = True
+            all_lines = []
+            if previous_output and result in special_targets:
+                all_lines.extend(["=== Previous Build Output ===\n", 
+                                *process_output_lines(previous_output, result),
+                                "\n=== Build Log ===\n"])
+        
+        if need_update:
+            # 添加构建状态
+            all_lines.extend([
+                f'######### Build target:{result} {"success" if build_success else "failed"}\n',
+                f'{result} takes 0 s\n',
+                f'Finished: {"SUCCESS" if build_success else "FAILURE"}'
+            ])
+            
+            # 写入文件
             with open(log_file, 'w') as f:
-                # 如果有之前的输出内容，先写入
-                if previous_output and result in special_targets:
-                    f.write("=== Previous Build Output ===\n")
-                    
-                    # 处理 previous_output 的内容
-                    processed_previous = process_output_lines(previous_output, result)
-                    f.writelines(processed_previous)
-                    f.write("\n=== Build Log ===\n")
-                
-                f.write(f'######### Build target:{result}\n')
-                f.write(f'{result} takes 0 s\n')
-                
-                # 判断Finished状态
-                if os.path.exists(fwpkg_file):
-                    f.write('Finished: SUCCESS')
-                elif result in special_targets:
-                    # 检查是否存在对应的tar.gz文件
-                    tar_file = os.path.join(result_path, f'{result}.tar.gz')
-                    if os.path.exists(tar_file):
-                        f.write('Finished: SUCCESS')
-                    else:
-                        f.write('Finished: FAILURE')
-                else:
-                    f.write('Finished: FAILURE')
+                f.writelines(all_lines)
+
 
 def sample_build_main(bisheng_path, daily=False):
     print(f"=== 进入 sample_build_main 函数 ===")
