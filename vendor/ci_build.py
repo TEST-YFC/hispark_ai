@@ -18,6 +18,7 @@ import json
 import tarfile
 import shutil
 from pathlib import Path
+from io import StringIO
 from typing import List, Dict, Union, Set, Optional
 
 
@@ -199,90 +200,125 @@ def process_build_info_files(filename, result_files, build_type='gate'):
     return result_list
 
 
-def process_build_results(result_list, special_targets, result_path='archives'):
+def process_output_lines(content, target_result):
+    """处理输出内容, 替换不匹配的build target和时间信息"""
+    pattern1 = re.compile(r'######### Build target:(\S+)')
+    pattern2 = re.compile(r'(\S+) takes (\d+)(\.\d+)? s')
+    pattern_finished = re.compile(r'Finished:\s*(SUCCESS|FAILURE)$')
+    
+    processed_lines = []
+    for line in content.splitlines(keepends=True):
+        line_stripped = line.rstrip('\n')
+        
+        # 跳过 Finished 相关的行
+        if pattern_finished.match(line_stripped):
+            continue
+
+        match1 = pattern1.search(line_stripped)
+        if match1 and match1.group(1) != target_result:
+            processed_lines.append(f'++++ Build target:{match1.group(1)}\n')
+            continue
+
+        match2 = pattern2.search(line_stripped)
+        if match2 and match2.group(1) != target_result:
+            time_value = match2.group(2) + (match2.group(3) or '')
+            processed_lines.append(f'{match2.group(1)} Time: {time_value} s\n')
+            continue
+        
+        # 没有匹配或匹配成功，保留原行
+        processed_lines.append(line)
+    
+    return processed_lines
+
+
+def process_build_results(result_list, special_targets, result_path='archives', previous_output=None):
     # 确保archives目录存在
     if not os.path.exists(result_path):
         os.makedirs(result_path)
     
-    # 编译正则表达式
-    pattern1 = re.compile(r'######### Build target:(\S+)')
-    pattern2 = re.compile(r'(\S+) takes (\d+)(\.\d+)? s')
     for result in result_list:
-        # 构建日志文件名和镜像文件名
         log_file = os.path.join(result_path, f'build-{result}.log')
         fwpkg_file = os.path.join(result_path, f'{result}.fwpkg')
+        tar_file = os.path.join(result_path, f'{result}.tar.gz')
+        
+        # 判断构建是否成功
+        build_success = os.path.exists(fwpkg_file) or (result in special_targets and os.path.exists(tar_file))
+        
+        # 检查是否需要更新状态
+        need_update = False
         
         if os.path.exists(log_file):
-            # 日志文件存在，读取内容并检查
             with open(log_file, 'r') as f:
-                lines = f.readlines()
-            
-            # 处理每一行
-            modified_lines = []
-            for line in lines:
-                # 检查第一个正则模式
-                match1 = pattern1.match(line)
-                if match1 and match1.group(1) != result:
-                    modified_lines.append(f'++++ Build target:{match1.group(1)}\n')
-                # 检查第二个正则模式
-                elif pattern2.match(line):
-                    match2 = pattern2.match(line)
-                    if match2.group(1) != result:
-                        time_value = match2.group(2) + (match2.group(3) or '')
-                        modified_lines.append(f'{match2.group(1)} Time: {time_value} s\n')
-                    else:
-                        modified_lines.append(line)
+                content = f.read()
+                # 检查是否已经包含 Finished 行
+                if 'Finished:' not in content:
+                    need_update = True
+                    # 处理现有内容（不包含状态行）
+                    all_lines = process_output_lines(content, result)
                 else:
-                    modified_lines.append(line)
-            
-            # 写回文件
-            with open(log_file, 'w') as f:
-                f.writelines(modified_lines)
-                
-            # 检查镜像文件并追加结果
-            with open(log_file, 'a') as f:
-                if os.path.exists(fwpkg_file):
-                    f.write('\nFinished: SUCCESS')
-                else:
-                    f.write('\nFinished: FAILURE')
+                    # 文件已经完整，不需要更新
+                    continue
         else:
-            # 日志文件不存在，创建并写入初始内容
+            need_update = True
+            all_lines = []
+            if previous_output and result in special_targets:
+                all_lines.extend(["=== Previous Build Output ===\n", 
+                                *process_output_lines(previous_output, result),
+                                "\n=== Build Log ===\n"])
+        
+        if need_update:
+            # 添加构建状态
+            all_lines.extend([
+                f'######### Build target:{result} {"success" if build_success else "failed"}\n',
+                f'{result} takes 0 s\n',
+                f'Finished: {"SUCCESS" if build_success else "FAILURE"}'
+            ])
+            
+            # 写入文件
             with open(log_file, 'w') as f:
-                f.write(f'######### Build target:{result}\n')
-                f.write(f'{result} takes 0 s\n')
-                
-                # 判断Finished状态
-                if os.path.exists(fwpkg_file):
-                    f.write('Finished: SUCCESS')
-                elif result in special_targets:
-                    # 检查是否存在对应的tar.gz文件
-                    tar_file = os.path.join(result_path, f'{result}.tar.gz')
-                    if os.path.exists(tar_file):
-                        f.write('Finished: SUCCESS')
-                    else:
-                        f.write('Finished: FAILURE')
-                else:
-                    f.write('Finished: FAILURE')
+                f.writelines(all_lines)
 
 
 def sample_build_main(bisheng_path, daily=False):
-    print(f"start sample_build_main")
+    print(f"=== 进入 sample_build_main 函数 ===")
+    print(f"参数: bisheng_path={bisheng_path}, daily={daily}")
+    sys.stdout.flush()
+    
+    # 确保 bisheng_path 是字符串
+    if isinstance(bisheng_path, Path):
+        bisheng_path = str(bisheng_path)
     try:
         # 执行build脚本
         cmd = ["bash", script_to_execute, bisheng_path]
         if daily:
             cmd.append("--daily")
-        result = subprocess.run(
+        print(f"执行命令: {' '.join(cmd)}")
+        sys.stdout.flush()
+        
+        # 使用 PIPE 捕获输出，同时实时打印
+        process = subprocess.Popen(
             cmd,
-            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,  # 合并 stderr 到 stdout
             text=True,
-            stdout=sys.stdout,
-            stderr=sys.stderr
+            bufsize=1  # 行缓冲
         )
-        return 0
-    except subprocess.CalledProcessError as e:
-        print(f"{error_info} {e}")
-        return -1
+        
+        captured_output = []
+        for line in process.stdout:
+            captured_output.append(line)
+            print(line, end='')  # 实时打印到控制台
+            sys.stdout.flush()
+        
+        process.wait()
+        output_text = ''.join(captured_output)
+        return 0, output_text
+    except Exception as e:
+        print(f"{error_info} 未预期的异常: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.stdout.flush()
+        return -1, str(e)
 
 def generating_dataset():
     try:
@@ -468,15 +504,33 @@ def main():
         daily = False
     bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
     prepare_dataset(hiSpark_ai_path)
-    result = sample_build_main(bisheng_path, daily=daily)
+    
+    # 捕获构建过程的输出
+    previous_output = StringIO()
+    # 重定向stdout和stderr来捕获输出
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    sys.stdout = previous_output
+    sys.stderr = previous_output
+    
+    result, output_text = sample_build_main(bisheng_path, daily=daily)
+    
+    # 恢复stdout和stderr
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
+    
+    captured_output = previous_output.getvalue()    
     result_files = move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, build_type=build_type)
     input_list = process_build_info_files(build_filename, result_files, build_type=build_type)
-    process_build_results(input_list, result_files, result_path='archives')
+    
+    # 传递捕获的输出到process_build_results
+    process_build_results(input_list, result_files, result_path='archives', previous_output=captured_output)
+    
     if result == 0:
         print(f"all build step execute end")
     else:
         print(f"build fail")
         exit(1)
-
+        
 if __name__ == '__main__':
     sys.exit(main())
