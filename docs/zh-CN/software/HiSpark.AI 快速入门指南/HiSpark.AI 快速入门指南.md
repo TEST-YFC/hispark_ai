@@ -317,7 +317,7 @@ Win R，输入“optionalfeatures”。
 
 ![](figures/zh-cn_image_0000002521720356.png)
 
-通过离线安装包[https://github.com/microsoft/WSL/releases/download/2.6.3/wsl.2.6.3.0.x64.msi](https://github.com/microsoft/WSL/releases/download/2.6.3/wsl.2.6.3.0.x64.msi)安装WSL，并下载指定镜像。
+通过离线安装包[https://github.com/microsoft/WSL/releases/download/2.6.3/wsl.2.6.3.0.x64.msi](https://github.com/microsoft/WSL/releases/download/2.6.3/wsl.2.6.3.0.x64.msi)安装WSL，并下载指定[镜像](https://hispark-obs.obs.cn-east-3.myhuaweicloud.com/ubuntu-22.04-cann-26.03.1.tar.xz)。
 
 通过以下命令安装WSL镜像：
 

@@ -54,8 +54,8 @@ def make_dir_if_not_exists(path: str) -> None:
         logger.info("INFO: make dir {}".format(path))
 
 
-def download_dataset(
-    orig_path: str, save_path: str, train: bool, download_bin: bool, download_npy: bool, bin_datatype: str):
+def download_dataset(orig_path: str, save_path: str, train: bool, download_bin: bool, download_npy: bool,
+                     bin_datatype: str):
     """Download and preprocess MNIST dataset. Data will be normalized to 0~1
 
     Args:
@@ -74,10 +74,10 @@ def download_dataset(
     if download_npy:
         make_dir_if_not_exists(npy_path)
 
-
     labels = [["sample", "label"]]
     for idx, (image, label) in enumerate(dataset):
         tensor = np.array(image).astype(np.float32) / 255
+        tensor = np.expand_dims(np.expand_dims(tensor, axis=0), axis=0)
 
         sample_name = "sample_{:0>5d}_{}".format(idx, label)
         if download_bin:
