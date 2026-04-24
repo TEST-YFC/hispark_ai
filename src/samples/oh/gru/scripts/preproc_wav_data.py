@@ -28,6 +28,7 @@ import numpy as np
 if tf.__version__.split(".")[0] == '1':
     from tensorflow.contrib.framework.python.ops import audio_ops
 
+random.seed(10)
 
 LABELS = ["_silence_", "_unknown_", "yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"]
 
@@ -47,17 +48,25 @@ def write_txt(data, txt_file, sep_len=12):
 
 
 def onnx_infer(data, feature_name, onnx_model_path, output_root_dir):
-    if not os.path.exists(os.path.join(output_root_dir, "quant_mfcc_input")):
-        os.makedirs(os.path.join(output_root_dir, "quant_mfcc_input"))
-    if not os.path.exists(os.path.join(output_root_dir, "quant_hidden_states")):
-        os.makedirs(os.path.join(output_root_dir, "quant_hidden_states"))
+    if not os.path.exists(os.path.join(output_root_dir, "quant_mfcc_input", "bin")):
+        os.makedirs(os.path.join(output_root_dir, "quant_mfcc_input", "bin"))
+    if not os.path.exists(os.path.join(output_root_dir, "quant_hidden_states", "bin")):
+        os.makedirs(os.path.join(output_root_dir, "quant_hidden_states", "bin"))
+    if not os.path.exists(os.path.join(output_root_dir, "quant_mfcc_input", "npy")):
+        os.makedirs(os.path.join(output_root_dir, "quant_mfcc_input", "npy"))
+    if not os.path.exists(os.path.join(output_root_dir, "quant_hidden_states", "npy")):
+        os.makedirs(os.path.join(output_root_dir, "quant_hidden_states", "npy"))
     init_hidden_states = np.zeros((1, 154), dtype=np.float32)
     for time in range(25):
         session = ort.InferenceSession(onnx_model_path, providers=['CPUExecutionProvider'])
-        data[:, time, :].tofile(os.path.join(output_root_dir, "quant_mfcc_input", "timestamp" + str(time) + "_" +
+        data[:, time, :].tofile(os.path.join(output_root_dir, "quant_mfcc_input", "bin", "timestamp" + str(time) + "_" +
             feature_name.split(".")[0] + ".bin"))
-        init_hidden_states.tofile(os.path.join(output_root_dir, "quant_hidden_states", "timestamp" + str(time) + "_"
+        init_hidden_states.tofile(os.path.join(output_root_dir, "quant_hidden_states", "bin", "timestamp" + str(time) + "_"
             + feature_name.split(".")[0] + ".bin"))
+        np.save(os.path.join(output_root_dir, "quant_mfcc_input", "npy", f"timestamp{time}_{feature_name.split('.')[0]}.npy"),
+                data[:, time, :])
+        np.save(os.path.join(output_root_dir, "quant_hidden_states", "npy", f"timestamp{time}_{feature_name.split('.')[0]}.npy"),
+                init_hidden_states)
         outputs = session.run(["output_hidden_states", "label_softmax"], {"mfcc_input": data[:, time, :],
             "hidden_states": init_hidden_states})
         init_hidden_states = outputs[0]
@@ -163,8 +172,7 @@ def preprocess_calibrate_data(data_root_dir, output_root_dir, onnx_model, sample
         for line in lines:
             calibrate_list.append(line[:-1])
     random.shuffle(calibrate_list)
-    if sample_num != -1 or sample_num < len(calibrate_list):
-        calibrate_list = calibrate_list[0:sample_num]
+    calibrate_list_valid = []
     label_dirs = os.listdir(data_root_dir)
     for label in label_dirs:
         if os.path.isfile(os.path.join(data_root_dir, label)):
@@ -173,7 +181,16 @@ def preprocess_calibrate_data(data_root_dir, output_root_dir, onnx_model, sample
             continue
         waves = os.listdir(os.path.join(data_root_dir, label))
         for wav in waves:
-            if label + "/" + wav not in calibrate_list:
+            if label + "/" + wav in calibrate_list and (len(calibrate_list_valid) < sample_num or sample_num == -1):
+                calibrate_list_valid.append(label + "/" + wav)
+    for label in label_dirs:
+        if os.path.isfile(os.path.join(data_root_dir, label)):
+            continue
+        if label not in LABELS:
+            continue
+        waves = os.listdir(os.path.join(data_root_dir, label))
+        for wav in waves:
+            if label + "/" + wav not in calibrate_list_valid:
                 continue
             data = preprocess(os.path.join(data_root_dir, label, wav))
             _ = onnx_infer(data, label + "_" + wav, onnx_model, output_root_dir)
