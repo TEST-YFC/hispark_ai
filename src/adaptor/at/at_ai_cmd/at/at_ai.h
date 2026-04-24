@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-2025 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2026-2026 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,8 +12,27 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ 
+ * Description: At AI header \n
  */
-#ifndef MCU_ENV_H
-#define MCU_ENV_H
-extern bool g_is_env_inited;
-#endif /* MCU_ENV_H */
+
+#ifndef AT_AI_H
+#define AT_AI_H
+
+#include "at.h"
+
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif
+
+void los_at_ai_cmd_register(void);
+
+#ifdef __cplusplus
+#if __cplusplus
+    }
+#endif
+#endif
+
+#endif /* end of at_ai.h */

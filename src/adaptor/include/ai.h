@@ -302,6 +302,36 @@ OH_AI_API OH_AI_TensorHandleArray OH_AI_ModelGetOutputs(const OH_AI_ModelHandle 
 
 /**
  * @if Eng
+ * @brief  Obtains the input tensor handle of the model by specified tensor name.
+ * @param  [in] model Model object handle.
+ * @param  [in] tensor_name The specified tensor name used to search for the target input tensor.
+ * @retval The target input tensor handle matched by the tensor name.
+ * @else
+ * @brief  根据指定的张量名称获取模型对应的输入张量
+ * @param  [in] model 模型对象句柄.
+ * @param  [in] tensor_name 用于查找目标输入张量的张量名称
+ * @retval 与张量名称匹配的目标输入张量
+ * @endif
+ */
+OH_AI_API OH_AI_TensorHandle OH_AI_ModelGetInputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name);
+
+/**
+ * @if Eng
+ * @brief  Obtains the output tensor handle of the model by specified tensor name.
+ * @param  [in] model Model object handle.
+ * @param  [in] tensor_name The specified tensor name used to search for the target output tensor.
+ * @retval The target output tensor handle matched by the tensor name.
+ * @else
+ * @brief  根据指定的张量名称获取模型对应的输出张量
+ * @param  [in] model 模型对象句柄.
+ * @param  [in] tensor_name 用于查找目标输出张量的张量名称
+ * @retval 与张量名称匹配的目标输出张量
+ * @endif
+ */
+OH_AI_API OH_AI_TensorHandle OH_AI_ModelGetOutputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name);
+
+/**
+ * @if Eng
  * @brief  Inference model.
  * @param  [in] model Model object handle.
  * @param  [in] inputs The array that includes all input tensor handles.
