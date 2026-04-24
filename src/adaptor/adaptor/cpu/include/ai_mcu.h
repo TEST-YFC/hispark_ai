@@ -404,6 +404,40 @@ MS_API MSTensorHandleArray MSModelGetOutputs(const MSModelHandle model);
 
 /**
  * @if Eng
+ * @brief  Obtain the input tensor handle of the model by the specified tensor name.
+ * @param  [in]  model                   Model object handle.
+ * @param  [in]  tensor_name             The specified tensor name used to search for the target input tensor.
+ * @retval MSTensorHandle                Success.
+ * @retval NULL                          Nullptr Failed.
+ * @else
+ * @brief  根据指定的张量名称获取模型对应的输入张量。
+ * @param  [in]  model                   输入的模型对象。
+ * @param  [in]  tensor_name             用于查找目标输入张量的张量名称。
+ * @retval MSTensorHandle对象            成功返回#MSTensorHandle对象。
+ * @retval NULL                          失败返回#空指针。
+ * @endif
+ */
+MS_API MSTensorHandle MSModelGetInputByTensorName(const MSModelHandle model, const char *tensor_name);
+
+/**
+ * @if Eng
+ * @brief  Obtain the output tensor handle of the model by the specified tensor name.
+ * @param  [in]  model                   Model object handle.
+ * @param  [in]  tensor_name             The specified tensor name used to search for the target output tensor.
+ * @retval MSTensorHandle                Success.
+ * @retval NULL                          Nullptr Failed.
+ * @else
+ * @brief  根据指定的张量名称获取模型对应的输出张量。
+ * @param  [in]  model                   输入的模型对象。
+ * @param  [in]  tensor_name             用于查找目标输出张量的张量名称。
+ * @retval MSTensorHandle对象            成功返回#MSTensorHandle对象。
+ * @retval NULL                          失败返回#空指针。
+ * @endif
+ */
+MS_API MSTensorHandle MSModelGetOutputByTensorName(const MSModelHandle model, const char *tensor_name);
+
+/**
+ * @if Eng
  * @brief  Obtain the data size of the tensor.
  * @param  [in]  tensor                   Model object handle.
  * @retval data size                   Success.

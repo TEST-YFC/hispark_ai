@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-2025 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2025-2026 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,46 @@
 #include "std_def.h"
 #include "ai_mcu.h"
 #include "ai.h"
+#include "model_state.h"
 
 OH_AI_ModelHandle OH_AI_ModelCreate(void)
 {
     MSModelHandle model_handle = MSModelCreate();
+    if (model_handle == NULL) {
+        return NULL;
+    }
+    int index = ModelState_BindHandle(model_handle);
+    if (index == INVALID_INDEX) {
+        MSModelDestroy(&model_handle);
+        return NULL;
+    }
     return (OH_AI_ModelHandle)model_handle;
 }
 
 OH_AI_Status OH_AI_ModelBuildFromFile(
     OH_AI_ModelHandle model, const char *model_path, const OH_AI_ContextHandle model_context)
 {
-    UNUSED(model);
     UNUSED(model_path);
-    UNUSED(model_context);
+    if (model_context == NULL) {
+        return OH_AI_STATUS_FAILED;
+    }
+    int index = ModelState_FindIndex(model);
+    if (!ModelState_Check(index, MODEL_STATE_CREATED)) {
+        return OH_AI_STATUS_FAILED;
+    }
+
+    ModelState_Transition(index, MODEL_STATE_BUILT);
     return OH_AI_STATUS_SUCCESS;
 }
 
 OH_AI_Status OH_AI_ModelBuild(
     OH_AI_ModelHandle model, const void *model_data, size_t data_size, const OH_AI_ContextHandle model_context)
 {
-    if (model == NULL || model_context == NULL) {
+    if (model_context == NULL) {
+        return OH_AI_STATUS_FAILED;
+    }
+    int index = ModelState_FindIndex(model);
+    if (!ModelState_Check(index, MODEL_STATE_CREATED)) {
         return OH_AI_STATUS_FAILED;
     }
     
@@ -47,6 +67,7 @@ OH_AI_Status OH_AI_ModelBuild(
         (MSContextHandle)model_context
     );
     if (status == kMSStatusSuccess) {
+        ModelState_Transition(index, MODEL_STATE_BUILT);
         return OH_AI_STATUS_SUCCESS;
     } else {
         return OH_AI_STATUS_FAILED;
@@ -56,19 +77,28 @@ OH_AI_Status OH_AI_ModelBuild(
 OH_AI_Status OH_AI_ModelBuildFromName(
     OH_AI_ModelHandle model, const char *model_name, const OH_AI_ContextHandle model_context)
 {
-    UNUSED(model);
     UNUSED(model_name);
-    UNUSED(model_context);
+    if (model_context == NULL) {
+        return OH_AI_STATUS_FAILED;
+    }
+    int index = ModelState_FindIndex(model);
+    if (!ModelState_Check(index, MODEL_STATE_CREATED)) {
+        return OH_AI_STATUS_FAILED;
+    }
+    
+    ModelState_Transition(index, MODEL_STATE_BUILT);
     return OH_AI_STATUS_SUCCESS;
 }
 
 void OH_AI_ModelDestroy(OH_AI_ModelHandle *model)
 {
-    if (model == NULL) {
+    if (model == NULL || *model == NULL) {
         return;
     }
 
+    int index = ModelState_FindIndex(*model);
     MSModelDestroy((MSModelHandle *)model);
+    ModelState_Transition(index, MODEL_STATE_UNINIT);
 
     *model = NULL;
 }
@@ -79,7 +109,7 @@ OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle model)
     stub_array.handle_num = 0;
     stub_array.handle_list = NULL;
 
-    if (model == NULL) {
+    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
         return stub_array;
     }
 
@@ -97,7 +127,7 @@ OH_AI_TensorHandleArray OH_AI_ModelGetOutputs(const OH_AI_ModelHandle model)
     stub_array.handle_num = 0;
     stub_array.handle_list = NULL;
 
-    if (model == NULL) {
+    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
         return stub_array;
     }
 
@@ -109,9 +139,51 @@ OH_AI_TensorHandleArray OH_AI_ModelGetOutputs(const OH_AI_ModelHandle model)
     return stub_array;
 }
 
+OH_AI_TensorHandle OH_AI_ModelGetInputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name)
+{
+    OH_AI_TensorHandle stub_tensor = NULL;
+
+    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+        return stub_tensor;
+    }
+
+    if (tensor_name == NULL) {
+        return stub_tensor;
+    }
+
+    MSTensorHandle ms_tensor = MSModelGetInputByTensorName((MSModelHandle)model, tensor_name);
+
+    stub_tensor = (OH_AI_TensorHandle)ms_tensor;
+
+    return stub_tensor;
+}
+
+OH_AI_TensorHandle OH_AI_ModelGetOutputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name)
+{
+    OH_AI_TensorHandle stub_tensor = NULL;
+
+    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+        return stub_tensor;
+    }
+
+    if (tensor_name == NULL) {
+        return stub_tensor;
+    }
+
+    MSTensorHandle ms_tensor = MSModelGetOutputByTensorName((MSModelHandle)model, tensor_name);
+
+    stub_tensor = (OH_AI_TensorHandle)ms_tensor;
+
+    return stub_tensor;
+}
+
 OH_AI_Status OH_AI_ModelPredict(
     OH_AI_ModelHandle model, const OH_AI_TensorHandleArray inputs, OH_AI_TensorHandleArray *outputs)
 {
+    if (outputs == NULL || inputs.handle_list == NULL || inputs.handle_num == 0 ||
+        !ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+        return OH_AI_STATUS_FAILED;
+    }
     MSModelHandle ms_model = (MSModelHandle)model;
     
     MSTensorHandleArray ms_inputs;

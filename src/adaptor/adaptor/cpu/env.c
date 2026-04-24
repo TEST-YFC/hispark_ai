@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-2025 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2025-2026 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,26 @@
 #include "ai_mcu.h"
 #include "ai.h"
 
+bool g_is_env_inited = false;
 static OH_AI_Status errorCode = OH_AI_STATUS_SUCCESS;
 
 OH_AI_Status OH_AI_Init(void* config_data, size_t data_size)
 {
     UNUSED(config_data);
     UNUSED(data_size);
+    if (g_is_env_inited) {
+        return OH_AI_STATUS_FAILED;
+    }
+    g_is_env_inited = true;
     return OH_AI_STATUS_SUCCESS;
 }
 
 OH_AI_Status OH_AI_Deinit(void)
 {
+    if (!g_is_env_inited) {
+        return OH_AI_STATUS_FAILED;
+    }
+    g_is_env_inited = false;
     return OH_AI_STATUS_SUCCESS;
 }
 

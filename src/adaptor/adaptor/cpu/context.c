@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-2025 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2025-2026 HiSilicon (Shanghai) Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,30 @@
  */
 #include "ai_mcu.h"
 #include "ai.h"
+#include "env.h"
+#include "model_state.h"
+
+static MSContextHandle g_singleton_context = NULL;
 
 OH_AI_ContextHandle OH_AI_ContextCreate(void)
 {
-    return (OH_AI_ContextHandle)MSContextCreate();
+    if (!g_is_env_inited || g_singleton_context != NULL) {
+        return NULL;
+    }
+    MSContextHandle ctx = MSContextCreate();
+    if (ctx != NULL) {
+        g_singleton_context = ctx;
+    }
+    return (OH_AI_ContextHandle)ctx;
 }
 
 void OH_AI_ContextDestroy(OH_AI_ContextHandle *context)
 {
-    if (context == NULL) {
+    if (context == NULL || *context == NULL || g_singleton_context != (MSContextHandle)*context ||
+        ModelState_HasUnreleasedModel()) {
         return;
     }
 
     MSContextDestroy((MSContextHandle*)context);
+    g_singleton_context = NULL;
 }
