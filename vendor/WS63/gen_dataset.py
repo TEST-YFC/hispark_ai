@@ -26,6 +26,15 @@ from pathlib import Path
 
 np.random.seed(42)
 
+
+def _name_to_seed(name):
+    """Convert a string to a deterministic 32-bit integer seed."""
+    seed = 0
+    for c in name:
+        seed = (seed * 31 + ord(c)) & 0xFFFFFFFF
+    return seed
+
+
 current_path = os.getcwd()
 BUILD_INFO_FILENAME = os.path.join(current_path, 'gate_build_config.json')
 DAILY_INFO_FILENAME = os.path.join(current_path, 'daily_build_config.json')
@@ -60,14 +69,14 @@ def discover_operators():
     tflite_operators = []
     op_dir = Path(__file__).parent / "onnx_operators"
     
-    for py_file in op_dir.glob("*.py"):
+    for py_file in sorted(op_dir.glob("*.py")):
         if py_file.stem != "__init__":
             # 将文件名转换为驼峰命名（如sub.py -> Sub）
             op_name = py_file.stem
             onnx_operators.append(op_name)
 
     op_dir = Path(__file__).parent / "tflite_operators"
-    for py_file in op_dir.glob("*.py"):
+    for py_file in sorted(op_dir.glob("*.py")):
         if py_file.stem != "__init__":
             # 将文件名转换为驼峰命名（如sub.py -> Sub）
             op_name = py_file.stem
@@ -176,6 +185,8 @@ def generate_all_models(model_path, onnx_operators, tflite_operators):
                 creator_func = getattr(module, f"create_{op_name.lower()}_{framework}_model")
                 subfolder = f"{op_name}_tf" if framework == "tflite" else op_name
                 output_path = str(Path(model_path) / f"{subfolder}/{op_name}.{model_ext}")
+                # Seed per-operator for deterministic weights independent of other operators
+                np.random.seed(_name_to_seed(f"{op_name}_{framework}"))
                 creator_func(output_path)
                 config_entries = [
                 {
@@ -197,6 +208,12 @@ def generate_all_models(model_path, onnx_operators, tflite_operators):
 
             
 def generate_random_data(op_name, output_file, shape, dtype=np.float32):
+    # Create a local RNG seeded deterministically from op_name + output file,
+    # so each (operator, input_name, j, shape) call produces independent data
+    # unaffected by adding/removing other operators.
+    seed_str = f"{op_name}:{os.path.basename(output_file)}"
+    local_rng = np.random.RandomState(_name_to_seed(seed_str))
+
     # Default values
     if np.issubdtype(dtype, np.unsignedinteger):
         low = 0
@@ -240,10 +257,10 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
     # Generate random data based on dtype
     if np.issubdtype(dtype, np.integer) or np.issubdtype(dtype, np.unsignedinteger):
         # Generate integer random numbers
-        random_data = np.random.randint(low=low, high=high+1, size=shape, dtype=dtype)
+        random_data = local_rng.randint(low=low, high=high+1, size=shape, dtype=dtype)
     elif np.issubdtype(dtype, np.floating):
         # Generate floating point random numbers
-        random_data = np.random.uniform(low=low, high=high, size=shape).astype(dtype)
+        random_data = local_rng.uniform(low=low, high=high, size=shape).astype(dtype)
         # Clip to ensure values are within range
         random_data = np.clip(random_data, low, high)
     
@@ -645,7 +662,7 @@ def main():
     
     print(f"模型根目录: {model_path}")
     operators_data = []
-    for folder in os.listdir(model_path):
+    for folder in sorted(os.listdir(model_path)):
         print(f'生成数据、cfg配置文件、C语言文件:{folder}')
         folder_path = os.path.join(model_path, folder)
         if '_tf' in folder:
