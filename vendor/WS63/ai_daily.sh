@@ -383,8 +383,17 @@ EOF
             --onnx_model_path ./model/GRU_S_STREAM.onnx \
             --sample_num 50 --fp16 true
         cfg_file="${sample_path_1}/micro_quant.cfg"
-        quant_data_dir="${sample_path_1}/data/quant_data/quant_mfcc_input"
-        calibrate_size=$(find "$quant_data_dir" -type f | wc -l)
+        quant_data_dir="${sample_path_1}/data/quant_data/quant_mfcc_input/bin"
+        hidden_states_dir="${sample_path_1}/data/quant_data/quant_hidden_states/bin"
+        # 计算两个目录的文件数量
+        mfcc_count=$(find "$quant_data_dir" -type f | wc -l)
+        hidden_count=$(find "$hidden_states_dir" -type f | wc -l)
+        echo "mfcc_input count: $mfcc_count"
+        echo "hidden_states count: $hidden_count"
+        # 取最小值作为校准数量
+        calibrate_size=$(( mfcc_count < hidden_count ? mfcc_count : hidden_count ))
+        echo "calibrate_size: $calibrate_size"
+
         cat > "$cfg_file" << EOF
 [micro_param]
 enable_micro=true
@@ -396,7 +405,7 @@ quant_type=FULL_QUANT
 bit_num=8
 
 [data_preprocess_param]
-calibrate_path=mfcc_input:${quant_data_dir},hidden_states:${sample_path_1}/data/quant_data/quant_hidden_states
+calibrate_path=mfcc_input:${quant_data_dir},hidden_states:${hidden_states_dir}
 calibrate_size=${calibrate_size}
 input_type=BIN
 

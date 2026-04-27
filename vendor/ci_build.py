@@ -16,6 +16,8 @@ import re
 import sys
 import json
 import tarfile
+import tempfile
+import tarfile
 import shutil
 from pathlib import Path
 from io import StringIO
@@ -118,8 +120,8 @@ def prepare_dataset(hiSpark_ai_path):
         exit(1)
 
 # 获取代码仓所有build_info.json文件内容，并拼接在一起
-def process_build_info_files(filename, result_files, build_type='gate'):
-    print(f"start process_build_info_files, build_type: {build_type}")
+def process_build_info_files(filename, result_files, build_type='gate', build_os='all'):
+    print(f"start process_build_info_files, build_type: {build_type}, build_os: {build_os}")
     result_list = []
     # 遍历指定目录及其子目录下的所有文件和文件夹
     for root, dirs, files in os.walk("./"):
@@ -128,8 +130,11 @@ def process_build_info_files(filename, result_files, build_type='gate'):
                 file_path = os.path.join(root, file)
                 print(file_path)
 
-                if build_type in ('release', 'daily'):
-                    # Release/Daily构建：JSON文件只保留result_files的内容
+                # 判断是否需要替换模式：release/daily 或者 windows 系统
+                is_replace_mode = (build_type in ('release', 'daily')) or (build_os == 'windows')
+
+                if is_replace_mode:
+                    # 替换模式：JSON文件只保留result_files的内容
                     new_data = []
                     for file_name in result_files:
                         new_entry = {
@@ -161,7 +166,7 @@ def process_build_info_files(filename, result_files, build_type='gate'):
                         combined_value = combined_value.rstrip('_')
                         result_list.append(combined_value)
                 else:
-                    # Gate构建：保持原有逻辑，追加result_files到现有数据
+                    # 追加模式：保持原有逻辑，追加result_files到现有数据
                     with open(file_path, 'r') as f:
                         try:
                             data = json.load(f)
@@ -250,14 +255,11 @@ def process_build_results(result_list, special_targets, result_path='archives', 
         if os.path.exists(log_file):
             with open(log_file, 'r') as f:
                 content = f.read()
-                # 检查是否已经包含 Finished 行
-                if 'Finished:' not in content:
-                    need_update = True
-                    # 处理现有内容（不包含状态行）
-                    all_lines = process_output_lines(content, result)
-                else:
-                    # 文件已经完整，不需要更新
-                    continue
+                # 处理现有内容（不包含状态行）
+                all_lines = process_output_lines(content, result)
+                all_lines.extend([f'Finished: {"SUCCESS" if build_success else "FAILURE"}'])
+            with open(log_file, 'w') as f:
+                f.writelines(all_lines)
         else:
             need_update = True
             all_lines = []
@@ -279,9 +281,9 @@ def process_build_results(result_list, special_targets, result_path='archives', 
                 f.writelines(all_lines)
 
 
-def sample_build_main(bisheng_path, daily=False):
+def sample_build_main(bisheng_path, daily=False, build_os='all'):
     print(f"=== 进入 sample_build_main 函数 ===")
-    print(f"参数: bisheng_path={bisheng_path}, daily={daily}")
+    print(f"参数: bisheng_path={bisheng_path}, daily={daily}, build_os={build_os}")
     sys.stdout.flush()
     
     # 确保 bisheng_path 是字符串
@@ -289,7 +291,7 @@ def sample_build_main(bisheng_path, daily=False):
         bisheng_path = str(bisheng_path)
     try:
         # 执行build脚本
-        cmd = ["bash", script_to_execute, bisheng_path]
+        cmd = ["bash", script_to_execute, bisheng_path, "--target", build_os]
         if daily:
             cmd.append("--daily")
         print(f"执行命令: {' '.join(cmd)}")
@@ -322,7 +324,7 @@ def sample_build_main(bisheng_path, daily=False):
 
 def generating_dataset():
     try:
-        # 执行build脚本
+        # 执行build脚本，使用Python解释器运行gen_to_execute变量指定的脚本
         result = subprocess.run(
             ['python', gen_to_execute],
             check=True,
@@ -336,7 +338,7 @@ def generating_dataset():
         raise
 
 
-def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, result_path='archives', build_type='gate'):
+def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, result_path='archives', build_type='gate', build_os='all'):
     """
     移动和复制压缩包到指定目录
 
@@ -346,151 +348,251 @@ def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, resu
     - adaptor_target: adaptor.tar.gz的路径
     - result_path: 目标目录，默认为'archives'
     - build_type: 构建类型，'gate'/'daily'/'release'
+    - build_os: 构建操作系统，'all'/'windows'/'linux'等
     """
-    # 创建目标目录
     archives_dir = Path(result_path)
     archives_dir.mkdir(parents=True, exist_ok=True)
     print(f"目标目录: {archives_dir.absolute()}")
 
-    if build_type == 'release':
-        # Release构建：创建特定结构的压缩包
-        print(f"Processing release build with special directory structure")
-
-        # 创建临时目录用于组织文件
-        temp_dir = archives_dir / "temp_release"
-        if temp_dir.exists():
-            shutil.rmtree(temp_dir)
-        temp_dir.mkdir(parents=True)
-
-        # 一级目录: customer
-        customer_dir = temp_dir / "customer"
-        customer_dir.mkdir()
-
-        # 创建最终的压缩包: HiSpark.AI.r1.0.0.tar.gz
-        version_name = os.environ.get('VERSION_NAME', '')
-        if version_name != '':
-            final_archive_name = f"{version_name}.tar.gz"
-        else:
-            version_name = "HiSpark.AI.r1.0.0"
-            final_archive_name = "HiSpark.AI.r1.0.0.tar.gz"
-        final_archive_path = archives_dir / final_archive_name
-        
-    else:
-        # Gate/Daily构建：保持原有逻辑
-        # 创建result.tar.gz
-        if archives_dir.exists():
-            fwpkg_files = list(archives_dir.glob("*.fwpkg"))
-            npy_files = list(archives_dir.glob("*.npy"))
-            files_to_compress = []
-            if fwpkg_files:
-                files_to_compress.extend(fwpkg_files)
-                print(f"找到 {len(fwpkg_files)} 个.fwpkg文件")
-            if npy_files:
-                files_to_compress.extend(npy_files)
-                print(f"找到 {len(npy_files)} 个.npy文件")
-            if files_to_compress:
-                result_tar_gz = archives_dir / "result.tar.gz"
-                try:
-                    with tarfile.open(result_tar_gz, "w:gz") as tar:
-                        for file_path in files_to_compress:
-                            tar.add(file_path, arcname=file_path.name)
-                            print(f"添加到压缩包: {file_path.name}")
-                    print(f"成功创建 {result_tar_gz}")
-                except Exception as e:
-                    print(f"{error_info} 创建result.tar.gz失败: {e}")
-            else:
-                print(f"{error_info} 没有找到需要压缩的文件")
-        else:
-            print(f"{error_info} 目录不存在: {archives_dir}")
-
-    # 移动samples.tar.gz
-    if samples_target and samples_target.exists():
-        if build_type == 'release':
-            samples_dir = customer_dir / "samples"
-            samples_dir.mkdir()
-            samples_tar_name = f'{version_name}_{samples_target.name}'
-            target_path = samples_dir / samples_tar_name
-        else:
-            target_path = archives_dir / samples_target.name
-        try:
-            shutil.move(str(samples_target), str(target_path))
-            print(f"移动成功: {samples_target.name} -> {target_path}")
-        except Exception as e:
-            print(f"{error_info}移动失败 {samples_target.name}: {e}")
-    else:
-        print(f"{error_info} samples.tar.gz不存在: {samples_target}")
-
-    # 移动adaptor.tar.gz
-    if adaptor_target and adaptor_target.exists():
-        if build_type == 'release':
-            adaptor_dir = customer_dir / "adaptor"
-            adaptor_dir.mkdir()
-            adaptor_tar_name = f'{version_name}_{adaptor_target.name}'
-            target_path = adaptor_dir / adaptor_tar_name
-        else:
-            target_path = archives_dir / adaptor_target.name
-        try:
-            shutil.move(str(adaptor_target), str(target_path))
-            print(f"移动成功: {adaptor_target.name} -> {target_path}")
-        except Exception as e:
-            print(f"{error_info}移动失败 {adaptor_target.name}: {e}")
-    else:
-        print(f"{error_info} adaptor.tar.gz不存在: {adaptor_target}")
-
-    # 复制mindspore-lite/output下的所有.tar.gz文件
-    mindspore_output_dir = Path(hiSpark_ai_path) / "src/mindspore-lite/output"
-
-    if mindspore_output_dir.exists():
-        tar_files = list(mindspore_output_dir.glob("*.tar.gz"))
-
-        if tar_files:
-            print(f"在 {mindspore_output_dir} 中找到 {len(tar_files)} 个.tar.gz文件")
-
-            for tar_file in tar_files:
-                if build_type == 'release':
-                    mslite_dir = customer_dir / "MSLite"
-                    mslite_dir.mkdir()
-                    tar_name = f'{version_name}_{tar_file.name}'
-                    target_path = mslite_dir / tar_name
-                else:
-                    target_path = archives_dir / tar_file.name
-                try:
-                    shutil.copy2(str(tar_file), str(target_path))
-                    print(f"复制成功: {tar_file.name} -> {target_path}")
-                except Exception as e:
-                    print(f"{error_info}复制失败 {tar_file.name}: {e}")
-        else:
-            print(f"{error_info} 在 {mindspore_output_dir} 中未找到.tar.gz文件")
-    else:
-        print(f"{error_info} 目录不存在: {mindspore_output_dir}")
+    # Windows daily构建特殊处理
+    if build_os == 'windows' and build_type == 'daily':
+        return _handle_windows_daily(hiSpark_ai_path, samples_target, adaptor_target, archives_dir)
     
+    # Release构建处理
     if build_type == 'release':
-        try:
-            with tarfile.open(final_archive_path, "w:gz") as tar:
-                tar.add(customer_dir, arcname="customer")
-                print(f"成功创建最终压缩包: {final_archive_name}")
-        except Exception as e:
-            print(f"{error_info} 创建最终压缩包失败: {e}")
-        # 清理临时目录
-        shutil.rmtree(temp_dir)
-        # 清理archives目录中除最终压缩包外的其他文件
-        for item in archives_dir.iterdir():
-            if item.name != final_archive_name:
-                if item.is_file():
-                    item.unlink()
-                elif item.is_dir():
-                    shutil.rmtree(item)
-                    
-    # 返回所有已处理的文件列表
-    result_files = [f.name.replace('.tar.gz', '') for f in list(archives_dir.glob("*.tar.gz"))]
+        return _handle_release_build(hiSpark_ai_path, samples_target, adaptor_target, archives_dir, build_os=build_os)
+    
+    # Gate/Daily构建处理（默认）
+    return _handle_normal_build(hiSpark_ai_path, samples_target, adaptor_target, archives_dir)
+
+
+def _handle_windows_daily(hiSpark_ai_path, samples_target, adaptor_target, archives_dir):
+    """处理Windows daily构建"""
+    print("Processing Windows daily build - creating win_package.tar.gz")
+    
+    temp_dir = archives_dir / "temp_win_package"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 创建result_win.tar.gz（包含test/config和test/model）
+    result_win_path = _create_result_win_tar(hiSpark_ai_path, temp_dir)
+    
+    # 收集所有需要打包的文件
+    files_to_package = []
+    
+    # 将result_win.tar.gz移到临时目录
+    result_dest = temp_dir / result_win_path.name
+    shutil.move(str(result_win_path), str(result_dest))
+    files_to_package.append(result_dest)
+    
+    # 移动adaptor和samples
+    for name, target in [('adaptor', adaptor_target), ('samples', samples_target)]:
+        if target and target.exists():
+            dest = temp_dir / target.name
+            shutil.move(str(target), str(dest))
+            files_to_package.append(dest)
+            print(f"移动成功: {target.name}")
+        else:
+            print(f"{error_info} {name}.tar.gz不存在: {target}")
+    
+    # 复制mindspore-lite的tar文件
+    mindspore_dir = Path(hiSpark_ai_path) / "src/mindspore-lite/output"
+    if mindspore_dir.exists():
+        for tar_file in mindspore_dir.glob("*.tar.gz"):
+            dest = temp_dir / tar_file.name
+            shutil.copy2(str(tar_file), str(dest))
+            files_to_package.append(dest)
+            print(f"复制成功: {tar_file.name}")
+    
+    # 创建最终的win_package.tar.gz，直接包含所有文件
+    win_package_path = archives_dir / "win_package.tar.gz"
+    with tarfile.open(win_package_path, "w:gz") as tar:
+        for file_path in files_to_package:
+            # 添加文件到tar包根目录，不包含临时目录路径
+            tar.add(str(file_path), arcname=file_path.name)
+    
+    # 清理临时目录
+    shutil.rmtree(temp_dir)
+    _cleanup_directory(archives_dir, keep_files=["win_package.tar.gz"])
+    
+    print("总共处理了 1 个压缩包")
+    return ["win_package"]
+
+
+def _create_result_win_tar(hiSpark_ai_path, temp_dir):
+    """创建result_win.tar.gz，解压后直接得到test目录"""
+    result_win_path = temp_dir / "result_win.tar.gz"
+    # 创建临时目录来组织文件
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        
+        # 直接创建test目录
+        test_dir = tmp_path / "test"
+        test_dir.mkdir()
+        
+        # 复制config和model目录到test下
+        for folder in ['config', 'model']:
+            src = Path(hiSpark_ai_path) / f"vendor/WS63/{folder}"
+            if src.exists():
+                dst = test_dir / folder
+                shutil.copytree(src, dst)
+                print(f"复制{folder}目录: {src} -> {dst}")
+            else:
+                print(f"{error_info} {folder}目录不存在: {src}")
+        
+        # 打包，直接以tmp_path为根目录，这样解压后直接得到test目录
+        with tarfile.open(result_win_path, "w:gz") as tar:
+            tar.add(str(tmp_path), arcname="")
+    
+    return result_win_path
+
+
+
+def _handle_release_build(hiSpark_ai_path, samples_target, adaptor_target, archives_dir, build_os='all'):
+    """处理Release构建"""
+    print("Processing release build with special directory structure")
+    
+    temp_dir = archives_dir / "temp_release"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    customer_dir = temp_dir / "customer"
+    customer_dir.mkdir()
+    
+    version_name = os.environ.get('VERSION_NAME', 'HiSpark.AI.r1.0.0')
+    final_archive_name = f"{version_name}.tar.gz" if os.environ.get('VERSION_NAME') else "HiSpark.AI.r1.0.0.tar.gz"
+    
+    # 处理文件（移动/复制并重命名）
+    file_mappings = [
+        ('samples', samples_target, customer_dir / 'samples'),
+        ('adaptor', adaptor_target, customer_dir / 'adaptor'),
+    ]
+    
+    for name, target, dest_dir in file_mappings:
+        if target and target.exists():
+            dest_dir.mkdir(exist_ok=True)
+            new_name = f'{version_name}_{target.name}'
+            shutil.move(str(target), str(dest_dir / new_name))
+            print(f"处理成功: {target.name} -> {new_name}")
+        else:
+            print(f"{error_info} {name}.tar.gz不存在: {target}")
+    
+    # 处理mindspore-lite压缩包
+    base_path = Path(hiSpark_ai_path) / ("archives" if build_os == 'all' else "src/mindspore-lite/output")
+    mindspore_files = list(base_path.glob("mindspore-lite*.tar.gz"))
+    mindspore_pattern = base_path / "mindspore-lite*.tar.gz"
+    
+    if mindspore_files:
+        mslite_dir = customer_dir / "MSLite"
+        mslite_dir.mkdir(exist_ok=True)
+        for tar_file in mindspore_files:
+            new_name = f'{version_name}_{tar_file.name}'
+            shutil.copy2(str(tar_file), str(mslite_dir / new_name))
+            print(f"复制成功: {tar_file.name} -> {new_name}")
+    else:
+        print(f"未找到mindspore-lite压缩包: {mindspore_pattern}")
+    
+    # 创建最终压缩包
+    final_archive_path = archives_dir / final_archive_name
+    _create_tar_archive(final_archive_path, customer_dir, arcname="customer")
+    
+    # 清理
+    shutil.rmtree(temp_dir)
+    _cleanup_directory(archives_dir, keep_files=[final_archive_name])
+    
+    result_files = [f.name.replace('.tar.gz', '') for f in archives_dir.glob("*.tar.gz")]
     print(f"总共处理了 {len(result_files)} 个压缩包")
     return result_files
+
+
+def _handle_normal_build(hiSpark_ai_path, samples_target, adaptor_target, archives_dir):
+    """处理普通的Gate/Daily构建"""
+    # 创建result.tar.gz（压缩.fwpkg和.npy文件）
+    fwpkg_files = list(archives_dir.glob("*.fwpkg"))
+    npy_files = list(archives_dir.glob("*.npy"))
+    files_to_compress = fwpkg_files + npy_files
+    
+    if files_to_compress:
+        result_tar_gz = archives_dir / "result.tar.gz"
+        _create_tar_archive(result_tar_gz, archives_dir, 
+                          files=[f.name for f in files_to_compress])
+        print(f"成功创建 result.tar.gz，包含 {len(files_to_compress)} 个文件")
+    else:
+        print(f"{error_info} 没有找到需要压缩的.fwpkg或.npy文件")
+    
+    # 移动和复制文件
+    _move_file(samples_target, archives_dir)
+    _move_file(adaptor_target, archives_dir)
+    _copy_mindspore_files(hiSpark_ai_path, archives_dir)
+    
+    result_files = [f.name.replace('.tar.gz', '') for f in archives_dir.glob("*.tar.gz")]
+    print(f"总共处理了 {len(result_files)} 个压缩包")
+    return result_files
+
+
+# 辅助函数
+def _move_file(source, dest_dir):
+    """移动文件到目标目录"""
+    if source and source.exists():
+        dest = dest_dir / source.name
+        shutil.move(str(source), str(dest))
+        print(f"移动成功: {source.name}")
+    elif source:
+        print(f"{error_info} 文件不存在: {source}")
+
+
+def _copy_mindspore_files(hiSpark_ai_path, dest_dir):
+    """复制mindspore-lite/output下的所有.tar.gz文件"""
+    mindspore_dir = Path(hiSpark_ai_path) / "src/mindspore-lite/output"
+    if mindspore_dir.exists():
+        tar_files = list(mindspore_dir.glob("*.tar.gz"))
+        for tar_file in tar_files:
+            shutil.copy2(str(tar_file), str(dest_dir / tar_file.name))
+            print(f"复制成功: {tar_file.name}")
+        if not tar_files:
+            print(f"{error_info} 未找到.tar.gz文件")
+    else:
+        print(f"{error_info} 目录不存在: {mindspore_dir}")
+
+
+def _create_tar_archive(tar_path, source_dir, files=None, arcname=None, arcnames=None):
+    """
+    创建tar.gz压缩包
+    
+    参数:
+    - tar_path: 输出路径
+    - source_dir: 源目录
+    - files: 要压缩的文件列表（相对于source_dir），如果为None则压缩整个目录
+    - arcname: 压缩包内的根目录名（当压缩整个目录时使用）
+    - arcnames: 文件到压缩包内名称的映射字典
+    """
+    try:
+        with tarfile.open(tar_path, "w:gz") as tar:
+            if files:
+                for file in files:
+                    file_path = source_dir / file
+                    arc_name = arcnames.get(file_path, file) if arcnames else file
+                    tar.add(file_path, arcname=arc_name)
+            else:
+                tar.add(source_dir, arcname=arcname or source_dir.name)
+        print(f"成功创建: {tar_path.name}")
+    except Exception as e:
+        print(f"{error_info} 创建{tar_path.name}失败: {e}")
+
+
+def _cleanup_directory(directory, keep_files=None):
+    """清理目录，只保留指定的文件"""
+    keep_files = keep_files or []
+    for item in directory.iterdir():
+        if item.name not in keep_files:
+            if item.is_file():
+                item.unlink()
+            elif item.is_dir():
+                shutil.rmtree(item)
 
 
 def main():
     print(f"start main")
     build_filename = BUILD_INFO_FILENAME
     build_type = os.environ.get('BUILD_TYPE', '').strip().lower()
+    build_os = os.environ.get('BUILD_OS', 'all').strip().lower()
     samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
     generating_dataset()
     if build_type in ('gate', 'release'):
@@ -503,7 +605,11 @@ def main():
         print(f'BUILD_TYPE not set or invalid, defaulting to gate build')
         daily = False
     bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
-    prepare_dataset(hiSpark_ai_path)
+    
+    if build_os == 'windows':
+        print(f'build_os is windows, skip prepare_dataset')    
+    else:
+        prepare_dataset(hiSpark_ai_path)
     
     # 捕获构建过程的输出
     previous_output = StringIO()
@@ -513,15 +619,15 @@ def main():
     sys.stdout = previous_output
     sys.stderr = previous_output
     
-    result, output_text = sample_build_main(bisheng_path, daily=daily)
+    result, output_text = sample_build_main(bisheng_path, daily=daily, build_os=build_os)
     
     # 恢复stdout和stderr
     sys.stdout = old_stdout
     sys.stderr = old_stderr
     
     captured_output = previous_output.getvalue()    
-    result_files = move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, build_type=build_type)
-    input_list = process_build_info_files(build_filename, result_files, build_type=build_type)
+    result_files = move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, build_type=build_type, build_os=build_os)
+    input_list = process_build_info_files(build_filename, result_files, build_type=build_type, build_os=build_os)
     
     # 传递捕获的输出到process_build_results
     process_build_results(input_list, result_files, result_path='archives', previous_output=captured_output)
