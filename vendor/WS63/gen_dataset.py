@@ -208,9 +208,7 @@ def generate_all_models(model_path, onnx_operators, tflite_operators):
 
             
 def generate_random_data(op_name, output_file, shape, dtype=np.float32):
-    # Create a local RNG seeded deterministically from op_name + output file,
-    # so each (operator, input_name, j, shape) call produces independent data
-    # unaffected by adding/removing other operators.
+    # Create a local RNG seeded deterministically from op_name + output file
     seed_str = f"{op_name}:{os.path.basename(output_file)}"
     local_rng = np.random.RandomState(_name_to_seed(seed_str))
 
