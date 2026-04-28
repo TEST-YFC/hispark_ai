@@ -2,7 +2,7 @@
 
 **概述<a name="section4537382116410"></a>**
 
-本文档主要描述HiSpark Studio AI for VS Code插件的安装及使用。该工具主要用于模型压缩、模型转换、应用开发、端侧部署、性能调优等。
+本文档主要描述HiSpark Studio AI for VS Code插件的安装及使用。该工具主要用于模型压缩、模型转换、应用开发，端侧部署，性能调优等。
 
 **读者对象<a name="section4378592816410"></a>**
 
@@ -65,11 +65,18 @@
 </th>
 </tr>
 </thead>
-<tbody><tr id="row842614031715"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p1648018317170"><a name="p1648018317170"></a><a name="p1648018317170"></a>02</p>
+<tbody><tr id="row1320204613614"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p1932016461263"><a name="p1932016461263"></a><a name="p1932016461263"></a>03</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.25%" headers="mcps1.1.4.1.2 "><p id="p12320046561"><a name="p12320046561"></a><a name="p12320046561"></a>2026-04-28</p>
+</td>
+<td class="cellrowborder" valign="top" width="53.03%" headers="mcps1.1.4.1.3 "><p id="p153208462611"><a name="p153208462611"></a><a name="p153208462611"></a>新增 HiSpark社区资源下载关联。</p>
+</td>
+</tr>
+<tr id="row842614031715"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p1648018317170"><a name="p1648018317170"></a><a name="p1648018317170"></a>02</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.25%" headers="mcps1.1.4.1.2 "><p id="p19480193101715"><a name="p19480193101715"></a><a name="p19480193101715"></a>2026-03-24</p>
 </td>
-<td class="cellrowborder" valign="top" width="53.03%" headers="mcps1.1.4.1.3 "><p id="p948011391719"><a name="p948011391719"></a><a name="p948011391719"></a>新增“<a href="Windows侧环境准备（仅Windows端用户关注）.md">Windows侧环境准备（仅Windows端用户关注）</a>、<a href="WSL环境准备（仅Windows端用户关注）.md">WSL环境准备（仅Windows端用户关注）</a>”章节。</p>
+<td class="cellrowborder" valign="top" width="53.03%" headers="mcps1.1.4.1.3 "><p id="p948011391719"><a name="p948011391719"></a><a name="p948011391719"></a>新增“<a href="#ZH-CN_TOPIC_0000002504198312">3.2.1-Windows环境准备”（仅Windows端用户关注）</a>、<a href="#ZH-CN_TOPIC_0000002521720132">WSL环境准备（仅Windows端用户关注）</a>”章节。</p>
 </td>
 </tr>
 <tr id="row5281780716410"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p559mcpsimp"><a name="p559mcpsimp"></a><a name="p559mcpsimp"></a>01</p>
@@ -92,12 +99,31 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 # 开发环境准备<a name="ZH-CN_TOPIC_0000002498683832"></a>
 
+-   **[HiSpark Studio AI准备](#ZH-CN_TOPIC_0000002538543935)**  
 
+-   **[Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)**  
 
+-   **[Hi3322环境准备](#ZH-CN_TOPIC_0000002530443753)**  
 
 ## HiSpark Studio AI准备<a name="ZH-CN_TOPIC_0000002538543935"></a>
 
+-   **[准备资源](#ZH-CN_TOPIC_0000002589236769)**  
 
+-   **[插件安装](#ZH-CN_TOPIC_0000002541561749)**  
+
+-   **[环境配置](#ZH-CN_TOPIC_0000002541521757)**  
+
+### 准备资源<a name="ZH-CN_TOPIC_0000002589236769"></a>
+
+从HiSilicon社区的资源下载部分下载[HiSpark.AI组件](https://developers.hisilicon.com/cn/developerTool)，下载按钮如下图所示。下载前请先注册登陆Hisicon社区账号。
+
+**图 1**  HiSilicon社区HiSpark.AI组件下载<a name="fig1031373761716"></a>  
+![](figures/HiSilicon社区HiSpark-AI组件下载.png "HiSilicon社区HiSpark-AI组件下载")
+
+下载压缩包，解压后内部customer文件夹下包含 MSLite （Hi3863 AI工具链），CANN（Hi3322 AI工具链），Tools（Dockerfile），samples（Hi3863 & Hi3322共用的AI相关Samples），adaptor（Hi3863 & Hi3322共用的AI相关适配层）。
+
+-   [Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)部分会使用到adaptor文件夹中的 "HiSpark.AI\_xx.xx.x.xxxx-adaptor.tar.gz" 压缩包。
+-   [Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)部分 以及  [Hi3322环境准备](#ZH-CN_TOPIC_0000002530443753)部分 Linux通路会使用到 Tools文件夹中的“DockerFile.tar.gz”压缩包中Dockerfile\_mslite以及Dockerfile\_cann\_xxx文件；Windows通路以及WSL通路无需关注。
 
 ### 插件安装<a name="ZH-CN_TOPIC_0000002541561749"></a>
 
@@ -125,7 +151,6 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
     **图 2**  下载成功提示<a name="fig96701933161720"></a>  
     ![](figures/下载成功提示.png "下载成功提示")
 
-
 ## Hi3863环境准备<a name="ZH-CN_TOPIC_0000002498843814"></a>
 
 HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1429717521912)、[图2](#fig55781161195)所示。若需要使用命令行工具进行模型的量化与转换，请参考《HiSpark.AI 转换工具使用指南》 以及 《HiSpark.AI API 开发指南》，进行环境准备。
@@ -138,11 +163,13 @@ HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用
 **图 2**  CPU环境准备（Linux侧）<a name="fig55781161195"></a>  
 ![](figures/CPU环境准备（Linux侧）.png "CPU环境准备（Linux侧）")
 
+-   **[Linux服务器端AI环境准备（仅Linux端用户关注）](#ZH-CN_TOPIC_0000002504198312)**  
 
+-   **[准备SDK](#ZH-CN_TOPIC_0000002536180835)**  
 
 ### Linux服务器端AI环境准备（仅Linux端用户关注）<a name="ZH-CN_TOPIC_0000002504198312"></a>
 
-使用Dockerfile准备Linux服务器端AI环境。环境安装前需要从发布包获取Dockerfile文件、MSLite安装包，并将其放置在同级目录下。
+使用Dockerfile准备Linux服务器端AI环境。环境安装前，需要从发布包获取Dockerfile文件、MSLite安装包，并放置于同级目录下。
 
 Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备配置文件。
 
@@ -158,6 +185,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 >1.  请勿将多个不同版本的MSLite包放置于该目录下。
 >2.  请保持Linux服务器网络畅通。
 
+-   **[Linux通路环境准备](#ZH-CN_TOPIC_0000002538542947)**  
 
 #### Linux通路环境准备<a name="ZH-CN_TOPIC_0000002538542947"></a>
 
@@ -295,7 +323,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
 ## Hi3322环境准备<a name="ZH-CN_TOPIC_0000002530443753"></a>
 
-HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化与转换，请参考《Nano AI应用开发指导书》，进行环境准备。
+HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化与转换，请参考《Nano AI应用开发指南》，进行环境准备。
 
 **图 1**  NPU环境准备（Linux通路）<a name="fig1560816183209"></a>  
 ![](figures/NPU环境准备（Linux通路）.png "NPU环境准备（Linux通路）")
@@ -303,9 +331,13 @@ HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用
 **图 2**  NPU环境准备（WSL通路）<a name="fig1180314211206"></a>  
 ![](figures/NPU环境准备（WSL通路）.png "NPU环境准备（WSL通路）")
 
+-   **[WSL环境准备（仅Windows端用户关注）](#ZH-CN_TOPIC_0000002521720132)**  
 
+-   **[Linux服务器端环境准备（仅Linux端用户关注）](#ZH-CN_TOPIC_0000002504384650)**  
 
+-   **[Windows侧Bash环境准备](#ZH-CN_TOPIC_0000002536184615)**  
 
+-   **[准备SDK](#ZH-CN_TOPIC_0000002545173551)**  
 
 ### WSL环境准备（仅Windows端用户关注）<a name="ZH-CN_TOPIC_0000002521720132"></a>
 
@@ -364,7 +396,9 @@ Dockerfile包括Dockerfile\_cann\_cpu和Dockerfile\_cann\_gpu。其中Dockerfile
 >1.  请勿将多个不同版本的ATC和AMCT安装包放置于该目录下。
 >2.  请保持Linux服务器网络畅通。
 
+-   **[基础版环境准备](#ZH-CN_TOPIC_0000002504481524)**  
 
+-   **[GPU加速版环境准备](#ZH-CN_TOPIC_0000002504641364)**  
 
 #### 基础版环境准备<a name="ZH-CN_TOPIC_0000002504481524"></a>
 
@@ -435,7 +469,7 @@ Dockerfile包括Dockerfile\_cann\_cpu和Dockerfile\_cann\_gpu。其中Dockerfile
     ```
 
 >![](public_sys-resources/icon-note.gif) **说明：** 
->如遇到镜像代理未配置的网络问题，请参考“[Linux通路环境准备](Linux通路环境准备.md)”中的说明完成代理配置。
+>如遇到镜像代理未配置的网络问题，请参考“[Linux通路环境准备](#ZH-CN_TOPIC_0000002538542947)”中的说明完成代理配置。
 
 #### GPU加速版环境准备<a name="ZH-CN_TOPIC_0000002504641364"></a>
 
@@ -556,20 +590,29 @@ GPU加速版环境准备步骤如下：
 
 ### 准备SDK<a name="ZH-CN_TOPIC_0000002545173551"></a>
 
-取Hi3322对应SDK发布包，解压SDK包到本地目录。
+取Hi3322对应SDK发布包，解压SDK包到本地目录，SDK解压目标路径请勿带空格。
 
 # 样例运行<a name="ZH-CN_TOPIC_0000002498683834"></a>
 
+-   **[Hi3863样例运行](#ZH-CN_TOPIC_0000002530443755)**  
 
+-   **[Hi3322样例运行](#ZH-CN_TOPIC_0000002530583195)**  
 
 ## Hi3863样例运行<a name="ZH-CN_TOPIC_0000002530443755"></a>
 
+-   **[模型与数据获取](#ZH-CN_TOPIC_0000002536162459)**  
 
+-   **[新建工程与选择模型](#ZH-CN_TOPIC_0000002504202638)**  
 
+-   **[模型量化](#ZH-CN_TOPIC_0000002536042417)**  
 
+-   **[模型转换](#ZH-CN_TOPIC_0000002504362470)**  
 
+-   **[模型部署](#ZH-CN_TOPIC_0000002536162461)**  
 
+-   **[性能评估和精度评估](#ZH-CN_TOPIC_0000002504202640)**  
 
+-   **[应用开发](#ZH-CN_TOPIC_0000002513173316)**  
 
 ### 模型与数据获取<a name="ZH-CN_TOPIC_0000002536162459"></a>
 
@@ -632,7 +675,7 @@ GPU加速版环境准备步骤如下：
 
 ### 模型量化<a name="ZH-CN_TOPIC_0000002536042417"></a>
 
-1.  进入模型量化页面，在Calibration Inputs选择“Input3”（模型输入名称）对应的Path选择框架；如需要进行数据验证，将Validation开关打开，选择量化数据所对应的npy文件目录路径，在Validation Inputs输入框选择“Input3”对应的Path选择框架，选择验证数据所对应的npy目录，在Validation Labels文本框选择为含标签的label文件。
+1.  进入模型量化页面，，在Calibration Inputs选择“Input3”（模型输入名称）对应的Path选择框架；如需要进行数据验证，将Validation开关打开，选择量化数据所对应的npy文件目录路径，在Validation Inputs输入框选择“Input3”对应的Path选择框架，选择验证数据所对应的npy目录，在Validation Labels文本框选择为含标签的label文件。
 
     Label文件数据结构如[表1](#table112929412576)所示。
 
@@ -659,7 +702,12 @@ GPU加速版环境准备步骤如下：
     </table>
 
     >![](public_sys-resources/icon-note.gif) **说明：** 
-    >label.csv中为样本分类的真值标签。文件中的表格格式如[表1](#table112929412576)。其中sample列表示样本的名称。label列表示样本对应的真值标签。
+    >label.csv中为样本分类的真值标签。文件中的表格格式如[表1](#table112929412576)。其中：
+    >-   sample列：表示样本的名称。
+    >-   label列：表示样本对应的真值标签。
+    >-   准确率：表示的格式，\{量化模型准确率\}\(\{量化模型与原始浮点模型准确率对比\}\)，例如：
+    >    -   ![](figures/zh-cn_image_0000002591485073.png)：表示量化后模型的准确率为0.99，与原始浮点网络模型相比上升0.01。
+    >    -   ![](figures/zh-cn_image_0000002561039814.png)：表示量化后模型的准确率为0.95，与原始浮点网络模型相比下降0.01。
 
     **图 1**  模型压缩示意图<a name="fig12143961816"></a>  
     
@@ -726,14 +774,21 @@ GPU加速版环境准备步骤如下：
 
 ## Hi3322样例运行<a name="ZH-CN_TOPIC_0000002530583195"></a>
 
-本章节以LeNet5模型为例，介绍如何使用HiSpark Studio AI工具进行模型量化、转换、性能评估以及精度评估。如果需要使用命令行工具进行如上操作，请参考《Nano AI应用开发指导书》。
+本章节以LeNet5模型为例，介绍如何使用HiSpark Studio AI工具进行模型量化、转换、性能评估以及精度评估。如果需要使用命令行工具进行如上操作，请参考《Nano应用开发指南》。
 
+-   **[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)**  
 
+-   **[新建工程与选择模型](#ZH-CN_TOPIC_0000002504525512)**  
 
+-   **[模型量化](#ZH-CN_TOPIC_0000002504685348)**  
 
+-   **[模型转换](#ZH-CN_TOPIC_0000002506277190)**  
 
+-   **[模型部署](#ZH-CN_TOPIC_0000002504525514)**  
 
+-   **[性能评估和精度评估](#ZH-CN_TOPIC_0000002504685350)**  
 
+-   **[应用开发](#ZH-CN_TOPIC_0000002507850688)**  
 
 ### 模型与数据获取<a name="ZH-CN_TOPIC_0000002536325315"></a>
 
@@ -818,7 +873,7 @@ GPU加速版环境准备步骤如下：
 
     输入Docker的IP、端口号、用户名、密码。
 
-    选择“[模型与数据获取](模型与数据获取-1.md)”章节下载的模型。
+    选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”章节下载的模型。
 
     -   进行训练后量化，请选择ONNX模型。
     -   进行量化感知训练，请选择PyTorch模型。
@@ -845,7 +900,9 @@ GPU加速版环境准备步骤如下：
 </thead>
 <tbody><tr id="row1180071082411"><td class="cellrowborder" valign="top" width="17.44%" headers="mcps1.2.3.1.1 "><p id="p8800131016242"><a name="p8800131016242"></a><a name="p8800131016242"></a>Accuracy</p>
 </td>
-<td class="cellrowborder" valign="top" width="82.56%" headers="mcps1.2.3.1.2 "><p id="p128001110182411"><a name="p128001110182411"></a><a name="p128001110182411"></a>表示分类结果准确率，使用标签真值计算。</p>
+<td class="cellrowborder" valign="top" width="82.56%" headers="mcps1.2.3.1.2 "><p id="p128001110182411"><a name="p128001110182411"></a><a name="p128001110182411"></a>表示分类结果准确率，使用标签真值计算。准确率表示格式如下：</p>
+<pre class="screen" id="screen4381153942419"><a name="screen4381153942419"></a><a name="screen4381153942419"></a>{量化模型准确率}({量化模型与原始浮点模型准确率对比})</pre>
+<a name="ul614475942616"></a><a name="ul614475942616"></a><ul id="ul614475942616"><li><a name="image10256111862719"></a><a name="image10256111862719"></a><span><img id="image10256111862719" src="figures/zh-cn_image_0000002540730858.png"></span>：表示量化后模型的准确率为0.99，与原始浮点网络模型相比上升0.01。</li><li><a name="image122892229115"></a><a name="image122892229115"></a><span><img id="image122892229115" src="figures/zh-cn_image_0000002561040032.png" width="91.77000000000001" height="30.270800000000005"></span>：表示量化后模型的准确率为0.95，与原始浮点网络模型相比下降0.01。</li></ul>
 </td>
 </tr>
 <tr id="row879544498"><td class="cellrowborder" valign="top" width="17.44%" headers="mcps1.2.3.1.1 "><p id="p128135474913"><a name="p128135474913"></a><a name="p128135474913"></a>Cosine Similarity</p>
@@ -863,16 +920,18 @@ GPU加速版环境准备步骤如下：
 
 模型压缩“Quantize”页面提供训练后量化PTQ和量化感知训练QAT两种量化方式。
 
+-   **[训练后量化](#ZH-CN_TOPIC_0000002536445281)**  
 
+-   **[量化感知训练](#ZH-CN_TOPIC_0000002536325317)**  
 
 #### 训练后量化<a name="ZH-CN_TOPIC_0000002536445281"></a>
 
 1.  在“Quantization Config”中配置输入参数。
 
-    1.  “Calibration Inputs”的Path列文件选择框中输入量化校准数据：选择“[模型与数据获取](模型与数据获取-1.md)”下载的训练数据文件夹下的npy子文件夹，若当前为Linux通路，则从Linux服务器上选择文件夹，如“train\_data/npy”。若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\train\_data\\\\npy”。
+    1.  “Calibration Inputs”的Path列文件选择框中输入量化校准数据：选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的训练数据文件夹下的npy子文件夹，若当前为Linux通路，则从Linux服务器上选择文件夹，如“train\_data/npy”。若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\train\_data\\\\npy”。
     2.  打开“Validation”开关。
-    3.  在“Validation Inputs”的Path列文件选择框中输入验证数据：选择“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的npy子文件夹。若当前为Linux通路，则从Linux服务器上选择文件夹，如“test\_data/npy”。若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\test\_data\\\\npy”。
-    4.  “Validation Labels”下拉框选择对应的输出节点。并在文件输入验证数据的真值：选择框选择“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的“label.csv”文件。
+    3.  在“Validation Inputs”的Path列文件选择框中输入验证数据：选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的测试数据文件夹下的npy子文件夹。若当前为Linux通路，则从Linux服务器上选择文件夹，如“test\_data/npy”。若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\test\_data\\\\npy”。
+    4.  “Validation Labels”下拉框选择对应的输出节点。并在文件输入验证数据的真值：选择框选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的测试数据文件夹下的“label.csv”文件。
     5.  其他参数保持默认，或按需调整。
 
     **图 1**  训练后量化参数配置界面<a name="fig1835962119618"></a>  
@@ -941,10 +1000,10 @@ GPU加速版环境准备步骤如下：
                 return out
         ```
 
-    2.  Input 栏的Training Dataset 文件选择框中选择“[模型与数据获取](模型与数据获取-1.md)”下载的训练数据文件夹下的npy子文件夹，若当前为Linux通路，则从Linux服务器上选择文件夹，如“train\_data/npy”，若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\train\_data\\\\npy”。
-    3.  Input栏的 Validation Dataset 文件选择框中选择“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的npy子文件夹，如：test\_data/npy。若当前为Linux通路，则从Linux服务器上选择文件夹，如“test\_data/npy”，若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\test\_data\\\\npy”。
-    4.  Label 栏的 Training Dataset文件选择框选择“[模型与数据获取](模型与数据获取-1.md)”下载的训练数据文件夹下的“label.csv”文件。若当前为Linux通路，则从Linux服务器上选择文件，若当前为WSL通路，则从Windows本地选择文件。
-    5.  Label 栏的 Validation Dataset  文件选择框选择“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的“label.csv”文件。若当前为Linux通路，则从Linux服务器上选择文件，若当前为WSL通路，则从Windows本地选择文件。
+    2.  Input 栏的Training Dataset 文件选择框中选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的训练数据文件夹下的npy子文件夹，若当前为Linux通路，则从Linux服务器上选择文件夹，如“train\_data/npy”，若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\train\_data\\\\npy”。
+    3.  Input栏的 Validation Dataset 文件选择框中选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的测试数据文件夹下的npy子文件夹，如：test\_data/npy。若当前为Linux通路，则从Linux服务器上选择文件夹，如“test\_data/npy”，若当前为WSL通路，则从Windows本地选择文件夹，如“D:\\\\test\_data\\\\npy”。
+    4.  Label 栏的 Training Dataset文件选择框选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的训练数据文件夹下的“label.csv”文件。若当前为Linux通路，则从Linux服务器上选择文件，若当前为WSL通路，则从Windows本地选择文件。
+    5.  Label 栏的 Validation Dataset  文件选择框选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的测试数据文件夹下的“label.csv”文件。若当前为Linux通路，则从Linux服务器上选择文件，若当前为WSL通路，则从Windows本地选择文件。
     6.  设定训练epoch数。
 
         ```
@@ -1026,15 +1085,15 @@ HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能
     **图 1**  串口配置<a name="fig157065321908"></a>  
     ![](figures/串口配置.png "串口配置")
 
-2.  单击“Performance Evaluation”按钮，完成模型上板性能验证。验证完成后，在性能验证窗口显示推理时间、和模型大小。
+2.  单击“Performance Evaluation”按钮，完成模型上板性能验证。验证完成后，在性能验证窗口显示推理时间和模型大小。
 
     **图 2**  性能验证结果<a name="fig665111488016"></a>  
     
     ![](figures/zh-cn_image_0000002530799408.png)
 
 3.  在“Accuracy Evaluation Config”窗口配置精度验证数据集。
-    -   将“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的npy子文件夹，如“test\_data/npy”，拷贝到Windows侧。Accuracy Evaluation Config中对应的路径文本框中选择该文件夹。
-    -   将“[模型与数据获取](模型与数据获取-1.md)”下载的测试数据文件夹下的“label.csv”文件拷贝到Windows侧。“Validation Labels” 文件选择框中选该文件。
+    -   将“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的测试数据文件夹下的npy子文件夹，如“test\_data/npy”，拷贝到Windows侧。Accuracy Evaluation Config中对应的路径文本框中选择该文件夹。
+    -   将“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”下载的测试数据文件夹下的“label.csv”文件拷贝到Windows侧。“Validation Labels”文件选择框选择该文件。
 
         **图 3**  精度验证数据集配置界面<a name="fig8526185973510"></a>  
         ![](figures/精度验证数据集配置界面.png "精度验证数据集配置界面")
@@ -1072,6 +1131,7 @@ HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能
 
 # 常见错误<a name="ZH-CN_TOPIC_0000002549186481"></a>
 
+-   **[DebugKits弹窗告警“The board does not respond!”](#ZH-CN_TOPIC_0000002517746614)**  
 
 ## DebugKits弹窗告警“The board does not respond!”<a name="ZH-CN_TOPIC_0000002517746614"></a>
 
