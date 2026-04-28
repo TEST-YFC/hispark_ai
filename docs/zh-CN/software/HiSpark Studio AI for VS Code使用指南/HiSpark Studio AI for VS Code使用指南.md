@@ -2,7 +2,7 @@
 
 **概述<a name="section4537382116410"></a>**
 
-本文介绍 HiSpark Studio AI 插件工具，如何通过该工具进行模型量化、模型转换、模型评估，以及后续应用开发等功能。
+本文介绍HiSpark Studio AI 插件工具，如何通过该工具进行模型量化、模型转换、模型评估，以及后续应用开发等功能。
 
 **读者对象<a name="section4378592816410"></a>**
 
@@ -63,7 +63,14 @@
 </th>
 </tr>
 </thead>
-<tbody><tr id="row5947359616410"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p2149706016410"><a name="p2149706016410"></a><a name="p2149706016410"></a>01</p>
+<tbody><tr id="row6889538125617"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p489043819564"><a name="p489043819564"></a><a name="p489043819564"></a>02</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p28901738175615"><a name="p28901738175615"></a><a name="p28901738175615"></a>2026-04-28</p>
+</td>
+<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p128901738135612"><a name="p128901738135612"></a><a name="p128901738135612"></a>修改Hi3322的“ <a href="#ZH-CN_TOPIC_0000002515955566">压缩历史显示界面</a> 中”Accuracy字段详细说明。</p>
+</td>
+</tr>
+<tr id="row5947359616410"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p2149706016410"><a name="p2149706016410"></a><a name="p2149706016410"></a>01</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p648803616410"><a name="p648803616410"></a><a name="p648803616410"></a>2026-03-27</p>
 </td>
@@ -75,9 +82,13 @@
 
 # HiSpark Studio AI简介<a name="ZH-CN_TOPIC_0000002509724284"></a>
 
+-   **[关于HiSpark Studio AI](#ZH-CN_TOPIC_0000002541284287)**  
 
+-   **[安装方案介绍](#ZH-CN_TOPIC_0000002509764298)**  
 
+-   **[窗口介绍](#ZH-CN_TOPIC_0000002542085605)**  
 
+-   **[关键概念](#ZH-CN_TOPIC_0000002517388100)**  
 
 ## 关于HiSpark Studio AI<a name="ZH-CN_TOPIC_0000002541284287"></a>
 
@@ -97,7 +108,7 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 -   功能介绍
 
-    HiSpark Studio AI功能架构如下图所示。具备核心功能有：
+    HiSpark Studio AI功能架构如[图1](#fig1357355818812)所示。具备核心功能有：
 
     -   导入ONNX/TFLITE等格式的AI模型，初始化开发环境。
     -   通过集成的NPU/CPU工具链可以进行模型压缩和转换。
@@ -128,8 +139,11 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 ## 窗口介绍<a name="ZH-CN_TOPIC_0000002542085605"></a>
 
+-   **[整体窗口介绍](#ZH-CN_TOPIC_0000002510367162)**  
 
+-   **[侧边栏](#ZH-CN_TOPIC_0000002542087149)**  
 
+-   **[工作区](#ZH-CN_TOPIC_0000002542007157)**  
 
 ### 整体窗口介绍<a name="ZH-CN_TOPIC_0000002510367162"></a>
 
@@ -166,7 +180,9 @@ HiSpark Studio AI整体窗口如[图1](#fig141565497718)所示，主要包含两
 
 本文档中涉及如下概念，在此处做统一说明。
 
+-   **[AMCT](#ZH-CN_TOPIC_0000002548827971)**  
 
+-   **[ATC](#ZH-CN_TOPIC_0000002548707983)**  
 
 ### AMCT<a name="ZH-CN_TOPIC_0000002548827971"></a>
 
@@ -178,7 +194,9 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 # 数据准备与环境搭建<a name="ZH-CN_TOPIC_0000002548828403"></a>
 
+-   **[数据准备](#ZH-CN_TOPIC_0000002517501304)**  
 
+-   **[环境搭建](#ZH-CN_TOPIC_0000002517341386)**  
 
 ## 数据准备<a name="ZH-CN_TOPIC_0000002517501304"></a>
 
@@ -216,16 +234,25 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 # Hi3863操作指南<a name="ZH-CN_TOPIC_0000002509766614"></a>
 
+-   **[工程创建](#ZH-CN_TOPIC_0000002509726608)**  
 
+-   **[模型导入](#ZH-CN_TOPIC_0000002541326603)**  
 
+-   **[模型量化](#ZH-CN_TOPIC_0000002541286615)**  
 
+-   **[模型转换](#ZH-CN_TOPIC_0000002509766616)**  
 
+-   **[部署](#ZH-CN_TOPIC_0000002541345339)**  
 
+-   **[模型调优](#ZH-CN_TOPIC_0000002509726610)**  
 
+-   **[应用开发](#ZH-CN_TOPIC_0000002541326605)**  
 
 ## 工程创建<a name="ZH-CN_TOPIC_0000002509726608"></a>
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002516863308)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002548503199)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002516863308"></a>
 
@@ -236,7 +263,9 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002548503199"></a>
 
+-   **[首页](#ZH-CN_TOPIC_0000002548691489)**  
 
+-   **[新建工程配置界面](#ZH-CN_TOPIC_0000002517211612)**  
 
 #### 首页<a name="ZH-CN_TOPIC_0000002548691489"></a>
 
@@ -315,7 +344,9 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 模型导入主要帮助用户将本地已经训练好的ONNX模型或者TFLITE模型加载到HiSpark Studio AI中，并且记录之前的导入记录。
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002516764686)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002548164589)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002516764686"></a>
 
@@ -328,7 +359,9 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002548164589"></a>
 
+-   **[整体界面](#ZH-CN_TOPIC_0000002516604782)**  
 
+-   **[Linux导入配置界面（仅Linux端用户需要关注）](#ZH-CN_TOPIC_0000002548244585)**  
 
 #### 整体界面<a name="ZH-CN_TOPIC_0000002516604782"></a>
 
@@ -356,8 +389,11 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 ## 模型量化<a name="ZH-CN_TOPIC_0000002541286615"></a>
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002548383197)**  
 
+-   **[量化前提](#ZH-CN_TOPIC_0000002516703394)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002516863310)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002548383197"></a>
 
@@ -373,9 +409,13 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002516863310"></a>
 
+-   **[整体界面](#ZH-CN_TOPIC_0000002548503201)**  
 
+-   **[量化参数配置页面](#ZH-CN_TOPIC_0000002548383199)**  
 
+-   **[量化历史配置界面](#ZH-CN_TOPIC_0000002516703396)**  
 
+-   **[验证集精度分布直方图显示界面](#ZH-CN_TOPIC_0000002516863312)**  
 
 #### 整体界面<a name="ZH-CN_TOPIC_0000002548503201"></a>
 
@@ -394,7 +434,7 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 量化步骤如下：
 
-1.  进入量化页面，配置量化参数，参数详情请参见“[量化参数配置页面](量化参数配置页面.md)”。
+1.  进入量化页面，配置量化参数，参数详情请参见“[量化参数配置页面](#ZH-CN_TOPIC_0000002548383199)”。
 
     >![](public_sys-resources/icon-note.gif) **说明：** 
     >量化输入数据以及验证输入数据需要输入文件夹路径，文件夹内数据保持为npy格式。
@@ -444,7 +484,7 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 </tr>
 <tr id="row0675448181017"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p1067614871016"><a name="p1067614871016"></a><a name="p1067614871016"></a>Validation Inputs</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p16676134871019"><a name="p16676134871019"></a><a name="p16676134871019"></a>用户在该表格中输入量化评估网络的验证数据集。表格中各列的含义如下<a href="#fig125691159182914">图3</a>所示：</p>
+<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p16676134871019"><a name="p16676134871019"></a><a name="p16676134871019"></a>用户在该表格中输入量化评估网络的验证数据集。表格中各列的含义如<a href="#fig125691159182914">图3</a>所示：</p>
 <a name="ul11478439133512"></a><a name="ul11478439133512"></a><ul id="ul11478439133512"><li>Input Node：网络输入节点的名称。</li><li>Path：验证数据的目录。目录中存放和模型输入匹配的npy文件数据。若模型有多个输入，同一个验证样本的多个输入npy文件文件名必须保持一致。</li></ul>
 </td>
 </tr>
@@ -569,15 +609,18 @@ Validation Labels输入csv格式如[表2](#table112929412576)所示。
 
 ## 模型转换<a name="ZH-CN_TOPIC_0000002509766616"></a>
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002516898190)**  
 
+-   **[转换前提](#ZH-CN_TOPIC_0000002517058108)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002548417995)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002516898190"></a>
 
 >![](public_sys-resources/icon-notice.gif) **须知：** 
 >WS63模型转换需要满足以下条件：
->1.  用户转换的模型格式、版本以及算子需要满足条件详见“[约束说明](约束说明-0.md)”以及“[约束说明](约束说明-2.md)”。
->2.  用户需要确保Docker容器中MSLite工具链配套环境的完备性。（Windows侧用户保证toolchain文件中tools下存在“mindspore-xxx-lite-xxx.x.x-win-x64”文件夹；Linux侧用户保证Docker容器内“/usr/src/mindspore”存在对应的“mindspore-xxx-lite-xxx.x.x-linux-x64”文件夹）
+>1.  用户转换的模型格式、版本以及算子需要满足条件详见“[约束说明](#ZH-CN_TOPIC_0000002516764686)”以及“[约束说明](#ZH-CN_TOPIC_0000002548383197)”。
+>2.  用户需要确保Docker容器中MSLite工具链配套环境的完备性（Windows侧用户保证toolchain文件中tools下存在“mindspore-xxx-lite-xxx.x.x-win-x64”文件夹；Linux侧用户保证Docker容器内“/usr/src/mindspore”存在对应的“mindspore-xxx-lite-xxx.x.x-linux-x64”文件夹）。
 
 ### 转换前提<a name="ZH-CN_TOPIC_0000002517058108"></a>
 
@@ -585,9 +628,13 @@ Validation Labels输入csv格式如[表2](#table112929412576)所示。
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002548417995"></a>
 
+-   **[整体界面](#ZH-CN_TOPIC_0000002548538003)**  
 
+-   **[转换参数配置页面](#ZH-CN_TOPIC_0000002516898192)**  
 
+-   **[转换历史配置界面](#ZH-CN_TOPIC_0000002517058110)**  
 
+-   **[内存占用分布条形图显示界面](#ZH-CN_TOPIC_0000002548417997)**  
 
 #### 整体界面<a name="ZH-CN_TOPIC_0000002548538003"></a>
 
@@ -606,7 +653,7 @@ Validation Labels输入csv格式如[表2](#table112929412576)所示。
 
 转换步骤：
 
-1.  进入转换页面，配置转换参数，参数详情详见“[转换参数配置页面](转换参数配置页面.md)”。
+1.  进入转换页面，配置转换参数，参数详情详见“[转换参数配置页面](#ZH-CN_TOPIC_0000002516898192)”。
 
 1.  单击“Convert”按钮，输出转换RAM/FLASH等结果。
 2.  单击“Next”进入下一步。
@@ -616,7 +663,7 @@ Validation Labels输入csv格式如[表2](#table112929412576)所示。
 **图 1**  转换参数配置页面<a name="fig487341125020"></a>  
 ![](figures/转换参数配置页面.png "转换参数配置页面")
 
-参数解释如[表1](#table1769074411309)所示。
+参数说明如[表1](#table1769074411309)所示。
 
 **表 1**  转换参数配置
 
@@ -655,7 +702,7 @@ Validation Labels输入csv格式如[表2](#table112929412576)所示。
 **图 1**  历史转换结果配置界面<a name="fig172891046191311"></a>  
 ![](figures/历史转换结果配置界面.png "历史转换结果配置界面")
 
-该窗口以表格的方式显示历史转换的结果。表头解释如[表1](#table17914154610556)所示。
+该窗口以表格的方式显示历史转换的结果。表头说明如[表1](#table17914154610556)所示。
 
 **表 1**  历史转换结果表头说明
 
@@ -679,6 +726,8 @@ Validation Labels输入csv格式如[表2](#table112929412576)所示。
 <tr id="row499271165719"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p39921311125712"><a name="p39921311125712"></a><a name="p39921311125712"></a>Accuracy</p>
 </td>
 <td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p16992191195715"><a name="p16992191195715"></a><a name="p16992191195715"></a>表示分类结果准确率，使用标签真值计算。</p>
+<p id="p16175262198"><a name="p16175262198"></a><a name="p16175262198"></a>准确率表示的格式：{量化模型准确率}({量化模型与原始浮点模型准确率对比})</p>
+<a name="ul614475942616"></a><a name="ul614475942616"></a><ul id="ul614475942616"><li><a name="image10256111862719"></a><a name="image10256111862719"></a><span><img id="image10256111862719" src="figures/zh-cn_image_0000002561045444.png"></span>：表示量化后模型的准确率为0.99，与原始浮点网络模型相比上升0.01。</li><li><a name="image122892229115"></a><a name="image122892229115"></a><span><img id="image122892229115" src="figures/zh-cn_image_0000002591685199.png" width="97.75500000000001" height="35.0322"></span>：表示量化后模型的准确率为0.95，与原始浮点网络模型相比下降0.01。</li></ul>
 </td>
 </tr>
 <tr id="row844131695717"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p872513454221"><a name="p872513454221"></a><a name="p872513454221"></a>Cosine Similarity</p>
@@ -784,7 +833,9 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ## 部署<a name="ZH-CN_TOPIC_0000002541345339"></a>
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002548538005)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002516898194)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002548538005"></a>
 
@@ -816,15 +867,19 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ## 模型调优<a name="ZH-CN_TOPIC_0000002509726610"></a>
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002517058112)**  
 
+-   **[调优前提](#ZH-CN_TOPIC_0000002548417999)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002548538007)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002517058112"></a>
 
 >![](public_sys-resources/icon-notice.gif) **须知：** 
 >WS63模型调优需要满足以下约束条件：
->1.  用户需要保证SDK的完整性，确保AI组件（Adaptor 以及 AI\_AT组件）包含在SDK中。
->2.  用户需要准备一块WS63单板，并且使用USB串口线与本地PC连接。
+>-   用户需要保证SDK的完整性，确保AI组件（Adaptor 以及 AI\_AT组件）包含在SDK中。
+>-   用户需要保证单个样本的输入数据量总和小于4K。
+>-   用户需要准备一块WS63单板，并且使用USB串口线与本地PC连接。
 
 ### 调优前提<a name="ZH-CN_TOPIC_0000002548417999"></a>
 
@@ -832,11 +887,17 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002548538007"></a>
 
+-   **[整体界面](#ZH-CN_TOPIC_0000002516898196)**  
 
+-   **[性能验证参数配置页面](#ZH-CN_TOPIC_0000002517058114)**  
 
+-   **[性能验证结果配置页面](#ZH-CN_TOPIC_0000002548418001)**  
 
+-   **[精度验证参数配置页面](#ZH-CN_TOPIC_0000002548538009)**  
 
+-   **[精度验证结果配置页面](#ZH-CN_TOPIC_0000002516898198)**  
 
+-   **[评估结果汇总页面](#ZH-CN_TOPIC_0000002562010663)**  
 
 #### 整体界面<a name="ZH-CN_TOPIC_0000002516898196"></a>
 
@@ -1171,20 +1232,29 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 # Hi3322操作指南<a name="ZH-CN_TOPIC_0000002541286617"></a>
 
+-   **[工程创建](#ZH-CN_TOPIC_0000002509766618)**  
 
+-   **[模型导入](#ZH-CN_TOPIC_0000002509726612)**  
 
+-   **[模型量化](#ZH-CN_TOPIC_0000002541326607)**  
 
+-   **[模型转换](#ZH-CN_TOPIC_0000002541286619)**  
 
+-   **[部署](#ZH-CN_TOPIC_0000002541425345)**  
 
+-   **[模型调优](#ZH-CN_TOPIC_0000002509766620)**  
 
+-   **[应用开发](#ZH-CN_TOPIC_0000002509726614)**  
 
 ## 工程创建<a name="ZH-CN_TOPIC_0000002509766618"></a>
 
+-   **[前提条件](#ZH-CN_TOPIC_0000002517226682)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002517386758)**  
 
 ### 前提条件<a name="ZH-CN_TOPIC_0000002517226682"></a>
 
-在工程创建前，请先获取Hi3322 SDK，并存放于本地Windows环境。
+在工程创建前，请先获取Hi3322 SDK，并存放于本地Windows环境。SDK存放路径请勿带空格。
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002517386758"></a>
 
@@ -1255,8 +1325,11 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ## 模型导入<a name="ZH-CN_TOPIC_0000002509726612"></a>
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002548827023)**  
 
+-   **[前提条件](#ZH-CN_TOPIC_0000002517387150)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002517227232)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002548827023"></a>
 
@@ -1304,8 +1377,11 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ## 模型量化<a name="ZH-CN_TOPIC_0000002541326607"></a>
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002547595389)**  
 
+-   **[量化前提](#ZH-CN_TOPIC_0000002516115476)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002547515393)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002547595389"></a>
 
@@ -1318,14 +1394,18 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ### 量化前提<a name="ZH-CN_TOPIC_0000002516115476"></a>
 
--   若使用Linux服务器，将待量化的模型、数据上传到服务器。数据格式见“[数据准备与环境搭建](数据准备与环境搭建.md)”。
--   若使用Linux服务器，并需要通过量化后仿真模型验证量化精度，请准备待量化数据；上传到服务器。数据格式见“[数据准备与环境搭建](数据准备与环境搭建.md)”。
+-   若使用Linux服务器，将待量化的模型、数据上传到服务器。数据格式见“[数据准备与环境搭建](#ZH-CN_TOPIC_0000002548828403)”。
+-   若使用Linux服务器，并需要通过量化后仿真模型验证量化精度，请准备待量化数据；上传到服务器。数据格式见“[数据准备与环境搭建](#ZH-CN_TOPIC_0000002548828403)”。
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002547515393"></a>
 
+-   **[整体界面](#ZH-CN_TOPIC_0000002515955564)**  
 
+-   **[量化参数配置界面](#ZH-CN_TOPIC_0000002547595391)**  
 
+-   **[压缩历史显示界面](#ZH-CN_TOPIC_0000002515955566)**  
 
+-   **[验证集精度分布直方图显示界面](#ZH-CN_TOPIC_0000002547595393)**  
 
 #### 整体界面<a name="ZH-CN_TOPIC_0000002515955564"></a>
 
@@ -1351,7 +1431,9 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 #### 量化参数配置界面<a name="ZH-CN_TOPIC_0000002547595391"></a>
 
+-   **[训练后量化](#ZH-CN_TOPIC_0000002516115478)**  
 
+-   **[量化感知训练](#ZH-CN_TOPIC_0000002547515395)**  
 
 ##### 训练后量化<a name="ZH-CN_TOPIC_0000002516115478"></a>
 
@@ -1366,59 +1448,59 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 **表 1**  训练后量化参数配置界面参数
 
 <a name="table1769074411309"></a>
-<table><thead align="left"><tr id="row1769018444306"><th class="cellrowborder" valign="top" width="26.229999999999997%" id="mcps1.2.3.1.1"><p id="p769074418306"><a name="p769074418306"></a><a name="p769074418306"></a>参数</p>
+<table><thead align="left"><tr id="row1769018444306"><th class="cellrowborder" valign="top" width="23.27%" id="mcps1.2.3.1.1"><p id="p769074418306"><a name="p769074418306"></a><a name="p769074418306"></a>参数</p>
 </th>
-<th class="cellrowborder" valign="top" width="73.77%" id="mcps1.2.3.1.2"><p id="p669044423018"><a name="p669044423018"></a><a name="p669044423018"></a>说明</p>
+<th class="cellrowborder" valign="top" width="76.73%" id="mcps1.2.3.1.2"><p id="p669044423018"><a name="p669044423018"></a><a name="p669044423018"></a>说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row13690144417303"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p869054419309"><a name="p869054419309"></a><a name="p869054419309"></a>Quantized Data Type</p>
+<tbody><tr id="row13690144417303"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p869054419309"><a name="p869054419309"></a><a name="p869054419309"></a>Quantized Data Type</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p18690204412306"><a name="p18690204412306"></a><a name="p18690204412306"></a>模型量化类型。当配置为int8时，转换后模型占用空间相对较小，推理速度相对较快，精度损失相对更大。当配置为int16时，转换后模型占用空间相对较大，推理速度相对较慢，精度损失相对小。</p>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p18690204412306"><a name="p18690204412306"></a><a name="p18690204412306"></a>模型量化类型。当配置为int8时，转换后模型占用空间相对较小，推理速度相对较快，精度损失相对更大。当配置为int16时，转换后模型占用空间相对较大，推理速度相对较慢，精度损失相对小。</p>
 </td>
 </tr>
-<tr id="row15497102073518"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p1449712083518"><a name="p1449712083518"></a><a name="p1449712083518"></a>Layerwise Config</p>
+<tr id="row15497102073518"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p1449712083518"><a name="p1449712083518"></a><a name="p1449712083518"></a>Layerwise Config</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p4498182013516"><a name="p4498182013516"></a><a name="p4498182013516"></a>打开逐层量化配置窗口。逐层量化类型配置窗口如<a href="#fig9513147163811">图2 逐层量化类型配置界面</a>所示。表格中各列的含义如下所示：</p>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p4498182013516"><a name="p4498182013516"></a><a name="p4498182013516"></a>打开逐层量化配置窗口。逐层量化类型配置窗口如<a href="#fig9513147163811">图2</a>所示。表格中各列的含义如下所示：</p>
 <a name="ul8922547415"></a><a name="ul8922547415"></a><ul id="ul8922547415"><li>layer_name：层的名称。</li><li>layer_type：层的算子类型。</li><li>bit_num：用户在此列配置数据量化到的类型。</li></ul>
 </td>
 </tr>
-<tr id="row176419249441"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p10852456174819"><a name="p10852456174819"></a><a name="p10852456174819"></a>Calibration Inputs</p>
+<tr id="row176419249441"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p10852456174819"><a name="p10852456174819"></a><a name="p10852456174819"></a>Calibration Inputs</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p36512474420"><a name="p36512474420"></a><a name="p36512474420"></a>用户在该表格中输入量化的校准数据。表格中各列的含义如下所示：</p>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p36512474420"><a name="p36512474420"></a><a name="p36512474420"></a>用户在该表格中输入量化的校准数据。表格中各列的含义如下所示：</p>
 <a name="ul1749181515018"></a><a name="ul1749181515018"></a><ul id="ul1749181515018"><li>Input Node：网络输入节点的名称。</li><li>Path：校准数据的目录。校准数据为npy格式。</li><li>Shape：网络输入张量的形状。</li><li>DataType：网络输入张量的类型。</li></ul>
 </td>
 </tr>
-<tr id="row9587204511914"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p135887451899"><a name="p135887451899"></a><a name="p135887451899"></a>validation</p>
+<tr id="row9587204511914"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p135887451899"><a name="p135887451899"></a><a name="p135887451899"></a>validation</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p11588184515918"><a name="p11588184515918"></a><a name="p11588184515918"></a>使能验证开关。当开关打开时，验证数据集输入界面展开，如<a href="#fig11646193615123">图3 验证集输入界面</a>所示。</p>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p11588184515918"><a name="p11588184515918"></a><a name="p11588184515918"></a>使能验证开关。当开关打开时，验证数据集输入界面展开，如<a href="#fig11646193615123">图3</a>所示。</p>
 </td>
 </tr>
-<tr id="row0675448181017"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p1067614871016"><a name="p1067614871016"></a><a name="p1067614871016"></a>Validation Inputs</p>
+<tr id="row0675448181017"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p1067614871016"><a name="p1067614871016"></a><a name="p1067614871016"></a>Validation Inputs</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p16676134871019"><a name="p16676134871019"></a><a name="p16676134871019"></a>用户在该表格中输入量化评估网络的验证数据集。表格中各列的含义如下所示：</p>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p16676134871019"><a name="p16676134871019"></a><a name="p16676134871019"></a>用户在该表格中输入量化评估网络的验证数据集。表格中各列的含义如下所示：</p>
 <a name="ul11478439133512"></a><a name="ul11478439133512"></a><ul id="ul11478439133512"><li>Input Node：网络输入节点的名称。</li><li>Path：验证数据的目录。验证数据为npy格式。</li></ul>
 </td>
 </tr>
-<tr id="row7221131203619"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p18229318368"><a name="p18229318368"></a><a name="p18229318368"></a>Validation Labels</p>
+<tr id="row7221131203619"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p18229318368"><a name="p18229318368"></a><a name="p18229318368"></a>Validation Labels</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p4519123583915"><a name="p4519123583915"></a><a name="p4519123583915"></a>使能开关打开后，输入含分类真值标签的csv表格文件。</p>
-</td>
-</tr>
-<tr id="row13146175924311"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p51461759124316"><a name="p51461759124316"></a><a name="p51461759124316"></a>Advanced</p>
-</td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p15146159154312"><a name="p15146159154312"></a><a name="p15146159154312"></a>高级模式使能开关。当开关打开时，高级模式界面展开，如<a href="#fig232314275455">图4</a>所示。</p>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p4519123583915"><a name="p4519123583915"></a><a name="p4519123583915"></a>使能开关打开后，输入含分类真值标签的csv表格文件。</p>
 </td>
 </tr>
-<tr id="row5926956114512"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p12926256184512"><a name="p12926256184512"></a><a name="p12926256184512"></a>Ascend Config</p>
+<tr id="row13146175924311"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p51461759124316"><a name="p51461759124316"></a><a name="p51461759124316"></a>Advanced</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p183943473491"><a name="p183943473491"></a><a name="p183943473491"></a>高级模式量化配置文件输入控件。在该输入控件中输入昇腾量化配置cfg文件。昇腾量化配置文件编写格式参见文档《AMCT模型压缩工具用户指南》。单击<a name="image194511735485"></a><a name="image194511735485"></a><span><img id="image194511735485" src="figures/zh-cn_image_0000002547595463.png"></span>可下载配置cfg文件模板。</p>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p15146159154312"><a name="p15146159154312"></a><a name="p15146159154312"></a>高级模式使能开关。当开关打开时，高级模式界面展开，如<a href="#fig232314275455">图4</a>所示。</p>
+</td>
+</tr>
+<tr id="row5926956114512"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p12926256184512"><a name="p12926256184512"></a><a name="p12926256184512"></a>Ascend Config</p>
+</td>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p183943473491"><a name="p183943473491"></a><a name="p183943473491"></a>高级模式量化配置文件输入控件。在该输入控件中输入昇腾量化配置cfg文件。昇腾量化配置文件编写格式参见文档《AMCT模型压缩工具用户指南》。单击<a name="image194511735485"></a><a name="image194511735485"></a><span><img id="image194511735485" src="figures/zh-cn_image_0000002547595463.png"></span>可下载配置cfg文件模板。</p>
 <p id="p1926175615456"><a name="p1926175615456"></a><a name="p1926175615456"></a>在使能Ascend Config时，BitNum和Layerwise Config配置不生效。</p>
 </td>
 </tr>
-<tr id="row11454192012481"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p2045416206486"><a name="p2045416206486"></a><a name="p2045416206486"></a>Quantize</p>
+<tr id="row11454192012481"><td class="cellrowborder" valign="top" width="23.27%" headers="mcps1.2.3.1.1 "><p id="p2045416206486"><a name="p2045416206486"></a><a name="p2045416206486"></a>Quantize</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p8454182044811"><a name="p8454182044811"></a><a name="p8454182044811"></a>开始量化按钮。</p>
+<td class="cellrowborder" valign="top" width="76.73%" headers="mcps1.2.3.1.2 "><p id="p8454182044811"><a name="p8454182044811"></a><a name="p8454182044811"></a>开始量化按钮。</p>
 </td>
 </tr>
 </tbody>
@@ -1445,15 +1527,15 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 **表 1**  量化感知训练参数配置界面参数
 
 <a name="table1769074411309"></a>
-<table><thead align="left"><tr id="row1769018444306"><th class="cellrowborder" valign="top" width="26.229999999999997%" id="mcps1.2.3.1.1"><p id="p769074418306"><a name="p769074418306"></a><a name="p769074418306"></a>参数</p>
+<table><thead align="left"><tr id="row1769018444306"><th class="cellrowborder" valign="top" width="22.45%" id="mcps1.2.3.1.1"><p id="p769074418306"><a name="p769074418306"></a><a name="p769074418306"></a>参数</p>
 </th>
-<th class="cellrowborder" valign="top" width="73.77%" id="mcps1.2.3.1.2"><p id="p669044423018"><a name="p669044423018"></a><a name="p669044423018"></a>说明</p>
+<th class="cellrowborder" valign="top" width="77.55%" id="mcps1.2.3.1.2"><p id="p669044423018"><a name="p669044423018"></a><a name="p669044423018"></a>说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row13690144417303"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p869054419309"><a name="p869054419309"></a><a name="p869054419309"></a>Network Struction</p>
+<tbody><tr id="row13690144417303"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p869054419309"><a name="p869054419309"></a><a name="p869054419309"></a>Network Struction</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p18690204412306"><a name="p18690204412306"></a><a name="p18690204412306"></a>网络结构输入路径。网络结构文件为一个python文件，里面含有网络结构的定义。在定义网络结构时，请满足如下约束：</p>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p18690204412306"><a name="p18690204412306"></a><a name="p18690204412306"></a>网络结构输入路径。网络结构文件为一个python文件，里面含有网络结构的定义。在定义网络结构时，请满足如下约束：</p>
 <a name="ul15198342105114"></a><a name="ul15198342105114"></a><ul id="ul15198342105114"><li>网络结构类的名称固定为NNModel</li><li>当前只支持单输入和单输出网络，因此forward函数的输入输出类型为torch.Tensor</li><li>构造函数不包含除self外的其他入参，如果有其他入参请配置默认值</li></ul>
 <p id="p492711845215"><a name="p492711845215"></a><a name="p492711845215"></a>以下为LeNet5网络结构的参考实现：</p>
 <pre class="screen" id="screen167021785119"><a name="screen167021785119"></a><a name="screen167021785119"></a>class NNModel(nn.Module):
@@ -1493,53 +1575,53 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
         return out</pre>
 </td>
 </tr>
-<tr id="row15497102073518"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p1449712083518"><a name="p1449712083518"></a><a name="p1449712083518"></a>Input</p>
+<tr id="row15497102073518"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p1449712083518"><a name="p1449712083518"></a><a name="p1449712083518"></a>Input</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p1839513816304"><a name="p1839513816304"></a><a name="p1839513816304"></a>Training Dataset：训练集输入数据目录。训练集输入数据为npy格式。</p>
-<p id="p854993813565"><a name="p854993813565"></a><a name="p854993813565"></a>Validation Dataset: 验证集输入数据目录。目录中存放和模型输入匹配的npy文件数据。若模型有多个输入，同一个训练样本的多个输入npy文件文件名必须保持一致。</p>
-</td>
-</tr>
-<tr id="row2058969135718"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p758917910579"><a name="p758917910579"></a><a name="p758917910579"></a>Label</p>
-</td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p165894995715"><a name="p165894995715"></a><a name="p165894995715"></a>Training Dataset: 训练集真值csv文件。</p>
-<p id="p168861134125719"><a name="p168861134125719"></a><a name="p168861134125719"></a>Validation Dataset: 验证集真值csv文件。</p>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p1839513816304"><a name="p1839513816304"></a><a name="p1839513816304"></a>Training Dataset：训练集输入数据目录。训练集输入数据为npy格式。</p>
+<p id="p854993813565"><a name="p854993813565"></a><a name="p854993813565"></a>Validation Dataset：验证集输入数据目录。目录中存放和模型输入匹配的npy文件数据。若模型有多个输入，同一个训练样本的多个输入npy文件文件名必须保持一致。</p>
 </td>
 </tr>
-<tr id="row8596131613118"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p137301940583"><a name="p137301940583"></a><a name="p137301940583"></a>Epoch Num</p>
+<tr id="row2058969135718"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p758917910579"><a name="p758917910579"></a><a name="p758917910579"></a>Label</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p1973016401183"><a name="p1973016401183"></a><a name="p1973016401183"></a>量化感知训练的Epoch数量。</p>
-</td>
-</tr>
-<tr id="row1753471018329"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p0729240782"><a name="p0729240782"></a><a name="p0729240782"></a>Batch Size</p>
-</td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p117285401688"><a name="p117285401688"></a><a name="p117285401688"></a>量化感知训练的Batch Size</p>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p165894995715"><a name="p165894995715"></a><a name="p165894995715"></a>Training Dataset：训练集真值csv文件。</p>
+<p id="p168861134125719"><a name="p168861134125719"></a><a name="p168861134125719"></a>Validation Dataset：验证集真值csv文件。</p>
 </td>
 </tr>
-<tr id="row4866618133218"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p67281140986"><a name="p67281140986"></a><a name="p67281140986"></a>Learning Rate</p>
+<tr id="row8596131613118"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p137301940583"><a name="p137301940583"></a><a name="p137301940583"></a>Epoch Num</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p1172744018818"><a name="p1172744018818"></a><a name="p1172744018818"></a>量化感知训练时的学习率。</p>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p1973016401183"><a name="p1973016401183"></a><a name="p1973016401183"></a>量化感知训练的Epoch数量。</p>
 </td>
 </tr>
-<tr id="row769312712328"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p1838914591598"><a name="p1838914591598"></a><a name="p1838914591598"></a>Layerwise Config</p>
+<tr id="row1753471018329"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p0729240782"><a name="p0729240782"></a><a name="p0729240782"></a>Batch Size</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p4498182013516"><a name="p4498182013516"></a><a name="p4498182013516"></a>打开逐层量化配置窗口。逐层量化类型配置窗口如<a href="#fig89361036161014">图2</a>所示。表格中各列的含义如下所示：</p>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p117285401688"><a name="p117285401688"></a><a name="p117285401688"></a>量化感知训练的Batch Size</p>
+</td>
+</tr>
+<tr id="row4866618133218"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p67281140986"><a name="p67281140986"></a><a name="p67281140986"></a>Learning Rate</p>
+</td>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p1172744018818"><a name="p1172744018818"></a><a name="p1172744018818"></a>量化感知训练时的学习率。</p>
+</td>
+</tr>
+<tr id="row769312712328"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p1838914591598"><a name="p1838914591598"></a><a name="p1838914591598"></a>Layerwise Config</p>
+</td>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p4498182013516"><a name="p4498182013516"></a><a name="p4498182013516"></a>打开逐层量化配置窗口。逐层量化类型配置窗口如<a href="#fig89361036161014">图2</a>所示。表格中各列的含义如下所示：</p>
 <a name="ul8922547415"></a><a name="ul8922547415"></a><ul id="ul8922547415"><li>layer_name：层的名称。</li><li>layer_type：层的算子类型。</li><li>bit_num：用户在此列配置数据量化到的类型。</li></ul>
 </td>
 </tr>
-<tr id="row19016324323"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p51461759124316"><a name="p51461759124316"></a><a name="p51461759124316"></a>Advanced Settings</p>
+<tr id="row19016324323"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p51461759124316"><a name="p51461759124316"></a><a name="p51461759124316"></a>Advanced Settings</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p15146159154312"><a name="p15146159154312"></a><a name="p15146159154312"></a>高级模式使能开关。当开关打开时，高级模式界面展开，如<a href="#fig57442431416">图3</a>所示。</p>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p15146159154312"><a name="p15146159154312"></a><a name="p15146159154312"></a>高级模式使能开关。当开关打开时，高级模式界面展开，如<a href="#fig57442431416">图3</a>所示。</p>
 </td>
 </tr>
-<tr id="row121991245201317"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p12926256184512"><a name="p12926256184512"></a><a name="p12926256184512"></a>Ascend Config</p>
+<tr id="row121991245201317"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p12926256184512"><a name="p12926256184512"></a><a name="p12926256184512"></a>Ascend Config</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p183943473491"><a name="p183943473491"></a><a name="p183943473491"></a>高级模式量化配置文件输入控件。在该输入控件中输入昇腾量化配置cfg文件。昇腾量化配置文件编写格式参见文档《AMCT模型压缩工具用户指南》。单击<a name="image194511735485"></a><a name="image194511735485"></a><span><img id="image194511735485" src="figures/zh-cn_image_0000002562055691.png"></span>可下载配置cfg文件模板。</p>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p183943473491"><a name="p183943473491"></a><a name="p183943473491"></a>高级模式量化配置文件输入控件。在该输入控件中输入昇腾量化配置cfg文件。昇腾量化配置文件编写格式参见文档《AMCT模型压缩工具用户指南》。单击<a name="image194511735485"></a><a name="image194511735485"></a><span><img id="image194511735485" src="figures/zh-cn_image_0000002562055691.png"></span>可下载配置cfg文件模板。</p>
 <p id="p1926175615456"><a name="p1926175615456"></a><a name="p1926175615456"></a>在使能Ascend Config时，Layerwise Config配置不生效。</p>
 </td>
 </tr>
-<tr id="row592812546498"><td class="cellrowborder" valign="top" width="26.229999999999997%" headers="mcps1.2.3.1.1 "><p id="p2045416206486"><a name="p2045416206486"></a><a name="p2045416206486"></a>Quantize</p>
+<tr id="row592812546498"><td class="cellrowborder" valign="top" width="22.45%" headers="mcps1.2.3.1.1 "><p id="p2045416206486"><a name="p2045416206486"></a><a name="p2045416206486"></a>Quantize</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.77%" headers="mcps1.2.3.1.2 "><p id="p8454182044811"><a name="p8454182044811"></a><a name="p8454182044811"></a>开始量化按钮。</p>
+<td class="cellrowborder" valign="top" width="77.55%" headers="mcps1.2.3.1.2 "><p id="p8454182044811"><a name="p8454182044811"></a><a name="p8454182044811"></a>开始量化按钮。</p>
 </td>
 </tr>
 </tbody>
@@ -1563,43 +1645,46 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 **表 1**  压缩历史
 
 <a name="table17914154610556"></a>
-<table><thead align="left"><tr id="row691494685515"><th class="cellrowborder" valign="top" width="25.929999999999996%" id="mcps1.2.3.1.1"><p id="p189148465551"><a name="p189148465551"></a><a name="p189148465551"></a>项目</p>
+<table><thead align="left"><tr id="row691494685515"><th class="cellrowborder" valign="top" width="20.91%" id="mcps1.2.3.1.1"><p id="p189148465551"><a name="p189148465551"></a><a name="p189148465551"></a>项目</p>
 </th>
-<th class="cellrowborder" valign="top" width="74.07000000000001%" id="mcps1.2.3.1.2"><p id="p1391434685514"><a name="p1391434685514"></a><a name="p1391434685514"></a>说明</p>
+<th class="cellrowborder" valign="top" width="79.09%" id="mcps1.2.3.1.2"><p id="p1391434685514"><a name="p1391434685514"></a><a name="p1391434685514"></a>说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row09141746195518"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p191416466557"><a name="p191416466557"></a><a name="p191416466557"></a>Trail ID</p>
+<tbody><tr id="row09141746195518"><td class="cellrowborder" valign="top" width="20.91%" headers="mcps1.2.3.1.1 "><p id="p191416466557"><a name="p191416466557"></a><a name="p191416466557"></a>Trail ID</p>
 </td>
-<td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p03571347185611"><a name="p03571347185611"></a><a name="p03571347185611"></a>网络压缩结果的序号。</p>
-</td>
-</tr>
-<tr id="row926611014579"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p52661011575"><a name="p52661011575"></a><a name="p52661011575"></a>Model Name</p>
-</td>
-<td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p8266709578"><a name="p8266709578"></a><a name="p8266709578"></a>网络的名称，以及修改时间。</p>
+<td class="cellrowborder" valign="top" width="79.09%" headers="mcps1.2.3.1.2 "><p id="p03571347185611"><a name="p03571347185611"></a><a name="p03571347185611"></a>网络压缩结果的序号。</p>
 </td>
 </tr>
-<tr id="row499271165719"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p39921311125712"><a name="p39921311125712"></a><a name="p39921311125712"></a>Accuracy</p>
+<tr id="row926611014579"><td class="cellrowborder" valign="top" width="20.91%" headers="mcps1.2.3.1.1 "><p id="p52661011575"><a name="p52661011575"></a><a name="p52661011575"></a>Model Name</p>
 </td>
-<td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p16992191195715"><a name="p16992191195715"></a><a name="p16992191195715"></a>表示分类结果准确率，使用标签真值计算。计算公式如下，其中<a name="image642362211326"></a><a name="image642362211326"></a><span><img class="mathml" id="image642362211326" src="figures/zh-cn_formulaimage_0000002549112889.png" width="28.927500000000002" height="16.902305000000002"></span>表示分类正确的样本数量，<a name="image1097645123220"></a><a name="image1097645123220"></a><span><img class="mathml" id="image1097645123220" src="figures/zh-cn_formulaimage_0000002549153223.png" width="28.927500000000002" height="21.130508000000003"></span>表示样本的总数量。</p>
+<td class="cellrowborder" valign="top" width="79.09%" headers="mcps1.2.3.1.2 "><p id="p8266709578"><a name="p8266709578"></a><a name="p8266709578"></a>网络的名称，以及修改时间。</p>
+</td>
+</tr>
+<tr id="row499271165719"><td class="cellrowborder" valign="top" width="20.91%" headers="mcps1.2.3.1.1 "><p id="p39921311125712"><a name="p39921311125712"></a><a name="p39921311125712"></a>Accuracy</p>
+</td>
+<td class="cellrowborder" valign="top" width="79.09%" headers="mcps1.2.3.1.2 "><p id="p16992191195715"><a name="p16992191195715"></a><a name="p16992191195715"></a>表示分类结果准确率，使用标签真值计算。计算公式如下，其中<a name="image642362211326"></a><a name="image642362211326"></a><span><img class="mathml" id="image642362211326" src="figures/zh-cn_formulaimage_0000002549112889.png" width="28.927500000000002" height="16.902305000000002"></span>表示分类正确的样本数量，<a name="image1097645123220"></a><a name="image1097645123220"></a><span><img class="mathml" id="image1097645123220" src="figures/zh-cn_formulaimage_0000002549153223.png" width="28.927500000000002" height="21.130508000000003"></span>表示样本的总数量。</p>
 <p id="p17330110153017"><a name="p17330110153017"></a><a name="p17330110153017"></a><a name="image9860115919319"></a><a name="image9860115919319"></a><span><img class="mathml" id="image9860115919319" src="figures/zh-cn_formulaimage_0000002517553012.png" width="200.4975" height="54.333293000000005"></span></p>
+<p id="p128001110182411"><a name="p128001110182411"></a><a name="p128001110182411"></a>准确率表示格式：</p>
+<pre class="screen" id="screen4381153942419"><a name="screen4381153942419"></a><a name="screen4381153942419"></a>{量化模型准确率}({量化模型与原始浮点模型准确率对比})</pre>
+<a name="ul614475942616"></a><a name="ul614475942616"></a><ul id="ul614475942616"><li><a name="image10256111862719"></a><a name="image10256111862719"></a><span><img id="image10256111862719" src="figures/zh-cn_image_0000002560885588.png"></span>：表示量化后模型的准确率为0.99，与原始浮点网络模型相比上升0.01。</li><li><a name="image122892229115"></a><a name="image122892229115"></a><span><img id="image122892229115" src="figures/zh-cn_image_0000002591683695.png" width="91.77000000000001" height="30.270800000000005"></span>：表示量化后模型的准确率为0.95，与原始浮点网络模型相比下降0.01。</li></ul>
 </td>
 </tr>
-<tr id="row844131695717"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p184471665720"><a name="p184471665720"></a><a name="p184471665720"></a>Cosine Similarity</p>
+<tr id="row844131695717"><td class="cellrowborder" valign="top" width="20.91%" headers="mcps1.2.3.1.1 "><p id="p184471665720"><a name="p184471665720"></a><a name="p184471665720"></a>Cosine Similarity</p>
 </td>
-<td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p54531149131416"><a name="p54531149131416"></a><a name="p54531149131416"></a>平均余弦相似度，计算公式如下，其中<a name="image15484124391614"></a><a name="image15484124391614"></a><span><img class="mathml" id="image15484124391614" src="figures/zh-cn_formulaimage_0000002549142017.png" width="19.042009" height="34.772318000000006"></span>表示量化评估网络的输出，<a name="image634019531710"></a><a name="image634019531710"></a><span><img class="mathml" id="image634019531710" src="figures/zh-cn_formulaimage_0000002517542344.png" width="19.666444000000002" height="30.782318000000004"></span>表示原始浮点网络的输出，<a name="image8788135318194"></a><a name="image8788135318194"></a><span><img class="mathml" id="image8788135318194" src="figures/zh-cn_formulaimage_0000002549102503.png" width="19.191501000000002" height="28.787318000000003"></span>表示验证集样本的数量。</p>
+<td class="cellrowborder" valign="top" width="79.09%" headers="mcps1.2.3.1.2 "><p id="p54531149131416"><a name="p54531149131416"></a><a name="p54531149131416"></a>平均余弦相似度，计算公式如下，其中<a name="image15484124391614"></a><a name="image15484124391614"></a><span><img class="mathml" id="image15484124391614" src="figures/zh-cn_formulaimage_0000002549142017.png" width="19.042009" height="34.772318000000006"></span>表示量化评估网络的输出，<a name="image634019531710"></a><a name="image634019531710"></a><span><img class="mathml" id="image634019531710" src="figures/zh-cn_formulaimage_0000002517542344.png" width="19.666444000000002" height="30.782318000000004"></span>表示原始浮点网络的输出，<a name="image8788135318194"></a><a name="image8788135318194"></a><span><img class="mathml" id="image8788135318194" src="figures/zh-cn_formulaimage_0000002549102503.png" width="19.191501000000002" height="28.787318000000003"></span>表示验证集样本的数量。</p>
 <p id="p8151115911493"><a name="p8151115911493"></a><a name="p8151115911493"></a><a name="image196582429196"></a><a name="image196582429196"></a><span><img class="mathml" id="image196582429196" src="figures/zh-cn_formulaimage_0000002517701808.png" width="192.5175" height="57.95501600000001"></span></p>
 </td>
 </tr>
-<tr id="row1676132014572"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p19676520145712"><a name="p19676520145712"></a><a name="p19676520145712"></a>MSE</p>
+<tr id="row1676132014572"><td class="cellrowborder" valign="top" width="20.91%" headers="mcps1.2.3.1.1 "><p id="p19676520145712"><a name="p19676520145712"></a><a name="p19676520145712"></a>MSE</p>
 </td>
-<td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p189491228195019"><a name="p189491228195019"></a><a name="p189491228195019"></a>均方误差，计算公式如下，其中<a name="image116392033152317"></a><a name="image116392033152317"></a><span><img class="mathml" id="image116392033152317" src="figures/zh-cn_formulaimage_0000002549148179.png" width="18.495645" height="33.774818"></span>表示量化评估网络的输出，<a name="image16391333182311"></a><a name="image16391333182311"></a><span><img class="mathml" id="image16391333182311" src="figures/zh-cn_formulaimage_0000002549108183.png" width="18.391772" height="28.787318000000003"></span>表示原始浮点网络的输出，<a name="image1563903322316"></a><a name="image1563903322316"></a><span><img class="mathml" id="image1563903322316" src="figures/zh-cn_formulaimage_0000002549148183.png" width="19.191501000000002" height="28.787318000000003"></span>表示验证集样本的数量。</p>
+<td class="cellrowborder" valign="top" width="79.09%" headers="mcps1.2.3.1.2 "><p id="p189491228195019"><a name="p189491228195019"></a><a name="p189491228195019"></a>均方误差，计算公式如下，其中<a name="image116392033152317"></a><a name="image116392033152317"></a><span><img class="mathml" id="image116392033152317" src="figures/zh-cn_formulaimage_0000002549148179.png" width="18.495645" height="33.774818"></span>表示量化评估网络的输出，<a name="image16391333182311"></a><a name="image16391333182311"></a><span><img class="mathml" id="image16391333182311" src="figures/zh-cn_formulaimage_0000002549108183.png" width="18.391772" height="28.787318000000003"></span>表示原始浮点网络的输出，<a name="image1563903322316"></a><a name="image1563903322316"></a><span><img class="mathml" id="image1563903322316" src="figures/zh-cn_formulaimage_0000002549148183.png" width="19.191501000000002" height="28.787318000000003"></span>表示验证集样本的数量。</p>
 <p id="p182633519237"><a name="p182633519237"></a><a name="p182633519237"></a><a name="image196434716242"></a><a name="image196434716242"></a><span><img class="mathml" id="image196434716242" src="figures/zh-cn_formulaimage_0000002517548816.png" width="126.6825" height="48.913277"></span></p>
 </td>
 </tr>
-<tr id="row14206152325711"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p19206152355710"><a name="p19206152355710"></a><a name="p19206152355710"></a>Operation</p>
+<tr id="row14206152325711"><td class="cellrowborder" valign="top" width="20.91%" headers="mcps1.2.3.1.1 "><p id="p19206152355710"><a name="p19206152355710"></a><a name="p19206152355710"></a>Operation</p>
 </td>
-<td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p1220642335713"><a name="p1220642335713"></a><a name="p1220642335713"></a>操作按钮：</p>
+<td class="cellrowborder" valign="top" width="79.09%" headers="mcps1.2.3.1.2 "><p id="p1220642335713"><a name="p1220642335713"></a><a name="p1220642335713"></a>操作按钮：</p>
 <a name="ul52775178594"></a><a name="ul52775178594"></a><ul id="ul52775178594"><li><a name="image14822121019112"></a><a name="image14822121019112"></a><span><img id="image14822121019112" src="figures/zh-cn_image_0000002562133181.png"></span>：下载压缩结果。下载的压缩包中包含：<a name="ul1285118481118"></a><a name="ul1285118481118"></a><ul id="ul1285118481118"><li>{模型名称}_deploy_model.onnx：量化部署模型，即量化后的可在昇腾 AI 处理器部署的模型文件。</li><li>{模型名称}_fake_quant_model.onnx：量化仿真模型，即量化后的可在 ONNX执行框架ONNX Runtime进行精度仿真的模型文件。</li><li>{模型名称}_quant.json：<span>融合信息文件。</span></li><li>precision_output.csv：验证集各个样本的精度信息。</li></ul>
 </li><li><a name="image1746324617"></a><a name="image1746324617"></a><span><img id="image1746324617" src="figures/zh-cn_image_0000002531053268.png"></span>：删除当前记录。</li><li><a name="image1559016359114"></a><a name="image1559016359114"></a><span><img id="image1559016359114" src="figures/zh-cn_image_0000002531173168.png"></span>：跳转到模型转换页面，在模型转换页面对当前行对应的压缩网络进行模型转换。</li></ul>
 </td>
@@ -1616,9 +1701,13 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ## 模型转换<a name="ZH-CN_TOPIC_0000002541286619"></a>
 
+-   **[整体界面](#ZH-CN_TOPIC_0000002548567951)**  
 
+-   **[模型转换参数配置界面](#ZH-CN_TOPIC_0000002517088070)**  
 
+-   **[转换历史显示界面](#ZH-CN_TOPIC_0000002548458355)**  
 
+-   **[转换结果显示界面](#ZH-CN_TOPIC_0000002517098478)**  
 
 ### 整体界面<a name="ZH-CN_TOPIC_0000002548567951"></a>
 
@@ -1693,58 +1782,58 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 **图 1**  转换历史显示界面<a name="fig26931136531"></a>  
 ![](figures/转换历史显示界面.png "转换历史显示界面")
 
-该界面以表格的方式显示历史转换的结果。表头解释如[表1](#table14941640115315)所示
+该界面以表格的方式显示历史转换的结果。表头说明如[表1](#table14941640115315)所示。
 
 **表 1**  转换历史
 
 <a name="table14941640115315"></a>
-<table><thead align="left"><tr id="row34941040165314"><th class="cellrowborder" valign="top" width="26.51%" id="mcps1.2.3.1.1"><p id="p11494164055310"><a name="p11494164055310"></a><a name="p11494164055310"></a>项目</p>
+<table><thead align="left"><tr id="row34941040165314"><th class="cellrowborder" valign="top" width="23.23%" id="mcps1.2.3.1.1"><p id="p11494164055310"><a name="p11494164055310"></a><a name="p11494164055310"></a>项目</p>
 </th>
-<th class="cellrowborder" valign="top" width="73.49%" id="mcps1.2.3.1.2"><p id="p18494194015310"><a name="p18494194015310"></a><a name="p18494194015310"></a>说明</p>
+<th class="cellrowborder" valign="top" width="76.77000000000001%" id="mcps1.2.3.1.2"><p id="p18494194015310"><a name="p18494194015310"></a><a name="p18494194015310"></a>说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row749464085313"><td class="cellrowborder" valign="top" width="26.51%" headers="mcps1.2.3.1.1 "><p id="p191416466557"><a name="p191416466557"></a><a name="p191416466557"></a>Trail ID</p>
+<tbody><tr id="row749464085313"><td class="cellrowborder" valign="top" width="23.23%" headers="mcps1.2.3.1.1 "><p id="p191416466557"><a name="p191416466557"></a><a name="p191416466557"></a>Trail ID</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.49%" headers="mcps1.2.3.1.2 "><p id="p03571347185611"><a name="p03571347185611"></a><a name="p03571347185611"></a>网络转换结果的序号。</p>
-</td>
-</tr>
-<tr id="row11343161545419"><td class="cellrowborder" valign="top" width="26.51%" headers="mcps1.2.3.1.1 "><p id="p52661011575"><a name="p52661011575"></a><a name="p52661011575"></a>Model Name</p>
-</td>
-<td class="cellrowborder" valign="top" width="73.49%" headers="mcps1.2.3.1.2 "><p id="p8266709578"><a name="p8266709578"></a><a name="p8266709578"></a>网络的名称，以及修改时间。</p>
+<td class="cellrowborder" valign="top" width="76.77000000000001%" headers="mcps1.2.3.1.2 "><p id="p03571347185611"><a name="p03571347185611"></a><a name="p03571347185611"></a>网络转换结果的序号。</p>
 </td>
 </tr>
-<tr id="row149818163543"><td class="cellrowborder" valign="top" width="26.51%" headers="mcps1.2.3.1.1 "><p id="p39921311125712"><a name="p39921311125712"></a><a name="p39921311125712"></a>Accuracy</p>
+<tr id="row11343161545419"><td class="cellrowborder" valign="top" width="23.23%" headers="mcps1.2.3.1.1 "><p id="p52661011575"><a name="p52661011575"></a><a name="p52661011575"></a>Model Name</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.49%" headers="mcps1.2.3.1.2 "><p id="p16992191195715"><a name="p16992191195715"></a><a name="p16992191195715"></a>表示分类结果准确率，使用标签真值计算。计算公式如下，其中<a name="image642362211326"></a><a name="image642362211326"></a><span><img class="mathml" id="image642362211326" src="figures/zh-cn_formulaimage_0000002517553946.png" width="50.734313" height="29.660064"></span>表示分类正确的样本数量，<a name="image1097645123220"></a><a name="image1097645123220"></a><span><img class="mathml" id="image1097645123220" src="figures/zh-cn_formulaimage_0000002549113729.png" width="40.56367" height="29.660064"></span>表示样本的总数量。</p>
+<td class="cellrowborder" valign="top" width="76.77000000000001%" headers="mcps1.2.3.1.2 "><p id="p8266709578"><a name="p8266709578"></a><a name="p8266709578"></a>网络的名称，以及修改时间。</p>
+</td>
+</tr>
+<tr id="row149818163543"><td class="cellrowborder" valign="top" width="23.23%" headers="mcps1.2.3.1.1 "><p id="p39921311125712"><a name="p39921311125712"></a><a name="p39921311125712"></a>Accuracy</p>
+</td>
+<td class="cellrowborder" valign="top" width="76.77000000000001%" headers="mcps1.2.3.1.2 "><p id="p16992191195715"><a name="p16992191195715"></a><a name="p16992191195715"></a>表示分类结果准确率，使用标签真值计算。计算公式如下，其中<a name="image642362211326"></a><a name="image642362211326"></a><span><img class="mathml" id="image642362211326" src="figures/zh-cn_formulaimage_0000002517553946.png" width="50.734313" height="29.660064"></span>表示分类正确的样本数量，<a name="image1097645123220"></a><a name="image1097645123220"></a><span><img class="mathml" id="image1097645123220" src="figures/zh-cn_formulaimage_0000002549113729.png" width="40.56367" height="29.660064"></span>表示样本的总数量。</p>
 <p id="p17330110153017"><a name="p17330110153017"></a><a name="p17330110153017"></a><a name="image9860115919319"></a><a name="image9860115919319"></a><span><img class="mathml" id="image9860115919319" src="figures/zh-cn_formulaimage_0000002517553950.png" width="242.3925" height="65.68643900000001"></span></p>
 </td>
 </tr>
-<tr id="row191011317145410"><td class="cellrowborder" valign="top" width="26.51%" headers="mcps1.2.3.1.1 "><p id="p184471665720"><a name="p184471665720"></a><a name="p184471665720"></a>Cosine Similarity</p>
+<tr id="row191011317145410"><td class="cellrowborder" valign="top" width="23.23%" headers="mcps1.2.3.1.1 "><p id="p184471665720"><a name="p184471665720"></a><a name="p184471665720"></a>Cosine Similarity</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.49%" headers="mcps1.2.3.1.2 "><p id="p54531149131416"><a name="p54531149131416"></a><a name="p54531149131416"></a>平均余弦相似度，计算公式如下，其中<a name="image15484124391614"></a><a name="image15484124391614"></a><span><img class="mathml" id="image15484124391614" src="figures/zh-cn_formulaimage_0000002549113735.png" width="17.881185000000002" height="32.652564"></span>表示量化评估网络的输出，<a name="image634019531710"></a><a name="image634019531710"></a><span><img class="mathml" id="image634019531710" src="figures/zh-cn_formulaimage_0000002517553958.png" width="18.312238" height="28.662564"></span>表示原始浮点网络的输出，<a name="image8788135318194"></a><a name="image8788135318194"></a><span><img class="mathml" id="image8788135318194" src="figures/zh-cn_formulaimage_0000002549113739.png" width="21.103243000000003" height="31.655064"></span>表示验证集样本的数量。</p>
+<td class="cellrowborder" valign="top" width="76.77000000000001%" headers="mcps1.2.3.1.2 "><p id="p54531149131416"><a name="p54531149131416"></a><a name="p54531149131416"></a>平均余弦相似度，计算公式如下，其中<a name="image15484124391614"></a><a name="image15484124391614"></a><span><img class="mathml" id="image15484124391614" src="figures/zh-cn_formulaimage_0000002549113735.png" width="17.881185000000002" height="32.652564"></span>表示量化评估网络的输出，<a name="image634019531710"></a><a name="image634019531710"></a><span><img class="mathml" id="image634019531710" src="figures/zh-cn_formulaimage_0000002517553958.png" width="18.312238" height="28.662564"></span>表示原始浮点网络的输出，<a name="image8788135318194"></a><a name="image8788135318194"></a><span><img class="mathml" id="image8788135318194" src="figures/zh-cn_formulaimage_0000002549113739.png" width="21.103243000000003" height="31.655064"></span>表示验证集样本的数量。</p>
 <p id="p8151115911493"><a name="p8151115911493"></a><a name="p8151115911493"></a><a name="image196582429196"></a><a name="image196582429196"></a><span><img class="mathml" id="image196582429196" src="figures/zh-cn_formulaimage_0000002517553960.png" width="243.39000000000001" height="73.278744"></span></p>
 </td>
 </tr>
-<tr id="row11552161735412"><td class="cellrowborder" valign="top" width="26.51%" headers="mcps1.2.3.1.1 "><p id="p19676520145712"><a name="p19676520145712"></a><a name="p19676520145712"></a>MSE</p>
+<tr id="row11552161735412"><td class="cellrowborder" valign="top" width="23.23%" headers="mcps1.2.3.1.1 "><p id="p19676520145712"><a name="p19676520145712"></a><a name="p19676520145712"></a>MSE</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.49%" headers="mcps1.2.3.1.2 "><p id="p189491228195019"><a name="p189491228195019"></a><a name="p189491228195019"></a>均方误差，计算公式如下，其中<a name="image116392033152317"></a><a name="image116392033152317"></a><span><img class="mathml" id="image116392033152317" src="figures/zh-cn_formulaimage_0000002549113741.png" width="20.066109" height="36.642564"></span>表示量化评估网络的输出，<a name="image16391333182311"></a><a name="image16391333182311"></a><span><img class="mathml" id="image16391333182311" src="figures/zh-cn_formulaimage_0000002517553964.png" width="18.312238" height="28.662564"></span>表示原始浮点网络的输出，<a name="image1563903322316"></a><a name="image1563903322316"></a><span><img class="mathml" id="image1563903322316" src="figures/zh-cn_formulaimage_0000002549113745.png" width="20.438376" height="30.657564"></span>表示验证集样本的数量。</p>
+<td class="cellrowborder" valign="top" width="76.77000000000001%" headers="mcps1.2.3.1.2 "><p id="p189491228195019"><a name="p189491228195019"></a><a name="p189491228195019"></a>均方误差，计算公式如下，其中<a name="image116392033152317"></a><a name="image116392033152317"></a><span><img class="mathml" id="image116392033152317" src="figures/zh-cn_formulaimage_0000002549113741.png" width="20.066109" height="36.642564"></span>表示量化评估网络的输出，<a name="image16391333182311"></a><a name="image16391333182311"></a><span><img class="mathml" id="image16391333182311" src="figures/zh-cn_formulaimage_0000002517553964.png" width="18.312238" height="28.662564"></span>表示原始浮点网络的输出，<a name="image1563903322316"></a><a name="image1563903322316"></a><span><img class="mathml" id="image1563903322316" src="figures/zh-cn_formulaimage_0000002549113745.png" width="20.438376" height="30.657564"></span>表示验证集样本的数量。</p>
 <p id="p182633519237"><a name="p182633519237"></a><a name="p182633519237"></a><a name="image196434716242"></a><a name="image196434716242"></a><span><img class="mathml" id="image196434716242" src="figures/zh-cn_formulaimage_0000002517553966.png" width="192.5175" height="74.338488"></span></p>
 </td>
 </tr>
-<tr id="row7716154415234"><td class="cellrowborder" valign="top" width="26.51%" headers="mcps1.2.3.1.1 "><p id="p107169444233"><a name="p107169444233"></a><a name="p107169444233"></a>Model Size(KB)</p>
+<tr id="row7716154415234"><td class="cellrowborder" valign="top" width="23.23%" headers="mcps1.2.3.1.1 "><p id="p107169444233"><a name="p107169444233"></a><a name="p107169444233"></a>Model Size(KB)</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.49%" headers="mcps1.2.3.1.2 "><p id="p12716744142315"><a name="p12716744142315"></a><a name="p12716744142315"></a>转换后在昇腾AI处理器运行的离线模型文件大小。</p>
-</td>
-</tr>
-<tr id="row1644874782313"><td class="cellrowborder" valign="top" width="26.51%" headers="mcps1.2.3.1.1 "><p id="p10448194716236"><a name="p10448194716236"></a><a name="p10448194716236"></a>Dbg Size(KB)</p>
-</td>
-<td class="cellrowborder" valign="top" width="73.49%" headers="mcps1.2.3.1.2 "><p id="p1744820473237"><a name="p1744820473237"></a><a name="p1744820473237"></a>图调试信息文件大小。</p>
+<td class="cellrowborder" valign="top" width="76.77000000000001%" headers="mcps1.2.3.1.2 "><p id="p12716744142315"><a name="p12716744142315"></a><a name="p12716744142315"></a>转换后在昇腾AI处理器运行的离线模型文件大小。</p>
 </td>
 </tr>
-<tr id="row073913020562"><td class="cellrowborder" valign="top" width="26.51%" headers="mcps1.2.3.1.1 "><p id="p127392030185611"><a name="p127392030185611"></a><a name="p127392030185611"></a>Operation</p>
+<tr id="row1644874782313"><td class="cellrowborder" valign="top" width="23.23%" headers="mcps1.2.3.1.1 "><p id="p10448194716236"><a name="p10448194716236"></a><a name="p10448194716236"></a>Dbg Size(KB)</p>
 </td>
-<td class="cellrowborder" valign="top" width="73.49%" headers="mcps1.2.3.1.2 "><p id="p1220642335713"><a name="p1220642335713"></a><a name="p1220642335713"></a>操作按钮：</p>
+<td class="cellrowborder" valign="top" width="76.77000000000001%" headers="mcps1.2.3.1.2 "><p id="p1744820473237"><a name="p1744820473237"></a><a name="p1744820473237"></a>图调试信息文件大小。</p>
+</td>
+</tr>
+<tr id="row073913020562"><td class="cellrowborder" valign="top" width="23.23%" headers="mcps1.2.3.1.1 "><p id="p127392030185611"><a name="p127392030185611"></a><a name="p127392030185611"></a>Operation</p>
+</td>
+<td class="cellrowborder" valign="top" width="76.77000000000001%" headers="mcps1.2.3.1.2 "><p id="p1220642335713"><a name="p1220642335713"></a><a name="p1220642335713"></a>操作按钮：</p>
 <a name="ul52775178594"></a><a name="ul52775178594"></a><ul id="ul52775178594"><li><a name="image14822121019112"></a><a name="image14822121019112"></a><span><img id="image14822121019112" src="figures/zh-cn_image_0000002531053258.png"></span>：下载模型转换结果。下载的压缩包中包含：<a name="ul1285118481118"></a><a name="ul1285118481118"></a><ul id="ul1285118481118"><li>convert.exeom：转换后在昇腾AI处理器运行的离线模型。</li><li>convert.dbg：图调试信息文件。</li></ul>
 </li><li><a name="image1746324617"></a><a name="image1746324617"></a><span><img id="image1746324617" src="figures/zh-cn_image_0000002562013199.png"></span>：删除当前记录。</li><li><a name="image1559016359114"></a><a name="image1559016359114"></a><span><img id="image1559016359114" src="figures/zh-cn_image_0000002531053216.png"></span>：跳转到部署页面。</li></ul>
 </td>
@@ -1824,8 +1913,11 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ## 模型调优<a name="ZH-CN_TOPIC_0000002509766620"></a>
 
+-   **[约束说明](#ZH-CN_TOPIC_0000002516954544)**  
 
+-   **[调优前提](#ZH-CN_TOPIC_0000002548594339)**  
 
+-   **[界面介绍](#ZH-CN_TOPIC_0000002517114452)**  
 
 ### 约束说明<a name="ZH-CN_TOPIC_0000002516954544"></a>
 
@@ -1835,15 +1927,20 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 
 ### 调优前提<a name="ZH-CN_TOPIC_0000002548594339"></a>
 
--   准备精度验证数据，并保存于本地Windows环境。具体数据格式见“[数据准备与环境搭建](数据准备与环境搭建.md)”。
+-   准备精度验证数据，并保存于本地Windows环境。具体数据格式见“[数据准备与环境搭建](#ZH-CN_TOPIC_0000002548828403)”。
 -   准备并连接Hi3322单板。
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002517114452"></a>
 
+-   **[整体界面](#ZH-CN_TOPIC_0000002548474327)**  
 
+-   **[串口配置界面](#ZH-CN_TOPIC_0000002516954546)**  
 
+-   **[性能评估界面](#ZH-CN_TOPIC_0000002517218672)**  
 
+-   **[精度评估界面](#ZH-CN_TOPIC_0000002548818475)**  
 
+-   **[评估结果汇总界面](#ZH-CN_TOPIC_0000002517378582)**  
 
 #### 整体界面<a name="ZH-CN_TOPIC_0000002548474327"></a>
 
@@ -1877,30 +1974,30 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 **表 1**  串口配置界面元素说明
 
 <a name="table1315143434513"></a>
-<table><thead align="left"><tr id="row18151934164510"><th class="cellrowborder" valign="top" width="35.44%" id="mcps1.2.3.1.1"><p id="p20154347459"><a name="p20154347459"></a><a name="p20154347459"></a>元素</p>
+<table><thead align="left"><tr id="row18151934164510"><th class="cellrowborder" valign="top" width="31.1%" id="mcps1.2.3.1.1"><p id="p20154347459"><a name="p20154347459"></a><a name="p20154347459"></a>元素</p>
 </th>
-<th class="cellrowborder" valign="top" width="64.56%" id="mcps1.2.3.1.2"><p id="p17159346453"><a name="p17159346453"></a><a name="p17159346453"></a>说明</p>
+<th class="cellrowborder" valign="top" width="68.89999999999999%" id="mcps1.2.3.1.2"><p id="p17159346453"><a name="p17159346453"></a><a name="p17159346453"></a>说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row111553410459"><td class="cellrowborder" valign="top" width="35.44%" headers="mcps1.2.3.1.1 "><p id="p6157341450"><a name="p6157341450"></a><a name="p6157341450"></a>Data Port</p>
+<tbody><tr id="row111553410459"><td class="cellrowborder" valign="top" width="31.1%" headers="mcps1.2.3.1.1 "><p id="p6157341450"><a name="p6157341450"></a><a name="p6157341450"></a>Data Port</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.56%" headers="mcps1.2.3.1.2 "><p id="p1915143474519"><a name="p1915143474519"></a><a name="p1915143474519"></a>数据传输串口号。数据传输口用于将待评估的网络模型和验证数据传送到单板。</p>
-</td>
-</tr>
-<tr id="row12755194814613"><td class="cellrowborder" valign="top" width="35.44%" headers="mcps1.2.3.1.1 "><p id="p6755154810464"><a name="p6755154810464"></a><a name="p6755154810464"></a>Data Port-&gt;Baudr Rate</p>
-</td>
-<td class="cellrowborder" valign="top" width="64.56%" headers="mcps1.2.3.1.2 "><p id="p375574814468"><a name="p375574814468"></a><a name="p375574814468"></a>数据传输串口波特率。</p>
+<td class="cellrowborder" valign="top" width="68.89999999999999%" headers="mcps1.2.3.1.2 "><p id="p1915143474519"><a name="p1915143474519"></a><a name="p1915143474519"></a>数据传输串口号。数据传输口用于将待评估的网络模型和验证数据传送到单板。</p>
 </td>
 </tr>
-<tr id="row6371155084717"><td class="cellrowborder" valign="top" width="35.44%" headers="mcps1.2.3.1.1 "><p id="p19371050144710"><a name="p19371050144710"></a><a name="p19371050144710"></a>Command Port</p>
+<tr id="row12755194814613"><td class="cellrowborder" valign="top" width="31.1%" headers="mcps1.2.3.1.1 "><p id="p6755154810464"><a name="p6755154810464"></a><a name="p6755154810464"></a>Data Port-&gt;Baudr Rate</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.56%" headers="mcps1.2.3.1.2 "><p id="p1437113504478"><a name="p1437113504478"></a><a name="p1437113504478"></a>命令发送串口号。命令发送串口用于向单板发送模型推理命令。</p>
+<td class="cellrowborder" valign="top" width="68.89999999999999%" headers="mcps1.2.3.1.2 "><p id="p375574814468"><a name="p375574814468"></a><a name="p375574814468"></a>数据传输串口波特率。</p>
 </td>
 </tr>
-<tr id="row1157026154811"><td class="cellrowborder" valign="top" width="35.44%" headers="mcps1.2.3.1.1 "><p id="p45701963486"><a name="p45701963486"></a><a name="p45701963486"></a>Command Port-&gt;Baud Rate</p>
+<tr id="row6371155084717"><td class="cellrowborder" valign="top" width="31.1%" headers="mcps1.2.3.1.1 "><p id="p19371050144710"><a name="p19371050144710"></a><a name="p19371050144710"></a>Command Port</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.56%" headers="mcps1.2.3.1.2 "><p id="p15118125104811"><a name="p15118125104811"></a><a name="p15118125104811"></a>命令发送串口波特率。</p>
+<td class="cellrowborder" valign="top" width="68.89999999999999%" headers="mcps1.2.3.1.2 "><p id="p1437113504478"><a name="p1437113504478"></a><a name="p1437113504478"></a>命令发送串口号。命令发送串口用于向单板发送模型推理命令。</p>
+</td>
+</tr>
+<tr id="row1157026154811"><td class="cellrowborder" valign="top" width="31.1%" headers="mcps1.2.3.1.1 "><p id="p45701963486"><a name="p45701963486"></a><a name="p45701963486"></a>Command Port-&gt;Baud Rate</p>
+</td>
+<td class="cellrowborder" valign="top" width="68.89999999999999%" headers="mcps1.2.3.1.2 "><p id="p15118125104811"><a name="p15118125104811"></a><a name="p15118125104811"></a>命令发送串口波特率。</p>
 </td>
 </tr>
 </tbody>
@@ -1918,30 +2015,30 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 **表 1**  性能评估界面元素说明
 
 <a name="table8147195912415"></a>
-<table><thead align="left"><tr id="row1414712591549"><th class="cellrowborder" valign="top" width="37.169999999999995%" id="mcps1.2.3.1.1"><p id="p7147359146"><a name="p7147359146"></a><a name="p7147359146"></a>元素</p>
+<table><thead align="left"><tr id="row1414712591549"><th class="cellrowborder" valign="top" width="31.209999999999997%" id="mcps1.2.3.1.1"><p id="p7147359146"><a name="p7147359146"></a><a name="p7147359146"></a>元素</p>
 </th>
-<th class="cellrowborder" valign="top" width="62.83%" id="mcps1.2.3.1.2"><p id="p614711591548"><a name="p614711591548"></a><a name="p614711591548"></a>说明</p>
+<th class="cellrowborder" valign="top" width="68.78999999999999%" id="mcps1.2.3.1.2"><p id="p614711591548"><a name="p614711591548"></a><a name="p614711591548"></a>说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row81479591842"><td class="cellrowborder" valign="top" width="37.169999999999995%" headers="mcps1.2.3.1.1 "><p id="p10147359643"><a name="p10147359643"></a><a name="p10147359643"></a>Performance Evaluation</p>
+<tbody><tr id="row81479591842"><td class="cellrowborder" valign="top" width="31.209999999999997%" headers="mcps1.2.3.1.1 "><p id="p10147359643"><a name="p10147359643"></a><a name="p10147359643"></a>Performance Evaluation</p>
 </td>
-<td class="cellrowborder" valign="top" width="62.83%" headers="mcps1.2.3.1.2 "><p id="p1114711590411"><a name="p1114711590411"></a><a name="p1114711590411"></a>开始上板精度评估按钮。</p>
-</td>
-</tr>
-<tr id="row139595984011"><td class="cellrowborder" valign="top" width="37.169999999999995%" headers="mcps1.2.3.1.1 "><p id="p3165145818614"><a name="p3165145818614"></a><a name="p3165145818614"></a>INFERENCE TIME</p>
-</td>
-<td class="cellrowborder" valign="top" width="62.83%" headers="mcps1.2.3.1.2 "><p id="p13165165813615"><a name="p13165165813615"></a><a name="p13165165813615"></a>上板推理时间。该时间只包括模型推理时间，不包括输入输出数据的拷贝。</p>
+<td class="cellrowborder" valign="top" width="68.78999999999999%" headers="mcps1.2.3.1.2 "><p id="p1114711590411"><a name="p1114711590411"></a><a name="p1114711590411"></a>开始上板精度评估按钮。</p>
 </td>
 </tr>
-<tr id="row1734698174118"><td class="cellrowborder" valign="top" width="37.169999999999995%" headers="mcps1.2.3.1.1 "><p id="p2014210306610"><a name="p2014210306610"></a><a name="p2014210306610"></a>MODEL SIZE</p>
+<tr id="row139595984011"><td class="cellrowborder" valign="top" width="31.209999999999997%" headers="mcps1.2.3.1.1 "><p id="p3165145818614"><a name="p3165145818614"></a><a name="p3165145818614"></a>INFERENCE TIME</p>
 </td>
-<td class="cellrowborder" valign="top" width="62.83%" headers="mcps1.2.3.1.2 "><p id="p18142630763"><a name="p18142630763"></a><a name="p18142630763"></a>模型文件大小。</p>
+<td class="cellrowborder" valign="top" width="68.78999999999999%" headers="mcps1.2.3.1.2 "><p id="p13165165813615"><a name="p13165165813615"></a><a name="p13165165813615"></a>上板推理时间。该时间只包括模型推理时间，不包括输入输出数据的拷贝。</p>
 </td>
 </tr>
-<tr id="row66401736953"><td class="cellrowborder" valign="top" width="37.169999999999995%" headers="mcps1.2.3.1.1 "><p id="p1664063615519"><a name="p1664063615519"></a><a name="p1664063615519"></a>DBG SIZE</p>
+<tr id="row1734698174118"><td class="cellrowborder" valign="top" width="31.209999999999997%" headers="mcps1.2.3.1.1 "><p id="p2014210306610"><a name="p2014210306610"></a><a name="p2014210306610"></a>MODEL SIZE</p>
 </td>
-<td class="cellrowborder" valign="top" width="62.83%" headers="mcps1.2.3.1.2 "><p id="p10640153611510"><a name="p10640153611510"></a><a name="p10640153611510"></a>图调试信息文件大小。</p>
+<td class="cellrowborder" valign="top" width="68.78999999999999%" headers="mcps1.2.3.1.2 "><p id="p18142630763"><a name="p18142630763"></a><a name="p18142630763"></a>模型文件大小。</p>
+</td>
+</tr>
+<tr id="row66401736953"><td class="cellrowborder" valign="top" width="31.209999999999997%" headers="mcps1.2.3.1.1 "><p id="p1664063615519"><a name="p1664063615519"></a><a name="p1664063615519"></a>DBG SIZE</p>
+</td>
+<td class="cellrowborder" valign="top" width="68.78999999999999%" headers="mcps1.2.3.1.2 "><p id="p10640153611510"><a name="p10640153611510"></a><a name="p10640153611510"></a>图调试信息文件大小。</p>
 </td>
 </tr>
 </tbody>
@@ -1959,49 +2056,49 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 **表 1**  精度评估界面元素说明
 
 <a name="table14641101316114"></a>
-<table><thead align="left"><tr id="row66411013101118"><th class="cellrowborder" valign="top" width="35.25%" id="mcps1.2.3.1.1"><p id="p19641113131111"><a name="p19641113131111"></a><a name="p19641113131111"></a>元素</p>
+<table><thead align="left"><tr id="row66411013101118"><th class="cellrowborder" valign="top" width="29.98%" id="mcps1.2.3.1.1"><p id="p19641113131111"><a name="p19641113131111"></a><a name="p19641113131111"></a>元素</p>
 </th>
-<th class="cellrowborder" valign="top" width="64.75%" id="mcps1.2.3.1.2"><p id="p6641181314118"><a name="p6641181314118"></a><a name="p6641181314118"></a>说明</p>
+<th class="cellrowborder" valign="top" width="70.02000000000001%" id="mcps1.2.3.1.2"><p id="p6641181314118"><a name="p6641181314118"></a><a name="p6641181314118"></a>说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row12641121317116"><td class="cellrowborder" valign="top" width="35.25%" headers="mcps1.2.3.1.1 "><p id="p16641191318118"><a name="p16641191318118"></a><a name="p16641191318118"></a>Input Node</p>
+<tbody><tr id="row12641121317116"><td class="cellrowborder" valign="top" width="29.98%" headers="mcps1.2.3.1.1 "><p id="p16641191318118"><a name="p16641191318118"></a><a name="p16641191318118"></a>Input Node</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.75%" headers="mcps1.2.3.1.2 "><p id="p93861311181213"><a name="p93861311181213"></a><a name="p93861311181213"></a>Path：验证集输入数据目录。输入文件夹路径，文件夹中包含和模型输入数据匹配的npy文件。</p>
+<td class="cellrowborder" valign="top" width="70.02000000000001%" headers="mcps1.2.3.1.2 "><p id="p93861311181213"><a name="p93861311181213"></a><a name="p93861311181213"></a>Path：验证集输入数据目录。输入文件夹路径，文件夹中包含和模型输入数据匹配的npy文件。</p>
 </td>
 </tr>
-<tr id="row1728540121412"><td class="cellrowborder" valign="top" width="35.25%" headers="mcps1.2.3.1.1 "><p id="p13286008142"><a name="p13286008142"></a><a name="p13286008142"></a>Validation Labels</p>
+<tr id="row1728540121412"><td class="cellrowborder" valign="top" width="29.98%" headers="mcps1.2.3.1.1 "><p id="p13286008142"><a name="p13286008142"></a><a name="p13286008142"></a>Validation Labels</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.75%" headers="mcps1.2.3.1.2 "><p id="p192866031410"><a name="p192866031410"></a><a name="p192866031410"></a>包含两个元素：</p>
+<td class="cellrowborder" valign="top" width="70.02000000000001%" headers="mcps1.2.3.1.2 "><p id="p192866031410"><a name="p192866031410"></a><a name="p192866031410"></a>包含两个元素：</p>
 <a name="ul439724081410"></a><a name="ul439724081410"></a><ul id="ul439724081410"><li>下拉框：<a name="ul1815795731419"></a><a name="ul1815795731419"></a><ul id="ul1815795731419"><li>None：不输入分类真值标签文件。不进行准确率评估。</li><li>输出结点名称：从文件系统选择包含该节点分类真值标签的csv文件。并使用csv文件中包含的标签进行准确率计算。在选择该选项时，使能分类真值文件输入框。</li></ul>
 </li><li>分类真值文件输入框：输入包含分类真值的csv文件路径。</li></ul>
 </td>
 </tr>
-<tr id="row331245414144"><td class="cellrowborder" valign="top" width="35.25%" headers="mcps1.2.3.1.1 "><p id="p1831295419141"><a name="p1831295419141"></a><a name="p1831295419141"></a>Accuracy Evaluation</p>
+<tr id="row331245414144"><td class="cellrowborder" valign="top" width="29.98%" headers="mcps1.2.3.1.1 "><p id="p1831295419141"><a name="p1831295419141"></a><a name="p1831295419141"></a>Accuracy Evaluation</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.75%" headers="mcps1.2.3.1.2 "><p id="p1550765515172"><a name="p1550765515172"></a><a name="p1550765515172"></a>开始上板精度验证按钮。</p>
+<td class="cellrowborder" valign="top" width="70.02000000000001%" headers="mcps1.2.3.1.2 "><p id="p1550765515172"><a name="p1550765515172"></a><a name="p1550765515172"></a>开始上板精度验证按钮。</p>
 </td>
 </tr>
-<tr id="row8623171198"><td class="cellrowborder" valign="top" width="35.25%" headers="mcps1.2.3.1.1 "><p id="p39921311125712"><a name="p39921311125712"></a><a name="p39921311125712"></a>ACCURACY</p>
+<tr id="row8623171198"><td class="cellrowborder" valign="top" width="29.98%" headers="mcps1.2.3.1.1 "><p id="p39921311125712"><a name="p39921311125712"></a><a name="p39921311125712"></a>ACCURACY</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.75%" headers="mcps1.2.3.1.2 "><p id="p16992191195715"><a name="p16992191195715"></a><a name="p16992191195715"></a>表示分类结果准确率，使用标签真值计算。计算公式如下，其中<a name="image642362211326"></a><a name="image642362211326"></a><span><img class="mathml" id="image642362211326" src="figures/zh-cn_formulaimage_0000002517714152.png" width="56.279482" height="32.901939"></span>表示分类正确的样本数量，<a name="image1097645123220"></a><a name="image1097645123220"></a><span><img class="mathml" id="image1097645123220" src="figures/zh-cn_formulaimage_0000002549154021.png" width="45.023692000000004" height="32.901939"></span>表示样本的总数量。</p>
+<td class="cellrowborder" valign="top" width="70.02000000000001%" headers="mcps1.2.3.1.2 "><p id="p16992191195715"><a name="p16992191195715"></a><a name="p16992191195715"></a>表示分类结果准确率，使用标签真值计算。计算公式如下，其中<a name="image642362211326"></a><a name="image642362211326"></a><span><img class="mathml" id="image642362211326" src="figures/zh-cn_formulaimage_0000002517714152.png" width="56.279482" height="32.901939"></span>表示分类正确的样本数量，<a name="image1097645123220"></a><a name="image1097645123220"></a><span><img class="mathml" id="image1097645123220" src="figures/zh-cn_formulaimage_0000002549154021.png" width="45.023692000000004" height="32.901939"></span>表示样本的总数量。</p>
 <p id="p17330110153017"><a name="p17330110153017"></a><a name="p17330110153017"></a><a name="image9860115919319"></a><a name="image9860115919319"></a><span><img class="mathml" id="image9860115919319" src="figures/zh-cn_formulaimage_0000002517714156.png" width="233.41500000000002" height="63.253735999999996"></span></p>
 </td>
 </tr>
-<tr id="row19814192411435"><td class="cellrowborder" valign="top" width="35.25%" headers="mcps1.2.3.1.1 "><p id="p184471665720"><a name="p184471665720"></a><a name="p184471665720"></a>Cosine Similarity</p>
+<tr id="row19814192411435"><td class="cellrowborder" valign="top" width="29.98%" headers="mcps1.2.3.1.1 "><p id="p184471665720"><a name="p184471665720"></a><a name="p184471665720"></a>Cosine Similarity</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.75%" headers="mcps1.2.3.1.2 "><p id="p289204614436"><a name="p289204614436"></a><a name="p289204614436"></a>平均余弦相似度，计算公式如下，其中<a name="image9892046174320"></a><a name="image9892046174320"></a><span><img class="mathml" id="image9892046174320" src="figures/zh-cn_formulaimage_0000002562062097.png" width="17.881185000000002" height="32.652564"></span>表示量化评估网络的输出，<a name="image389204620436"></a><a name="image389204620436"></a><span><img class="mathml" id="image389204620436" src="figures/zh-cn_formulaimage_0000002531182176.png" width="18.312238" height="28.662564"></span>表示原始浮点网络的输出，<a name="image38934624313"></a><a name="image38934624313"></a><span><img class="mathml" id="image38934624313" src="figures/zh-cn_formulaimage_0000002562062103.png" width="21.103243000000003" height="31.655064"></span>表示验证集样本的数量。</p>
+<td class="cellrowborder" valign="top" width="70.02000000000001%" headers="mcps1.2.3.1.2 "><p id="p289204614436"><a name="p289204614436"></a><a name="p289204614436"></a>平均余弦相似度，计算公式如下，其中<a name="image9892046174320"></a><a name="image9892046174320"></a><span><img class="mathml" id="image9892046174320" src="figures/zh-cn_formulaimage_0000002562062097.png" width="17.881185000000002" height="32.652564"></span>表示量化评估网络的输出，<a name="image389204620436"></a><a name="image389204620436"></a><span><img class="mathml" id="image389204620436" src="figures/zh-cn_formulaimage_0000002531182176.png" width="18.312238" height="28.662564"></span>表示原始浮点网络的输出，<a name="image38934624313"></a><a name="image38934624313"></a><span><img class="mathml" id="image38934624313" src="figures/zh-cn_formulaimage_0000002562062103.png" width="21.103243000000003" height="31.655064"></span>表示验证集样本的数量。</p>
 <p id="p208904614317"><a name="p208904614317"></a><a name="p208904614317"></a><a name="image189646154311"></a><a name="image189646154311"></a><span><img class="mathml" id="image189646154311" src="figures/zh-cn_formulaimage_0000002531182178.png" width="243.39000000000001" height="73.278744"></span></p>
 </td>
 </tr>
-<tr id="row856725711199"><td class="cellrowborder" valign="top" width="35.25%" headers="mcps1.2.3.1.1 "><p id="p1456715715192"><a name="p1456715715192"></a><a name="p1456715715192"></a>Evaluation Data</p>
+<tr id="row856725711199"><td class="cellrowborder" valign="top" width="29.98%" headers="mcps1.2.3.1.1 "><p id="p1456715715192"><a name="p1456715715192"></a><a name="p1456715715192"></a>Evaluation Data</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.75%" headers="mcps1.2.3.1.2 "><p id="p956715576197"><a name="p956715576197"></a><a name="p956715576197"></a>各验证样本验证结果。表格中各项说明如<a href="#table8115238122018">表2</a>所示。</p>
+<td class="cellrowborder" valign="top" width="70.02000000000001%" headers="mcps1.2.3.1.2 "><p id="p956715576197"><a name="p956715576197"></a><a name="p956715576197"></a>各验证样本验证结果。表格中各项说明如<a href="#table8115238122018">表2</a>所示。</p>
 </td>
 </tr>
-<tr id="row32007219214"><td class="cellrowborder" valign="top" width="35.25%" headers="mcps1.2.3.1.1 "><p id="p92003217218"><a name="p92003217218"></a><a name="p92003217218"></a>Probability Density Histogram</p>
+<tr id="row32007219214"><td class="cellrowborder" valign="top" width="29.98%" headers="mcps1.2.3.1.1 "><p id="p92003217218"><a name="p92003217218"></a><a name="p92003217218"></a>Probability Density Histogram</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.75%" headers="mcps1.2.3.1.2 "><p id="p6404133513619"><a name="p6404133513619"></a><a name="p6404133513619"></a>验证集的余弦相似度的分布图。横轴为余弦相似度，纵轴为验证集样本的百分比。</p>
+<td class="cellrowborder" valign="top" width="70.02000000000001%" headers="mcps1.2.3.1.2 "><p id="p6404133513619"><a name="p6404133513619"></a><a name="p6404133513619"></a>验证集的余弦相似度的分布图。横轴为余弦相似度，纵轴为验证集样本的百分比。</p>
 </td>
 </tr>
 </tbody>
@@ -2010,40 +2107,40 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
 **表 2**  验证样本结果说明
 
 <a name="table8115238122018"></a>
-<table><thead align="left"><tr id="row151151438192018"><th class="cellrowborder" valign="top" width="33.52%" id="mcps1.2.3.1.1"><p id="p11115133862016"><a name="p11115133862016"></a><a name="p11115133862016"></a>元素</p>
+<table><thead align="left"><tr id="row151151438192018"><th class="cellrowborder" valign="top" width="29.42%" id="mcps1.2.3.1.1"><p id="p11115133862016"><a name="p11115133862016"></a><a name="p11115133862016"></a>元素</p>
 </th>
-<th class="cellrowborder" valign="top" width="66.47999999999999%" id="mcps1.2.3.1.2"><p id="p10115173814204"><a name="p10115173814204"></a><a name="p10115173814204"></a>说明</p>
+<th class="cellrowborder" valign="top" width="70.58%" id="mcps1.2.3.1.2"><p id="p10115173814204"><a name="p10115173814204"></a><a name="p10115173814204"></a>说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row31155385204"><td class="cellrowborder" valign="top" width="33.52%" headers="mcps1.2.3.1.1 "><p id="p911523802015"><a name="p911523802015"></a><a name="p911523802015"></a>Sample Name</p>
+<tbody><tr id="row31155385204"><td class="cellrowborder" valign="top" width="29.42%" headers="mcps1.2.3.1.1 "><p id="p911523802015"><a name="p911523802015"></a><a name="p911523802015"></a>Sample Name</p>
 </td>
-<td class="cellrowborder" valign="top" width="66.47999999999999%" headers="mcps1.2.3.1.2 "><p id="p171151038182010"><a name="p171151038182010"></a><a name="p171151038182010"></a>样本名称。</p>
-</td>
-</tr>
-<tr id="row15643194115225"><td class="cellrowborder" valign="top" width="33.52%" headers="mcps1.2.3.1.1 "><p id="p4644134114225"><a name="p4644134114225"></a><a name="p4644134114225"></a>Output Name</p>
-</td>
-<td class="cellrowborder" valign="top" width="66.47999999999999%" headers="mcps1.2.3.1.2 "><p id="p5644184142214"><a name="p5644184142214"></a><a name="p5644184142214"></a>输出节点名称。</p>
+<td class="cellrowborder" valign="top" width="70.58%" headers="mcps1.2.3.1.2 "><p id="p171151038182010"><a name="p171151038182010"></a><a name="p171151038182010"></a>样本名称。</p>
 </td>
 </tr>
-<tr id="row928511578221"><td class="cellrowborder" valign="top" width="33.52%" headers="mcps1.2.3.1.1 "><p id="p628617573223"><a name="p628617573223"></a><a name="p628617573223"></a>Predict</p>
+<tr id="row15643194115225"><td class="cellrowborder" valign="top" width="29.42%" headers="mcps1.2.3.1.1 "><p id="p4644134114225"><a name="p4644134114225"></a><a name="p4644134114225"></a>Output Name</p>
 </td>
-<td class="cellrowborder" valign="top" width="66.47999999999999%" headers="mcps1.2.3.1.2 "><p id="p7286155720222"><a name="p7286155720222"></a><a name="p7286155720222"></a>模型上板推理的输出。</p>
-</td>
-</tr>
-<tr id="row5812918239"><td class="cellrowborder" valign="top" width="33.52%" headers="mcps1.2.3.1.1 "><p id="p11812912315"><a name="p11812912315"></a><a name="p11812912315"></a>Golden</p>
-</td>
-<td class="cellrowborder" valign="top" width="66.47999999999999%" headers="mcps1.2.3.1.2 "><p id="p178189102315"><a name="p178189102315"></a><a name="p178189102315"></a>原始浮点网络在Windows主机推理的输出。</p>
+<td class="cellrowborder" valign="top" width="70.58%" headers="mcps1.2.3.1.2 "><p id="p5644184142214"><a name="p5644184142214"></a><a name="p5644184142214"></a>输出节点名称。</p>
 </td>
 </tr>
-<tr id="row61391237122311"><td class="cellrowborder" valign="top" width="33.52%" headers="mcps1.2.3.1.1 "><p id="p1991151310449"><a name="p1991151310449"></a><a name="p1991151310449"></a>Accuracy</p>
+<tr id="row928511578221"><td class="cellrowborder" valign="top" width="29.42%" headers="mcps1.2.3.1.1 "><p id="p628617573223"><a name="p628617573223"></a><a name="p628617573223"></a>Predict</p>
 </td>
-<td class="cellrowborder" valign="top" width="66.47999999999999%" headers="mcps1.2.3.1.2 "><p id="p7140143718238"><a name="p7140143718238"></a><a name="p7140143718238"></a>本样本的分类正确率。</p>
+<td class="cellrowborder" valign="top" width="70.58%" headers="mcps1.2.3.1.2 "><p id="p7286155720222"><a name="p7286155720222"></a><a name="p7286155720222"></a>模型上板推理的输出。</p>
 </td>
 </tr>
-<tr id="row107321547172315"><td class="cellrowborder" valign="top" width="33.52%" headers="mcps1.2.3.1.1 "><p id="p1573224718232"><a name="p1573224718232"></a><a name="p1573224718232"></a>Cosine Similarity</p>
+<tr id="row5812918239"><td class="cellrowborder" valign="top" width="29.42%" headers="mcps1.2.3.1.1 "><p id="p11812912315"><a name="p11812912315"></a><a name="p11812912315"></a>Golden</p>
 </td>
-<td class="cellrowborder" valign="top" width="66.47999999999999%" headers="mcps1.2.3.1.2 "><p id="p54531149131416"><a name="p54531149131416"></a><a name="p54531149131416"></a>余弦相似度，计算公式如下，其中<a name="image15484124391614"></a><a name="image15484124391614"></a><span><img class="mathml" id="image15484124391614" src="figures/zh-cn_formulaimage_0000002517554446.png" width="19.110238000000003" height="34.896939"></span>表示模型上板推理的输出，<a name="image634019531710"></a><a name="image634019531710"></a><span><img class="mathml" id="image634019531710" src="figures/zh-cn_formulaimage_0000002549114235.png" width="19.108775" height="29.909439"></span>表示原始浮点网络在Windows的输出。</p>
+<td class="cellrowborder" valign="top" width="70.58%" headers="mcps1.2.3.1.2 "><p id="p178189102315"><a name="p178189102315"></a><a name="p178189102315"></a>原始浮点网络在Windows主机推理的输出。</p>
+</td>
+</tr>
+<tr id="row61391237122311"><td class="cellrowborder" valign="top" width="29.42%" headers="mcps1.2.3.1.1 "><p id="p1991151310449"><a name="p1991151310449"></a><a name="p1991151310449"></a>Accuracy</p>
+</td>
+<td class="cellrowborder" valign="top" width="70.58%" headers="mcps1.2.3.1.2 "><p id="p7140143718238"><a name="p7140143718238"></a><a name="p7140143718238"></a>本样本的分类正确率。</p>
+</td>
+</tr>
+<tr id="row107321547172315"><td class="cellrowborder" valign="top" width="29.42%" headers="mcps1.2.3.1.1 "><p id="p1573224718232"><a name="p1573224718232"></a><a name="p1573224718232"></a>Cosine Similarity</p>
+</td>
+<td class="cellrowborder" valign="top" width="70.58%" headers="mcps1.2.3.1.2 "><p id="p54531149131416"><a name="p54531149131416"></a><a name="p54531149131416"></a>余弦相似度，计算公式如下，其中<a name="image15484124391614"></a><a name="image15484124391614"></a><span><img class="mathml" id="image15484124391614" src="figures/zh-cn_formulaimage_0000002517554446.png" width="19.110238000000003" height="34.896939"></span>表示模型上板推理的输出，<a name="image634019531710"></a><a name="image634019531710"></a><span><img class="mathml" id="image634019531710" src="figures/zh-cn_formulaimage_0000002549114235.png" width="19.108775" height="29.909439"></span>表示原始浮点网络在Windows的输出。</p>
 <p id="p8151115911493"><a name="p8151115911493"></a><a name="p8151115911493"></a><a name="image9372165344419"></a><a name="image9372165344419"></a><span><img class="mathml" id="image9372165344419" src="figures/zh-cn_formulaimage_0000002549114245.png"></span></p>
 </td>
 </tr>
@@ -2137,5 +2234,13 @@ AI上板存储占比如[图1](#fig205537152214)所示，蓝色显示为RAM占用
     **图 1**  下载exeom模型<a name="fig126011912721"></a>  
     ![](figures/下载exeom模型.png "下载exeom模型")
 
-2.  具体API的用法请参考文档《HiSpark.AI API开发指南》
+2.  具体API的用法请参考文档《HiSpark.AI API开发指南》。
+
+# 常见问题<a name="ZH-CN_TOPIC_0000002565416179"></a>
+
+-   **[服务器断连](#ZH-CN_TOPIC_0000002565416789)**  
+
+## 服务器断连<a name="ZH-CN_TOPIC_0000002565416789"></a>
+
+对于Linux通路，若远程服务器在使用过程中断连，插件右下角会弹窗提示 "Lost connection to remote server" 。当远程服务器重新启动，连接恢复后，需手动在选择模型界面通过导入模型或选择已有模型的方式，重新连接一次服务器。
 
