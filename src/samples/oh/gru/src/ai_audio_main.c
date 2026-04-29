@@ -110,11 +110,16 @@ static OH_AI_Status ai_mcu_sample_init(struct ai_mcu_param *sample_param)
 {
     /* MS Model Init (Only once) */
     osal_printk("[AI_MCU] ai_mcu_sample_init\n");
+    OH_AI_Status ret = OH_AI_Init(NULL, 0);
+    if (ret != OH_AI_STATUS_SUCCESS) {
+        osal_printk("[AI_MCU] OH_AI_Init failed (%d)\n", ret);
+        return ret;
+    }
     OH_AI_ModelHandle model = OH_AI_ModelCreate();
     OH_AI_ContextHandle context = OH_AI_ContextCreate();
     sample_param->model = model;
     sample_param->context = context;
-    OH_AI_Status ret = OH_AI_ModelBuild(sample_param->model, NULL, 0, sample_param->context);
+    ret = OH_AI_ModelBuild(sample_param->model, NULL, 0, sample_param->context);
     if (ret != OH_AI_STATUS_SUCCESS) {
         osal_printk("[AI_MCU] OH_AI_ModelBuild failed (%d)\n", ret);
         return ret;
@@ -197,6 +202,7 @@ static void ai_mcu_sample_destroy(struct ai_mcu_param *sample_param)
     /* MS Model Destroy (Only once) */
     OH_AI_ModelDestroy(&(sample_param->model));
     OH_AI_ContextDestroy(&(sample_param->context));
+    OH_AI_Deinit();
 }
 
 static void *ai_mcu_task(const char *arg)

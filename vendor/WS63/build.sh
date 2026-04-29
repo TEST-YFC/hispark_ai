@@ -66,7 +66,7 @@ fi
 if [ "$build_linux" = true ]; then
     pushd ${hiSpark_ai_path}/src/mindspore-lite
     echo "========== Building for Linux =========="
-    bash build.sh -I x86_64 -j8
+    bash build.sh -I x86_64 -j24
     popd
     pushd ${hiSpark_ai_path}
     if [ ! -d "sdk" ]; then
