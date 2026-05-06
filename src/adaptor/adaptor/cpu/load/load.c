@@ -161,7 +161,7 @@ static MS_AI_LOAD_Status ms_ai_load_info(DumpInfoHeader *info_item, size_t index
 
 MS_AI_LOAD_Status MS_AI_LoadInit(int32_t base, int32_t offset)
 {
-    if (base < MIN_LOAD_ADDR || base + offset > MAX_LOAD_ADDR || offset <= 0) {
+    if (base < MIN_LOAD_ADDR || offset <= 0 || base > MAX_LOAD_ADDR - offset) {
         osal_printk("[ERROR] MS_AI_LoadInit Failed\n");
         return MS_AI_LOAD_STATUS_FAILED;
     }

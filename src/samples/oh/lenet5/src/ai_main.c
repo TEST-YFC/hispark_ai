@@ -298,8 +298,8 @@ static void ai_mcu_sample_destroy(struct ai_mcu_param *sample_param)
 {
     osal_printk("[AI_MCU] ai_mcu_sample_destroy\n");
     /* MS Model Destroy (Only once) */
-    OH_AI_ContextDestroy(&(sample_param->context));
     OH_AI_ModelDestroy(&(sample_param->model));
+    OH_AI_ContextDestroy(&(sample_param->context));
     OH_AI_Deinit();
 }
 
