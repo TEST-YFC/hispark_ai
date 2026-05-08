@@ -1,0 +1,5 @@
+{
+    "pkg_name_versions": [
+        "MindSpore Lite==2.9==src/mindspore-lite"
+    ]
+}
