@@ -425,7 +425,7 @@ def generate_c_files(folder_path, current_path):
     input_count = len(input_files)
     output_files = glob(os.path.join(folder_path, "output*.npy"))
     output_count = len(output_files)
-    is_int_output = 'ArgMin' in folder_path or 'ArgMax' in folder_path or 'Cast' in folder_path
+    is_int_output = 'ArgMin' in folder_path or 'ArgMax' in folder_path or 'Cast' in folder_path or 'Quant' in folder_path 
     input_sizes, input_data = load_input_data(input_files)
     # Generate both versions of the file
     versions = [
@@ -519,7 +519,10 @@ def generate_c_files(folder_path, current_path):
                 modified_lines.append("        unused(scale);\n")
                 modified_lines.append("        unused(zp);\n")
                 modified_lines.append("        unused(ai_mcu_sample_printf_float);\n")
-                modified_lines.append("        int x = ((int *)out_data)[i];\n")
+                if 'Quant' in folder_path:
+                    modified_lines.append("        int8_t x = ((int8_t *)out_data)[i];\n")
+                else:
+                    modified_lines.append("        int x = ((int *)out_data)[i];\n")
                 modified_lines.append("        osal_printk(\"[%d]\", x);\n")
             if is_int_output and i <= float_line+15 and float_line != -10:
                 continue
