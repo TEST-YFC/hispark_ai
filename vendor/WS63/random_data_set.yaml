@@ -23,3 +23,8 @@ Div:
     0.5
   high:
     5
+Relu6:
+  low:
+    -5
+  high:
+    10
