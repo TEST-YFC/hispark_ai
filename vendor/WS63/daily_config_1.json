@@ -25,6 +25,8 @@
   "Floor",
   "Gather",
   "Gemm",
+  "HardSwish",
+  "HardSwish_tf",
   "L2Norm",
   "L2Norm_tf",
   "LayerNorm",
