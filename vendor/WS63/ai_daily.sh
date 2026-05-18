@@ -5,9 +5,18 @@ set -o pipefail
 CUR_DIR=$(cd $(dirname $0) && pwd -P)
 hispark_ai_path="$CUR_DIR/../.."
 is_daily=false
-if [ "$1" = "--daily" ]; then
-    is_daily=true
-fi
+daily_num=""
+while [ $# -gt 0 ]; do
+    if [ "$1" = "--daily" ]; then
+        is_daily=true
+        shift
+    elif [ "$1" = "--daily-num" ]; then
+        daily_num="$2"
+        shift 2
+    else
+        shift
+    fi
+done
 
 export PATH=~:$PATH
 export SDK_PATH=$hispark_ai_path/sdk/src
@@ -283,10 +292,35 @@ process_quantized_tflite() {
 
 
 main_daily() {
-    # Process each model in MODEL_PATH
-    for model_dir in "$MODEL_PATH"/*; do
+    # 默认daily_num为1
+    if [ -z "$daily_num" ]; then
+        daily_num="1"
+    fi
+    local config_file="$CUR_DIR/daily_config_${daily_num}.json"
+    if [ -f "$config_file" ]; then
+        echo "Reading model list from $config_file"
+        local models
+        models=$(python3 -c "
+import json
+import sys
+with open(sys.argv[1]) as f:
+    for item in json.load(f):
+        print(item)
+" "$config_file")
+    else
+        # 兼容旧逻辑：遍历所有模型目录
+        echo "Config not found: $config_file, processing all models"
+        local models=""
+        for d in "$MODEL_PATH"/*; do
+            if [ -d "$d" ]; then
+                models="$models $(basename "$d")"
+            fi
+        done
+    fi
+
+    for model in $models; do
+        local model_dir="$MODEL_PATH/$model"
         if [ -d "$model_dir" ]; then
-            model=$(basename "$model_dir")
             echo "Found model: $model"
             if [[ "$model" == *"_tf"* ]]; then
                 process_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1 || true
@@ -301,7 +335,9 @@ main_daily() {
         fi
     done
     cp "$hispark_ai_path/ai_main_temp.c" "$sample_path/src/ai_main.c"
-    sample
+    if [ "$daily_num" = "1" ]; then
+        sample
+    fi
     echo "All models processed successfully"
 }
 
