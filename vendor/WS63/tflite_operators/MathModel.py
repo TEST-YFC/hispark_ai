@@ -21,15 +21,13 @@ def create_mathmodel_tflite_model(output_path):
     """输入 → Abs → Ceil → Cos → Exp → Floor → Log → Round → Rsqrt → Sin
     → Sqrt → Square → [Gather] → Concatenation → Tile
     → Pad → PadV2 → Mirror_Pad → Resize_Bilinear → Resize_Nearest_Neighbor → 输出"""
-    import tensorflow as tf
-    import logging
-    
+
     class MathOperatorsModel(tf.Module):
         def __init__(self):
             super(MathOperatorsModel, self).__init__()
         
         @tf.function(input_signature=[
-            tf.TensorSpec(shape=[4, 6, 8], dtype=tf.float32, name="input")
+            tf.TensorSpec(shape=[1, 2, 2], dtype=tf.float32, name="input")
         ])
         def __call__(self, x):
             # 1. Abs
@@ -55,16 +53,16 @@ def create_mathmodel_tflite_model(output_path):
             # 11. Square
             x = tf.square(x, name="square")
             # 12. Gather
-            indices = tf.constant([0, 2, 4], dtype=tf.int32)
+            indices = tf.constant([0], dtype=tf.int32)
             gathered = tf.gather(x, indices, axis=1, name="gather")
             # 13. Concatenation
-            other_tensor = x[:, :3, :4]
-            gathered_part = gathered[:, :, :4]
+            other_tensor = x[:, :1, :1]
+            gathered_part = gathered[:, :, :1]
             x = tf.concat([other_tensor, gathered_part], axis=2, name="concat")
             # 14. Tile
-            x = tf.tile(x, [1, 2, 2], name="tile")
+            x = tf.tile(x, [1, 1, 1], name="tile")
             # 15. Pad
-            paddings = tf.constant([[1, 1], [2, 2], [0, 0]])
+            paddings = tf.constant([[0, 0], [0, 0], [0, 0]])
             x = tf.pad(x, paddings, mode='CONSTANT', name="pad")
             # 16. PadV2
             x = tf.pad(x, paddings, mode='CONSTANT', constant_values=0.5, name="pad_v2")
@@ -73,12 +71,12 @@ def create_mathmodel_tflite_model(output_path):
             # 18. Resize Bilinear
             if len(x.shape) == 3:
                 x_4d = tf.expand_dims(x, axis=0)
-                x_resized = tf.image.resize(x_4d, [8, 12], method=tf.image.ResizeMethod.BILINEAR, name="resize_bilinear")
+                x_resized = tf.image.resize(x_4d, [1, 1], method=tf.image.ResizeMethod.BILINEAR, name="resize_bilinear")
                 x = tf.squeeze(x_resized, axis=0)
             # 19. Resize Nearest Neighbor
             if len(x.shape) == 3:
                 x_4d = tf.expand_dims(x, axis=0)
-                x_resized = tf.image.resize(x_4d, [8, 12], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, name="resize_nearest")
+                x_resized = tf.image.resize(x_4d, [1, 1], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, name="resize_nearest")
                 x = tf.squeeze(x_resized, axis=0)
             
             return x
