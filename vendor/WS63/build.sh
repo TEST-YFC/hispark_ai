@@ -11,6 +11,7 @@ fi
 bisheng_path=$1
 shift
 is_daily=false
+daily_num=""
 target="all"
 
 while [ $# -gt 0 ]; do
@@ -28,9 +29,16 @@ while [ $# -gt 0 ]; do
     elif [ "$1" = "--daily" ]; then
         is_daily=true
         shift
+    elif [ "$1" = "--daily-num" ]; then
+        if [ $# -lt 2 ]; then
+            echo "Error: --daily-num requires an argument"
+            exit 1
+        fi
+        daily_num="$2"
+        shift 2
     else
         echo "Error: Unknown option: $1"
-        echo "Usage: $0 <bisheng_compiler_path> [--target <linux|windows|all>] [--daily]"
+        echo "Usage: $0 <bisheng_compiler_path> [--target <linux|windows|all>] [--daily] [--daily-num <num>]"
         exit 1
     fi
 done
@@ -39,6 +47,7 @@ echo "Configuration:"
 echo "  bisheng_path: $bisheng_path"
 echo "  target: $target"
 echo "  is_daily: $is_daily"
+echo "  daily_num: $daily_num"
 
 # 编译mindspore-lite
 
@@ -77,7 +86,11 @@ if [ "$build_linux" = true ]; then
 
     pushd ${cur_path}
     if [ "$is_daily" = true ]; then
-        bash ai_daily.sh --daily || exit 1
+        if [ -n "$daily_num" ]; then
+            bash ai_daily.sh --daily --daily-num "$daily_num" || exit 1
+        else
+            bash ai_daily.sh --daily || exit 1
+        fi
     else 
         bash ai_daily.sh || exit 1
     fi

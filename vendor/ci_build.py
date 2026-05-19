@@ -281,11 +281,11 @@ def process_build_results(result_list, special_targets, result_path='archives', 
                 f.writelines(all_lines)
 
 
-def sample_build_main(bisheng_path, daily=False, build_os='all'):
+def sample_build_main(bisheng_path, daily=False, build_os='all', daily_num=None):
     print(f"=== 进入 sample_build_main 函数 ===")
-    print(f"参数: bisheng_path={bisheng_path}, daily={daily}, build_os={build_os}")
+    print(f"参数: bisheng_path={bisheng_path}, daily={daily}, build_os={build_os}, daily_num={daily_num}")
     sys.stdout.flush()
-    
+
     # 确保 bisheng_path 是字符串
     if isinstance(bisheng_path, Path):
         bisheng_path = str(bisheng_path)
@@ -294,6 +294,9 @@ def sample_build_main(bisheng_path, daily=False, build_os='all'):
         cmd = ["bash", script_to_execute, bisheng_path, "--target", build_os]
         if daily:
             cmd.append("--daily")
+        if daily_num:
+            cmd.append("--daily-num")
+            cmd.append(str(daily_num))
         print(f"执行命令: {' '.join(cmd)}")
         sys.stdout.flush()
         
@@ -593,6 +596,7 @@ def main():
     build_filename = BUILD_INFO_FILENAME
     build_type = os.environ.get('BUILD_TYPE', '').strip().lower()
     build_os = os.environ.get('BUILD_OS', 'all').strip().lower()
+    daily_num = os.environ.get('DAILY_NUM', '').strip()
     samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
     generating_dataset()
     if build_type in ('gate', 'release'):
@@ -600,6 +604,14 @@ def main():
         daily = False
     elif build_type == 'daily':
         print(f'Commencing execution of daily!')
+        if not daily_num or not daily_num.isdigit() or int(daily_num) < 1:
+            daily_num = "1"
+            print(f'DAILY_NUM not set or invalid, defaulting to 1')
+        daily_config_path = f'vendor/WS63/daily_config_{daily_num}.json'
+        if not os.path.exists(daily_config_path):
+            print(f"{error_info} {daily_config_path} not found")
+            exit(1)
+        print(f"daily_num={daily_num}, config_file={daily_config_path}")
         daily = True
     else:
         print(f'BUILD_TYPE not set or invalid, defaulting to gate build')
@@ -619,7 +631,7 @@ def main():
     sys.stdout = previous_output
     sys.stderr = previous_output
     
-    result, output_text = sample_build_main(bisheng_path, daily=daily, build_os=build_os)
+    result, output_text = sample_build_main(bisheng_path, daily=daily, build_os=build_os, daily_num=daily_num)
     
     # 恢复stdout和stderr
     sys.stdout = old_stdout
