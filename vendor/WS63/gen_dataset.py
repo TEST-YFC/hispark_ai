@@ -99,6 +99,8 @@ def map_dtype_from_model(model_type, model_dtype):
         if isinstance(model_dtype, str):
             if "float" in model_dtype:
                 return np.float32
+            elif "bool" in model_dtype:
+                return np.bool_
             elif "int8" in model_dtype:
                 return np.int8
             elif "uint8" in model_dtype:
@@ -114,6 +116,8 @@ def map_dtype_from_model(model_type, model_dtype):
             # Assume it's an integer enum from onnx.TensorProto
             if model_dtype == onnx.TensorProto.FLOAT:
                 return np.float32
+            elif model_dtype == onnx.TensorProto.BOOL:
+                return np.bool_
             elif model_dtype == onnx.TensorProto.INT8:
                 return np.int8
             elif model_dtype == onnx.TensorProto.UINT8:
@@ -213,7 +217,10 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
     local_rng = np.random.RandomState(_name_to_seed(seed_str))
 
     # Default values
-    if np.issubdtype(dtype, np.unsignedinteger):
+    if np.issubdtype(dtype, np.bool_):
+        low = 0
+        high = 1
+    elif np.issubdtype(dtype, np.unsignedinteger):
         low = 0
         high = 5 
     elif np.issubdtype(dtype, np.integer):
@@ -235,7 +242,9 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
                     if 'high' in op_config:
                         # Convert to appropriate type based on dtype
                         raw_high = op_config['high']
-                        if np.issubdtype(dtype, np.integer):
+                        if np.issubdtype(dtype, np.bool_):
+                            high = bool(raw_high)
+                        elif np.issubdtype(dtype, np.integer):
                             high = int(raw_high)
                         elif np.issubdtype(dtype, np.floating):
                             high = float(raw_high)
@@ -243,7 +252,9 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
                             high = raw_high
                     if 'low' in op_config:
                         raw_low = op_config['low']
-                        if np.issubdtype(dtype, np.integer):
+                        if np.issubdtype(dtype, np.bool_):
+                            low = bool(raw_low)
+                        elif np.issubdtype(dtype, np.integer):
                             low = int(raw_low)
                         elif np.issubdtype(dtype, np.floating):
                             low = float(raw_low)
@@ -253,7 +264,9 @@ def generate_random_data(op_name, output_file, shape, dtype=np.float32):
                 print(f"Error reading YAML file: {e}")
     
     # Generate random data based on dtype
-    if np.issubdtype(dtype, np.integer) or np.issubdtype(dtype, np.unsignedinteger):
+    if np.issubdtype(dtype, np.bool_):
+        random_data = local_rng.randint(0, 2, size=shape).astype(np.bool_)
+    elif np.issubdtype(dtype, np.integer) or np.issubdtype(dtype, np.unsignedinteger):
         # Generate integer random numbers
         random_data = local_rng.randint(low=low, high=high+1, size=shape, dtype=dtype)
     elif np.issubdtype(dtype, np.floating):
@@ -425,7 +438,10 @@ def generate_c_files(folder_path, current_path):
     input_count = len(input_files)
     output_files = glob(os.path.join(folder_path, "output*.npy"))
     output_count = len(output_files)
-    is_int_output = 'ArgMin' in folder_path or 'ArgMax' in folder_path or 'Cast' in folder_path or 'Quant' in folder_path 
+    is_int_output = 'ArgMin' in folder_path or 'ArgMax' in folder_path or 'Cast' in folder_path or 'Quant' in folder_path
+    is_bool_input = any(x in folder_path for x in ['LogicalAnd', 'LogicalNot', 'LogicalOr', 'LogicalXor'])
+    is_bool_output = any(x in folder_path for x in ['Equal', 'Greater', 'Less', 'NotEqual',
+                                                     'LogicalAnd', 'LogicalNot', 'LogicalOr', 'LogicalXor'])
     input_sizes, input_data = load_input_data(input_files)
     # Generate both versions of the file
     versions = [
@@ -470,11 +486,14 @@ def generate_c_files(folder_path, current_path):
                         modified_lines.append(f"#define AI_MCU_SAMPLE_TFLITE_OUTPUT_{output}_QUANT_ZP 0\n")
                 line = ""
             elif re.search(r'const float input_buffer_fp32', line) and input_count >= 1:
-                modified_lines.append(f"const float input_buffer_fp32[AI_MCU_SAMPLE_INPUT_1_SIZE] = {{{input_data[0]}}};\n")
+                buf_type = "bool" if is_bool_input else "float"
+                modified_lines.append(f"const {buf_type} input_buffer_fp32[AI_MCU_SAMPLE_INPUT_1_SIZE] = {{{input_data[0]}}};\n")
                 for input_idx in range(1, input_count):
-                    line = f"const float input_buffer_fp32_{input_idx+1}[AI_MCU_SAMPLE_INPUT_{input_idx+1}_SIZE] = {{{input_data[input_idx]}}};\n"
+                    line = f"const {buf_type} input_buffer_fp32_{input_idx+1}[AI_MCU_SAMPLE_INPUT_{input_idx+1}_SIZE] = {{{input_data[input_idx]}}};\n"
                     modified_lines.append(line)
                 line = ""
+            elif is_bool_input and re.search(r'size_t mem_size = size \* sizeof\(float\);', line):
+                line = line.replace('sizeof(float)', 'sizeof(bool)')
             elif i == input_line+4 and input_count >= 1:
                 modified_lines.append(line)
                 for input_idx in range(1, input_count):
@@ -514,6 +533,12 @@ def generate_c_files(folder_path, current_path):
                     modified_lines.append("        return ret;\n")
                     modified_lines.append("    }\n")
                 line = ""
+            elif re.search(r'OH_AI_TensorGetElementNum', line) and is_bool_output:
+                modified_lines.append(line)
+                modified_lines.append("        unused(scale);\n")
+                modified_lines.append("        unused(zp);\n")
+                modified_lines.append("        bool f = ((bool *)out_data)[i];\n")
+                modified_lines.append("        ai_mcu_sample_printf_bool(f);\n")
             elif re.search(r'OH_AI_TensorGetElementNum', line) and is_int_output:
                 modified_lines.append(line)
                 modified_lines.append("        unused(scale);\n")
@@ -524,7 +549,7 @@ def generate_c_files(folder_path, current_path):
                 else:
                     modified_lines.append("        int x = ((int *)out_data)[i];\n")
                 modified_lines.append("        osal_printk(\"[%d]\", x);\n")
-            if is_int_output and i <= float_line+15 and float_line != -10:
+            if (is_int_output or is_bool_output) and i <= float_line+15 and float_line != -10:
                 continue
             modified_lines.append(line)
         
