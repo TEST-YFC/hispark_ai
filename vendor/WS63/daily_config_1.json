@@ -31,6 +31,8 @@
   "GreaterOrEqual",
   "GreaterOrEqual_tf",
   "Greater_tf",
+  "HardSwish",
+  "HardSwish_tf",
   "L2Norm",
   "L2Norm_tf",
   "LayerNorm",
