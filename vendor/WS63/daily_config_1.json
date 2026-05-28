@@ -36,5 +36,9 @@
   "MathModel",
   "MathModel_tf",
   "Matmul",
-  "MaxPool1D"
+  "MaxPool1D",
+  "PRelu",
+  "PRelu_tf",
+  "CumSum",
+  "CumSum_tf"
 ]
