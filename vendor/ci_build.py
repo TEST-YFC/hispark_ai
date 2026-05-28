@@ -623,25 +623,27 @@ def main():
     else:
         prepare_dataset(hiSpark_ai_path)
     
-    # 捕获构建过程的输出
-    previous_output = StringIO()
-    # 重定向stdout和stderr来捕获输出
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-    sys.stdout = previous_output
-    sys.stderr = previous_output
+
+    if build_type == 'daily':
+        # 捕获构建过程的输出
+        previous_output = StringIO()
+        # 重定向stdout和stderr来捕获输出
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = previous_output
+        sys.stderr = previous_output
     
     result, output_text = sample_build_main(bisheng_path, daily=daily, build_os=build_os, daily_num=daily_num)
-    
-    # 恢复stdout和stderr
-    sys.stdout = old_stdout
-    sys.stderr = old_stderr
-    
-    captured_output = previous_output.getvalue()    
+
+    if build_type == 'daily':
+        # 恢复stdout和stderr
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+        captured_output = previous_output.getvalue()    
+    else:
+        captured_output = ''
     result_files = move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, build_type=build_type, build_os=build_os)
     input_list = process_build_info_files(build_filename, result_files, build_type=build_type, build_os=build_os)
-    
-    # 传递捕获的输出到process_build_results
     process_build_results(input_list, result_files, result_path='archives', previous_output=captured_output)
     
     if result == 0:
