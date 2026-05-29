@@ -400,6 +400,37 @@ bias_correction=true
 enable_all_ops=false
 EOF
         popd
+
+        # 从npy文件读取sample_00000_7.npy数据，更新ai_main.c中的输入数据和SIZE
+        npy_file="${sample_path}/data/test_data/npy/sample_00000_7.npy"
+        if [ -f "$npy_file" ]; then
+            echo "Reading input data from $npy_file and updating ai_main.c"
+            python3 << EOF
+import numpy as np
+import os
+
+npy_path = "${npy_file}"
+ai_main = "${sample_path}/src/ai_main.c"
+
+data = np.load(npy_path).flatten()  # (1,1,28,28) -> (784,)
+float_strs = ["{:.10f}".format(x) for x in data]
+array_str = ", ".join(float_strs)
+
+with open(ai_main, 'r') as f:
+    content = f.read()
+
+old_line = "const float input_buffer_fp32[AI_MCU_SAMPLE_INPUT_1_SIZE] = { 0.0 };"
+new_line = "const float input_buffer_fp32[AI_MCU_SAMPLE_INPUT_1_SIZE] = { " + array_str + " };"
+content = content.replace(old_line, new_line)
+
+with open(ai_main, 'w') as f:
+    f.write(content)
+print("Updated ai_main.c successfully")
+EOF
+        else
+            echo "Warning: $npy_file not found, using default zero input"
+        fi
+
         start_time=$(date +%s)
         process_quantized_sample "lenet5" "${sample_path}/model/mnist-12.onnx" "$sample_path"
         end_time=$(date +%s)
@@ -407,7 +438,17 @@ EOF
         
         echo "######### Build target:ws63-ai-liteos_lenet5_WS63_lenet5 success"
         echo "ws63-ai-liteos_lenet5_WS63_lenet5 takes ${duration} s"
+
+        # 生成理想输出npy: sample_00000_7(数字7)的期望推理结果是第7个索引为1
+        python3 -c "
+import numpy as np
+out = np.zeros((1, 10), dtype=np.float32)
+out[0, 7] = 1.0
+np.save('${RESULT_PATH}/ws63-ai-liteos_lenet5_WS63_lenet5.npy', out)
+print('Generated expected output npy: ws63-ai-liteos_lenet5_WS63_lenet5.npy')
+"
     } | tee "${RESULT_PATH}/build-ws63-ai-liteos_lenet5_WS63_lenet5.log" 2>&1
+
 
     #gru
     {
@@ -452,13 +493,55 @@ enable_all_ops=false
 EOF
         popd
 
+        # 从npy文件读取validation_data/down，更新ai_audio_main.c中的mfcc_input_buffer
+        gru_npy="${sample_path_1}/data/validation_data/down/a7216980_nohash_2.npy"
+        if [ -f "$gru_npy" ]; then
+            echo "Reading input data from $gru_npy and updating ai_audio_main.c"
+            python3 << EOF
+import numpy as np
+import os
+
+npy_path = "${gru_npy}"
+audio_main = "${sample_path_1}/src/ai_audio_main.c"
+
+data = np.load(npy_path).flatten()  # (25,10) -> (250,)
+float_strs = ["{:.10f}".format(x) for x in data]
+array_str = ", ".join(float_strs)
+
+with open(audio_main, 'r') as f:
+    content = f.read()
+
+old_buf = """const float mfcc_input_buffer[AI_MCU_SAMPLE_GRU_TIMESTAMP * AI_MCU_SAMPLE_MFCC_INPUT_SIZE] = {
+    0.0
+};"""
+new_buf = """const float mfcc_input_buffer[AI_MCU_SAMPLE_GRU_TIMESTAMP * AI_MCU_SAMPLE_MFCC_INPUT_SIZE] = {
+    """ + array_str + """
+};"""
+content = content.replace(old_buf, new_buf)
+
+with open(audio_main, 'w') as f:
+    f.write(content)
+print("Updated ai_audio_main.c successfully")
+EOF
+        else
+            echo "Warning: $gru_npy not found, using default zero input"
+        fi
+
         start_time=$(date +%s)
         process_quantized_sample "gru" "${sample_path_1}/model/GRU_S_STREAM.onnx" "$sample_path_1"
         end_time=$(date +%s)
         duration=$((end_time - start_time))
-        
         echo "######### Build target:ws63-ai-liteos_gru_WS63_gru success"
         echo "ws63-ai-liteos_gru_WS63_gru takes ${duration} s"
+
+        # 生成理想输出npy: down标签对应索引5
+        python3 -c "
+import numpy as np
+out = np.zeros((1, 12), dtype=np.float32)
+out[0, 5] = 1.0
+np.save('${RESULT_PATH}/ws63-ai-liteos_gru_WS63_gru.npy', out)
+print('Generated expected output npy: ws63-ai-liteos_gru_WS63_gru.npy')
+"
     } | tee "${RESULT_PATH}/build-ws63-ai-liteos_gru_WS63_gru.log" 2>&1
     echo "All sample models have been processed."
 }

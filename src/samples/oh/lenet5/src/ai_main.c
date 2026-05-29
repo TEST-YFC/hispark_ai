@@ -37,7 +37,7 @@
 #define TASKS_MCU_AI_PRINT_FLOAT_MULTIPILER 100000 /* Float Print Bits. For example: 0.99998 */
 
 /* Model Param */
-#define AI_MCU_SAMPLE_INPUT_1_SIZE 600 /* Example: 1 * 25 * 24 * 1 */
+#define AI_MCU_SAMPLE_INPUT_1_SIZE 784 /* Example: 1 * 1 * 28 * 28 */
 /* To Add More Inputs
  * #define AI_MCU_SAMPLE_INPUT_2_SIZE <Tensor Size 2>
  * #define AI_MCU_SAMPLE_INPUT_3_SIZE <Tensor Size 3>
