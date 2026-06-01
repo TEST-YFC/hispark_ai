@@ -86,6 +86,9 @@ fi
 if [ "$build_linux" = true ]; then
     pushd ${hiSpark_ai_path}/src/mindspore-lite
     echo "========== Building for Linux =========="
+ 	echo "Current directory: $(pwd)"
+ 	echo "Files in current directory:"
+ 	ls -la
     bash build.sh -I x86_64 -j$(nproc) 
     popd
     pushd ${hiSpark_ai_path}
