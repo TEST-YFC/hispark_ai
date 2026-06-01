@@ -99,7 +99,7 @@ def prepare_arm_compiler(hiSpark_ai_path):
     # 获取最新的文件（按修改时间排序）
     latest_archive = max(archives, key=lambda x: x.stat().st_mtime)
     basename = latest_archive.name.replace('.tgz', '')
-    target_dir = Path(cur_path) / "gcc-arm-musl-binary-release"
+    target_dir = Path(cur_path) / basename / "arm-v01c01-linux-musleabi-gcc"
     if not target_dir.exists():
         print(f"正在解压 {latest_archive} ...")
         with tarfile.open(latest_archive, 'r:gz') as tar:
