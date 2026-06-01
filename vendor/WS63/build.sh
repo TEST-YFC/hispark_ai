@@ -85,14 +85,7 @@ fi
 # 构建Linux平台
 if [ "$build_linux" = true ]; then
     pushd ${hiSpark_ai_path}/src/mindspore-lite
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to enter directory ${hiSpark_ai_path}/src/mindspore-lite"
-        exit 1
-    fi
     echo "========== Building for Linux =========="
- 	echo "Current directory: $(pwd)"
- 	echo "Files in current directory:"
- 	ls -la
     bash build.sh -I x86_64 -j$(nproc) 
     popd
     pushd ${hiSpark_ai_path}
