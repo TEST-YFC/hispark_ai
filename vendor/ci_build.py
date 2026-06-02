@@ -87,6 +87,26 @@ def prepare_bisheng_compiler(hiSpark_ai_path):
     print(f"已完成毕昇编译器准备")
     return target_dir
 
+def prepare_arm_compiler(hiSpark_ai_path):
+    """准备ARM编译器"""
+    cur_path = os.getcwd()
+    # 查找最新的gcc arm压缩包
+    archive_pattern = "gcc-*-arm-musl-*.tgz"
+    archives = list(Path(data_dir).glob(archive_pattern))
+    if not archives:
+        print(f"{error_info}未找到匹配 {archive_pattern} 的压缩包")
+        exit(1)
+    # 获取最新的文件（按修改时间排序）
+    latest_archive = max(archives, key=lambda x: x.stat().st_mtime)
+    basename = latest_archive.name.replace('.tgz', '')
+    target_dir = Path(cur_path) / basename / "arm-v01c01-linux-musleabi-gcc"
+    if not target_dir.exists():
+        print(f"正在解压 {latest_archive} ...")
+        with tarfile.open(latest_archive, 'r:gz') as tar:
+            tar.extractall(path=cur_path)
+    print(f"已完成ARM编译器准备")
+    return target_dir
+
 def prepare_dataset(hiSpark_ai_path):
     """准备数据集"""
     # 处理GRU数据
@@ -281,17 +301,21 @@ def process_build_results(result_list, special_targets, result_path='archives', 
                 f.writelines(all_lines)
 
 
-def sample_build_main(bisheng_path, daily=False, build_os='all', daily_num=None):
+def sample_build_main(bisheng_path, arm_path=None, daily=False, build_os='all', daily_num=None):
     print(f"=== 进入 sample_build_main 函数 ===")
-    print(f"参数: bisheng_path={bisheng_path}, daily={daily}, build_os={build_os}, daily_num={daily_num}")
+    print(f"参数: bisheng_path={bisheng_path}, arm_path={arm_path}, daily={daily}, build_os={build_os}, daily_num={daily_num}")
     sys.stdout.flush()
 
     # 确保 bisheng_path 是字符串
     if isinstance(bisheng_path, Path):
         bisheng_path = str(bisheng_path)
+    if isinstance(arm_path, Path):
+        arm_path = str(arm_path)
     try:
         # 执行build脚本
         cmd = ["bash", script_to_execute, bisheng_path, "--target", build_os]
+        if arm_path:
+            cmd.extend(["--arm-path", arm_path])
         if daily:
             cmd.append("--daily")
         if daily_num:
@@ -617,31 +641,34 @@ def main():
         print(f'BUILD_TYPE not set or invalid, defaulting to gate build')
         daily = False
     bisheng_path = prepare_bisheng_compiler(hiSpark_ai_path)
-    
+    arm_path = prepare_arm_compiler(hiSpark_ai_path)
+
     if build_os == 'windows':
-        print(f'build_os is windows, skip prepare_dataset')    
+        print(f'build_os is windows, skip prepare_dataset')
     else:
         prepare_dataset(hiSpark_ai_path)
-    
-    # 捕获构建过程的输出
-    previous_output = StringIO()
-    # 重定向stdout和stderr来捕获输出
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-    sys.stdout = previous_output
-    sys.stderr = previous_output
-    
-    result, output_text = sample_build_main(bisheng_path, daily=daily, build_os=build_os, daily_num=daily_num)
-    
-    # 恢复stdout和stderr
-    sys.stdout = old_stdout
-    sys.stderr = old_stderr
-    
-    captured_output = previous_output.getvalue()    
+
+
+    if build_type == 'daily':
+        # 捕获构建过程的输出
+        previous_output = StringIO()
+        # 重定向stdout和stderr来捕获输出
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        sys.stdout = previous_output
+        sys.stderr = previous_output
+
+    result, output_text = sample_build_main(bisheng_path, arm_path=arm_path, daily=daily, build_os=build_os, daily_num=daily_num)
+
+    if build_type == 'daily':
+        # 恢复stdout和stderr
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+        captured_output = previous_output.getvalue()    
+    else:
+        captured_output = ''
     result_files = move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, build_type=build_type, build_os=build_os)
     input_list = process_build_info_files(build_filename, result_files, build_type=build_type, build_os=build_os)
-    
-    # 传递捕获的输出到process_build_results
     process_build_results(input_list, result_files, result_path='archives', previous_output=captured_output)
     
     if result == 0:

@@ -537,8 +537,9 @@ def generate_c_files(folder_path, current_path):
                 modified_lines.append(line)
                 modified_lines.append("        unused(scale);\n")
                 modified_lines.append("        unused(zp);\n")
+                modified_lines.append("        unused(ai_mcu_sample_printf_float);\n")
                 modified_lines.append("        bool f = ((bool *)out_data)[i];\n")
-                modified_lines.append("        ai_mcu_sample_printf_bool(f);\n")
+                modified_lines.append("        osal_printk(\"[%d]\", f);\n")
             elif re.search(r'OH_AI_TensorGetElementNum', line) and is_int_output:
                 modified_lines.append(line)
                 modified_lines.append("        unused(scale);\n")

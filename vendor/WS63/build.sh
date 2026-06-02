@@ -5,7 +5,7 @@ cur_path=$(cd $(dirname $0) && pwd -P)
 echo $cur_path
 hiSpark_ai_path="$cur_path/../.."
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <bisheng_compiler_path> [--daily]"
+    echo "Usage: $0 <bisheng_compiler_path> [--arm-path <arm_compiler_path>] [--target <linux|windows|all>] [--daily] [--daily-num <num>]"
     exit 1
 fi
 bisheng_path=$1
@@ -13,6 +13,7 @@ shift
 is_daily=false
 daily_num=""
 target="all"
+arm_path=""
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--target" ]; then
@@ -26,6 +27,13 @@ while [ $# -gt 0 ]; do
             exit 1
         fi
         shift 2
+    elif [ "$1" = "--arm-path" ]; then
+        if [ $# -lt 2 ]; then
+            echo "Error: --arm-path requires an argument"
+            exit 1
+        fi
+        arm_path="$2"
+        shift 2
     elif [ "$1" = "--daily" ]; then
         is_daily=true
         shift
@@ -38,13 +46,14 @@ while [ $# -gt 0 ]; do
         shift 2
     else
         echo "Error: Unknown option: $1"
-        echo "Usage: $0 <bisheng_compiler_path> [--target <linux|windows|all>] [--daily] [--daily-num <num>]"
+        echo "Usage: $0 <bisheng_compiler_path> [--arm-path <arm_compiler_path>] [--target <linux|windows|all>] [--daily] [--daily-num <num>]"
         exit 1
     fi
 done
 
 echo "Configuration:"
 echo "  bisheng_path: $bisheng_path"
+echo "  arm_path: $arm_path"
 echo "  target: $target"
 echo "  is_daily: $is_daily"
 echo "  daily_num: $daily_num"
@@ -55,8 +64,10 @@ export MSLITE_ENABLE_MICRO=ON
 export MSLITE_ENABLE_INT8=ON
 export MSLITE_ENABLE_TRAIN=OFF
 export MSLITE_ENABLE_TESTCASES=OFF
+export MSLITE_ENABLE_GITEE_MIRROR=ON
 export MSLITE_TARGET_RISCV=ON
 export HISPARK_RISCV_TOOLCHAIN_PATH="${bisheng_path}/"
+export HISPARK_ARM_TOOLCHAIN_PATH="${arm_path}/"
 
 # 根据target参数决定执行哪些平台
 build_linux=false
