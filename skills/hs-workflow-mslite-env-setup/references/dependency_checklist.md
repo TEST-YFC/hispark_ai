@@ -37,5 +37,6 @@ export MSLITE_ENABLE_INT8=ON
 export MSLITE_ENABLE_TRAIN=OFF
 export MSLITE_ENABLE_TESTCASES=OFF
 export MSLITE_TARGET_RISCV=ON
-export HISPARK_RISCV_TOOLCHAIN_PATH=<bisheng_root>
+# 毕昇编译器根目录(默认在项目树下; 实际路径以本机为准, 也可写入 ~/.hispark_env)
+export HISPARK_RISCV_TOOLCHAIN_PATH="${HISPARK_AI_ROOT:-$(pwd)}/BiSheng-llvm-binary-release-musl"
 ```

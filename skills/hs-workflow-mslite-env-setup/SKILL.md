@@ -17,7 +17,7 @@ description: 本 skill 适用于用户请求"编译 MindSpore Lite"、"build msl
 - mindspore-lite 子模块已初始化
 - `python` 与 `python3` 命令均指向 Python 3.11
 
-完整的依赖清单与问题排查请见 `references/faq.md`。
+完整的依赖清单请见 `references/dependency_checklist.md`，遇到问题时请见 `references/faq.md`。
 
 ## 工作流概览
 

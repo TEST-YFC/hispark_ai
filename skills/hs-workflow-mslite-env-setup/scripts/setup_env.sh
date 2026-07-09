@@ -119,13 +119,19 @@ if [ -n "${BISHENG_ROOT:-}" ] && [ -x "$BISHENG_ROOT/bin/clang" ]; then
     ln -sf "$BISHENG_ROOT/bin/clang++" "$GXX_LINK"
   fi
   # 交叉编译器实测（失败不再静默）
-  echo 'int main(){return 0;}' > /tmp/_mslite_test.c
-  if "$GCC_LINK" -march=rv32imafc -mabi=ilp32f -c /tmp/_mslite_test.c -o /tmp/_mslite_test.o 2>/tmp/_gcc_err; then
+  # 用 mktemp -d 创建私有临时目录(随机名+700权限+原子创建), 避免固定 /tmp 路径的
+  # symlink 攻击(TOCTOU)与多用户并发冲突; 三个临时文件放入该目录, 末尾整目录清理。
+  _test_dir=$(mktemp -d)
+  _test_c="$_test_dir/test.c"
+  _test_o="$_test_dir/test.o"
+  _test_err="$_test_dir/err"
+  echo 'int main(){return 0;}' > "$_test_c"
+  if "$GCC_LINK" -march=rv32imafc -mabi=ilp32f -c "$_test_c" -o "$_test_o" 2>"$_test_err"; then
     _ok "RISC-V 交叉编译器验证通过"
   else
-    _err "RISC-V 交叉编译器验证失败: $(cat /tmp/_gcc_err 2>/dev/null)"
+    _err "RISC-V 交叉编译器验证失败: $(cat "$_test_err" 2>/dev/null)"
   fi
-  rm -f /tmp/_mslite_test.c /tmp/_mslite_test.o /tmp/_gcc_err
+  rm -rf "$_test_dir"
 fi
 
 # ---- 8. 汇总 ---------------------------------------------------------------

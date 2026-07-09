@@ -42,8 +42,12 @@ export LD_LIBRARY_PATH="$MSLITE_PKG/tools/converter/lib:$LD_LIBRARY_PATH"
 # 创建输出目录
 mkdir -p "$OUTPUT_DIR"
 
-# 执行转换
-echo "[convert_model] 执行转换..."
+# 执行转换, 输出捕获到日志用于成功标志校验与失败诊断。
+# 注意: converter_lite 失败时 (退出码非0, 如 255) 必须落到下方校验分支打印诊断,
+# 不能被第 5 行的 set -e 提前终结, 故在此显式关闭 errexit, 退出码经 CONV_RC 捕获后重新开启。
+CONV_LOG=/tmp/mslite_convert.log
+echo "[convert_model] 执行转换... (日志: $CONV_LOG)"
+set +e
 converter_lite \
     --fmk=ONNX \
     --modelFile="$MODEL_FILE" \
@@ -51,11 +55,22 @@ converter_lite \
     --configFile="$CONFIG_FILE" \
     --inputDataFormat=NCHW \
     --encryption=false \
-    --outputDataFormat=NCHW
+    --outputDataFormat=NCHW > "$CONV_LOG" 2>&1
+CONV_RC=$?
+set -e
 
-echo "[convert_model] 转换完成"
-
-# 检查产物
-GEN_FILES=$(find "$OUTPUT_DIR" -type f | wc -l)
-echo "[convert_model] 产物文件数: $GEN_FILES"
-echo "[convert_model] 产物大小: $(du -sh "$OUTPUT_DIR" | cut -f1)"
+# 校验输出: converter_lite 成功时向 stdout 打印 "CONVERT RESULT SUCCESS:0"
+# (见 mindspore-lite/tools/converter/converter.cc:1373)。仅凭退出码不可靠
+# (存在返回0但产物未生成的情形), 故以该成功标志为准, 并复核 micro 工程标志文件 net.cmake。
+# 不依赖文件计数: 输出目录可能残留上一次的旧产物, 计数无法区分本次是否真正成功。
+if grep -q "CONVERT RESULT SUCCESS:" "$CONV_LOG" && [ -f "$OUTPUT_DIR/src/net.cmake" ]; then
+    echo "[convert_model] ✓ 转换成功 (exit=$CONV_RC)"
+    GEN_FILES=$(find "$OUTPUT_DIR" -type f | wc -l)
+    echo "[convert_model] 产物文件数: $GEN_FILES"
+    echo "[convert_model] 产物大小: $(du -sh "$OUTPUT_DIR" | cut -f1)"
+else
+    echo "[convert_model] ✗ 转换失败 (exit=$CONV_RC), 日志尾部:"
+    tail -20 "$CONV_LOG"
+    echo "[convert_model] 完整日志: $CONV_LOG"
+    exit 1
+fi
