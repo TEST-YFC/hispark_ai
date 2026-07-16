@@ -11,6 +11,7 @@ if [ $# -lt 2 ]; then
 fi
 
 MODEL_FILE=$(realpath "$1")
+mkdir -p "$2"
 OUTPUT_DIR=$(realpath "$2")
 CONFIG_FILE=$(dirname "$OUTPUT_DIR")/micro_config.cfg
 
