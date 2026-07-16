@@ -11,6 +11,7 @@ echo "=== pip ===" && python -m pip --version 2>&1
 echo "=== PyYAML ===" && python -c "import yaml; print('PyYAML', yaml.__version__)" 2>&1
 echo "=== NumPy ===" && python -c "import numpy; print('NumPy', numpy.__version__)" 2>&1
 echo "=== 毕昇编译器 ===" && file $HISPARK_RISCV_TOOLCHAIN_PATH/bin/clang-15 2>&1
+echo "=== ARM GCC 工具链 ===" && $HISPARK_ARM_TOOLCHAIN_PATH/bin/arm-v01c01-linux-musleabi-gcc --version 2>&1 | head -1
 echo "=== mindspore-lite ===" && ls src/mindspore-lite/build.sh 2>&1
 echo "=== adaptor ===" && ls src/adaptor/ 2>&1
 ```
@@ -25,7 +26,8 @@ echo "=== adaptor ===" && ls src/adaptor/ 2>&1
 | Python | 3.11 | `python --version` |
 | PyYAML | 6.0+ | `python -c "import yaml; print(yaml.__version__)"` |
 | NumPy | 1.19.3+ | `python -c "import numpy; print(numpy.__version__)"` |
-| 毕昇编译器 | 15.0.4 x86_64 | `file <bisheng>/bin/clang-15` |
+| 毕昇编译器 | 15.0.4 x86_64 | `file <bisheng>/bin/clang-15`；获取见 faq.md「获取毕昇编译器」（[华为开发者官网](https://developers.hisilicon.com/cn/developerTool)） |
+| ARM GCC 工具链 | gcc 10.3.0 / musl 1.2.3 x86_64 | `<arm_root>/bin/arm-v01c01-linux-musleabi-gcc --version`；获取见 faq.md「获取 ARM GCC 工具链」 |
 | mindspore-lite | 子模块 | `ls src/mindspore-lite/build.sh` |
 | adaptor | 源码目录 | `ls src/adaptor/` |
 
@@ -39,4 +41,8 @@ export MSLITE_ENABLE_TESTCASES=OFF
 export MSLITE_TARGET_RISCV=ON
 # 毕昇编译器根目录(默认在项目树下; 实际路径以本机为准, 也可写入 ~/.hispark_env)
 export HISPARK_RISCV_TOOLCHAIN_PATH="${HISPARK_AI_ROOT:-$(pwd)}/BiSheng-llvm-binary-release-musl"
+# ARM musl GCC 工具链根（含 bin/arm-v01c01-linux-musleabi-gcc 的那一层）
+# 官方安装器默认装 /opt/linux/x86-arm/arm-v01c01-linux-musleabi-gcc；或项目树内解压
+export ARM_TOOLCHAIN_ROOT="${ARM_TOOLCHAIN_ROOT:-/opt/linux/x86-arm/arm-v01c01-linux-musleabi-gcc}"
+export HISPARK_ARM_TOOLCHAIN_PATH="$ARM_TOOLCHAIN_ROOT"
 ```

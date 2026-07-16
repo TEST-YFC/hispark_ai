@@ -56,26 +56,68 @@ else
 fi
 if [ -z "${BISHENG_ROOT:-}" ] || [ ! -x "$BISHENG_ROOT/bin/clang" ]; then
   _err "未找到毕昇 RISC-V 工具链（需含 bin/clang）。
-        修复: 从华为开发者官网下载 BiSheng-llvm-15.0.4-riscv-x86-linux 解压后，
-              export BISHENG_ROOT=<解压目录>，或写入 ~/.hispark_env"
+        修复: 从华为开发者官网 https://developers.hisilicon.com/cn/developerTool 下载
+              BiSheng-llvm-15.0.4-riscv-x86-linux（资源下载→Toolchain→Linux→RISC-V），
+              tar -xzvf 解压后 export BISHENG_ROOT=<解压目录>，
+              或解压到项目根/写入 ~/.hispark_env。详见 references/faq.md「获取毕昇编译器」。"
 else
   export BISHENG_ROOT
   _ok "BISHENG_ROOT = $BISHENG_ROOT"
 fi
 
-# ---- 3. MSLITE_PKG（尊重预设 > glob 任意版本号）-----------------------------
-if [ -z "${MSLITE_PKG:-}" ] && [ -n "${HISPARK_AI_ROOT:-}" ]; then
-  _hit="$(ls -d "$HISPARK_AI_ROOT"/src/mindspore-lite/output/mindspore-lite-*-linux-x64 2>/dev/null | head -1)"
-  [ -n "$_hit" ] && { MSLITE_PKG="$_hit"; _src "自动探测 MSLITE_PKG（glob 任意版本）"; }
+# ---- 2b. ARM musl GCC 工具链（HISPARK_ARM_TOOLCHAIN_PATH）------------------
+# 与毕昇并列的第二条交叉工具链。优先用官方 install_gcc_toolchain.sh 装到
+# /opt/linux/x86-arm/<name>/；也可在项目树内解压。解压布局是嵌套的：
+#   gcc-10.3-arm-musl-x86-linux-<ver>/arm-v01c01-linux-musleabi-gcc/bin/arm-v01c01-linux-musleabi-gcc
+# 故“工具链根”= 含 bin/arm-v01c01-linux-musleabi-gcc 的那一层，而非最外层目录。
+_ARM_GCC="arm-v01c01-linux-musleabi-gcc"
+if [ -z "${ARM_TOOLCHAIN_ROOT:-}" ]; then
+  _found=""
+  for _cand in "/opt/linux/x86-arm/arm-v01c01-linux-musleabi-gcc"; do
+    [ -x "$_cand/bin/$_ARM_GCC" ] && { _found="$_cand"; break; }
+  done
+  if [ -z "$_found" ] && [ -n "${HISPARK_AI_ROOT:-}" ]; then
+    for _cand in "$HISPARK_AI_ROOT"/gcc-10.3-arm-musl-*/arm-v01c01-linux-musleabi-gcc; do
+      [ -x "$_cand/bin/$_ARM_GCC" ] && { _found="$_cand"; break; }
+    done
+  fi
+  [ -n "$_found" ] && { ARM_TOOLCHAIN_ROOT="$_found"; _src "自动探测 ARM_TOOLCHAIN_ROOT"; }
 else
-  [ -n "${MSLITE_PKG:-}" ] && _src "使用预设 MSLITE_PKG"
+  _src "使用预设 ARM_TOOLCHAIN_ROOT"
+fi
+if [ -z "${ARM_TOOLCHAIN_ROOT:-}" ] || [ ! -x "$ARM_TOOLCHAIN_ROOT/bin/$_ARM_GCC" ]; then
+  _err "未找到 ARM musl GCC 工具链（需含 bin/$_ARM_GCC）。
+        修复: 从华为开发者官网 https://developers.hisilicon.com/cn/developerTool 下载
+              gcc-10.3-arm-musl-x86-linux（资源下载→Toolchain→Linux→ARM），
+              tar -xzvf 解压后 sudo ./install_gcc_toolchain.sh（默认装 /opt/linux/x86-arm），
+              或 export ARM_TOOLCHAIN_ROOT=<.../arm-v01c01-linux-musleabi-gcc> / 写入 ~/.hispark_env。
+              详见 references/faq.md「获取 ARM GCC 工具链」。"
+else
+  export ARM_TOOLCHAIN_ROOT
+  export HISPARK_ARM_TOOLCHAIN_PATH="$ARM_TOOLCHAIN_ROOT"
+  _ok "HISPARK_ARM_TOOLCHAIN_PATH = $ARM_TOOLCHAIN_ROOT"
+fi
+
+# ---- 3. MSLITE_PKG（预设目录存在才采纳 > 否则 glob 自动探测任意版本）---------
+# MSLITE_PKG 是编译产物，版本号随迭代变化；上游会话可能注入过期预设值，
+# 故仅当预设目录真实存在时才采纳，否则一律回退 glob 自动探测，避免版本锁死。
+if [ -n "${MSLITE_PKG:-}" ] && [ -d "$MSLITE_PKG" ]; then
+  _src "使用预设 MSLITE_PKG（目录存在）"
+elif [ -n "${HISPARK_AI_ROOT:-}" ]; then
+  _hit="$(ls -d "$HISPARK_AI_ROOT"/src/mindspore-lite/output/mindspore-lite-*-linux-x64 2>/dev/null | head -1)"
+  if [ -n "$_hit" ]; then
+    MSLITE_PKG="$_hit"
+    _src "自动探测 MSLITE_PKG（glob 任意版本）"
+  else
+    unset MSLITE_PKG
+  fi
 fi
 if [ -n "${MSLITE_PKG:-}" ] && [ -d "$MSLITE_PKG" ]; then
   export MSLITE_PKG
   _ok "MSLITE_PKG = $MSLITE_PKG"
 else
-  _err "未找到已编译的 MSLite 产物目录（mindspore-lite-*-linux-x64）。
-        修复: 先跑 build_mslite.sh 编译，或 export MSLITE_PKG=<产物目录>"
+  _src "暂无已编译的 MSLite 产物目录（mindspore-lite-*-linux-x64）—— 编译前属正常。
+        需转换模型/构建静态库时先跑 build_mslite.sh，或 export MSLITE_PKG=<产物目录>"
 fi
 
 # ---- 4. MSLite 编译选项（常量，无外部依赖）----------------------------------
@@ -130,6 +172,18 @@ if [ -n "${BISHENG_ROOT:-}" ] && [ -x "$BISHENG_ROOT/bin/clang" ]; then
     _ok "RISC-V 交叉编译器验证通过"
   else
     _err "RISC-V 交叉编译器验证失败: $(cat "$_test_err" 2>/dev/null)"
+  fi
+  rm -rf "$_test_dir"
+fi
+
+# ---- 7b. ARM 交叉编译器实测（gcc 自带 musl sysroot，无需 --sysroot）---------
+if [ -n "${ARM_TOOLCHAIN_ROOT:-}" ] && [ -x "$ARM_TOOLCHAIN_ROOT/bin/$_ARM_GCC" ]; then
+  _test_dir=$(mktemp -d)
+  echo 'int main(){return 0;}' > "$_test_dir/t.c"
+  if "$ARM_TOOLCHAIN_ROOT/bin/$_ARM_GCC" -c "$_test_dir/t.c" -o "$_test_dir/t.o" 2>"$_test_dir/err"; then
+    _ok "ARM 交叉编译器验证通过"
+  else
+    _err "ARM 交叉编译器验证失败: $(cat "$_test_dir/err" 2>/dev/null)"
   fi
   rm -rf "$_test_dir"
 fi

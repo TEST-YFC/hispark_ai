@@ -13,7 +13,8 @@ description: 本 skill 适用于用户请求"编译 MindSpore Lite"、"build msl
 
 - Ubuntu 22.04、GCC 11.3+、CMake 3.22+、Python 3.11
 - PyYAML 6.0+、NumPy 1.19.3+
-- 毕昇（BiSheng）LLVM 15.0.4 RISC-V 工具链（x86_64 主机）
+- 毕昇（BiSheng）LLVM 15.0.4 RISC-V 工具链（x86_64 主机）—— 需从[华为开发者官网](https://developers.hisilicon.com/cn/developerTool)手动下载 `BiSheng-llvm-15.0.4-riscv-x86-linux`，详见 `references/faq.md`「获取毕昇编译器」
+- ARM musl GCC 工具链 `gcc-10.3-arm-musl-x86-linux`（x86_64 主机）—— 同样需手动下载，详见 `references/faq.md`「获取 ARM GCC 工具链」
 - mindspore-lite 子模块已初始化
 - `python` 与 `python3` 命令均指向 Python 3.11
 
@@ -40,9 +41,10 @@ source scripts/setup_env.sh
 该脚本导出以下变量：
 - `MSLITE_ENABLE_MICRO=ON`、`MSLITE_ENABLE_INT8=ON`、`MSLITE_TARGET_RISCV=ON`
 - `MSLITE_ENABLE_TRAIN=OFF`、`MSLITE_ENABLE_TESTCASES=OFF`
-- `HISPARK_RISCV_TOOLCHAIN_PATH` —— 毕昇编译器根路径
+- `HISPARK_RISCV_TOOLCHAIN_PATH` —— 毕昇 RISC-V 编译器根路径
+- `HISPARK_ARM_TOOLCHAIN_PATH` —— ARM musl GCC 工具链根路径
 
-脚本还会在尚不存在时为毕昇编译器创建符号链接（`clang` → `riscv32-linux-musl-gcc`），并校验 RISC-V 交叉编译器可用。
+脚本还会在尚不存在时为毕昇编译器创建符号链接（`clang` → `riscv32-linux-musl-gcc`），并分别实测 RISC-V 与 ARM 两条交叉编译器是否可用。
 
 ## 第 2 步：编译 MindSpore Lite
 
@@ -121,7 +123,8 @@ skill 脚本会从项目根目录自动发现路径。如需覆盖默认值，�
 | 变量 | 默认值 | 用途 |
 |----------|---------|---------|
 | `HISPARK_AI_ROOT` | 脚本的父目录 | 项目根目录 |
-| `BISHENG_ROOT` | `$HISPARK_AI_ROOT/BiSheng-llvm-binary-release-musl` | 毕昇编译器 |
+| `BISHENG_ROOT` | `$HISPARK_AI_ROOT/BiSheng-llvm-binary-release-musl` | 毕昇 RISC-V 编译器 |
+| `ARM_TOOLCHAIN_ROOT` | `/opt/linux/x86-arm/arm-v01c01-linux-musleabi-gcc` 或项目树内 `gcc-10.3-arm-musl-*/arm-v01c01-linux-musleabi-gcc` | ARM musl GCC 工具链 |
 | `MSLITE_PKG` | `$HISPARK_AI_ROOT/src/mindspore-lite/output/mindspore-lite-2.8.0-linux-x64` | MSLite 发布包 |
 
 ## 参考文件
