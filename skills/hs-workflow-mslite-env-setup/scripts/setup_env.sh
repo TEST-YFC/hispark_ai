@@ -16,6 +16,7 @@
 # ---- 错误累加（不 set -e，一次报全）-----------------------------------------
 _ERRORS=0
 _err() { echo "  ✗ $*" >&2; _ERRORS=$((_ERRORS + 1)); }
+_warn() { echo "  ⚠ $*" >&2; }   # 告警但不计入 _ERRORS、不阻断（仅个别步骤需要的可选依赖用）
 _ok()  { echo "  ✓ $*"; }
 _src() { echo "  · $*"; }
 
@@ -86,12 +87,12 @@ else
   _src "使用预设 ARM_TOOLCHAIN_ROOT"
 fi
 if [ -z "${ARM_TOOLCHAIN_ROOT:-}" ] || [ ! -x "$ARM_TOOLCHAIN_ROOT/bin/$_ARM_GCC" ]; then
-  _err "未找到 ARM musl GCC 工具链（需含 bin/$_ARM_GCC）。
-        修复: 从华为开发者官网 https://developers.hisilicon.com/cn/developerTool 下载
-              gcc-10.3-arm-musl-x86-linux（资源下载→Toolchain→Linux→ARM），
-              tar -xzvf 解压后 sudo ./install_gcc_toolchain.sh（默认装 /opt/linux/x86-arm），
-              或 export ARM_TOOLCHAIN_ROOT=<.../arm-v01c01-linux-musleabi-gcc> / 写入 ~/.hispark_env。
-              详见 references/faq.md「获取 ARM GCC 工具链」。"
+  _warn "未找到 ARM musl GCC 工具链（需含 bin/$_ARM_GCC）—— 仅“编译 mslite 框架”（build_mslite.sh）需要；
+        转换模型 / 构建 RISC-V 静态库等步骤不受影响，本脚本继续。
+        需要编译时: 从华为开发者官网 https://developers.hisilicon.com/cn/developerTool 下载
+        gcc-10.3-arm-musl-x86-linux，tar -xzvf 解压后 sudo ./install_gcc_toolchain.sh（默认装 /opt/linux/x86-arm），
+        或 export ARM_TOOLCHAIN_ROOT=<.../arm-v01c01-linux-musleabi-gcc> / 写入 ~/.hispark_env。
+        详见 references/faq.md「获取 ARM GCC 工具链」。"
 else
   export ARM_TOOLCHAIN_ROOT
   export HISPARK_ARM_TOOLCHAIN_PATH="$ARM_TOOLCHAIN_ROOT"
