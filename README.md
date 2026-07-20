@@ -20,7 +20,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 
   购买链接请参考WS63项目介绍的**购买渠道**页面。
 
-- **3322系列单板**:  3322系列是OpenHarmony Watch应用和表盘解决方案。
+- **HiDiTing系列单板**:  谛听穿戴解决方案是面向智能穿戴的星闪多模穿戴解决方案，采用CPU/GPU/DSP多核架构与端侧NPU（50Gops），支持星闪SLE2.0（16Mbps双向传输）、仿3D GPU、H.264视频播放及AI降噪、模糊命令词识别等特性，为穿戴设备提供高性能计算与丰富多媒体体验。项目介绍如下：[谛听项目介绍](https://gitcode.com/HiSpark/hs-fbb)。
 
 ## Sample案例说明
 - HiSpark.AI提供了以下Sample供开发参考： 
@@ -28,15 +28,15 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     | 平台 | 应用 | AI功能 |
     | ---- | ---- | ---- |
     | WS63 | LeNet-5手写数字图像识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
-| 3322 | LeNet-5手写数字图像识别 | CANN工具链量化，转换，编译，SDK集成 |
+    | HiDiTing  | LeNet-5手写数字图像识别 | CANN工具链量化，转换，编译，SDK集成 |
     | WS63 | Gru音频固定词识别 | MindSpore Lite Micro工具链量化，转换，编译，SDK集成 |
-| 3322 | Gru-S音频固定词识别 | CANN工具链量化，转换，编译，SDK集成 |
+    | HiDiTing  | Gru-S音频固定词识别 | CANN工具链量化，转换，编译，SDK集成 |
 
 ## HiSpark.AI CPU系列平台介绍
 - 超轻量的模型部署平台，支持KB级RAM嵌入式设备。
 
-## 源码编译
-### 环境依赖
+### 源码编译
+#### 环境依赖
 | 软件名称   | 版本 | 作用                                                             |安装教程|
 | ------ | ------  | ------------------------------------------------------------     |------------------------------|
 |[Ubuntu](https://old-releases.ubuntu.com/releases/)|   22.04  |编译和运行mindspore-lite的操作系统|[Ubuntu 官方安装指南](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview)|
@@ -46,7 +46,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 | PyYAML | 6.0及以上 | mindspore-lite里的算子编译功能依赖PyYAML模块 |[PyYAML官方文档](https://pyyaml.org/wiki/PyYAMLDocumentation)|
 | Numpy  | 1.19.3及以上 | mindspore-lite里的Numpy相关功能依赖Numpy模块 |[NumPy官方文档](https://numpy.org/install/)|
 
-### 获取毕昇编译器
+#### 获取毕昇编译器
 - 点击[毕昇编译器官方下载链接](https://developers.hisilicon.com/cn/developerTool)并登录华为开发者账号。
 - 在资源下载页面，选择 Toolchain 分类下的 Linux 系统版本。
 - 查找并下载适用于 RISC-V 架构 的编译器软件包，其名称为：	BiSheng-llvm-15.0.4-riscv-x86-linux（或最新版本）。
@@ -55,7 +55,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     tar -xzvf BiSheng-llvm-15.0.4-riscv-x86-linux-25.09.1.tar.gz
     ```
 
-### 编译mindspore-lite
+#### 编译mindspore-lite
 - **拉取mindspore-lite代码**  
 克隆本仓库后，进入根目录并初始化更新子模块src/mindspore-lite：
     ```
@@ -81,7 +81,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     # bash build.sh -I x86_64 -j32 -i
     ```
 
-## **HiSpark.AI 平台快速入门指南**
+### **HiSpark.AI 平台快速入门指南**
 - **整体流程视图**  
   `````
         [ONNX模型] 
@@ -292,7 +292,19 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
     [AI_MCU] Data: [0.95731][0.00266][0.00294][0.00590][0.00286][0.00374][0.00285][0.00685][0.00231][0.00307][0.00654][0.00292]
     [AI_MCU] ai_mcu_sample_process
     ```
-    
+
+
+## HiSpark.AI NPU系列平台介绍
+
+快速入门请参考文档《[HiSpark.AI 快速入门指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark.AI%20%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/index.html)》；详细操作请参考文档《[HiSpark Studio AI for VS Code使用指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark%20Studio%20AI%20for%20VS%20Code%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/index.html)》。
+
+应用开发请参考API文档《[HiSpark.AI API开发指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark.AI%20API%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97/index.html)》和以下samples:
+
+| 序号 | 应用                                                                                                          |
+| ---- | ------------------------------------------------------------------------------------------------------------- |
+| 1    | [LeNet-5手写数字图像识别](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/lenet5/README.md) |
+| 2    | [Gru-S音频固定词识别](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/gru/README.md)        |
+
 
 ## 参与贡献
 

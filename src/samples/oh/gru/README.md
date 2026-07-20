@@ -173,6 +173,7 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 ## Nano平台编译指南
 1. 获取Hi3322 SDK的代码，保存在用户指定路径
     路径如下表示解压成功，且目录正确：
+    ```
     {SDK_PATH}
         |---- application
         |---- bootloader
@@ -180,21 +181,26 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
         |---- drivers
         |---- ....
         |---- build.py
+    ```
 2. 获取HiSpark.AI Adaptor包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
     路径如下表示解压成功，且目录正确：
+    ```
     {ADAPTOR_PATH}
         |---- adaptor
         |---- include
         |---- README.md
+    ```
 3. 获取此HiSpark.AI Samples包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
     路径如下表示解压成功，且目录正确：
+    ```
     {SAMPLE_PATH}
         |---- amct
         |---- oh
         |---- CMakeLists.txt
         |---- README.md
+    ```
 4. 切换到gru目录，在命令行输入：
 ```
 export SDK_PATH=${SDK_PATH}
@@ -226,18 +232,22 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 3322
 2. 获取HiSpark.AI Adaptor包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
     路径如下表示解压成功，且目录正确：
+    ```
     {ADAPTOR_PATH}
         |---- adaptor
         |---- include
         |---- README.md
+    ```
 3. 获取此HiSpark.AI Samples包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
     路径如下表示解压成功，且目录正确：
+    ```
     {SAMPLE_PATH}
         |---- amct
         |---- oh
         |---- CMakeLists.txt
         |---- README.md
+    ```
 4. 切换到gru目录，在命令行输入：
 ```
 export SDK_PATH=${SDK_PATH}
