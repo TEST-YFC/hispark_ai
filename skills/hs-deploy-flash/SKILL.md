@@ -71,7 +71,7 @@ bash <skill>/scripts/check_prerequisites.sh
 
 ### 1a. 确认 flash_server 运行
 
-flash_server 运行在 Windows 宿主机上，WSL 通过 `discover_host.sh` 自动探测可达地址（`localhost` → `$(hostname).local` → `$(hostname)` fallback）。
+flash_server 运行在 Windows 宿主机上，WSL 通过 `discover_host.sh` 自动探测可达地址（`localhost` → `$(hostname).local` → `$(hostname)` → `127.0.0.1` → WSL2 网关 IP fallback）。
 
 ```bash
 # host 由 discover_host.sh 自动探测，无需手动设置
@@ -90,6 +90,7 @@ curl -s --max-time 5 http://$(bash <skill>/scripts/discover_host.sh --direct):85
 **未就绪时停下**：
 ```
 flash_server 未响应 → 请在 Windows 终端启动 flash_server.py 后告诉我。
+  若 WSL2 localhost 转发不可用，在 Windows 端设置 set FLASH_SERVER_HOST=0.0.0.0 后重启。
 Burntool 未找到   → set FBB_BURNTOOL=D:\path\to\Burntool.exe 后重启 flash_server。
 ```
 

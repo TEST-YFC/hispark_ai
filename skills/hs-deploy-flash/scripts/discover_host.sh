@@ -49,7 +49,10 @@ fi
 DISCOVERED=""
 
 # 候选列表：优先级从高到低
+# 额外探测 WSL2 网关 IP，用于 localhost 转发不可用的环境
+_wsl_gw=$(ip route show default 2>/dev/null | awk '{print $3}' | head -1)
 CANDIDATES=("localhost" "$(hostname).local" "$(hostname)" "127.0.0.1")
+[[ -n "${_wsl_gw:-}" ]] && CANDIDATES+=("$_wsl_gw")
 
 for candidate in "${CANDIDATES[@]}"; do
     if check_host "$candidate"; then
