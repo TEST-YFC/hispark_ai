@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 # ===================================================================
-# hs-deploy-flash flash_server 自动发现
+# hs-debug-op-board-accuracy flash_server 自动发现
 #
 # 自动探测 WSL/Windows 环境下 flash_server 的可达地址。
 # WSL2 中 localhost 可能不通，需要 fallback 到 $(hostname).local。

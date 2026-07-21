@@ -1,4 +1,4 @@
-# hs-deploy-flash 实证
+# hs-debug-op-board-accuracy 实证
 
 ## 事故 #1: WSL 路径直接传给 flash_server
 
@@ -31,3 +31,16 @@
 **修复**：增加 `check_prerequisites.sh` 机械闸门，`PREREQ_GATE=PASS` 才继续。
 
 **规则**：红线 1 — 编译未完成不烧录，闸门脚本强制执行。
+
+---
+
+## 事故 #4: 精度比对参考来源不明确
+
+**症状**：烧录成功后不知道板端输出该和谁比，精度验证被跳过。
+
+**原因**：旧流程只检查串口有没有输出，不比较数值正确性。
+
+**修复**：step3d 增加 `verify_accuracy.py`，以 `hs-verify-op` 产出的 `gt/output*.npy` 为参考，
+用同一 `cosine_similarity()` 函数计算余弦相似度。非量化阈值 ≥ 0.999999，量化 ≥ 0.9。
+
+**规则**：红线 6 — 精度不足即 FAIL；红线 7 — 参考数据必须来自 hs-verify-op 当轮产物。

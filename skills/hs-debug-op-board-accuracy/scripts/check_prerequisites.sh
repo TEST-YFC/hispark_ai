@@ -1,6 +1,6 @@
 #!/bin/bash
 # ===================================================================
-# hs-deploy-flash 烧录前置检查脚本 (SKILL.md step0 机械闸门)
+# hs-debug-op-board-accuracy 烧录前置检查脚本 (SKILL.md step0 机械闸门)
 #
 # 检查编译产物是否就绪：MSLITE_PKG + hs-verify-op 验证状态。
 #
@@ -75,7 +75,7 @@ else
     [[ $RC -ne 0 ]] && GATE="FAIL"
     echo ""
     echo "=========================================="
-    echo "  hs-deploy-flash 前置检查"
+    echo "  hs-debug-op-board-accuracy 前置检查"
     echo "=========================================="
     echo "  MSLITE_PKG    : $MSLITE_STATUS"
     echo "  hs-verify-op  : $VERIFY_STATUS"

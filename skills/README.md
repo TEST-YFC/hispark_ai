@@ -12,7 +12,7 @@
 | `hs-dev-op-implement` | 开发 | 已落地 | 新增/移植 MindSpore Lite 算子：分析、ONNX/TFLite 算子支持、INT8 量化、代码生成、MCU 部署、parser/kernel/opcoder | "新增算子"、"add operator"、"implement op"、"port operator" |
 | `hs-dev-op-performance` | 开发 | 规划中 | 算子性能评估、基准对比与调优 | "算子性能"、"benchmark"、"性能调优" |
 | `hs-verify-op` | 验证 | 已落地 | 算子精度验证工程搭建：ONNX/TFLite、x86 与 RISC-V、fp32 与 INT8 端到端 | "验证算子"、"test operator"、"算子验证"、"精度调试" |
-| `hs-deploy-flash` | 部署 | 已落地 | 固件自动烧录到 WS63/Hi3863 板端：CH340G 串口检测、Burntool 烧录、启动验证 | "烧录固件"、"flash firmware"、"部署到板子"、"burn to board" |
+| `hs-debug-op-board-accuracy` | 部署 | 已落地 | 固件自动烧录到 WS63/Hi3863 板端：CH340G 串口检测、Burntool 烧录、启动验证 | "烧录固件"、"flash firmware"、"部署到板子"、"burn to board" |
 | `hs-workflow-mslite-env-setup` | 工作流 | 规划中 | MindSpore Lite 工具链与编译环境搭建流程 | "搭建环境"、"环境配置"、"build env" |
 
 > "规划中" 表示该 skill 目录暂为占位（仅含 `.gitkeep`），内容待补充。
@@ -40,7 +40,7 @@ hs-<phase>-<topic>/
 ## 加载机制
 
 - **运行时加载位置**：agent（Claude Code）从 `.claude/skills/` 加载 skill。本目录（仓库根 `skills/`）是**项目纳管的 skill 源库**，用于评审、版本管理与规划；已落地的 skill 需同步至 `.claude/skills/` 才会被 agent 识别。
-- 目前 `hs-dev-op-implement`、`hs-verify-op`、`hs-deploy-flash` 为已落地 skill；其余三个为规划占位。
+- 目前 `hs-dev-op-implement`、`hs-verify-op`、`hs-debug-op-board-accuracy` 为已落地 skill；其余三个为规划占位。
 
 ## 新增 skill
 

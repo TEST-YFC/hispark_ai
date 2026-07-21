@@ -1,11 +1,11 @@
 ---
 name: hs-dev-op-implement
-description: Use when working on MindSpore Lite operator support for HiSpark.AI / RISC-V MCU deployment, including operator analysis, new ONNX/TFLite operator support, INT8 quantization, code generation, MCU deployment, parser/kernel/opcoder work, or requests such as "新增算子", "分析算子", "add operator", "add op", "implement op", "port operator", "支持算子", and "新增op".
+description: Use when working on MindSpore Lite operator support for HiSpark.AI / RISC-V MCU deployment, including operator analysis, new ONNX/TFLite operator support, INT8 quantization, code generation, MCU deployment, parser/kernel/opcoder work, or requests such as "新增算子", "分析算子", "add operator", "add op", "implement op", "port operator", "支持算子", and "新增op". The "新增算子" path goes end-to-end: implement → compile → verify accuracy → flash to board with cosine similarity check — no handoffs, no asking.
 ---
 
 # 新增 MindSpore Lite 算子
 
-本 skill 用来把一个 ONNX/TFLite 算子从需求走到 MindSpore Lite MCU 可用：先查证规格和仓内现状，再决定复用已有 `PrimitiveType` 还是新建，随后补齐代码、构建，并用 `hs-verify-op` 做精度验收。
+本 skill 用来把一个 ONNX/TFLite 算子从需求走到 MindSpore Lite MCU 可用：先查证规格和仓内现状，再决定复用已有 `PrimitiveType` 还是新建，随后补齐代码、构建，`hs-verify-op` 做精度验收，最后 `hs-debug-op-board-accuracy` 烧录到板端做精度比对。
 
 算子实现最多贯穿 **7 个代码层**，但**不是每个算子都要做满 7 层**。要做哪些层由 **step2 决策**算出；每层怎么写以 `references/implementation-guide.md` 的模板为底稿改名填空。本文只管流程、决策与门控，代码模板、注册宏、易错点在实现指南里。
 
@@ -36,6 +36,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 - [ ] step5 编译前预检
 - [ ] step6 编译构建
 - [ ] step7 验证精度
+- [ ] step8 烧录板端精度比对
 ```
 
 仅分析模式只列 step0-step3。多实现单元时每个实现单元各一组 todo，标题写 `待办[Select]:`。某 step 标为 `[x]` 的前提是它的门控产物已经真实出现在对话正文；不得为了进度好看提前勾选。
@@ -49,7 +50,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 1. step0 先列出用户指定的所有 source entry。
 2. step1 对每个 source entry 都跑 scan/规格查证，日志分别归档。
 3. step2 先做 **source grouping 裁决**：哪些 source entry 可落到同一个 implementation unit，哪些必须拆开。
-4. step3-step7 按 implementation unit 执行；同一 unit 内为每个 source entry 补对应 parser/用例，底层 ①③④⑤⑥⑦ 只做一次。
+4. step3-step8 按 implementation unit 执行；同一 unit 内为每个 source entry 补对应 parser/用例，底层 ①③④⑤⑥⑦ 只做一次。
 
 **可合并为一个 implementation unit 的条件**（必须逐条给证据）：计算公式/输出语义相同；dtype 语义相同或可由同一 Primitive 表达；shape/infer 语义相同；属性能无损映射到同一 schema 字段；输入顺序差异仅由 parser 重排解决；能力清单能覆盖所有 source entry 的差异。
 
@@ -85,12 +86,12 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 | 用户输入 | 模式 | 执行范围 |
 |---------|------|---------|
 | "分析XX算子" / "算子分析" / "XX算子链路" | **仅分析** | 只走 **step0-step3**，呈现链路分析表 + 能力清单后**停止**，不进实现 |
-| "新增XX算子" / "支持XX算子" / "add operator" | **完整实现** | **step0-step7** 全程：决策 → 写码 → 编译 → 精度验证（调 `hs-verify-op`） |
+| "新增XX算子" / "支持XX算子" / "add operator" | **完整实现** | **step0-step8** 全程：决策 → 写码 → 编译 → 精度验证（调 `hs-verify-op`）→ 烧录板端精度比对（调 `hs-debug-op-board-accuracy`） |
 
 **多 source entry 先分组，不直接串行实现。** 用户一次点名多个框架/算子名时，先按上文 source grouping 做裁决：
 
 - 若裁决为 **同一个 implementation unit**：只做一套 ①③④⑤⑥⑦；② Parser 和 hs-verify-op 用例按 source entry 分别补齐；一个 `<opdir>` 内的 `framework_scope` 覆盖所有 source entry。
-- 若裁决为 **多个 implementation unit**：每个 unit 串行独立走 step1-step7（先验证完一个再开下一个）。
+- 若裁决为 **多个 implementation unit**：每个 unit 串行独立走 step1-step8（先验证+烧录完一个再开下一个）。
 - 若是同一框架同族 builtin（如广播/非广播、V2/V3 语义不同）：默认拆开，除非规格证明逐项等价。
 
 ## 红线
@@ -114,6 +115,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 | **step5** | 编译前预检 | `bash <skill>/scripts/quick_check.sh <代码根>` | 预检 **FAIL=0**（`SCHEMA_PENDING`/`UNVERIFIED` 均可） |
 | **step6** | 编译构建 | `build_mslite.sh` 后台构建 + `--wait` 阻塞等结果 | 末尾 `export MSLITE_PKG=...` 行 |
 | **step7** | 验证精度 | 先跑 artifact/op_spec/build-freshness 三闸门，再调用 `hs-verify-op` skill 验证精度 | 三闸门 PASS；每个 implementation unit 的 `VERDICT` 全绿，且 `framework_scope` 覆盖 step0 范围内全部 source entry（fp32 ≥ 0.999、INT8 ≥ 0.99） |
+| **step8** | 烧录板端精度比对 | 调用 `hs-debug-op-board-accuracy` skill，烧录 fwpkg 到 WS63/Hi3863 板端并比对余弦相似度 | `FLASH_VERDICT=PASS` + `ACCURACY_VERDICT=PASS`（非量化 ≥ 0.999999、量化 ≥ 0.9） |
 
 ## 决策词汇
 
@@ -128,7 +130,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 
 ## 完成判据
 
-**首行状态由最近一次 VERDICT 机械决定，不由你的叙述口吻决定**：只要存在 `HARNESS_EXIT≠0`、或任一 VERDICT 行含 `FAIL`/`ERR`/`[UNCOVERED]`，本次就处于「未完成」态，无可商量（见下「完成状态闸门」）。只有同时满足以下条件，首行才允许写 `状态: 完成`：
+**首行状态由最近一次 VERDICT 机械决定，不由你的叙述口吻决定**：只要存在 `HARNESS_EXIT≠0`、或任一 VERDICT 行含 `FAIL`/`ERR`/`[UNCOVERED]`，或 `ACCURACY_VERDICT=FAIL`，本次就处于「未完成」态，无可商量（见下「完成状态闸门」）。只有同时满足以下条件，首行才允许写 `状态: 完成`：
 
 1. **贴出 step6 的 `MSLITE_PKG` 行。**
 2. **step7 前三闸门均 PASS**：`gate_artifacts.py --stage pre-verify`、`validate_op_spec.py`、`check_build_freshness.py`。任一 FAIL 时不得启动/引用 hs-verify-op 结论。
@@ -141,12 +143,13 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
    - 存在既无 PASS 落点又未经用户裁决的行 = 未完成；回填时悄悄改写清单行、删用例换绿，同性质于伪造。
    - 清单已在 step3 落盘 `capability_checklist.json`，**VERDICT 须含 `capabilities=N/M` 且 N=M**；出现 `[UNCOVERED]` 行即未完成。
    - **VERDICT 的分母是能力清单，不是 op_spec 现存用例**：删除/弱化用例后取得的 0 FAIL 不满足本判据（hs-verify-op 的 `CASES_REDUCED` 与能力覆盖闸门会拒跑并留痕，绕过它 = 伪造结论）。
+6. **step8 烧录板端精度比对完成**：`FLASH_VERDICT=PASS` + `ACCURACY_VERDICT=PASS`（非量化 cos ≥ 0.999999、量化 cos ≥ 0.9）。调用 `hs-debug-op-board-accuracy` skill，不跳过、不询问。
 
 中途停下向用户求助是合法动作（如实写 `未完成` + 阻塞原因即可）。但用"已知局限/存量缺陷/非本次引入/需后续修复"包装失败后宣布完成，与伪造数据同级。缺陷来历不改变完成判据（decision2 复用 = 接管存量质量）。
 
 ### 完成状态闸门（措辞锁）
 
-本判据约束的是**状态语义**，不是某串字面量——换标题、加括号、改 emoji 都不能把「未完成」说成「完成」。`HARNESS_EXIT≠0`（或任一 VERDICT 含 `FAIL`/`ERR`/`[UNCOVERED]`）时，全文**禁止出现任何收尾/达标语义的措辞**，包括但不限于：
+本判据约束的是**状态语义**，不是某串字面量——换标题、加括号、改 emoji 都不能把「未完成」说成「完成」。`HARNESS_EXIT≠0`（或任一 VERDICT 含 `FAIL`/`ERR`/`[UNCOVERED]`）或 `ACCURACY_VERDICT=FAIL` 时，全文**禁止出现任何收尾/达标语义的措辞**，包括但不限于：
 
 - **变体标题**：`最终状态`、`最终结果`、`本次任务完成`、`收尾汇报`、`大功告成`、以 ✅/🎉/🟢 作结——只要读起来像"交付了"，就在禁止之列。
 - **括号 hedge**：`完成（X 已完成、Y 待后续）`、`完成（仅剩 Z）`、`ONNX 完成、TFLite 待修`——**部分完成 = 未完成，一个 FAIL 也是未完成**。

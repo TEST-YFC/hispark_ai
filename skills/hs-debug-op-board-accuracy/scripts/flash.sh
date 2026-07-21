@@ -1,6 +1,6 @@
 #!/bin/bash
 # ===================================================================
-# hs-deploy-flash 烧录入口脚本
+# hs-debug-op-board-accuracy 烧录入口脚本
 #
 # 用法:
 #   bash flash.sh --firmware <path> [--ctrl-port COM9] [--burn-port COM4] [--baud 921600]
@@ -22,21 +22,25 @@ FLASH_HOST="${FLASH_HOST:-localhost}"
 
 usage() {
     cat <<EOF
-Usage: bash flash.sh --firmware <path.fwpkg> [--ctrl-port COM9] [--burn-port COM4] [--baud 921600]
+Usage: bash flash.sh --firmware <path.fwpkg> --gt-dir <path> [--ctrl-port COM9] [--burn-port COM4] [--baud 921600] [--quantized]
 
 Arguments:
   --firmware    固件路径 (必填)
+  --gt-dir      hs-verify-op gt/ 目录 (必填，烧录后自动精度比对)
   --ctrl-port   CH340G 控制口 (默认 COM9)
   --burn-port   烧录口 (默认 COM4)
   --baud        波特率 (默认 921600)
+  --quantized   使用量化阈值 (≥ 0.9)；缺省使用非量化阈值 (≥ 0.999999)
 
-Exit: 0=成功 1=flash_server不可用 2=固件不存在 3=失败 4=超时
+Exit: 0=成功 1=flash_server不可用 2=固件不存在 3=失败 4=超时 5=精度不足
 EOF
 }
 
 FIRMWARE=""
 CTRL_PORT=""
 BURN_PORT=""
+GT_DIR=""
+QUANTIZED=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -44,12 +48,15 @@ while [[ $# -gt 0 ]]; do
         --ctrl-port) CTRL_PORT="$2"; shift 2 ;;
         --burn-port) BURN_PORT="$2"; shift 2 ;;
         --baud)      BAUDRATE="$2"; shift 2 ;;
+        --gt-dir)    GT_DIR="$2"; shift 2 ;;
+        --quantized) QUANTIZED=true; shift ;;
         -h|--help)   usage; exit 0 ;;
         *)           echo "ERROR: 未知参数: $1"; usage; exit 1 ;;
     esac
 done
 
 [[ -z "$FIRMWARE" ]] && { echo "ERROR: 缺少 --firmware"; usage; exit 1; }
+[[ -z "$GT_DIR" ]] && { echo "ERROR: 缺少 --gt-dir（hs-verify-op 产出的 gt/ 目录，精度比对必选）"; usage; exit 1; }
 [[ -z "$CTRL_PORT" ]] && { echo "ERROR: 缺少 --ctrl-port（由 step1 自动检测提供）"; usage; exit 1; }
 [[ -z "$BURN_PORT" ]] && { echo "ERROR: 缺少 --burn-port（由 step1 自动检测提供）"; usage; exit 1; }
 
@@ -117,7 +124,7 @@ WIN_FW=$(to_win "$FIRMWARE") || {
 }
 
 echo "=========================================="
-echo "  hs-deploy-flash 烧录"
+echo "  hs-debug-op-board-accuracy 烧录"
 echo "=========================================="
 echo "  Firmware  : $WIN_FW"
 echo "  Ctrl Port : $CTRL_PORT"
@@ -161,7 +168,7 @@ print(json.dumps({
     'burn_port': sys.argv[3],
     'baudrate': int(sys.argv[4])
 }))
-" -- "$WIN_FW" "$CTRL_PORT" "$BURN_PORT" "$BAUDRATE")" 2>&1) || {
+" "$WIN_FW" "$CTRL_PORT" "$BURN_PORT" "$BAUDRATE")" 2>&1) || {
     echo "ERROR: curl 请求失败"
     exit 4
 }
@@ -183,13 +190,59 @@ if d.get('board_prediction') is not None:
     print(f'  board_prediction: {d[\"board_prediction\"]}')
 "
 
-# ---- verdict ----
+# ---- verdict (flash) ----
 echo ""
 STATUS=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('status','error'))")
 
+FLASH_OK=false
 case "$STATUS" in
-    success) echo "  FLASH_VERDICT=PASS"; exit 0 ;;
+    success) FLASH_OK=true; echo "  FLASH_VERDICT=PASS" ;;
     failure) echo "  FLASH_VERDICT=FAIL"; exit 3 ;;
     timeout) echo "  FLASH_VERDICT=TIMEOUT"; exit 4 ;;
     *)       echo "  FLASH_VERDICT=FAIL (unknown: $STATUS)"; exit 3 ;;
 esac
+
+# ---- step3d: accuracy comparison (always; --gt-dir is required) ----
+if $FLASH_OK; then
+    echo ""
+    echo "[accuracy] 精度比对..."
+
+    if [[ ! -d "$GT_DIR" ]]; then
+        echo "  ACCURACY_VERDICT=FAIL  (gt/ 目录不存在: $GT_DIR)"
+        echo "  → 先跑 hs-verify-op 生成参考输出"
+        exit 5
+    fi
+
+    # Extract monitor_output from flash response and save to temp file
+    MONITOR_FILE=$(mktemp /tmp/hs_monitor.XXXXXX)
+    echo "$RESPONSE" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+mo = d.get('monitor_output', '')
+sys.stdout.write(mo if mo else '')
+" > "$MONITOR_FILE"
+
+    if [[ ! -s "$MONITOR_FILE" ]]; then
+        echo "  ACCURACY_VERDICT=FAIL  (monitor_output 为空)"
+        rm -f "$MONITOR_FILE"
+        exit 5
+    fi
+
+    QUANT_FLAG=""
+    $QUANTIZED && QUANT_FLAG="--quantized"
+
+    # Run accuracy comparison (same cosine_similarity as hs-verify-op)
+    ACCURACY_SCRIPT="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)/verify_accuracy.py"
+    python3 "$ACCURACY_SCRIPT" --gt-dir "$GT_DIR" --monitor "$MONITOR_FILE" $QUANT_FLAG
+    ACC_RC=$?
+    rm -f "$MONITOR_FILE"
+
+    if [[ $ACC_RC -ne 0 ]]; then
+        echo "  ACCURACY_VERDICT=FAIL"
+        exit 5
+    fi
+    echo "  ACCURACY_VERDICT=PASS"
+fi
+
+# ---- final ----
+$FLASH_OK && exit 0
