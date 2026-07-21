@@ -153,7 +153,15 @@ echo "[flash] 烧录中... (timeout 180s)"
 
 RESPONSE=$(curl -s --max-time 180 -X POST "http://${FLASH_HOST}:${FLASH_PORT}/flash/burntool" \
   -H "Content-Type: application/json" \
-  -d "$(python3 -c "import json; print(json.dumps({'firmware':'$WIN_FW','port':'$CTRL_PORT','burn_port':'$BURN_PORT','baudrate':$BAUDRATE}))")" 2>&1) || {
+  -d "$(python3 -c "
+import json, sys
+print(json.dumps({
+    'firmware': sys.argv[1],
+    'port': sys.argv[2],
+    'burn_port': sys.argv[3],
+    'baudrate': int(sys.argv[4])
+}))
+" -- "$WIN_FW" "$CTRL_PORT" "$BURN_PORT" "$BAUDRATE")" 2>&1) || {
     echo "ERROR: curl 请求失败"
     exit 4
 }

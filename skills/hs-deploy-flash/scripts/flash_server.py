@@ -66,14 +66,14 @@ BURNTOOL_PATHS = [
 """可能的 Burntool 安装路径，按优先级排列。"""
 
 PORT = int(os.environ.get("FLASH_SERVER_PORT", "8500"))
-HOST = os.environ.get("FLASH_SERVER_HOST", "0.0.0.0")
-"""监听所有网络接口，让 WSL 都能访问。"""
+HOST = os.environ.get("FLASH_SERVER_HOST", "127.0.0.1")
+"""默认仅监听本地回环地址。
+WSL2 通过 localhost 映射即可访问 Windows 宿主机的 127.0.0.1，无需 0.0.0.0。
+如需从其他设备访问（安全风险：烧录/串口/电源控制均为高危操作），
+请设置环境变量 FLASH_SERVER_HOST=0.0.0.0。"""
 
 H3863_CHIP_TYPE_ID = "7"
 """Hi3863 在 BurnTool 配置中的芯片类型 ID (DW31 = 7)。"""
-
-OPTLOG_DIR = Path(r"D:\BurnTool_H3863\optLog")
-"""BurnTool 烧录日志目录。"""
 
 # ---------------------------------------------------------------------------
 # TCUS-1SO (CH341) 电源控制
@@ -252,9 +252,10 @@ class PowerController:
 # Burntool 自动化
 # ---------------------------------------------------------------------------
 
-BURNTOOL_CONFIG = Path(r"D:\BurnTool_H3863\Config.ini")
-BURNTOOL_CHIP_CONFIG = Path(r"D:\BurnTool_H3863\configure\config_chip_type.ini")
-BURNTOOL_SETTING_CONFIG = Path(r"D:\BurnTool_H3863\configure\config_setting.ini")
+_BURNTOOL_DIR = Path(BURNTOOL_H3863_PATH).parent
+BURNTOOL_CONFIG = _BURNTOOL_DIR / "Config.ini"
+BURNTOOL_CHIP_CONFIG = _BURNTOOL_DIR / "configure" / "config_chip_type.ini"
+BURNTOOL_SETTING_CONFIG = _BURNTOOL_DIR / "configure" / "config_setting.ini"
 
 
 def _write_burntool_config(port: str, baudrate: int, chip_id: str = H3863_CHIP_TYPE_ID) -> None:
@@ -269,9 +270,10 @@ def _write_burntool_config(port: str, baudrate: int, chip_id: str = H3863_CHIP_T
     com_num = 0
     m = re.match(r"COM(\d+)", port.upper())
     if m:
-        com_num = int(m.group(1)) - 1  # 0-indexed
+        com_num = int(m.group(1))  # 1-indexed，与命令行 -com: 一致
 
     # 写入 Config.ini
+    _log_path = str(_BURNTOOL_DIR / "QCOM_LOG.txt")
     ini_content = f"""[Set]
 Baudrate={baudrate}
 ByteSize=4
@@ -287,13 +289,14 @@ HEX_One=0
 ViewFile=0
 ShowInHEX=0
 FilePath=
-LogPath=D:\\BurnTool_H3863\\QCOM_LOG.txt
+LogPath={_log_path}
 Enable_Save_Log=0
 """
     BURNTOOL_CONFIG.parent.mkdir(parents=True, exist_ok=True)
     BURNTOOL_CONFIG.write_text(ini_content, encoding="utf-8")
 
     # 写入 chip type 配置
+    BURNTOOL_CHIP_CONFIG.parent.mkdir(parents=True, exist_ok=True)
     BURNTOOL_CHIP_CONFIG.write_text(f"[ChipType]\nCurrentChipTypeId={chip_id}\n", encoding="utf-8")
 
     # 写入 setting 配置
@@ -308,46 +311,33 @@ EDITABLE=1
 """
     BURNTOOL_SETTING_CONFIG.write_text(setting_content, encoding="utf-8")
 
-
-HI3863_BURN_SCRIPT = Path(r"D:\hispark\Hi3863_CH340G\hi3863_burn.py")
-"""委托 hi3863_burn.py 执行烧录，避免重复实现 CH340G 时序。"""
-
-
-def _run_hi3863_burn(firmware_path: str, com_port: str, ctrl_port: str,
-                     baudrate: int = 921600, timeout: int = 300) -> dict:
-    """调用 hi3863_burn.py 执行烧录并返回结构化结果。"""
-    if not HI3863_BURN_SCRIPT.is_file():
-        return {"status": "error", "detail": f"hi3863_burn.py 不存在: {HI3863_BURN_SCRIPT}"}
-
-    cmd = [
-        sys.executable, str(HI3863_BURN_SCRIPT),
-        "-f", firmware_path,
-        "-c", com_port,
-        "-cc", ctrl_port,
-        "--baud", str(baudrate),
-    ]
-    try:
-        result = subprocess.run(
-            cmd, capture_output=True, text=True,
-            timeout=timeout, encoding="utf-8", errors="replace",
-        )
-        output = (result.stdout or "") + (result.stderr or "")
-        success = result.returncode == 0
-        return {
-            "status": "success" if success else "failure",
-            "detail": f"hi3863_burn.py 返回码 {result.returncode}",
-            "logs_preview": output[:2000],
-            "exit_code": result.returncode,
-        }
-    except subprocess.TimeoutExpired:
-        return {"status": "timeout", "detail": f"烧录超时 ({timeout}s)", "logs_preview": ""}
-    except Exception as exc:
-        return {"status": "error", "detail": f"调用 hi3863_burn.py 失败: {exc}", "logs_preview": ""}
-
-
 # ---------------------------------------------------------------------------
 # 辅助函数
 # ---------------------------------------------------------------------------
+
+
+COM_PORT_RE = re.compile(r"^COM\d+$", re.IGNORECASE)
+"""COM 端口白名单正则，防止命令注入。"""
+
+
+def _validate_com_port(port: str, field_name: str = "port") -> str:
+    """验证 COM 端口格式，不合法则抛出 ValueError。
+
+    Args:
+        port: COM 端口字符串 (如 "COM5")
+        field_name: 字段名，用于错误信息
+
+    Returns:
+        规范化后的端口 (如 "COM5")
+
+    Raises:
+        ValueError: 端口格式不合法
+    """
+    if not COM_PORT_RE.match(port):
+        raise ValueError(
+            f"{field_name} 格式不合法: '{port}'，必须匹配 COM\\d+ (如 COM5, COM6)"
+        )
+    return port.upper()
 
 
 def _find_burntool() -> str | None:
@@ -542,7 +532,6 @@ def flash():
       baudrate       (int, 可选) -- 波特率, 默认 115200
       power_port    (str, 可选) -- CH341 电源控制端口 (如 COM5), 设置后自动上下电
       extra_args     (str, 可选) -- 附加命令行参数
-      use_burntool  (bool, 可选) -- 使用 BurnTool_H3863 烧录 Hi3863, 默认 false
 
     返回:
       exit_code, stdout, stderr
@@ -553,7 +542,6 @@ def flash():
     chip = data.get("chip", "ws63")
     baudrate = data.get("baudrate", 115200)
     power_port = data.get("power_port", "")
-    use_burntool = data.get("use_burntool", False)
     extra_args = data.get("extra_args", "")
 
     if not firmware:
@@ -574,45 +562,8 @@ def flash():
         except Exception as exc:
             app.logger.warning(f"上下电失败（可忽略，继续烧录）: {exc}")
 
-    # -- 使用 BurnTool_H3863 烧录（Hi3863 专用）--
-    if use_burntool:
-        if not Path(BURNTOOL_H3863_PATH).is_file():
-            return jsonify({"error": f"BurnTool_H3863 不存在: {BURNTOOL_H3863_PATH}"}), 500
-
-        # 写入 INI 配置
-        chip_port = power_port or port
-        _write_burntool_config(port=chip_port, baudrate=baudrate)
-
-        # 先启动 Burntool
-        try:
-            burntool_proc, com_port = _start_burntool(str(firmware_path.resolve()))
-            time.sleep(2)
-        except Exception as exc:
-            return jsonify({"error": f"启动 Burntool 失败: {exc}"}), 500
-
-        # 再上下电
-        if power_port and serial is not None and not power_steps:
-            try:
-                with PowerController(port=power_port, baudrate=9600) as ctrl:
-                    power_steps = ctrl.power_cycle_into_flash()
-            except Exception as exc:
-                app.logger.warning(f"上下电失败: {exc}")
-
-        # 等待烧录结果
-        result = _drain_burntool(burntool_proc, com_port, str(firmware_path.resolve()), timeout=300)
-        result["power_steps"] = power_steps
-        result["chip"] = chip
-        result["firmware"] = str(firmware_path.resolve())
-        result["burntool"] = BURNTOOL_H3863_PATH
-
-        if result["status"] == "success":
-            app.logger.info(f"烧录成功: {firmware} -> {chip_port}")
-        else:
-            app.logger.warning(f"烧录结果: {result['status']}")
-
-        return jsonify(result)
-
-    # -- 其他 Burntool（旧路径）--
+    # -- 使用 Burntool 烧录 --
+    # 注意：Hi3863 专用烧录请使用 /flash/burntool 端点
     burntool = _find_burntool()
     if not burntool:
         return jsonify({
@@ -688,6 +639,17 @@ def flash_burntool():
     if not Path(BURNTOOL_H3863_PATH).is_file():
         return jsonify({"error": f"BurnTool_H3863 不存在: {BURNTOOL_H3863_PATH}"}), 500
 
+    # 白名单校验 COM 端口，防止命令注入
+    try:
+        port = _validate_com_port(port, "port")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    if burn_port:
+        try:
+            burn_port = _validate_com_port(burn_port, "burn_port")
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+
     effective_burn_port = burn_port or port
     BURN_TIMEOUT = 120
     lines_log: list[str] = []
@@ -701,14 +663,17 @@ def flash_burntool():
 
     # --- 2. 启动 Burntool (console) ---
     com_num = effective_burn_port.upper().replace("COM", "")
-    cmd = (f'"{BURNTOOL_H3863_PATH}"'
-           f' -com:{com_num}'
-           f' -bin:"{firmware_path.resolve()}"'
-           f' -signalbaud:{baudrate}'
-           f' -console')
-    log_line(f"启动: {cmd}")
+    # 使用 shell=False 避免 cmd.exe 解析 & | > 等 shell 元字符
+    burntool_args = [
+        BURNTOOL_H3863_PATH,
+        f"-com:{com_num}",
+        f"-bin:{firmware_path.resolve()}",
+        f"-signalbaud:{baudrate}",
+        "-console",
+    ]
+    log_line(f"启动: {' '.join(burntool_args)}")
     proc = subprocess.Popen(
-        cmd, shell=True,
+        burntool_args, shell=False,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         cwd=str(BURNTOOL_CONFIG.parent),
         creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
@@ -798,7 +763,7 @@ def flash_burntool():
     rc = proc.poll() or proc.returncode
     logs_text = "\n".join(lines_log)
     status = "success" if (success or rc == 0) else \
-             ("timeout" if time.time() - start_ts >= BURN_TIMEOUT else "failure")
+             ("timeout" if elapsed >= BURN_TIMEOUT else "failure")
     detail = {"success": "烧录完成成功", "failure": f"烧录完成失败 (返回码 {rc})",
               "timeout": f"烧录超时 ({BURN_TIMEOUT}s)"}.get(status, status)
 
@@ -947,6 +912,9 @@ if __name__ == "__main__":
     else:
         print(f"  串口:         [FAIL] 未安装 pyserial")
     print(f"  监听:         {HOST}:{PORT}")
+    if HOST == "0.0.0.0":
+        print(f"  ⚠ 安全警告: 服务监听在所有网络接口 (0.0.0.0)，局域网内其他设备可访问烧录/串口/电源控制 API！")
+        print(f"    如非必要，请设置 FLASH_SERVER_HOST=127.0.0.1 仅允许本地访问。")
     print(f"  接口:")
     print(f"    POST /flash         烧录固件 (通用)")
     print(f"    POST /flash/burntool 烧录固件 (BurnTool_H3863/Hi3863 专用)")

@@ -167,7 +167,8 @@ find application/ src/samples/ -maxdepth 6 \( -name "*.fwpkg" -o -name "*.bin" \
 ### 3a. 执行烧录
 
 ```bash
-curl -s --max-time 180 -X POST http://localhost:8500/flash/burntool \
+# host 由 discover_host.sh 自动探测，无需手动设置
+curl -s --max-time 180 -X POST http://$(bash <skill>/scripts/discover_host.sh --direct):8500/flash/burntool \
   -H "Content-Type: application/json" \
   -d '{
     "firmware": "<Windows 格式路径>",

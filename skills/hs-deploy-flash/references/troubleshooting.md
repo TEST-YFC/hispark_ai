@@ -92,8 +92,6 @@ FLASH: 烧录失败: could not open port 'COM9'
 
 **串口占用**：若有 "Access is denied" 类型的错误 → 关闭占用串口的程序（QCOM_V1.6.exe、其他终端等）。
 
-**自动清理**：flash_ch340.py 会在烧录前自动 kill 已知的占用进程（Burntool.exe、QCOM_V1.6.exe）。
-
 ---
 
 ## 烧录超时

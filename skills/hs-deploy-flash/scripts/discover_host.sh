@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # ===================================================================
 # hs-deploy-flash flash_server 自动发现
 #
