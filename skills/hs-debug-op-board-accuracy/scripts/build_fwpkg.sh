@@ -99,29 +99,47 @@ if [[ -z "${MSLITE_PKG:-}" ]] || [[ ! -x "$MSLITE_PKG/tools/converter/converter/
 fi
 echo "  MSLITE_PKG: $MSLITE_PKG"
 
-# RISCV toolchain: prefer SDK-bundled GCC, fallback to BiSheng
-SDK_GCC="$SDK_PATH/src/tools/bin/compiler/riscv/cc_riscv32_musl_105/cc_riscv32_musl/bin"
-if [[ -x "$SDK_GCC/riscv32-linux-musl-gcc" ]]; then
-    HISPARK_RISCV_TOOLCHAIN_PATH="${HISPARK_RISCV_TOOLCHAIN_PATH:-$(dirname "$SDK_GCC")}"
-elif [[ -z "${HISPARK_RISCV_TOOLCHAIN_PATH:-}" ]]; then
-    echo "ERROR: HISPARK_RISCV_TOOLCHAIN_PATH not set and SDK GCC not found"
-    echo "  Run build_mslite.sh first (it auto-detects and exports this)."
+# Micro compilation always uses SDK-bundled GCC (not BiSheng clang).
+# BiSheng is for mindspore-lite itself; micro/fwpkg cross-compilation needs the
+# SDK's riscv32-linux-musl-gcc toolchain.
+# When SDK_PATH points to sdk/src/ (vendor convention), tools/ is at SDK_PATH/tools/
+SDK_GCC_BIN="$SDK_PATH/tools/bin/compiler/riscv/cc_riscv32_musl_105/cc_riscv32_musl/bin"
+if [[ ! -x "$SDK_GCC_BIN/riscv32-linux-musl-gcc" ]]; then
+    echo "ERROR: SDK GCC not found at $SDK_GCC_BIN"
+    echo "  Ensure SDK is cloned: git clone https://gitcode.com/HiSpark/fbb_ws63.git vendor/WS63/sdk"
     exit 3
 fi
-echo "  RISCV toolchain: $HISPARK_RISCV_TOOLCHAIN_PATH"
+MICRO_RISCV_TOOLCHAIN_PATH="$SDK_GCC_BIN"
+echo "  RISCV toolchain: $MICRO_RISCV_TOOLCHAIN_PATH (SDK GCC)"
 
-# SDK_PATH
+# SDK_PATH (vendor convention: points to sdk/src/, matching ai_daily.sh)
 if [[ -z "${SDK_PATH:-}" ]]; then
-    SDK_PATH="$HISPARK_ROOT/vendor/WS63/sdk"
+    SDK_PATH="$HISPARK_ROOT/vendor/WS63/sdk/src"
 fi
-if [[ ! -d "$SDK_PATH/src" ]]; then
+if [[ ! -d "$SDK_PATH" ]]; then
     echo "[sdk] cloning WS63 SDK..."
-    git clone https://gitcode.com/HiSpark/fbb_ws63.git "$SDK_PATH" || {
+    SDK_ROOT="$HISPARK_ROOT/vendor/WS63/sdk"
+    git clone https://gitcode.com/HiSpark/fbb_ws63.git "$SDK_ROOT" || {
         echo "ERROR: failed to clone SDK"
         exit 3
     }
+    SDK_PATH="$SDK_ROOT/src"
 fi
 echo "  SDK_PATH: $SDK_PATH"
+
+# Patch SDK pre-existing Kconfig build issues (secure boot + efuse defaults missing).
+# These patches are idempotent — safe to re-apply on each build.
+SDK_ROOT="$(dirname "$SDK_PATH")"
+_sv_h="$SDK_PATH/bootloader/commonboot/include/secure_verify_boot.h"
+_sv_c="$SDK_PATH/bootloader/commonboot/src/secure_verify_boot.c"
+if [[ -f "$_sv_h" ]] && ! grep -q 'Default: no secure verify' "$_sv_h" 2>/dev/null; then
+    sed -i 's|#elif defined(CONFIG_BOOT_SUPPORT_RSA4096_VERIFY)|#elif defined(CONFIG_BOOT_SUPPORT_RSA4096_VERIFY)\n/* Patched by build_fwpkg.sh: default when no Kconfig boot verify selected */\n#define ROOT_PUBLIC_KEY_STRUCTURE_LENGTH 0x80\n#define KEY_AREA_STRUCTURE_LENGTH 0x100\n#define CODE_INFO_STRUCTURE_LENGTH 0x200\n#define BOOT_PUBLIC_KEY_LEN 64\n#define BOOT_SIG_LEN 64\n#define BOOT_EXT_SIG_LEN 64\n#define CONFIG_BOOT_NO_SEC_VERIFY|' "$_sv_h"
+    echo "[sdk] patched secure_verify_boot.h (Kconfig defaults)"
+fi
+if [[ -f "$_sv_c" ]] && ! grep -q 'no-op when secure verify disabled' "$_sv_c" 2>/dev/null; then
+    sed -i 's|^#endif$|#endif\n\n#if !defined(CONFIG_BOOT_SUPPORT_ECC_VERIFY) \&\& !defined(CONFIG_BOOT_SUPPORT_SM2_VERIFY)\nstatic errcode_t secure_authenticate(const uint8_t *key, const uint8_t *data, uint32_t data_length, const uint8_t *sign, uint32_t sign_length)\n{ (void)key;(void)data;(void)data_length;(void)sign;(void)sign_length; return ERRCODE_SUCC; }\n#endif|' "$_sv_c"
+    echo "[sdk] patched secure_verify_boot.c (secure_authenticate stub)"
+fi
 
 # ADAPTOR_PATH
 if [[ -z "${ADAPTOR_PATH:-}" ]]; then
@@ -197,7 +215,7 @@ compiling_micro() {
     cmake -S . -B build \
         -D OP_LIB="$mindspore_lite_path/tools/codegen/lib/riscv/libnnacl.a" \
         -D WRAPPER_LIB="$mindspore_lite_path/tools/codegen/lib/riscv/libwrapper.a" \
-        -D RISCV_TOOLCHAIN_PATH="$HISPARK_RISCV_TOOLCHAIN_PATH/bin" \
+        -D RISCV_TOOLCHAIN_PATH="$MICRO_RISCV_TOOLCHAIN_PATH" \
         -D PKG_PATH="$mindspore_lite_path"
     cd build
     make -j4
@@ -223,6 +241,20 @@ if [[ ! -f "$TEMPLATE" ]]; then
 fi
 
 cp "$TEMPLATE" "$WORK_DIR/ai_main.c"
+
+# Auto-adapt ai_main.c to the actual model (input count, sizes, data).
+# If the model is under an hs-verify-op case directory (model/model.onnx),
+# read the test input data from the sibling input/ directory.
+DATA_DIR=""
+CASE_DIR="$(dirname "$(dirname "$MODEL")")"
+if [[ -d "$CASE_DIR/input" ]]; then
+    DATA_DIR="$CASE_DIR/input"
+fi
+python3 "$SCRIPT_DIR/patch_ai_main.py" \
+    --model "$MODEL" \
+    --ai-main "$WORK_DIR/ai_main.c" \
+    --framework "$FRAMEWORK" \
+    ${DATA_DIR:+--data-dir "$DATA_DIR"}
 
 if $QUANTIZED; then
     quant_flag="1"
@@ -253,28 +285,37 @@ fi
 
 export ENABLE_AI_CUSTOM_SAMPLE=y
 
+# Patch middleware CMakeLists to include ai_mcu adaptor (lenet5 build.sh also does this)
+if ! grep -q "ai_mcu/adaptor/cpu" "$SDK_PATH/middleware/utils/CMakeLists.txt" 2>/dev/null; then
+    echo "" >> "$SDK_PATH/middleware/utils/CMakeLists.txt"
+    echo "add_subdirectory_if_exist(ai_mcu/adaptor/cpu)" >> "$SDK_PATH/middleware/utils/CMakeLists.txt"
+fi
+
 # Patch SDK CMakeLists to include this sample
 if ! grep -q "\$ENV{ENABLE_AI_CUSTOM_SAMPLE}" "$SDK_PATH/application/samples/CMakeLists.txt" 2>/dev/null; then
     sed -i '/COMPONENT_NAME/a\\nset(CONFIG_ENABLE_AI_CUSTOM_SAMPLE "$ENV{ENABLE_AI_CUSTOM_SAMPLE}")' "$SDK_PATH/application/samples/CMakeLists.txt"
 fi
 if ! grep -q "if(DEFINED CONFIG_ENABLE_AI_CUSTOM_SAMPLE)" "$SDK_PATH/application/samples/CMakeLists.txt" 2>/dev/null; then
-    sed -i "/add_subdirectory_if_exist(custom)/i\if(DEFINED CONFIG_ENABLE_AI_CUSTOM_SAMPLE)\n  add_subdirectory(\n    \${CUR_DIR}\n    \${CMAKE_CURRENT_BINARY_DIR}/lenet5_build\n  )\nendif()\n" "$SDK_PATH/application/samples/CMakeLists.txt"
+    sed -i "/add_subdirectory_if_exist(custom)/i\if(DEFINED CONFIG_ENABLE_AI_CUSTOM_SAMPLE)\n  add_subdirectory(\n    ${SAMPLE_PATH}\n    \${CMAKE_CURRENT_BINARY_DIR}/lenet5_build\n  )\nendif()\n" "$SDK_PATH/application/samples/CMakeLists.txt"
 fi
 
 # Patch SDK config to include ai_adaptor_cpu
 if ! grep -q "ai_adaptor_cpu" "$SDK_PATH/build/config/target_config/ws63/config.py" 2>/dev/null; then
-    python3 -c "
+    cat > /tmp/patch_sdk_cfg.py << 'PYEOF'
 import ast
-with open('$SDK_PATH/build/config/target_config/ws63/config.py', 'r') as f:
+import sys
+cfg_path = sys.argv[1]
+with open(cfg_path, 'r') as f:
     content = f.read()
-target = ast.literal_eval(content.split('=', 1)[1].strip().strip("'").strip('\"'))
+target = ast.literal_eval(content.split('=', 1)[1].strip().strip("'").strip('"'))
 if 'ws63-liteos-app' in target and 'ai_adaptor_cpu' not in target['ws63-liteos-app'].get('ram_component', []):
     target['ws63-liteos-app']['ram_component'].append('ai_adaptor_cpu')
-with open('$SDK_PATH/build/config/target_config/ws63/config.py', 'w') as f:
+with open(cfg_path, 'w') as f:
     f.write(f'target = {repr(target)}\n')
     f.write('target_copy = {}\n')
     f.write('target_group = {}\n')
-"
+PYEOF
+    python3 /tmp/patch_sdk_cfg.py "$SDK_PATH/build/config/target_config/ws63/config.py"
 fi
 
 # Build

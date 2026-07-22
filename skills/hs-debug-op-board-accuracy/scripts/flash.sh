@@ -232,7 +232,7 @@ sys.stdout.write(mo if mo else '')
     $QUANTIZED && QUANT_FLAG="--quantized"
 
     # Run accuracy comparison (same cosine_similarity as hs-verify-op)
-    ACCURACY_SCRIPT="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)/verify_accuracy.py"
+    ACCURACY_SCRIPT="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)/board_accuracy.py"
     python3 "$ACCURACY_SCRIPT" --gt-dir "$GT_DIR" --monitor "$MONITOR_FILE" $QUANT_FLAG
     ACC_RC=$?
     rm -f "$MONITOR_FILE"
