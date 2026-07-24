@@ -65,7 +65,14 @@
 </th>
 </tr>
 </thead>
-<tbody><tr id="row1320204613614"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p1932016461263"><a name="p1932016461263"></a><a name="p1932016461263"></a>03</p>
+<tbody><tr id="row7282768517"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p62831469515"><a name="p62831469515"></a><a name="p62831469515"></a>04</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.25%" headers="mcps1.1.4.1.2 "><p id="p17283196135120"><a name="p17283196135120"></a><a name="p17283196135120"></a>2026-07-03</p>
+</td>
+<td class="cellrowborder" valign="top" width="53.03%" headers="mcps1.1.4.1.3 "><p id="p202831062513"><a name="p202831062513"></a><a name="p202831062513"></a>更新“<a href="#ZH-CN_TOPIC_0000002538542947">Linux通路环境准备</a>、<a href="#ZH-CN_TOPIC_0000002504481524">基础版环境准备</a>、<a href="#ZH-CN_TOPIC_0000002504641364">GPU加速版环境准备</a>”。</p>
+</td>
+</tr>
+<tr id="row1320204613614"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p1932016461263"><a name="p1932016461263"></a><a name="p1932016461263"></a>03</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.25%" headers="mcps1.1.4.1.2 "><p id="p12320046561"><a name="p12320046561"></a><a name="p12320046561"></a>2026-04-28</p>
 </td>
@@ -193,24 +200,47 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
 基础版环境准备步骤如下：
 
-1.  执行如下命令构建Docker镜像：
+1.  准备 Docker 镜像：
+    -   方式一：下载并导入 Docker 镜像（推荐）
 
-    ```
-    docker build -f Dockerfile_mslite -t {镜像名称}:{镜像标签} .
-    ```
+        已构建完成的 Docker 镜像下载链接如下：
 
-    如需要配置代理，请执行如下命令：
+        [https://hispark-obs.obs.cn-east-3.myhuaweicloud.com/mslite-cpu.tar](https://hispark-obs.obs.cn-east-3.myhuaweicloud.com/mslite-cpu.tar)
 
-    ```
-    docker build -f Dockerfile_mslite --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
-    ```
+        下载镜像文件后，执行如下命令导入 Docker 镜像：
 
-    如果打印如下类似信息，表示Docker构建成功。
+        ```
+        docker load -i mslite-cpu.tar
+        ```
 
-    ```
-    Successfully built xxx
-    Successfully tagged xxx
-    ```
+        导入完成后，可执行如下命令查看镜像信息：
+
+        ```
+        docker images
+        ```
+
+        如果镜像列表中包含已导入的镜像，则表示 Docker 镜像导入成功。请根据 docker images 查询结果，确认后续运行容器时使用的镜像名称和镜像标签。
+
+    -   方式二：自行构建 Docker 镜像
+
+        执行如下命令构建Docker镜像：
+
+        ```
+        docker build -f Dockerfile_mslite -t {镜像名称}:{镜像标签} .
+        ```
+
+        如需要配置代理，请执行如下命令：
+
+        ```
+        docker build -f Dockerfile_mslite --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
+        ```
+
+        如果打印如下类似信息，表示Docker构建成功。
+
+        ```
+        Successfully built xxx
+        Successfully tagged xxx
+        ```
 
 2.  执行如下命令运行容器，并关联端口及挂载文件夹：
 
@@ -406,24 +436,45 @@ Dockerfile包括Dockerfile\_cann\_cpu和Dockerfile\_cann\_gpu。其中Dockerfile
 
 基础版环境准备步骤如下：
 
-1.  执行如下命令构建Docker镜像：
+1.  构建Docker镜像：
+    -   方式一：下载并导入Docker镜像（推荐）
 
-    ```
-    docker build -f Dockerfile_cann_cpu -t {镜像名称}:{镜像标签} .
-    ```
+        已构建完成的 Docker 镜像下载链接如下：
 
-    如需要配置代理，请执行如下命令：
+        [https://hispark-obs.obs.cn-east-3.myhuaweicloud.com/cann_docker/cann-cpu.tar](https://hispark-obs.obs.cn-east-3.myhuaweicloud.com/cann_docker/cann-cpu.tar)
 
-    ```
-    docker build -f Dockerfile_cann_cpu --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
-    ```
+        下载镜像文件后，执行如下命令导入 Docker 镜像：
 
-    如果打印如下类似信息，表示Docker构建成功。
+        ```
+        docker load -i cann-cpu.tar
+        ```
 
-    ```
-    Successfully built 61bc7fae9f9e
-    Successfully tagged {镜像名称}:{镜像标签}
-    ```
+        导入完成后，可执行如下命令查看镜像信息：
+
+        ```
+        docker images
+        ```
+
+        如果镜像列表中包含已导入的镜像，则表示 Docker 镜像导入成功。请根据 docker images 查询结果，确认后续运行容器时使用的镜像名称和镜像标签。
+
+    -   方式二：自行构建Docker镜像
+
+        ```
+        docker build -f Dockerfile_cann_cpu -t {镜像名称}:{镜像标签} .
+        ```
+
+        如需要配置代理，请执行如下命令：
+
+        ```
+        docker build -f Dockerfile_cann_cpu --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
+        ```
+
+        如果打印如下类似信息，表示Docker构建成功。
+
+        ```
+        Successfully built 61bc7fae9f9e
+        Successfully tagged {镜像名称}:{镜像标签}
+        ```
 
 2.  执行如下命令运行容器，并关联端口及挂载文件夹：
 
@@ -482,23 +533,44 @@ GPU加速版环境准备前，请先保证Linux服务器：
 GPU加速版环境准备步骤如下：
 
 1.  执行如下命令构建Docker镜像：
+    -   方式一：下载并导入Docker镜像（推荐）
 
-    ```
-    docker build -f Dockerfile_cann_gpu -t {镜像名称}:{镜像标签} .
-    ```
+        已构建完成的 Docker 镜像下载链接如下：
 
-    如需要配置代理，请执行如下命令：
+        [https://hispark-obs.obs.cn-east-3.myhuaweicloud.com/cann_docker/cann-gpu.tar](https://hispark-obs.obs.cn-east-3.myhuaweicloud.com/cann_docker/cann-gpu.tar)
 
-    ```
-    docker build -f Dockerfile_cann_gpu --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
-    ```
+        下载镜像文件后，执行如下命令导入 Docker 镜像：
 
-    如果打印如下类似信息，表示Docker构建成功。
+        ```
+        docker load -i cann-cpu.tar
+        ```
 
-    ```
-    Successfully built 61bc7fae9f9e
-    Successfully tagged {镜像名称}:{镜像标签}
-    ```
+        导入完成后，可执行如下命令查看镜像信息：
+
+        ```
+        docker images
+        ```
+
+        如果镜像列表中包含已导入的镜像，则表示 Docker 镜像导入成功。请根据 docker images 查询结果，确认后续运行容器时使用的镜像名称和镜像标签。
+
+    -   方式二：自行构建Docker镜像：
+
+        ```
+        docker build -f Dockerfile_cann_gpu -t {镜像名称}:{镜像标签} .
+        ```
+
+        如需要配置代理，请执行如下命令：
+
+        ```
+        docker build -f Dockerfile_cann_gpu --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
+        ```
+
+        如果打印如下类似信息，表示Docker构建成功。
+
+        ```
+        Successfully built 61bc7fae9f9e
+        Successfully tagged {镜像名称}:{镜像标签}
+        ```
 
 2.  执行如下命令运行容器，并关联端口及挂载文件夹：
 
@@ -821,7 +893,7 @@ GPU加速版环境准备步骤如下：
 
     >![](public_sys-resources/icon-note.gif) **说明：** 
     >1.  test\_data和train\_data目录作为数据下载和预处理脚本的输入参数，会根据用户的输入而变化。
-    >2.  label.csv中为样本分类的真值标签。文件中的表格格式如[表1 label.csv格式示例](#table55542586239)。其中sample列表示样本的名称。label列表示样本对应的真值标签。
+    >2.  label.csv中为样本分类的真值标签。文件中的表格格式如[表1](#table19766710497)。其中sample列表示样本的名称。label列表示样本对应的真值标签。
 
     **表 1**  label.csv格式示例
 
