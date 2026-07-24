@@ -9,7 +9,7 @@
 -   不支持创建多线程多进程。
 -   对于创建类接口（例如OH\_AI\_ContextCreate、OH\_AI\_ModelCreate等），用户在调用该类接口创建对应的资源后，建议在资源使用完成后及时调用对应的销毁类接口（例如：OH\_AI\_ContextDestroy、OH\_AI\_ModelDestroy等），以避免程序内存泄漏。
 -   对于销毁类接口（例如OH\_AI\_ContextDestroy、OH\_AI\_ModelDestroy等），用户在调用该类接口后，不能继续使用已释放或销毁的资源，建议用户在调用销毁类接口后，将相关资源设置为无效值（例如，置为NULL）。
--   HiSpark.AI Hi3863 MCU平台默认最多支持单线程单核CPU后端推理，仅支持x86\_64（用于精度调试标杆）与RISCV平台部署调用。
+-   HiSpark.AI WS63 MCU平台默认最多支持单线程单核CPU后端推理，仅支持x86\_64（用于精度调试标杆）与RISCV平台部署调用。
 
 **读者对象<a name="section4378592816410"></a>**
 
@@ -22,7 +22,7 @@
 掌握以下经验和技能可以更好理解本文档：
 
 -   熟悉Linux基本命令；
--   对机器学习、人工智能有一定的了解；
+-   对机器学习、人工智能有一定的了解。
 -   具备C++/C语言程序开发能力。
 
 **符号约定<a name="section133020216410"></a>**
@@ -77,20 +77,36 @@
 </th>
 </tr>
 </thead>
-<tbody><tr id="row179091720620"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p9910192369"><a name="p9910192369"></a><a name="p9910192369"></a><span id="ph64761947613"><a name="ph64761947613"></a><a name="ph64761947613"></a>03</span></p>
+<tbody><tr id="row542310595811"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p942414575814"><a name="p942414575814"></a><a name="p942414575814"></a>05</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p10910221762"><a name="p10910221762"></a><a name="p10910221762"></a><span id="ph132544612618"><a name="ph132544612618"></a><a name="ph132544612618"></a>2026-02-10</span></p>
+<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p104240555816"><a name="p104240555816"></a><a name="p104240555816"></a>2026-07-03</p>
 </td>
-<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p9910224610"><a name="p9910224610"></a><a name="p9910224610"></a><span id="ph1844117254620"><a name="ph1844117254620"></a><a name="ph1844117254620"></a>增加OH_AI_ModelGetInputByTensorName、OH_AI_ModelGetOutputByTensorName两个API接口：</span></p>
-<a name="ul667416237619"></a><a name="ul667416237619"></a><ul id="ul667416237619"><li>更新<a href="接口列表.md">接口列表</a></li></ul>
+<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><a name="ul147501159183419"></a><a name="ul147501159183419"></a><ul id="ul147501159183419"><li>更新“<a href="#ZH-CN_TOPIC_0000002357566825">运行管理资源申请</a>、<a href="#ZH-CN_TOPIC_0000002323648222">模型执行</a>”。</li><li>更新“<a href="#ZH-CN_TOPIC_0000002323474462">接口列表</a>、<a href="#ZH-CN_TOPIC_0000002487055488">OH_AI_TensorGetDataSize</a>”。</li><li>新增“<a href="#ZH-CN_TOPIC_0000002547275447">OH_AI_ModelGetInputByTensorName</a>～<a href="#ZH-CN_TOPIC_0000002654970203">OH_AI_ModelLoadWeight</a>”8个小节。</li><li>更新“<a href="#ZH-CN_TOPIC_0000002359684261">编译及运行应用</a>、<a href="#ZH-CN_TOPIC_0000002490682810">编译及运行应用</a>”。</li></ul>
 </td>
 </tr>
-<tr id="row1910511599392"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p18106659153915"><a name="p18106659153915"></a><a name="p18106659153915"></a><span id="ph57641787404"><a name="ph57641787404"></a><a name="ph57641787404"></a>02</span></p>
+<tr id="row173002003162"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p1930113019160"><a name="p1930113019160"></a><a name="p1930113019160"></a>04</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p121065598391"><a name="p121065598391"></a><a name="p121065598391"></a><span id="ph790161211408"><a name="ph790161211408"></a><a name="ph790161211408"></a>2025-12-18</span></p>
+<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p103019081613"><a name="p103019081613"></a><a name="p103019081613"></a>2026-06-30</p>
 </td>
-<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p610614597393"><a name="p610614597393"></a><a name="p610614597393"></a><span id="ph423315254405"><a name="ph423315254405"></a><a name="ph423315254405"></a>增加Nano、Tiny NPU相关API接口：</span></p>
-<a name="ul16724132074212"></a><a name="ul16724132074212"></a><ul id="ul16724132074212"><li>更新<a href="接口列表.md">接口列表</a></li></ul>
+<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p1030180111613"><a name="p1030180111613"></a><a name="p1030180111613"></a>增加端侧训练相关接口：</p>
+<a name="ul176948513172"></a><a name="ul176948513172"></a><ul id="ul176948513172"><li>更新“<a href="#ZH-CN_TOPIC_0000002323808050">2.1-接口调用流程图</a>”。</li></ul>
+<a name="ul474944117165"></a><a name="ul474944117165"></a><ul id="ul474944117165"><li>更新“<a href="#ZH-CN_TOPIC_0000002323474462">接口列表</a>”。</li></ul>
+</td>
+</tr>
+<tr id="row179091720620"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p9910192369"><a name="p9910192369"></a><a name="p9910192369"></a>03</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p10910221762"><a name="p10910221762"></a><a name="p10910221762"></a>2026-02-10</p>
+</td>
+<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p9910224610"><a name="p9910224610"></a><a name="p9910224610"></a>增加OH_AI_ModelGetInputByTensorName、OH_AI_ModelGetOutputByTensorName两个API接口：</p>
+<a name="ul667416237619"></a><a name="ul667416237619"></a><ul id="ul667416237619"><li>更新“<a href="#ZH-CN_TOPIC_0000002323474462">接口列表</a>”。</li></ul>
+</td>
+</tr>
+<tr id="row1910511599392"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p18106659153915"><a name="p18106659153915"></a><a name="p18106659153915"></a>02</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p121065598391"><a name="p121065598391"></a><a name="p121065598391"></a>2025-12-18</p>
+</td>
+<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p610614597393"><a name="p610614597393"></a><a name="p610614597393"></a>增加Nano、Tiny NPU相关API接口：</p>
+<a name="ul16724132074212"></a><a name="ul16724132074212"></a><ul id="ul16724132074212"><li>更新“<a href="#ZH-CN_TOPIC_0000002323474462">接口列表</a>”。</li></ul>
 </td>
 </tr>
 <tr id="row5947359616410"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p2149706016410"><a name="p2149706016410"></a><a name="p2149706016410"></a>01</p>
@@ -107,8 +123,11 @@
 
 本文用于指导开发人员基于MNIST模型、利用HiSpark.AI提供的C语言API库，实现第三方开源框架（如TFLite、ONNX等）网络模型轻量化部署与推理任务。
 
+-   **[HiSpark.AI接口定义](#ZH-CN_TOPIC_0000002322571836)**  
 
+-   **[基本概念](#ZH-CN_TOPIC_0000002356450521)**  
 
+-   **[获取Sample方法](#ZH-CN_TOPIC_0000002356410665)**  
 
 ## HiSpark.AI接口定义<a name="ZH-CN_TOPIC_0000002322571836"></a>
 
@@ -186,11 +205,17 @@ tar -xvf mnist.tar.gz
 
 本章主要介绍HiSpark.AI API接口调用流程。
 
+-   **[接口调用流程图](#ZH-CN_TOPIC_0000002323808050)**  
 
+-   **[系统初始化](#ZH-CN_TOPIC_0000002519243831)**  
 
+-   **[运行管理资源申请](#ZH-CN_TOPIC_0000002357566825)**  
 
+-   **[模型加载](#ZH-CN_TOPIC_0000002357726713)**  
 
+-   **[模型执行](#ZH-CN_TOPIC_0000002323648222)**  
 
+-   **[运行管理资源释放](#ZH-CN_TOPIC_0000002323808054)**  
 
 ## 接口调用流程图<a name="ZH-CN_TOPIC_0000002323808050"></a>
 
@@ -198,40 +223,38 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 **图 1**  接口调用流程图<a name="fig18338134105017"></a>  
 
-![](figures/zh-cn_image_0000002519154493.png)
+![](figures/流程图.png)
 
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >1.  在应用开发过程中，各环节都涉及内存的申请与释放、数据传输（通过内存复制实现）、数据类型的创建与销毁，因此未在图中一一标识。
->2.  系统初始化在3322、1156为必选步骤，在3863为可选步骤。
+>2.  系统初始化在3322、1156E为必选步骤，在WS63为可选步骤。
 
-在[接口调用流程图](#fig18338134105017)中展示了应用开发中的典型功能抽象出主要接口的调用流程。例如，若需要实现模型推理功能，则需先加载模型，模型推理结束后，则需卸载模型；若模型推理后需打印sample推理的结果概率，则需进行数据后处理。
+在[接口调用流程图](#fig18338134105017)中展示了应用开发中的典型功能抽象出主要接口的调用流程。当前接口调用流程覆盖模型推理、模型评估和模型训练三类典型通路。
 
-1.  系统初始化：通过调用OH\_AI\_Init/OH\_AI\_InitFromeFile接口完成环境初始化，具体流程参见“[3.2-系统配置](系统配置.md)”。
-2.  运行管理资源申请：通过调用OH\_AI\_ContextCreate接口申请运行管理资源，具体流程请参见“[Context管理](Context管理.md)”。
-3.  模型推理。
-    1.  模型加载：模型推理前，需要先调用OH\_AI\_ModelBuild/OH\_AI\_ModelBuildFromFile/OH\_AI\_ModelBuildFromName接口将对应的模型加载到系统中。具体流程请参见“[模型加载与执行](模型加载与执行.md)”。
-    2.  设置模型输入：在模型推理之前，需要读取bin格式数据文件并转换为模型输入。
-    3.  模型执行：调用OH\_AI\_ModelPredict接口，当前仅支持CPU后端单核单线程推理预测。
-    4.  数据后处理（可选）：根据用户的实际需求来处理模型推理结果。例如用户可以将获取的推理结果写入文件、打印所有的预测概率或是从推理结果中找到最大置信度的类别标识。
-    5.  模型卸载：调用OH\_AI\_ModelDestroy接口卸载模型。
+1.  系统初始化：通过调用OH\_AI\_Init/OH\_AI\_InitFromeFile接口完成环境初始化，具体流程参见“[3.2-系统配置](#ZH-CN_TOPIC_0000002486873536)”。
+2.  运行管理资源申请：通过调用OH\_AI\_ContextCreate接口申请运行管理资源，具体流程请参见“[Context管理](#ZH-CN_TOPIC_0000002357273153)”。
+3.  模型加载：在执行模型推理、评估或训练前，需要先调用OH\_AI\_ModelBuild/OH\_AI\_ModelBuildFromFile/OH\_AI\_ModelBuildFromName接口将对应模型加载到系统中。具体流程参见“[3.5 模型加载与执行](#ZH-CN_TOPIC_0000002323314674)”。
+4.  模型输入输出获取：模型加载完成后，可通过OH\_AI\_ModelGetInputs获取模型输入，通过OH\_AI\_ModelGetOutputs获取模型输出。对于评估和训练场景，还需要通过OH\_AI\_ModelGetLabels获取标签输入，用于计算loss或评估指标。
+5.  模型推理：在模型推理之前，需要读取bin格式数据文件并转换为模型输入。随后调用 OH\_AI\_ModelPredict 接口执行推理。当前仅支持 CPU 后端单核单线程推理预测。模型推理完成后，用户可根据实际需求进行数据后处理，例如将推理结果写入文件、打印预测概率，或从推理结果中找到最大置信度的类别标识。
+6.  模型评估：若需要实现模型评估功能，则需要在模型执行前准备输入数据和标签数据，调用OH\_AI\_ModelSetTrainMode将训练模式设置为false并调用OH\_AI\_ModelRunStep执行评估。评估流程通常执行前向计算和 loss / metric 计算，但不执行反向传播和权重更新。
+7.  模型训练：若需要实现模型训练功能，则需要在模型执行前准备输入数据和标签数据，调用OH\_AI\_ModelSetTrainMode将训练模式设置为true并调用OH\_AI\_ModelRunStep执行训练。训练流程通常包括前向计算、loss 计算、反向传播和权重更新。每轮或每步训练完成后，用户可读取 loss 等训练输出，用于观察训练收敛情况。训练结束后可根据实际情况选择是否保存更新后的权重数据，用于后续推理、评估或继续训练。
+8.  模型卸载：调用OH\_AI\_ModelDestroy接口卸载模型。
 
-1.  运行管理资源释放：所有数据处理完成后，需要释放运行管理资源（OH\_AI\_Context、OH\_AI\_Tensor）。具体流程请参见“[3.2-系统配置](系统配置.md)[3.2-系统配置](系统配置.md)、[Context管理](Context管理.md)、[Tensor管理](Tensor管理.md)”以销毁资源。
+1.  运行管理资源释放：所有数据处理完成后，需要释放运行管理资源（OH\_AI\_Context、OH\_AI\_Tensor）。具体流程请参见“[3.2-系统配置](#ZH-CN_TOPIC_0000002486873536)[3.2-系统配置](#ZH-CN_TOPIC_0000002486873536)、[Context管理](#ZH-CN_TOPIC_0000002357273153)、[Tensor管理](#ZH-CN_TOPIC_0000002357393253)”以销毁资源。
 
 ## 系统初始化<a name="ZH-CN_TOPIC_0000002519243831"></a>
 
-**图 1**  系统初始化流程<a name="fig1447085594516"></a>  
-
-![](figures/zh-cn_image_0000002487084268.png)
+**图 1**  系统初始化流程<a name="fig5442015164412"></a>  
+![](figures/系统初始化流程.png "系统初始化流程")
 
 通过调用OH\_AI\_InitFromFile/OH\_AI\_Init接口，实现系统初始化。
 
 ## 运行管理资源申请<a name="ZH-CN_TOPIC_0000002357566825"></a>
 
-运行管理资源包含OH\_AI\_Context、OH\_AI\_Tensor，其创建的流程如[运行管理资源申请流程](#fig10806173215305)所示。
+运行管理资源包含OH\_AI\_Context、OH\_AI\_Tensor，其创建的流程如[图1](#fig440882011596)所示。
 
-**图 1**  运行管理资源申请流程<a name="fig10806173215305"></a>  
-
-![](figures/运行管理资源申请流程.png)
+**图 1**  运行管理资源申请流程<a name="fig440882011596"></a>  
+![](figures/运行管理资源申请流程.png "运行管理资源申请流程")
 
 根据上述流程，创建OH\_AI\_Context、OH\_AI\_Tensor等运行管理资源需按照如下原则来进行：
 
@@ -240,29 +263,26 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 ## 模型加载<a name="ZH-CN_TOPIC_0000002357726713"></a>
 
-**图 1**  模型加载流程<a name="fig1447085594516"></a>  
-
-![](figures/模型加载流程.png)
+**图 1**  模型加载流程<a name="fig249712620441"></a>  
+![](figures/模型加载流程.png "模型加载流程")
 
 通过调用OH\_AI\_ModelBuild接口，实现模型权重的自动加载。
 
 ## 模型执行<a name="ZH-CN_TOPIC_0000002323648222"></a>
 
-**图 1**  模型执行流程图<a name="fig0703101991"></a>  
-
-![](figures/模型执行流程.png)
+**图 1**  模型执行流程图<a name="fig2313444155911"></a>  
+![](figures/模型执行流程图.png "模型执行流程图")
 
 -   调用OH\_AI\_ModelGetInputs接口与OH\_AI\_ModelGetOutputs接口创建模型输入输出，准备模型执行的输入数据与输出数据。
--   调用OH\_AI\_ModelPredict接口做模型推理，详情请参见“[模型加载与执行](模型加载与执行.md)”。
+-   调用OH\_AI\_ModelPredict接口做模型推理，调用OH\_AI\_ModelRunstep接口做模型评估或训练，详情请参见“[模型加载与执行](#ZH-CN_TOPIC_0000002323314674)”。
 -   获取模型推理的结果，用于后续处理。
 
 ## 运行管理资源释放<a name="ZH-CN_TOPIC_0000002323808054"></a>
 
-运行管理资源包含OH\_AI\_Context、OH\_AI\_Tensor，其释放的流程如[运行管理资源释放流程](#fig11118195115402)所示。
+运行管理资源包含OH\_AI\_Context、OH\_AI\_Tensor，其释放的流程如[图1](#fig166821235204418)所示。
 
-**图 1**  运行管理资源释放流程<a name="fig11118195115402"></a>  
-
-![](figures/运行管理资源释放流程.png)
+**图 1**  运行管理资源释放流程<a name="fig166821235204418"></a>  
+![](figures/运行管理资源释放流程.png "运行管理资源释放流程")
 
 根据上述流程，释放OH\_AI\_Context、OH\_AI\_Tensor等运行管理资源需按照如下原则来进行：
 
@@ -271,11 +291,17 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 # HiSpark.AI API参考<a name="ZH-CN_TOPIC_0000002356389125"></a>
 
+-   **[接口列表](#ZH-CN_TOPIC_0000002323474462)**  
 
+-   **[系统配置](#ZH-CN_TOPIC_0000002486873536)**  
 
+-   **[Context管理](#ZH-CN_TOPIC_0000002357273153)**  
 
+-   **[Tensor管理](#ZH-CN_TOPIC_0000002357393253)**  
 
+-   **[模型加载与执行](#ZH-CN_TOPIC_0000002323314674)**  
 
+-   **[错误码](#ZH-CN_TOPIC_0000002486910898)**  
 
 ## 接口列表<a name="ZH-CN_TOPIC_0000002323474462"></a>
 
@@ -302,7 +328,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
     OH_AI_TensorHandle *handle_list;
 } OH_AI_TensorHandleArray;</pre>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p17181535162315"><a name="p17181535162315"></a><a name="p17181535162315"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p17181535162315"><a name="p17181535162315"></a><a name="p17181535162315"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 <tr id="row18731193020"><td class="cellrowborder" rowspan="3" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p10533123914304"><a name="p10533123914304"></a><a name="p10533123914304"></a>系统配置</p>
@@ -311,21 +337,21 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p15841173018"><a name="p15841173018"></a><a name="p15841173018"></a>加载配置文件并初始化</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p718293516236"><a name="p718293516236"></a><a name="p718293516236"></a>Hi3322、Hi1156</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p718293516236"><a name="p718293516236"></a><a name="p718293516236"></a>Hi3322、Hi1156E</p>
 </td>
 </tr>
 <tr id="row142839227303"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p192831322133013"><a name="p192831322133013"></a><a name="p192831322133013"></a>OH_AI_Init</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p142831422103017"><a name="p142831422103017"></a><a name="p142831422103017"></a>从内存数据初始化</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1918233582319"><a name="p1918233582319"></a><a name="p1918233582319"></a>Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1918233582319"><a name="p1918233582319"></a><a name="p1918233582319"></a>WS63</p>
 </td>
 </tr>
 <tr id="row8347152653016"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p734732613016"><a name="p734732613016"></a><a name="p734732613016"></a>OH_AI_Deinit</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p434792615307"><a name="p434792615307"></a><a name="p434792615307"></a>去初始化</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p14778922191116"><a name="p14778922191116"></a><a name="p14778922191116"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p14778922191116"><a name="p14778922191116"></a><a name="p14778922191116"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 <tr id="row20829617310"><td class="cellrowborder" rowspan="2" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p2829013315"><a name="p2829013315"></a><a name="p2829013315"></a>Context管理</p>
@@ -334,14 +360,14 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p668310556343"><a name="p668310556343"></a><a name="p668310556343"></a>创建一个OH_AI_Context。</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p1844933215114"><a name="p1844933215114"></a><a name="p1844933215114"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p1844933215114"><a name="p1844933215114"></a><a name="p1844933215114"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 <tr id="row1282991173117"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p31619380227"><a name="p31619380227"></a><a name="p31619380227"></a>void OH_AI_ContextDestroy(OH_AI_ContextHandle* context)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p18081624153613"><a name="p18081624153613"></a><a name="p18081624153613"></a>销毁一个OH_AI_Context。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1618293513235"><a name="p1618293513235"></a><a name="p1618293513235"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1618293513235"><a name="p1618293513235"></a><a name="p1618293513235"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 <tr id="row178301113319"><td class="cellrowborder" rowspan="2" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p16830018312"><a name="p16830018312"></a><a name="p16830018312"></a>Tensor管理</p>
@@ -350,86 +376,128 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p4115382220"><a name="p4115382220"></a><a name="p4115382220"></a>获取OH_AI_Tensor的元素个数。</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p161821835122313"><a name="p161821835122313"></a><a name="p161821835122313"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p161821835122313"><a name="p161821835122313"></a><a name="p161821835122313"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 <tr id="row98301119312"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p16464218329"><a name="p16464218329"></a><a name="p16464218329"></a>void *OH_AI_TensorGetMutableData(const MSTensorHandle tensor);</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p2067854691014"><a name="p2067854691014"></a><a name="p2067854691014"></a>获取可变的OH_AI_Tensor的数据。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p16182163512236"><a name="p16182163512236"></a><a name="p16182163512236"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p16182163512236"><a name="p16182163512236"></a><a name="p16182163512236"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
-<tr id="row983081113117"><td class="cellrowborder" rowspan="10" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p8830611311"><a name="p8830611311"></a><a name="p8830611311"></a>模型加载与运行</p>
+<tr id="row983081113117"><td class="cellrowborder" rowspan="16" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p8830611311"><a name="p8830611311"></a><a name="p8830611311"></a>模型加载与运行</p>
 </td>
 <td class="cellrowborder" valign="top" width="48.71512848715129%" headers="mcps1.2.5.1.2 "><p id="p14938182212"><a name="p14938182212"></a><a name="p14938182212"></a>OH_AI_ModelHandle OH_AI_ModelCreate()</p>
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p94153817228"><a name="p94153817228"></a><a name="p94153817228"></a>创建一个模型对象。</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p618216355237"><a name="p618216355237"></a><a name="p618216355237"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p618216355237"><a name="p618216355237"></a><a name="p618216355237"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 <tr id="row683017173118"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p16353815224"><a name="p16353815224"></a><a name="p16353815224"></a><span>void OH_AI_ModelDestroy(OH_AI_ModelHandle *model)</span></p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p582640114214"><a name="p582640114214"></a><a name="p582640114214"></a>销毁一个模型对象。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p17182103518230"><a name="p17182103518230"></a><a name="p17182103518230"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p17182103518230"><a name="p17182103518230"></a><a name="p17182103518230"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 <tr id="row1583114110319"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p1834754013229"><a name="p1834754013229"></a><a name="p1834754013229"></a><span>OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle model)</span></p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1811719351440"><a name="p1811719351440"></a><a name="p1811719351440"></a>获取模型的输入张量数组结构体。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p81821235122315"><a name="p81821235122315"></a><a name="p81821235122315"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p81821235122315"><a name="p81821235122315"></a><a name="p81821235122315"></a>Hi3322、Hi1156E、WS63</p>
+</td>
+</tr>
+<tr id="row1477843644414"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p936872684612"><a name="p936872684612"></a><a name="p936872684612"></a>OH_AI_TensorHandleArray OH_AI_ModelGetLabels(const OH_AI_ModelHandle model)</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p16486121819498"><a name="p16486121819498"></a><a name="p16486121819498"></a>获取模型的所有标签张量句柄。</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p147791036174413"><a name="p147791036174413"></a><a name="p147791036174413"></a>WS63</p>
 </td>
 </tr>
 <tr id="row118315143110"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p17470228338"><a name="p17470228338"></a><a name="p17470228338"></a>OH_AI_TensorHandleArray OH_AI_ModelGetOutputs(const OH_AI_ModelHandle model)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p6641154704416"><a name="p6641154704416"></a><a name="p6641154704416"></a>获取模型的输出张量数组结构体。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p151821359239"><a name="p151821359239"></a><a name="p151821359239"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p151821359239"><a name="p151821359239"></a><a name="p151821359239"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
-<tr id="row8471242113918"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p247134211395"><a name="p247134211395"></a><a name="p247134211395"></a><span id="ph171392141415"><a name="ph171392141415"></a><a name="ph171392141415"></a>OH_AI_TensorHandle OH_AI_ModelGetInputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name)</span></p>
+<tr id="row8471242113918"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p247134211395"><a name="p247134211395"></a><a name="p247134211395"></a>OH_AI_TensorHandle OH_AI_ModelGetInputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name)</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p847116424395"><a name="p847116424395"></a><a name="p847116424395"></a><span id="ph2018931184416"><a name="ph2018931184416"></a><a name="ph2018931184416"></a>根据指定的张量名称获取模型对应的输入张量</span><span id="ph137006590439"><a name="ph137006590439"></a><a name="ph137006590439"></a>。</span></p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p847116424395"><a name="p847116424395"></a><a name="p847116424395"></a>根据指定的张量名称获取模型对应的输入张量。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p15471134216391"><a name="p15471134216391"></a><a name="p15471134216391"></a><span id="ph13742183144211"><a name="ph13742183144211"></a><a name="ph13742183144211"></a>Hi3863</span></p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p15471134216391"><a name="p15471134216391"></a><a name="p15471134216391"></a>WS63</p>
 </td>
 </tr>
-<tr id="row126951546183915"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p9696104693919"><a name="p9696104693919"></a><a name="p9696104693919"></a><span id="ph124441843144115"><a name="ph124441843144115"></a><a name="ph124441843144115"></a>OH_AI_TensorHandle OH_AI_ModelGetOutputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name)</span></p>
+<tr id="row126951546183915"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p9696104693919"><a name="p9696104693919"></a><a name="p9696104693919"></a>OH_AI_TensorHandle OH_AI_ModelGetOutputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name)</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1969614603917"><a name="p1969614603917"></a><a name="p1969614603917"></a><span id="ph175533183443"><a name="ph175533183443"></a><a name="ph175533183443"></a>根据指定的张量名称获取模型对应的输出张量</span><span id="ph1198616120441"><a name="ph1198616120441"></a><a name="ph1198616120441"></a>。</span></p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1969614603917"><a name="p1969614603917"></a><a name="p1969614603917"></a>根据指定的张量名称获取模型对应的输出张量。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p196961146193913"><a name="p196961146193913"></a><a name="p196961146193913"></a><span id="ph10429648426"><a name="ph10429648426"></a><a name="ph10429648426"></a>Hi3863</span></p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p196961146193913"><a name="p196961146193913"></a><a name="p196961146193913"></a>WS63</p>
 </td>
 </tr>
 <tr id="row083118112314"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p1025383223"><a name="p1025383223"></a><a name="p1025383223"></a>OH_AI_Status OH_AI_ModelBuild(OH_AI_ModelHandle model, const void *model_data, size_t data_size, const OH_AI_ContextHandle model_context)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p3390855184214"><a name="p3390855184214"></a><a name="p3390855184214"></a>从内存缓冲区加载并编译模型。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p818211358235"><a name="p818211358235"></a><a name="p818211358235"></a>Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p818211358235"><a name="p818211358235"></a><a name="p818211358235"></a>WS63</p>
 </td>
 </tr>
 <tr id="row191584561762"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p21781691970"><a name="p21781691970"></a><a name="p21781691970"></a>OH_AI_Status OH_AI_ModelBuildFromFile (OH_AI_ModelHandle model, const char * model_path, const OH_AI_ContextHandle model_context )</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p201581556462"><a name="p201581556462"></a><a name="p201581556462"></a>从模型文件加载并编译模型</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p171596561967"><a name="p171596561967"></a><a name="p171596561967"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p171596561967"><a name="p171596561967"></a><a name="p171596561967"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 <tr id="row1633019235810"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p1667729984"><a name="p1667729984"></a><a name="p1667729984"></a>OH_AI_Status OH_AI_ModelBuildFromName (OH_AI_ModelHandle model, const char * model_name, const OH_AI_ContextHandle model_context )</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p133313237816"><a name="p133313237816"></a><a name="p133313237816"></a>从模型名称加载并编译模型</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p513623294711"><a name="p513623294711"></a><a name="p513623294711"></a>Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p513623294711"><a name="p513623294711"></a><a name="p513623294711"></a>WS63</p>
 </td>
 </tr>
 <tr id="row11470182113319"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p93481540142216"><a name="p93481540142216"></a><a name="p93481540142216"></a>OH_AI_Status OH_AI_ModelPredict(OH_AI_ModelHandle model, const OH_AI_TensorHandleArray inputs, OH_AI_TensorHandleArray *outputs)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1586810193441"><a name="p1586810193441"></a><a name="p1586810193441"></a>执行模型推理。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1018243582310"><a name="p1018243582310"></a><a name="p1018243582310"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1018243582310"><a name="p1018243582310"></a><a name="p1018243582310"></a>Hi3322、Hi1156E、WS63</p>
+</td>
+</tr>
+<tr id="row166986213448"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p1869817216447"><a name="p1869817216447"></a><a name="p1869817216447"></a>OH_AI_Status OH_AI_ModelSetTrainMode(OH_AI_ModelHandle model,  bool train)</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1769920214447"><a name="p1769920214447"></a><a name="p1769920214447"></a>设置模型训练模式。</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p2748450134216"><a name="p2748450134216"></a><a name="p2748450134216"></a>WS63</p>
+</td>
+</tr>
+<tr id="row168409013551"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p58401709552"><a name="p58401709552"></a><a name="p58401709552"></a>OH_AI_Status OH_AI_ModelGetTrainMode(OH_AI_ModelHandle model, bool *train)</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p198409045517"><a name="p198409045517"></a><a name="p198409045517"></a>获取模型训练模式。</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p58402018558"><a name="p58402018558"></a><a name="p58402018558"></a>WS63</p>
+</td>
+</tr>
+<tr id="row68614612314"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p28611961937"><a name="p28611961937"></a><a name="p28611961937"></a>OH_AI_Status OH_AI_ModelRunStep(OH_AI_ModelHandle model)</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p101084151344"><a name="p101084151344"></a><a name="p101084151344"></a>根据当前的训练模式，执行一次模型训练或评估步骤。</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p188611465319"><a name="p188611465319"></a><a name="p188611465319"></a>WS63</p>
+</td>
+</tr>
+<tr id="row1581734110559"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p2081714125518"><a name="p2081714125518"></a><a name="p2081714125518"></a>OH_AI_Status OH_AI_ModelSaveWeight(OH_AI_ModelHandle model, uintptr_t flash_addr)</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p8817114114559"><a name="p8817114114559"></a><a name="p8817114114559"></a>保存模型可训练权重到指定Flash地址。</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1881744195517"><a name="p1881744195517"></a><a name="p1881744195517"></a>WS63</p>
+</td>
+</tr>
+<tr id="row286935018567"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p178701750135616"><a name="p178701750135616"></a><a name="p178701750135616"></a>OH_AI_Status OH_AI_ModelLoadWeight(OH_AI_ModelHandle model, uintptr_t flash_addr)</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p887055014561"><a name="p887055014561"></a><a name="p887055014561"></a>从指定Flash地址加载模型可训练权重。</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p587013506563"><a name="p587013506563"></a><a name="p587013506563"></a>WS63</p>
 </td>
 </tr>
 <tr id="row4164161016336"><td class="cellrowborder" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p9165201019332"><a name="p9165201019332"></a><a name="p9165201019332"></a>错误码</p>
@@ -438,7 +506,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p1371202583312"><a name="p1371202583312"></a><a name="p1371202583312"></a>获取错误码</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p2018253552316"><a name="p2018253552316"></a><a name="p2018253552316"></a>Hi3322、Hi1156、Hi3863</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p2018253552316"><a name="p2018253552316"></a><a name="p2018253552316"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
 </tbody>
@@ -446,8 +514,11 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 ## 系统配置<a name="ZH-CN_TOPIC_0000002486873536"></a>
 
+-   **[OH\_AI\_InitFromFile](#ZH-CN_TOPIC_0000002486885042)**  
 
+-   **[OH\_AI\_Init](#ZH-CN_TOPIC_0000002519124901)**  
 
+-   **[OH\_AI\_Deinit](#ZH-CN_TOPIC_0000002519044903)**  
 
 ### OH\_AI\_InitFromFile<a name="ZH-CN_TOPIC_0000002486885042"></a>
 
@@ -528,7 +599,9 @@ OH\_AI\_Status OH\_AI\_Deinit\(\)
 
 ## Context管理<a name="ZH-CN_TOPIC_0000002357273153"></a>
 
+-   **[OH\_AI\_ContextCreate](#ZH-CN_TOPIC_0000002357729493)**  
 
+-   **[OH\_AI\_ContextDestroy](#ZH-CN_TOPIC_0000002357569605)**  
 
 ### OH\_AI\_ContextCreate<a name="ZH-CN_TOPIC_0000002357729493"></a>
 
@@ -573,10 +646,15 @@ void OH\_AI\_ContextDestroy\(OH\_AI\_ContextHandle\* context\)
 
 ## Tensor管理<a name="ZH-CN_TOPIC_0000002357393253"></a>
 
+-   **[OH\_AI\_TensorGetDataSize](#ZH-CN_TOPIC_0000002487055488)**  
 
+-   **[OH\_AI\_TensorGetShape](#ZH-CN_TOPIC_0000002519215373)**  
 
+-   **[OH\_AI\_TensorGetDataType](#ZH-CN_TOPIC_0000002486895522)**  
 
+-   **[OH\_AI\_TensorGetElementNum](#ZH-CN_TOPIC_0000002323810834)**  
 
+-   **[OH\_AI\_TensorGetMutableData](#ZH-CN_TOPIC_0000002323651014)**  
 
 ### OH\_AI\_TensorGetDataSize<a name="ZH-CN_TOPIC_0000002487055488"></a>
 
@@ -732,15 +810,37 @@ void\* OH\_AI\_TensorGetMutableData\(const OH\_AI\_TensorHandle tensor\)
 
 ## 模型加载与执行<a name="ZH-CN_TOPIC_0000002323314674"></a>
 
+-   **[OH\_AI\_ModelCreate](#ZH-CN_TOPIC_0000002323810842)**  
 
+-   **[OH\_AI\_ModelDestroy](#ZH-CN_TOPIC_0000002323651018)**  
 
+-   **[OH\_AI\_ModelGetInputs](#ZH-CN_TOPIC_0000002323651022)**  
 
+-   **[OH\_AI\_ModelGetOutputs](#ZH-CN_TOPIC_0000002357729505)**  
 
+-   **[OH\_AI\_ModelBuild](#ZH-CN_TOPIC_0000002357729501)**  
 
+-   **[OH\_AI\_ModelBuildFromFile](#ZH-CN_TOPIC_0000002519226557)**  
 
+-   **[OH\_AI\_ModelBuildFromName](#ZH-CN_TOPIC_0000002519146547)**  
 
+-   **[OH\_AI\_ModelPredict](#ZH-CN_TOPIC_0000002323810846)**  
 
+-   **[OH\_AI\_ModelGetInputByTensorName](#ZH-CN_TOPIC_0000002547275447)**  
 
+-   **[OH\_AI\_ModelGetOutputByTensorName](#ZH-CN_TOPIC_0000002515675614)**  
+
+-   **[OH\_AI\_ModelGetLabels](#ZH-CN_TOPIC_0000002624446888)**  
+
+-   **[OH\_AI\_ModelRunStep](#ZH-CN_TOPIC_0000002624618606)**  
+
+-   **[OH\_AI\_ModelSetTrainMode](#ZH-CN_TOPIC_0000002654831425)**  
+
+-   **[OH\_AI\_ModelGetTrainMode](#ZH-CN_TOPIC_0000002655193541)**  
+
+-   **[OH\_AI\_ModelSaveWeight](#ZH-CN_TOPIC_0000002654890155)**  
+
+-   **[OH\_AI\_ModelLoadWeight](#ZH-CN_TOPIC_0000002654970203)**  
 
 ### OH\_AI\_ModelCreate<a name="ZH-CN_TOPIC_0000002323810842"></a>
 
@@ -1087,8 +1187,213 @@ OH\_AI\_TensorHandle OH\_AI\_ModelGetOutputByTensorName\(const OH\_AI\_ModelHand
 
 与张量名称匹配的目标输出张量。
 
+### OH\_AI\_ModelGetLabels<a name="ZH-CN_TOPIC_0000002624446888"></a>
+
+【描述】
+
+获取模型的标签数组结构体。
+
+【语法】
+
+OH\_AI\_TensorHandleArray OH\_AI\_ModelGetLabels\(const OH\_AI\_ModelHandle model\)
+
+【参数说明】
+
+<a name="table146476466231"></a>
+<table><thead align="left"><tr id="row264774620237"><th class="cellrowborder" valign="top" width="35.8%" id="mcps1.1.3.1.1"><p id="p146475468237"><a name="p146475468237"></a><a name="p146475468237"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="64.2%" id="mcps1.1.3.1.2"><p id="p964811463239"><a name="p964811463239"></a><a name="p964811463239"></a>说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row864864617235"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p6648246192315"><a name="p6648246192315"></a><a name="p6648246192315"></a>model</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p2064834652318"><a name="p2064834652318"></a><a name="p2064834652318"></a><span>指向模型对象的指针。</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+【返回值】指向标签数组结构体的指针。
+
+### OH\_AI\_ModelRunStep<a name="ZH-CN_TOPIC_0000002624618606"></a>
+
+【描述】
+
+根据当前的训练模式，执行一次模型训练或评估步骤。
+
+【语法】
+
+OH\_AI\_Status OH\_AI\_ModelTrainStep\(OH\_AI\_ModelHandle model\)
+
+【参数说明】
+
+<a name="table48954020370"></a>
+<table><thead align="left"><tr id="row3102184083712"><th class="cellrowborder" valign="top" width="35.8%" id="mcps1.1.3.1.1"><p id="p410214013715"><a name="p410214013715"></a><a name="p410214013715"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="64.2%" id="mcps1.1.3.1.2"><p id="p81021140123719"><a name="p81021140123719"></a><a name="p81021140123719"></a>说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row91024404373"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p4732195215391"><a name="p4732195215391"></a><a name="p4732195215391"></a>model</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p96461816121318"><a name="p96461816121318"></a><a name="p96461816121318"></a>指向模型对象的指针。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+【返回值】
+
+枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
+
+### OH\_AI\_ModelSetTrainMode<a name="ZH-CN_TOPIC_0000002654831425"></a>
+
+【描述】
+
+设置模型训练模式。
+
+【语法】
+
+OH\_AI\_Status OH\_AI\_ModelSetTrainMode\(OH\_AI\_ModelHandle model, bool mode\)
+
+【参数说明】
+
+<a name="table48954020370"></a>
+<table><thead align="left"><tr id="row3102184083712"><th class="cellrowborder" valign="top" width="35.8%" id="mcps1.1.3.1.1"><p id="p410214013715"><a name="p410214013715"></a><a name="p410214013715"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="64.2%" id="mcps1.1.3.1.2"><p id="p81021140123719"><a name="p81021140123719"></a><a name="p81021140123719"></a>说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row91024404373"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p4732195215391"><a name="p4732195215391"></a><a name="p4732195215391"></a>model</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p96461816121318"><a name="p96461816121318"></a><a name="p96461816121318"></a>指向模型对象的指针。</p>
+</td>
+</tr>
+<tr id="row14688145918373"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p44967353519"><a name="p44967353519"></a><a name="p44967353519"></a>mode</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p3688159143715"><a name="p3688159143715"></a><a name="p3688159143715"></a>训练模式开关标识。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+【返回值】
+
+枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明状态设置成功。
+
+### OH\_AI\_ModelGetTrainMode<a name="ZH-CN_TOPIC_0000002655193541"></a>
+
+【描述】
+
+获取模型训练模式。
+
+【语法】
+
+OH\_AI\_Status OH\_AI\_ModelGetTrainMode\(OH\_AI\_ModelHandle model, bool \*mode\)
+
+【参数说明】
+
+<a name="table48954020370"></a>
+<table><thead align="left"><tr id="row3102184083712"><th class="cellrowborder" valign="top" width="35.8%" id="mcps1.1.3.1.1"><p id="p410214013715"><a name="p410214013715"></a><a name="p410214013715"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="64.2%" id="mcps1.1.3.1.2"><p id="p81021140123719"><a name="p81021140123719"></a><a name="p81021140123719"></a>说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row91024404373"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p4732195215391"><a name="p4732195215391"></a><a name="p4732195215391"></a>model</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p96461816121318"><a name="p96461816121318"></a><a name="p96461816121318"></a>指向模型对象的指针。</p>
+</td>
+</tr>
+<tr id="row152313230388"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p1523192319388"><a name="p1523192319388"></a><a name="p1523192319388"></a>mode</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p62314239387"><a name="p62314239387"></a><a name="p62314239387"></a>指向存储当前模型的训练模式模式的变量的指针。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+【返回值】
+
+枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明状态获取成功。
+
+### OH\_AI\_ModelSaveWeight<a name="ZH-CN_TOPIC_0000002654890155"></a>
+
+【描述】
+
+保存模型可训练权重到指定Flash地址。
+
+【语法】
+
+OH\_AI\_Status OH\_AI\_ModelSaveWeight\(OH\_AI\_ModelHandle model, uintptr\_t flash\_addr\)
+
+【参数说明】
+
+<a name="table48954020370"></a>
+<table><thead align="left"><tr id="row3102184083712"><th class="cellrowborder" valign="top" width="35.8%" id="mcps1.1.3.1.1"><p id="p410214013715"><a name="p410214013715"></a><a name="p410214013715"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="64.2%" id="mcps1.1.3.1.2"><p id="p81021140123719"><a name="p81021140123719"></a><a name="p81021140123719"></a>说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row91024404373"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p4732195215391"><a name="p4732195215391"></a><a name="p4732195215391"></a>model</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p96461816121318"><a name="p96461816121318"></a><a name="p96461816121318"></a>指向模型对象的指针。</p>
+</td>
+</tr>
+<tr id="row1687795819414"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p387720583420"><a name="p387720583420"></a><a name="p387720583420"></a>flash_addr</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p687218195518"><a name="p687218195518"></a><a name="p687218195518"></a>保存当前可训练权重的Flash地址</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+【返回值】
+
+枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
+
+### OH\_AI\_ModelLoadWeight<a name="ZH-CN_TOPIC_0000002654970203"></a>
+
+【描述】
+
+从指定Flash地址加载模型可训练权重。
+
+【语法】
+
+OH\_AI\_Status OH\_AI\_ModelLoadWeight\(OH\_AI\_ModelHandle model, uintptr\_t flash\_addr\)
+
+【参数说明】
+
+<a name="table48954020370"></a>
+<table><thead align="left"><tr id="row3102184083712"><th class="cellrowborder" valign="top" width="35.8%" id="mcps1.1.3.1.1"><p id="p410214013715"><a name="p410214013715"></a><a name="p410214013715"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="64.2%" id="mcps1.1.3.1.2"><p id="p81021140123719"><a name="p81021140123719"></a><a name="p81021140123719"></a>说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row91024404373"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p4732195215391"><a name="p4732195215391"></a><a name="p4732195215391"></a>model</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p96461816121318"><a name="p96461816121318"></a><a name="p96461816121318"></a>指向模型对象的指针。</p>
+</td>
+</tr>
+<tr id="row174102040257"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p387720583420"><a name="p387720583420"></a><a name="p387720583420"></a>flash_addr</p>
+</td>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p1140174216511"><a name="p1140174216511"></a><a name="p1140174216511"></a>加载可训练权重的Flash地址，0表示恢复初始权重。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+【返回值】
+
+枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
+
 ## 错误码<a name="ZH-CN_TOPIC_0000002486910898"></a>
 
+-   **[OH\_AI\_GetErrorCode](#ZH-CN_TOPIC_0000002519230807)**  
 
 ### OH\_AI\_GetErrorCode<a name="ZH-CN_TOPIC_0000002519230807"></a>
 
@@ -1112,23 +1417,27 @@ int32\_t OH\_AI\_GetErrorCode\(\)
 
 错误码。
 
-Hi3322、Hi1156错误码定义参考文档《AscendCL应用开发指南（C&C++）》
+Hi3322、Hi1156E错误码定义参考文档《AscendCL应用开发指南（C&C++）》
 
-Hi3863错误码定义参考文档《MindSpore Lite API文档》
+WS63错误码定义参考文档《MindSpore Lite API文档》
 
 # 样例使用指导<a name="ZH-CN_TOPIC_0000002356428969"></a>
 
+-   **[WS63 CPU平台样例使用指导](#ZH-CN_TOPIC_0000002522762115)**  
 
+-   **[NPU平台样例使用指导](#ZH-CN_TOPIC_0000002522762563)**  
 
-## 3863CPU平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762115"></a>
+## WS63 CPU平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762115"></a>
 
 本章节介绍如何调用HiSpark.AI API，并在x86\_64平台实现mnist.tflite的部署推理。板端Sample请参考交付包中的AI Sample部署。
 
+-   **[样例模型获取](#ZH-CN_TOPIC_0000002325645682)**  
 
+-   **[编译及运行应用](#ZH-CN_TOPIC_0000002359684261)**  
 
 ### 样例模型获取<a name="ZH-CN_TOPIC_0000002325645682"></a>
 
-请参考“[获取Sample方法](获取Sample方法.md)”章节。
+请参考“[获取Sample方法](#ZH-CN_TOPIC_0000002356410665)”章节。
 
 ### 编译及运行应用<a name="ZH-CN_TOPIC_0000002359684261"></a>
 
@@ -1208,9 +1517,11 @@ Hi3863错误码定义参考文档《MindSpore Lite API文档》
 
 ## NPU平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762563"></a>
 
-本章节介绍如何调用HiSpark.AI API在NPU平台实现的部署推理；本部署推理指导当前支持Hi3322、Hi1156两款芯片。
+本章节介绍如何调用HiSpark.AI API在NPU平台实现的部署推理；本部署推理指导当前支持Hi3322、Hi1156E两款芯片。
 
+-   **[样例模型获取](#ZH-CN_TOPIC_0000002490686598)**  
 
+-   **[编译及运行应用](#ZH-CN_TOPIC_0000002490682810)**  
 
 ### 样例模型获取<a name="ZH-CN_TOPIC_0000002490686598"></a>
 
@@ -1290,10 +1601,11 @@ Hi3863错误码定义参考文档《MindSpore Lite API文档》
 
 # FAQ<a name="ZH-CN_TOPIC_0000002347972074"></a>
 
+-   **[APP Sample持续在单Task环境下运行内存崩溃](#ZH-CN_TOPIC_0000002348131826)**  
 
 ## APP Sample持续在单Task环境下运行内存崩溃<a name="ZH-CN_TOPIC_0000002348131826"></a>
 
 **问题描述：**APP Sample循环调用OH\_AI\_ModelPredict推理接口，会导致运行内存崩溃。
 
-**解决方法：**基于ws63-liteos-app或3322-wstp-app进行开发时，若整个系统仅有AI Task，Task持续循环运行不进行切换导致系统内存崩溃（原因：WatchDog被饿死）。当前解决方案：在系统若干次推理以后，增加、osDelay\(1\)，手动引入AI Task与内置Idle Task进程切换，即可避免此原因导致的内存崩溃。
+**解决方法：**基于WS63-liteos-app或3322-wstp-app进行开发时，若整个系统仅有AI Task，Task持续循环运行不进行切换导致系统内存崩溃（原因：WatchDog被饿死）。当前解决方案：在系统若干次推理以后，增加、osDelay\(1\)，手动引入AI Task与内置Idle Task进程切换，即可避免此原因导致的内存崩溃。
 
