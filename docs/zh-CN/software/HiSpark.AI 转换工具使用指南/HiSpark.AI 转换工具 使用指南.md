@@ -76,7 +76,15 @@
 </th>
 </tr>
 </thead>
-<tbody><tr id="row565010415485"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p065144194810"><a name="p065144194810"></a><a name="p065144194810"></a>05</p>
+<tbody><tr id="row13280107282026"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p13280107282026"><a name="p13280107282026"></a><a name="p13280107282026"></a>06</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p23280107282026"><a name="p23280107282026"></a><a name="p23280107282026"></a>2026-07-28</p>
+</td>
+<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p33280107282026"><a name="p33280107282026"></a><a name="p33280107282026"></a>新增Onnx/TFLite算子规格：</p>
+<a name="ul33280107282026"></a><a name="ul33280107282026"></a><ul id="ul33280107282026"><li>新增“<a href="#ZH-CN_TOPIC_0000002026072801">Erf</a>、<a href="#ZH-CN_TOPIC_0000002026072802">HardSigmoid</a>、<a href="#ZH-CN_TOPIC_0000002026072803">Celu</a>”。</li></ul>
+</td>
+</tr>
+<tr id="row565010415485"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p065144194810"><a name="p065144194810"></a><a name="p065144194810"></a>05</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p1565114417486"><a name="p1565114417486"></a><a name="p1565114417486"></a>2026-07-03</p>
 </td>
@@ -6375,6 +6383,12 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 -   **[GRU](#ZH-CN_TOPIC_0000002631448488)**  
 
+-   **[Erf](#ZH-CN_TOPIC_0000002026072801)**  
+
+-   **[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)**  
+
+-   **[Celu](#ZH-CN_TOPIC_0000002026072803)**  
+
 ### Conv<a name="ZH-CN_TOPIC_0000002326152940"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -11869,6 +11883,187 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+### Erf<a name="ZH-CN_TOPIC_0000002026072801"></a>
+
+**功能描述<a name="section37550136507"></a>**
+
+对输入张量逐元素计算高斯误差函数值。
+
+**参数说明<a name="section1542812396314"></a>**
+
+**表 1**  Erf参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.51%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.5%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.33%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.71%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="25.95%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>-</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输出张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### HardSigmoid<a name="ZH-CN_TOPIC_0000002026072802"></a>
+
+**功能描述<a name="section37550136507"></a>**
+
+对输入张量做HardSigmoid激活函数运算。公式为：Y=max\(0, min\(1, α·X+β))
+
+**参数说明<a name="section1542812396314"></a>**
+
+**表 1**  HardSigmoid参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.51%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.5%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.33%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.71%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="25.95%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>-</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输出张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>-</p>
+</td>
+</tr>
+<tr id="row1828913718442"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p1628997204413"><a name="p1628997204413"></a><a name="p1628997204413"></a>alpha</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p182895718442"><a name="p182895718442"></a><a name="p182895718442"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p6289470448"><a name="p6289470448"></a><a name="p6289470448"></a>float</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p128919774419"><a name="p128919774419"></a><a name="p128919774419"></a>激活曲线斜率调控系数，默认值0.2。</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p1328912713448"><a name="p1328912713448"></a><a name="p1328912713448"></a>-</p>
+</td>
+</tr>
+<tr id="row1828913718442"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p1628997204413"><a name="p1628997204413"></a><a name="p1628997204413"></a>beta</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p182895718442"><a name="p182895718442"></a><a name="p182895718442"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p6289470448"><a name="p6289470448"></a><a name="p6289470448"></a>float</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p128919774419"><a name="p128919774419"></a><a name="p128919774419"></a>激活曲线偏移调控系数，默认值0.5。</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p1328912713448"><a name="p1328912713448"></a><a name="p1328912713448"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+
+### Celu<a name="ZH-CN_TOPIC_0000002026072803"></a>
+
+**功能描述<a name="section37550136507"></a>**
+
+对输入张量做Celu激活函数运算。公式为：Y=max\(0, x)+min\(0, α·(exp(x/α)-1))
+
+**参数说明<a name="section1542812396314"></a>**
+
+**表 1**  Celu参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.51%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.5%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.33%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.71%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="25.95%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>-</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输出张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>-</p>
+</td>
+</tr>
+<tr id="row1828913718442"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p1628997204413"><a name="p1628997204413"></a><a name="p1628997204413"></a>alpha</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.5%" headers="mcps1.2.6.1.2 "><p id="p182895718442"><a name="p182895718442"></a><a name="p182895718442"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.33%" headers="mcps1.2.6.1.3 "><p id="p6289470448"><a name="p6289470448"></a><a name="p6289470448"></a>float</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p128919774419"><a name="p128919774419"></a><a name="p128919774419"></a>Celu负值区间系数，默认值1.0。</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p128919774419"><a name="p128919774419"></a><a name="p128919774419"></a>规格约束：alpha>0。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+
 # 专题<a name="ZH-CN_TOPIC_0000002562713759"></a>
 
 -   **[高效算子支持](#ZH-CN_TOPIC_0000002531793838)**  
@@ -12380,4 +12575,3 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 </tr>
 </tbody>
 </table>
-
