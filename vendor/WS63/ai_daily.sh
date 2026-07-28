@@ -84,7 +84,7 @@ process_quantized_sample() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=ONNX --modelFile="$sample_model_path" \
         --outputFile="$model_dir" --configFile="$quant_cfg_path/micro_quant.cfg" \
-        --inputDataFormat=NCHW --encryption=false --outputDataFormat=NCHW; then
+        --inputDataFormat=NCHW --outputDataFormat=NCHW; then
         # Compile micro
         cd "$model_dir" || exit 1
         compiling_micro
@@ -146,7 +146,7 @@ process_fp32() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=ONNX --modelFile="$MODEL_PATH/$model/$model.onnx" \
         --outputFile="$model_dir" --configFile="$CFG_PATH/micro_default.cfg" \
-        --inputDataFormat=NCHW --encryption=false --outputDataFormat=NCHW; then
+        --inputDataFormat=NCHW --outputDataFormat=NCHW; then
     
         cd "$model_dir" || exit 1
         compiling_micro
@@ -189,7 +189,7 @@ process_quantized() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=ONNX --modelFile="$MODEL_PATH/$model/$model.onnx" \
         --outputFile="$model_dir" --configFile="$quant_cfg" \
-        --inputDataFormat=NCHW --encryption=false --outputDataFormat=NCHW; then
+        --inputDataFormat=NCHW --outputDataFormat=NCHW; then
     
         # Compile micro
         cd "$model_dir" || exit 1
@@ -225,7 +225,7 @@ process_tflite() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=TFLITE --modelFile="$MODEL_PATH/$model/${model%_tf}.tflite" \
         --outputFile="$model_dir" --configFile="$CFG_PATH/micro_default.cfg" \
-        --inputDataFormat=NHWC --encryption=false --outputDataFormat=NHWC; then
+        --inputDataFormat=NHWC --outputDataFormat=NHWC; then
     
         # Compile micro
         cd "$model_dir" || exit 1
@@ -268,7 +268,7 @@ process_quantized_tflite() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=TFLITE --modelFile="$MODEL_PATH/$model/${model%_tf}.tflite" \
         --outputFile="$model_dir" --configFile="$quant_cfg" \
-        --inputDataFormat=NHWC --encryption=false --outputDataFormat=NHWC; then
+        --inputDataFormat=NHWC --outputDataFormat=NHWC; then
 
         # Compile micro
         cd "$model_dir" || exit 1
