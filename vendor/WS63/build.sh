@@ -114,7 +114,7 @@ if [ "$build_windows" = true ]; then
     pushd ${hiSpark_ai_path}/src/mindspore-lite
     cp output/*.tar.gz ${hiSpark_ai_path}/archives/ 2>/dev/null || true
     # 执行构建
-    bash cross_build_windows.sh || { echo "Build for Win64 failed!"; exit 1; }
+    bash build_cross_win64.sh || { echo "Build for Win64 failed!"; exit 1; }
     if ls output/*.tar.gz 1>/dev/null 2>&1; then
         mkdir -p ${hiSpark_ai_path}/archives
         cp output/*.tar.gz ${hiSpark_ai_path}/archives/
