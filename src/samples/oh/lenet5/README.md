@@ -44,16 +44,17 @@ samples
 
 - **数据准备：**
 运行Scripts目录下的预处理脚本，自动下载对应的原始MNIST数据集，并处理和保存生成Sample需要的文件格式。
-    ```
+```
 python scripts/preproc_mnist_data.py --orig_path ./data --train_path ./train_data --test_path ./test_data --train_file_format bin --test_file_format all [--test_data_type float32]
-    ```
-    参数说明：
-    - --orig_path：MNIST原始数据对应的目录
-    - --train_path：训练集保存目录
-    - --test_path：测试集保存目录
-    - --train_file_format：训练集的保存格式，可选值包括bin，npy, all
-    - --test_file_format：测试集的保存格式，可选值包括bin，npy, all
-    - --test_data_type：测试集的bin格式文件的数据类型，可选值包括float16, float32  
+```
+
+参数说明：
+- --orig_path：MNIST原始数据对应的目录
+- --train_path：训练集保存目录
+- --test_path：测试集保存目录
+- --train_file_format：训练集的保存格式，可选值包括bin，npy, all
+- --test_file_format：测试集的保存格式，可选值包括bin，npy, all
+- --test_data_type：测试集的bin格式文件的数据类型，可选值包括float16, float32  
 
 Tips:
 1. 如果为RISC-V平台需要在之后加上 [--test_data_type float32] 选项，Nano、Tiny平台则不需要。
@@ -306,6 +307,7 @@ bash ${SAMPLE_PATH}/oh/lenet5/build_npu.sh 1156
 
 ## 目录结构
 lenet5 Samples的目录结构如下所示：
+```
 lenet5
 ├── CMakeLists.txt
 ├── oh
@@ -327,7 +329,8 @@ lenet5
 │   │       └── CMakeLists.txt
 │   └── ......
 └── README.md
-- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。Hi3863 以及 Hi3322的SDK下载链接为(https://xxx)。
+```
+- **build.sh脚本**: 用于编译Sample模型。需要配置对应的`SDK_PATH`以及`ADAPTOR_PATH`。通过以下链接下载 [Hi3863](https://gitcode.com/HiSpark/fbb_ws63) 以及 [HiDiTing](https://gitcode.com/HiSpark/hs-fbb) SDK。
 - **CMakeLists.txt**: Sample的编译框架，C代码实现。
 - **model目录**: 用于存放对应的onnx原始模型。
 - **scripts目录**: 用于存放对应的数据处理脚本，自动生成量化以及验证数据。
