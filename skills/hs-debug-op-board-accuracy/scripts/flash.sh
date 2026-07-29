@@ -26,7 +26,7 @@ Usage: bash flash.sh --firmware <path.fwpkg> --gt-dir <path> [--ctrl-port COM9] 
 
 Arguments:
   --firmware    固件路径 (必填)
-  --gt-dir      hs-verify-op gt/ 目录 (必填，烧录后自动精度比对)
+  --gt-dir      hs-debug-op-host-accuracy gt/ 目录 (必填，烧录后自动精度比对)
   --ctrl-port   CH340G 控制口 (默认 COM9)
   --burn-port   烧录口 (默认 COM4)
   --baud        波特率 (默认 921600)
@@ -56,7 +56,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -z "$FIRMWARE" ]] && { echo "ERROR: 缺少 --firmware"; usage; exit 1; }
-[[ -z "$GT_DIR" ]] && { echo "ERROR: 缺少 --gt-dir（hs-verify-op 产出的 gt/ 目录，精度比对必选）"; usage; exit 1; }
+[[ -z "$GT_DIR" ]] && { echo "ERROR: 缺少 --gt-dir（hs-debug-op-host-accuracy 产出的 gt/ 目录，精度比对必选）"; usage; exit 1; }
 [[ -z "$CTRL_PORT" ]] && { echo "ERROR: 缺少 --ctrl-port（由 step1 自动检测提供）"; usage; exit 1; }
 [[ -z "$BURN_PORT" ]] && { echo "ERROR: 缺少 --burn-port（由 step1 自动检测提供）"; usage; exit 1; }
 
@@ -209,7 +209,7 @@ if $FLASH_OK; then
 
     if [[ ! -d "$GT_DIR" ]]; then
         echo "  ACCURACY_VERDICT=FAIL  (gt/ 目录不存在: $GT_DIR)"
-        echo "  → 先跑 hs-verify-op 生成参考输出"
+        echo "  → 先跑 hs-debug-op-host-accuracy 生成参考输出"
         exit 5
     fi
 
@@ -231,7 +231,7 @@ sys.stdout.write(mo if mo else '')
     QUANT_FLAG=""
     $QUANTIZED && QUANT_FLAG="--quantized"
 
-    # Run accuracy comparison (same cosine_similarity as hs-verify-op)
+    # Run accuracy comparison (same cosine_similarity as hs-debug-op-host-accuracy)
     ACCURACY_SCRIPT="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)/board_accuracy.py"
     python3 "$ACCURACY_SCRIPT" --gt-dir "$GT_DIR" --monitor "$MONITOR_FILE" $QUANT_FLAG
     ACC_RC=$?

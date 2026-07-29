@@ -9,7 +9,7 @@ decision1 的存在性裁决与语义摘要由 `scripts/fetch_op_spec.py` 给出
 
 ## 取材优先级：本地 onnx 包 > 本地克隆 > WebFetch > curl/wget > 问用户
 
-**ONNX 属性/输入输出的首选来源是本地安装的 onnx python 包**（hs-verify-op 环境必装，权威、完全离线、企业网拦截 WebFetch 时仍可用）——`fetch_op_spec.py` 的语义摘要已内置属性表（名/类型/必需/默认值），通常 scan 输出就够；需要补查时直接：
+**ONNX 属性/输入输出的首选来源是本地安装的 onnx python 包**（hs-debug-op-host-accuracy 环境必装，权威、完全离线、企业网拦截 WebFetch 时仍可用）——`fetch_op_spec.py` 的语义摘要已内置属性表（名/类型/必需/默认值），通常 scan 输出就够；需要补查时直接：
 
 ```bash
 python3 -c "from onnx import defs; s=defs.get_schema('<OpName>'); print(s.since_version); \

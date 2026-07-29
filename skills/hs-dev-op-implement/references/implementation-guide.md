@@ -344,7 +344,7 @@ KernelBase *CreateXxx(OpParameter *param, int data_type) {
 REG_KERNEL_CREATOR(PrimType_Xxx, kNumberTypeFloat32, CreateXxx)
 ```
 
-> **漏设 `base_.Release` 会段错误。** `nnacl_kernel.cc` 在销毁 kernel 时**无条件**调用 `kernel_->Release(kernel_)`——`memset` 后它是 NULL，于是解引用空函数指针崩溃。**四个 vtable 指针（Prepare/Resize/Compute/Release）一个都不能少**：结构体无额外 buffer 用 `DefaultRelease`（参考 `nnacl_c/kernel/pooling.c` / `pad.c`），有 buffer 写自己的 `XxxRelease`（参考 `nnacl_c/kernel/softmax.c` 的 `SoftmaxRelease`）。这个崩溃**不会在 hs-verify-op 的 micro benchmark 里出现**（它跑 opcoder 生成的 C，从不调用 `Release`），只在**全量化校准的 pre-inference**（`Model::Build` fork 子进程 build+run+销毁）暴露：日志是 `encounter an unknown error...` + `PreBuild or PreInference failed`，子进程被信号杀死。凡见此报错，先查新 kernel 的 vtable 是否设全（尤其 `Release`）。
+> **漏设 `base_.Release` 会段错误。** `nnacl_kernel.cc` 在销毁 kernel 时**无条件**调用 `kernel_->Release(kernel_)`——`memset` 后它是 NULL，于是解引用空函数指针崩溃。**四个 vtable 指针（Prepare/Resize/Compute/Release）一个都不能少**：结构体无额外 buffer 用 `DefaultRelease`（参考 `nnacl_c/kernel/pooling.c` / `pad.c`），有 buffer 写自己的 `XxxRelease`（参考 `nnacl_c/kernel/softmax.c` 的 `SoftmaxRelease`）。这个崩溃**不会在 hs-debug-op-host-accuracy 的 micro benchmark 里出现**（它跑 opcoder 生成的 C，从不调用 `Release`），只在**全量化校准的 pre-inference**（`Model::Build` fork 子进程 build+run+销毁）暴露：日志是 `encounter an unknown error...` + `PreBuild or PreInference failed`，子进程被信号杀死。凡见此报错，先查新 kernel 的 vtable 是否设全（尤其 `Release`）。
 ```cpp
 // 路径 B：src/litert/kernel/cpu/fp32/xxx_fp32.cc
 REG_KERNEL(kCPU, kNumberTypeFloat32, PrimitiveType_Xxx, LiteKernelCreator<XxxCPUKernel>)
@@ -433,7 +433,7 @@ int max_idx = 0;
 for (int j = 1; j < axis_size; j++) { if (in[base + j * inner] > max_val) { ... } }
 ```
 
-> hs-verify-op 的 `all-zeros` / `single-element-axis` 用例正是为暴露这类塌缩而设。它们 FAIL 几乎总是初值契约被违反，**不是**"量化精度极限"——别据此放过（见 SKILL.md「编译与验证」节）。
+> hs-debug-op-host-accuracy 的 `all-zeros` / `single-element-axis` 用例正是为暴露这类塌缩而设。它们 FAIL 几乎总是初值契约被违反，**不是**"量化精度极限"——别据此放过（见 SKILL.md「编译与验证」节）。
 
 #### ⑤″ 首输入是 condition/index 的算子（条件选择、按索引取数类）：int8 **不要**单独注册
 
@@ -444,7 +444,7 @@ for (int j = 1; j < axis_size; j++) { if (in[base + j * inner] > max_val) { ... 
 3. **注册在固定键（bool）上的那个 kernel 必须自己按数据张量 `in_[1]->data_type_` 分支**，处理 fp32 / int8 / fp16。**int8 分支按 ⑤‴ 模板做逐输入重量化**——重量化在各方 qparams 相同时自动退化为恒等拷贝，永远正确；直接字节拷贝只在量化器把各输入与输出绑到同一 scale+zp 时才对，**而这不能假设、必须从生成代码核实**（历史上字节拷贝多次在输入/输出 scale 不同的场景下以 ~0.99 假绿混过阈值）。
 4. **致命陷阱**：若 bool 键 kernel 对 int8 数据仍按 fp32 计算（把 int8 缓冲当 `float*` 写），每元素写 4 字节进 1 字节缓冲 → 堆越界，表现为全量化 **bias_correction** 阶段 `malloc(): corrupted top size` / `sysmalloc: Assertion failed`（**大张量崩、小张量侥幸过**，fp32/x86 路正常，ASAN 下因分配向上取整反而不崩——极难定位）。
 5. **放置**：这个唯一的运行时 kernel 放数据搬运类常规位置（C++ `LiteKernel` 放 `base/`，C `KernelBase` 放 `nnacl_c/kernel/`），按 bool 键注册一处；别散落多个按 dtype 注册的 kernel（其余都是死的）。
-6. **在已有 kernel 上加 int8 分支 = 先做全执行路径审计**。打开该 kernel 的 `Run()`/`Compute()`，列出**每一条**写输出的路径：按 dtype 的 switch 各分支、scalar/单元素条件的**快路**（`MoveData`/`memcpy` 整块搬运）、in-place 与 early-return 分支。逐条裁决「int8 数据可达吗？可达则经过重量化吗？」——只给主 switch 加 int8 case 而放过旧快路，quantized 数据从快路漏过去就是绕开重量化的字节拷贝，且这类路径常由单元素用例触发、其余弦恒为 1.0，行为验证无法暴露（详见 hs-verify-op 用例设计的单元素告诫）。快路对 int8 不安全时，把 int8 显式从快路条件中排除、并入重量化分支。
+6. **在已有 kernel 上加 int8 分支 = 先做全执行路径审计**。打开该 kernel 的 `Run()`/`Compute()`，列出**每一条**写输出的路径：按 dtype 的 switch 各分支、scalar/单元素条件的**快路**（`MoveData`/`memcpy` 整块搬运）、in-place 与 early-return 分支。逐条裁决「int8 数据可达吗？可达则经过重量化吗？」——只给主 switch 加 int8 case 而放过旧快路，quantized 数据从快路漏过去就是绕开重量化的字节拷贝，且这类路径常由单元素用例触发、其余弦恒为 1.0，行为验证无法暴露（详见 hs-debug-op-host-accuracy 用例设计的单元素告诫）。快路对 int8 不安全时，把 int8 显式从快路条件中排除、并入重量化分支。
 7. **扩展既有 kernel 必须留在它既有的体系内，禁止另起平行 kernel。** 运行时 kernel 查找顺序：`REG_KERNEL` creator 注册表**优先**、nnacl 注册表兜底（`src/litert/kernel_registry.cc::GetLiteKernel`——creator 命中即不再查 nnacl）。给已由 `NNACL_KERNEL(...)` 承载的算子按同键再加一个 `REG_KERNEL` C++ kernel，新 kernel 会**整体劫持**该算子全部执行（首输入派发下，一个 bool 键覆盖所有数据 dtype），既有 nnacl kernel——连同其已验证的广播物化、快路、fp16 逻辑——全部沦为死代码；反向注册在 int8 键则永不被选中（第 2 条）。两个方向都是缺陷。正确路径按既有体系二选一：
    - **nnacl `KernelBase` 体系**（`nnacl_c/kernel/xxx.c` + `src/litert/kernel/cpu/nnacl/nnacl_xxx.cc` 的 C++ shim）需要量化参数时：给 `XxxStruct` 加**扁平** quant 字段（⑤‴ 结构约束），在 shim 里从 `in_tensors_[i]->quant_params()` 填充——shim 是 `LiteKernel` 子类拿得到 `lite::Tensor`，而纯 C 的 `TensorC` 没有 qparams；int8 计算分支加在 `xxx.c` 内（调 ⑤‴ 的 `XxxInt8` 函数）。
    - **C++ `LiteKernel` 体系**：直接在既有 kernel 的 `Run()` 加数据 dtype 分支。
@@ -544,7 +544,7 @@ void XxxInt8(const bool *condition, const int8_t *in1, const int8_t *in2, int8_t
 | 物化 / tile | kernel 编排层 + coder：把广播输入 tile 成输出形状，再走**等长核** | 输出大小 ×N | coder 用 `allocator_->Malloc(..., kWorkspace)` 申请——**这是编译期静态工作区规划，不是堆 malloc**；别误判"MCU 不能 malloc 所以不能物化"（实证：本人一度据此错误排除物化方案） | 元素操作贵、buffer 可复用 |
 | stride 索引（零分配） | 独立 broadcast 计算函数按 stride 取数，不物化 | 零 | coder 把 stride 在转换期算成编译期常量结构体（`CodeStruct` 发数据）+ 调用 | 廉价逐元素 + 想免分配（如 Where 的条件选择） |
 
-**计算函数保持广播无感、按 dtype 分文件。** 无论哪条方案，逐元素核（`SubInt8`、`WhereWithTripleInputsInt8`）都是**等长、零广播逻辑**，int8 落 `int8/`、fp32 落 `fp32/`。广播要么在编排层物化后喂等长核（方案 1），要么写成**另一个广播变体函数、与等长核同放该 dtype 文件**（方案 2，如 `where_int8.c` 同时有 `WhereWithTripleInputsInt8` 等长核 + `BroadcastWhereInt8` 广播核——`sub_int8.c` 同放 `SubInt8` + NEON 变体即此惯例）。**一个 dtype 出现多个 int8 计算函数时，hs-verify-op 的 `INT8_KERNEL_SYMBOL` 要列全所有符号**（列表形，否则发射另一变体的用例被误判 `INT8_NOT_GENUINE`）。
+**计算函数保持广播无感、按 dtype 分文件。** 无论哪条方案，逐元素核（`SubInt8`、`WhereWithTripleInputsInt8`）都是**等长、零广播逻辑**，int8 落 `int8/`、fp32 落 `fp32/`。广播要么在编排层物化后喂等长核（方案 1），要么写成**另一个广播变体函数、与等长核同放该 dtype 文件**（方案 2，如 `where_int8.c` 同时有 `WhereWithTripleInputsInt8` 等长核 + `BroadcastWhereInt8` 广播核——`sub_int8.c` 同放 `SubInt8` + NEON 变体即此惯例）。**一个 dtype 出现多个 int8 计算函数时，hs-debug-op-host-accuracy 的 `INT8_KERNEL_SYMBOL` 要列全所有符号**（列表形，否则发射另一变体的用例被误判 `INT8_NOT_GENUINE`）。
 
 **stride 数学只写一份、runtime 与 coder 共用同一函数。** 把 stride 计算 + 索引 inline 助手放 `base/`（如 `base/broadcast_where.{h,c}` 的 `ComputeBroadcastWhereStrides` + `static inline BroadcastWhereOffsets`）：runtime kernel 在 Resize/Compute 调它，coder 在转换期调**同一个 C 函数**把结果烘焙成常量结构体。stride 公式只存在一处 → 一次 numpy oracle 验证即可，杜绝"runtime/coder/fp32/int8 各抄一遍各错一遍"（弱会话实证：coder 内联 stride 连错 3 轮）。新建的 `base/*.c` 用 `NNACL_OK/NNACL_ERR` 须 `#include "nnacl_c/errorcode.h"`（op_base.h 不含；quick_check 秒级抓）。
 
@@ -565,7 +565,7 @@ for (int d = 0; d < ndim; d++) {
 }
 ```
 
-**快路守卫必须对每个输入逐一成立。** 加"同形/标量走快路"的优化时，条件是**全部**输入各自满足 `num == out_num || num == 1`；写成"任一输入是标量"之类的存在性条件，会把另一个仍需非平凡广播的输入也放进快路 → 越界读/取错数。混合形态（一个输入标量 + 另一个输入非平凡广播同时出现）正是弱守卫的盲区，hs-verify-op 的广播用例必须包含它。
+**快路守卫必须对每个输入逐一成立。** 加"同形/标量走快路"的优化时，条件是**全部**输入各自满足 `num == out_num || num == 1`；写成"任一输入是标量"之类的存在性条件，会把另一个仍需非平凡广播的输入也放进快路 → 越界读/取错数。混合形态（一个输入标量 + 另一个输入非平凡广播同时出现）正是弱守卫的盲区，hs-debug-op-host-accuracy 的广播用例必须包含它。
 
 **禁止用 `i % num` 近似广播索引**：模运算只对"最外维广播 + 其余维同形"碰巧正确，中间维广播（`[2,1,4]` 对 `[2,3,4]`）取错数。要么物化（优先级 1），要么完整 stride 映射（优先级 2），没有第三条路。
 
@@ -630,7 +630,7 @@ REG_OPERATOR_CODER(kAllTargets, kNumberTypeFloat32,
 
 复杂 coder 可把 `Collect()` 抽到独立的 `CollectFiles()` 里再由 `DoCode()` 调用（见 `activation_fp32_coder.cc`），简单算子直接在 `DoCode()` 开头调用即可。
 
-**`DoCode` 只发"数据 + 调用"，禁止内联生成算法。** `DoCode` 的职责是发 `CodeStruct`（参数/量化结构体）与 `CodeFunction`（对 nnacl_c 函数的调用）；**不要用 `code << "for (...)"` 内联生成计算循环**——计算逻辑（含每种形状模式、广播形态、特殊条件形态）一律落在 nnacl_c 函数里，⑤ runtime 与 ⑥ codegen 调**同一个函数**（int8 见 ⑤‴ §3，fp32 同理）。内联副本三宗罪：绕开 runtime kernel 已验证的逻辑；bias_correction（跑 runtime kernel）与 MCU（跑生成代码）行为发散；修编译错误重写 coder 时最容易被整段删掉（实证：特殊形态分支在一次修错重写中被静默丢弃，编译变绿，拖到 hs-verify-op 才 FAIL）。nnacl 函数尚不支持某形态 → **扩展该函数签名**（加 mode/inner_size/stride 参数，同形等常规形态传退化值），kernel 与 coder 同步受益——而不是把该形态写成 coder 里的私有循环或 C++ kernel 里的私有副本。
+**`DoCode` 只发"数据 + 调用"，禁止内联生成算法。** `DoCode` 的职责是发 `CodeStruct`（参数/量化结构体）与 `CodeFunction`（对 nnacl_c 函数的调用）；**不要用 `code << "for (...)"` 内联生成计算循环**——计算逻辑（含每种形状模式、广播形态、特殊条件形态）一律落在 nnacl_c 函数里，⑤ runtime 与 ⑥ codegen 调**同一个函数**（int8 见 ⑤‴ §3，fp32 同理）。内联副本三宗罪：绕开 runtime kernel 已验证的逻辑；bias_correction（跑 runtime kernel）与 MCU（跑生成代码）行为发散；修编译错误重写 coder 时最容易被整段删掉（实证：特殊形态分支在一次修错重写中被静默丢弃，编译变绿，拖到 hs-debug-op-host-accuracy 才 FAIL）。nnacl 函数尚不支持某形态 → **扩展该函数签名**（加 mode/inner_size/stride 参数，同形等常规形态传退化值），kernel 与 coder 同步受益——而不是把该形态写成 coder 里的私有循环或 C++ kernel 里的私有副本。
 张量地址：`CodeFunction` 直接传 `Tensor *` 即可——serializer 对指针参数自动解析运行时地址（`serializer.h::GenCode` → `MemoryAllocator::GetRuntimeAddr`）；需要显式字符串地址时用 `allocator_->GetRuntimeAddr(tensor)`。不要凭记忆调形似的工具函数（`coder_utils.h` 里的 `GetTensorAddr` 是 4 参自由函数，按 1 参成员调用直接编译失败）。
 
 > **目录约定：跨 dtype 的 coder 放 `opcoders/base/`，不要放 `opcoders/nnacl/fp32/`。** 若一个 coder **单次注册即服务多种数据 dtype**（典型：dispatch key 落在非数据输入上——如条件选择类首输入是 bool，coder 内部按数据张量 dtype 分 fp32/int8 生成代码），它属于"跨 dtype"coder，应命名 `xxx_base_coder.{h,cc}` 放 **`opcoders/base/`**（与运行时多 dtype kernel 放 `src/litert/kernel/cpu/base/` 一致）。参考 `reshape_base_coder`、`stack_base_coder`、`strided_slice_base_coder`、`softmax_base_coder`——它们都在 `base/` 内按 data_type 分支。放进 `fp32/` 但实际处理 int8，是命名与目录不符的缺陷。

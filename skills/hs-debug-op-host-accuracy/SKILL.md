@@ -1,5 +1,5 @@
 ---
-name: hs-verify-op
+name: hs-debug-op-host-accuracy
 description: This skill should be used when the user asks to "verify an operator", "validate an op", "add a new operator", "test an ONNX operator", "test a TFLite operator", "create op test", "精度调试", "算子验证", "验证算子", "验证.*算子", "新增算子", or wants to set up an operator precision-verification project. Covers ONNX and TFLite operators end-to-end on x86 and RISC-V, fp32 and INT8.
 ---
 
@@ -266,7 +266,7 @@ harness 对 `riscv_int8` 路径的校准数据和推理输入使用**同一份 `
 ```bash
 PROJ=$MSLITE_OP_OUTPUT/<op>                         # 算子目录；MSLITE_OP_OUTPUT 缺省与 mindspore-lite 仓平级(HiSpark.AI 仓内即 src/mslite-op-output)
 export MSLITE_PKG=<构建产物解压目录>         # .../output/mindspore-lite-<ver>-linux-x64（不是 build/）
-SKILL=<hs-verify-op skill 安装路径>            # 如 ~/.claude/skills/hs-verify-op
+SKILL=<hs-debug-op-host-accuracy skill 安装路径>            # 如 ~/.claude/skills/hs-debug-op-host-accuracy
 
 test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" \
   && python "$SKILL/scripts/run_all_cases.py" --spec "$PROJ/scripts/op_spec.py"
@@ -276,7 +276,7 @@ test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" \
 - `--target {x86,riscv,all}`(默认 all):每框架内选目标路径,决定表里出现哪些余弦列。
 - harness 按所选框架惰性安装依赖(onnxruntime / tensorflow / openpyxl,清华源);任一框架/路径组合都能在全新 `output/` 上独立运行。
 
-> **便捷入口**:算子目录下有 `run.sh`(薄壳——`source scripts/env_setup.sh` 后转发 `--spec` 给本 harness,**不复制 harness 逻辑**,不违反上面的红线)。`bash run.sh [--framework onnx|tflite|all] [--target x86|riscv|all]` 等价于上面手拼 PROJ/SKILL/--spec 的整块命令,少写几个变量。它跨 Claude(`~/.claude/skills`)/Codex(`~/.agents/skills`)自动定位 hs-verify-op 安装路径。
+> **便捷入口**:算子目录下有 `run.sh`(薄壳——`source scripts/env_setup.sh` 后转发 `--spec` 给本 harness,**不复制 harness 逻辑**,不违反上面的红线)。`bash run.sh [--framework onnx|tflite|all] [--target x86|riscv|all]` 等价于上面手拼 PROJ/SKILL/--spec 的整块命令,少写几个变量。它跨 Claude(`~/.claude/skills`)/Codex(`~/.agents/skills`)自动定位 hs-debug-op-host-accuracy 安装路径。
 
 ### 长任务执行与崩溃检测(harness 单轮 10+ 分钟)
 

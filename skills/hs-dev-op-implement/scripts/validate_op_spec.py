@@ -9,7 +9,7 @@
 #
 # validate_op_spec.py <opdir>
 #
-# Mechanical hs-verify-op spec gate. It catches common harness-invalid cases before
+# Mechanical hs-debug-op-host-accuracy spec gate. It catches common harness-invalid cases before
 # a long converter run: dynamic input count mismatch, initializer declarations
 # not reflected in INITIALIZER_INPUTS, capability case-id drift, and ONNX
 # auto_pad/pads contradictions.

@@ -12,7 +12,7 @@
 算子可能在某框架根本不存在，或在不同框架命名不同。本脚本对每个框架给出
 FOUND / NOT_FOUND / UNREACHABLE 的裁决，**其输出直接作为 decision1/decision4 的查证证据**：
 
-  - 某框架 NOT_FOUND  → 不为该框架建 parser、不为该框架造 hs-verify-op 用例。
+  - 某框架 NOT_FOUND  → 不为该框架建 parser、不为该框架造 hs-debug-op-host-accuracy 用例。
   - 全部 UNREACHABLE  → 非零退出 → 停下问用户（禁止凭记忆继续）。
 
 裁决基于真实可引的产物（ONNX Operators.md 锚点 / onnx.com.cn 页面 HTTP 码 /
@@ -134,7 +134,7 @@ def _strip_html(text):
 
 
 def _onnx_local_schema(op):
-    """来源 0：本地安装的 onnx python 包（hs-verify-op 环境必装）——权威且完全离线。
+    """来源 0：本地安装的 onnx python 包（hs-debug-op-host-accuracy 环境必装）——权威且完全离线。
     返回 (FOUND, schema) / (NOT_FOUND, None) / (None, None)（包不可用，降级后续来源）。"""
     try:
         from onnx import defs

@@ -9,7 +9,7 @@
 #
 # check_build_freshness.py --code-root <mindspore-lite-root> --mslite-pkg <pkg>
 #
-# Verify that hs-verify-op is not about to run against a stale packaged converter.
+# Verify that hs-debug-op-host-accuracy is not about to run against a stale packaged converter.
 
 import argparse
 import os
@@ -87,7 +87,7 @@ def main():
         print(f"       converter_mtime={converter.stat().st_mtime_ns}")
         for path in sorted(newer, key=lambda p: p.stat().st_mtime, reverse=True)[:40]:
             print(f"       source_newer={path} mtime_ns={path.stat().st_mtime_ns}")
-        print("BUILD_FRESHNESS=FAIL rebuild with build_mslite.sh before hs-verify-op")
+        print("BUILD_FRESHNESS=FAIL rebuild with build_mslite.sh before hs-debug-op-host-accuracy")
         return 1
 
     latest = max(sources, key=lambda p: p.stat().st_mtime)

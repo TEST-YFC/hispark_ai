@@ -1,5 +1,5 @@
 #!/bin/bash
-# ONNX x86 fp32 driver (hs-verify-op internal step2/step3/step5). Filled by run_all_cases.py and run via `bash`.
+# ONNX x86 fp32 driver (hs-debug-op-host-accuracy internal step2/step3/step5). Filled by run_all_cases.py and run via `bash`.
 # NOT sourced -> plain `exit 1` is safe; we deliberately avoid `set -e`.
 # Placeholders {MSLITE_PKG} {MODEL_FILE} {CFG_FILE} {INPUT_FILE}.
 export GLOG_v=3
@@ -18,7 +18,7 @@ cd onnx_x86_micro || { echo "[ERR] no onnx_x86_micro dir"; exit 1; }
 # Lift the generated benchmark's 10-element print cap so the FULL output tensor is dumped.
 # Required: the harness computes cosine in Python from this dump (same as riscv); a truncated
 # dump would mismatch the full reference. NOT a result-fudge — it only widens what is printed.
-sed -i -E "s@^([[:space:]]*)element_num = element_num > (MAX_ELEMENT_NUM|10) \?.*@\1// print cap lifted by hs-verify-op harness (full-tensor dump for Python-side cosine)@" benchmark/benchmark.c 2>/dev/null
+sed -i -E "s@^([[:space:]]*)element_num = element_num > (MAX_ELEMENT_NUM|10) \?.*@\1// print cap lifted by hs-debug-op-host-accuracy harness (full-tensor dump for Python-side cosine)@" benchmark/benchmark.c 2>/dev/null
 sed -i -E "s@^([[:space:]]*)const size_t MAX_ELEMENT_NUM = 10;@\1// MAX_ELEMENT_NUM unused after print cap lifted@" benchmark/benchmark.c 2>/dev/null
 
 rm -rf build && mkdir build && cd build || { echo "[ERR] mkdir build"; exit 1; }

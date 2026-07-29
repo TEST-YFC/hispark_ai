@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-"""hs-verify-op FIXED harness — operator-agnostic. Run IN PLACE from the skill's scripts/.
+"""hs-debug-op-host-accuracy FIXED harness — operator-agnostic. Run IN PLACE from the skill's scripts/.
 
 This file is the single verification entry point described in SKILL.md. It is
 operator-AGNOSTIC and must NOT be edited per operator: the ONLY thing you write per
@@ -337,7 +337,7 @@ def _write_rerunnable_driver(log_dir, build_dir, raw_driver, path_key, case_dir,
     harness = Path(__file__).resolve()
     spec_arg = f" --spec {_quote_path(spec_path)}" if spec_path else ""
     wrapper = f"""#!/bin/bash
-# Rerunnable hs-verify-op path wrapper. Safe to run from any CWD.
+# Rerunnable hs-debug-op-host-accuracy path wrapper. Safe to run from any CWD.
 set -u
 OUT_DIR="$(cd "$(dirname "$(realpath "${{BASH_SOURCE[0]}}")")" && pwd)"
 CASE_DIR={_quote_path(Path(case_dir))}
@@ -939,7 +939,7 @@ def report_capability_coverage(checklist, passed_case_ids):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="hs-verify-op fixed harness")
+    ap = argparse.ArgumentParser(description="hs-debug-op-host-accuracy fixed harness")
     ap.add_argument("--spec", default="scripts/op_spec.py",
                     help="算子 spec 文件路径 (默认 scripts/op_spec.py)")
     ap.add_argument("--framework", choices=["onnx", "tflite", "all"], default="all")
@@ -1082,7 +1082,7 @@ def main():
     verdict = (f"VERDICT: op={spec.OP_NAME}  {passed}/{total} variant-cases PASS, "
                f"{failed} FAIL{cap_tag}  "
                f"thresholds(fp32={args.threshold_fp32}, int8={args.threshold_int8})")
-    header = (f"hs-verify-op summary\nop={spec.OP_NAME}  frameworks={frameworks}  "
+    header = (f"hs-debug-op-host-accuracy summary\nop={spec.OP_NAME}  frameworks={frameworks}  "
               f"paths={active_paths}\nMSLITE_PKG={mslite_pkg}\n"
               f"converter_lite built at {conv_built}\n" + "-" * 60)
     cap_block = (["-" * 60, *cap_lines] if cap_lines else [])

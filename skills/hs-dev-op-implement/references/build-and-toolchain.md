@@ -31,7 +31,7 @@ export HISPARK_RISCV_TOOLCHAIN_PATH=<BiSheng RISC-V 工具链根目录>
 export HISPARK_ARM_TOOLCHAIN_PATH=<ARM musl GCC 工具链根目录>
 ```
 
-**RISC-V 和 ARM 库是必须产物：** hs-verify-op 的 `riscv_fp32`/`riscv_quant` 路径依赖 `MSLITE_TARGET_RISCV=ON` 交叉编译出的 `build/riscv/build/nnacl/libnnacl.a` 和 `build/arm/build/nnacl/libnnacl.a`。**找不到工具链必须停下问用户，禁止去掉 `MSLITE_TARGET_RISCV` 退化成 x86-only 后宣布完成**——那等于没验证。
+**RISC-V 和 ARM 库是必须产物：** hs-debug-op-host-accuracy 的 `riscv_fp32`/`riscv_quant` 路径依赖 `MSLITE_TARGET_RISCV=ON` 交叉编译出的 `build/riscv/build/nnacl/libnnacl.a` 和 `build/arm/build/nnacl/libnnacl.a`。**找不到工具链必须停下问用户，禁止去掉 `MSLITE_TARGET_RISCV` 退化成 x86-only 后宣布完成**——那等于没验证。
 
 ## 工具链定位（两家都需；分别用 `--version | grep` 识别，不依赖版本标志）
 
@@ -88,6 +88,6 @@ bash <skill>/scripts/build_mslite.sh --wait 540   # Bash 工具 timeout 设 6000
 cd output && rm -rf mindspore-lite-2.8.0-linux-x64 && tar xzf mindspore-lite-2.8.0-linux-x64.tar.gz
 ```
 
-> **hs-verify-op 的 `MSLITE_PKG` 必须指向这个解压目录 `output/mindspore-lite-<ver>-linux-x64/`，不是原始 `build/`。** 解压包自带 `include/c_api/`、`runtime/include/` 与就位的共享库；直接用 `build/` 会缺头文件、`.so` 分散，导致 `error while loading shared libraries` / `c_api/model_c.h: No such file`，白白浪费时间手动 `ln`。
+> **hs-debug-op-host-accuracy 的 `MSLITE_PKG` 必须指向这个解压目录 `output/mindspore-lite-<ver>-linux-x64/`，不是原始 `build/`。** 解压包自带 `include/c_api/`、`runtime/include/` 与就位的共享库；直接用 `build/` 会缺头文件、`.so` 分散，导致 `error while loading shared libraries` / `c_api/model_c.h: No such file`，白白浪费时间手动 `ln`。
 
-**编译成功后立即进入精度验证（自动调 hs-verify-op）——不要在此停下、不要等用户要求。**
+**编译成功后立即进入精度验证（自动调 hs-debug-op-host-accuracy）——不要在此停下、不要等用户要求。**

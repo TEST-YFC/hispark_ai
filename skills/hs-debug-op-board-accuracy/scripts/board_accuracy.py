@@ -3,13 +3,13 @@
 """hs-debug-op-board-accuracy 板端精度比对脚本 (SKILL.md step3d)
 
 从 flash_server 返回的 monitor_output（串口文本）中提取 benchmark 打印的张量数据，
-与 hs-verify-op 产出的 gt/output*.npy 参考输出计算余弦相似度，按双阈值机械判定。
+与 hs-debug-op-host-accuracy 产出的 gt/output*.npy 参考输出计算余弦相似度，按双阈值机械判定。
 
 用法:
     python verify_accuracy.py --gt-dir <gt_path> --monitor <monitor_file> [--quantized]
 
 输入:
-    --gt-dir      hs-verify-op 产出的 gt/ 目录，内含 output.npy 或 output_0.npy, ...
+    --gt-dir      hs-debug-op-host-accuracy 产出的 gt/ 目录，内含 output.npy 或 output_0.npy, ...
     --monitor     flash_server 返回的 monitor_output 文本文件
     --quantized   使用量化阈值 (≥ 0.9)；缺省使用非量化阈值 (≥ 0.999999)
 
@@ -17,7 +17,7 @@
     0 = ACCURACY_VERDICT=PASS (全部输出张量余弦达标)
     1 = ACCURACY_VERDICT=FAIL (余弦不足 或 解析失败)
 
-设计约束（与 hs-verify-op 的 cosine_similarity 同语义）:
+设计约束（与 hs-debug-op-host-accuracy 的 cosine_similarity 同语义）:
     * 两边全零 → 1.0（相符）
     * 恰好一边全零 → 0.0（真实失配 = FAIL）
     * 永不返回 NaN
@@ -36,11 +36,11 @@ THRESHOLD_INT8 = 0.9
 
 
 # --------------------------------------------------------------------------- #
-# 余弦相似度（与 hs-verify-op/run_all_cases.py 同一实现）
+# 余弦相似度（与 hs-debug-op-host-accuracy/run_all_cases.py 同一实现）
 # --------------------------------------------------------------------------- #
 
 def cosine_similarity(a, b):
-    """唯一的余弦函数——与 hs-verify-op 完全一致。
+    """唯一的余弦函数——与 hs-debug-op-host-accuracy 完全一致。
 
     对一切输入有定义，永不返回 NaN：
       * 两边全零 → 1.0（都没产出 = 相符）
@@ -57,7 +57,7 @@ def cosine_similarity(a, b):
 
 
 # --------------------------------------------------------------------------- #
-# 张量解析（与 hs-verify-op/run_all_cases.py 同一实现）
+# 张量解析（与 hs-debug-op-host-accuracy/run_all_cases.py 同一实现）
 # --------------------------------------------------------------------------- #
 
 def parse_benchmark_outputs(text):
@@ -122,7 +122,7 @@ def main():
     ap = argparse.ArgumentParser(
         description="hs-debug-op-board-accuracy 板端精度比对")
     ap.add_argument("--gt-dir", required=True,
-                    help="hs-verify-op 产出的 gt/ 目录路径")
+                    help="hs-debug-op-host-accuracy 产出的 gt/ 目录路径")
     ap.add_argument("--monitor", required=True,
                     help="flash_server 返回的 monitor_output 文本文件")
     ap.add_argument("--quantized", action="store_true",

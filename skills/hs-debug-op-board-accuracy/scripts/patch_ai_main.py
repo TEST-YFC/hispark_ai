@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Patch ai_main.c template using model metadata and hs-verify-op test data.
+"""Patch ai_main.c template using model metadata and hs-debug-op-host-accuracy test data.
 
 Based on vendor/WS63/gen_dataset.py generate_c_files() pattern (lines 427-560).
 
 Usage: python3 patch_ai_main.py --model <model_path> --ai-main <ai_main.c>
-            --framework <onnx|tflite> [--data-dir <hs-verify-op case dir>]
+            --framework <onnx|tflite> [--data-dir <hs-debug-op-host-accuracy case dir>]
 
 If --data-dir is provided, reads input_*.bin from the case's input/ directory
 and fills the C arrays with real test data.
@@ -228,7 +228,7 @@ def main():
     p.add_argument("--ai-main", required=True, help="Path to ai_main.c to patch")
     p.add_argument("--framework", default="onnx", help="onnx or tflite")
     p.add_argument("--data-dir", default=None,
-                   help="hs-verify-op case input/ directory with input_*.bin files")
+                   help="hs-debug-op-host-accuracy case input/ directory with input_*.bin files")
     args = p.parse_args()
 
     if not Path(args.model).exists():

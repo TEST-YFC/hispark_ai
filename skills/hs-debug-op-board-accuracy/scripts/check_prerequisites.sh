@@ -2,7 +2,7 @@
 # ===================================================================
 # hs-debug-op-board-accuracy 烧录前置检查脚本 (SKILL.md step0 机械闸门)
 #
-# 检查编译产物是否就绪：MSLITE_PKG + hs-verify-op 验证状态。
+# 检查编译产物是否就绪：MSLITE_PKG + hs-debug-op-host-accuracy 验证状态。
 #
 # 用法:
 #   bash check_prerequisites.sh [--json]
@@ -36,7 +36,7 @@ check_mslite_pkg() {
     fi
 }
 
-# ---- 检查 2: hs-verify-op 验证状态 ----
+# ---- 检查 2: hs-debug-op-host-accuracy 验证状态 ----
 check_verify_status() {
     local summary
     summary=$(find . -maxdepth 4 -name "verify_summary.txt" 2>/dev/null | head -1)
@@ -78,7 +78,7 @@ else
     echo "  hs-debug-op-board-accuracy 前置检查"
     echo "=========================================="
     echo "  MSLITE_PKG    : $MSLITE_STATUS"
-    echo "  hs-verify-op  : $VERIFY_STATUS"
+    echo "  hs-debug-op-host-accuracy  : $VERIFY_STATUS"
     echo "=========================================="
     echo "  PREREQ_GATE=$GATE"
     echo ""
