@@ -8,14 +8,14 @@
 
 | 目录 | 阶段 | 状态 | 用途 | 典型触发 |
 | ---- | ---- | ---- | ---- | ---- |
-| `hs-design-op-manual` | 设计 | 规划中 | 编写算子设计手册与设计文档 | "设计算子"、"算子设计文档" |
-| `hs-dev-op-implement` | 开发 | 已落地 | 新增/移植 MindSpore Lite 算子：分析、ONNX/TFLite 算子支持、INT8 量化、代码生成、MCU 部署、parser/kernel/opcoder | "新增算子"、"add operator"、"implement op"、"port operator" |
+| `hs-design-op-manual` | 设计 | 已落地 | 按模板生成或更新单算子规格文档 | "生成算子规格"、"编写算子文档"、"更新算子规格" |
+| `hs-dev-op-implement` | 开发 | 已落地 | 新增/移植 MindSpore Lite 算子，覆盖规格分析、ONNX/TFLite parser、kernel/opcoder、INT8 量化、编译与端到端验收 | "新增算子"、"add operator"、"implement op"、"port operator" |
 | `hs-dev-op-performance` | 开发 | 规划中 | 算子性能评估、基准对比与调优 | "算子性能"、"benchmark"、"性能调优" |
-| `hs-debug-op-host-accuracy` | 验证 | 已落地 | 算子精度验证工程搭建：ONNX/TFLite、x86 与 RISC-V、fp32 与 INT8 端到端 | "验证算子"、"test operator"、"算子验证"、"精度调试" |
-| `hs-debug-op-board-accuracy` | 部署 | 已落地 | 固件自动烧录到 WS63/Hi3863 板端：CH340G 串口检测、Burntool 烧录、启动验证 | "烧录固件"、"flash firmware"、"部署到板子"、"burn to board" |
-| `hs-workflow-mslite-env-setup` | 工作流 | 规划中 | MindSpore Lite 工具链与编译环境搭建流程 | "搭建环境"、"环境配置"、"build env" |
+| `hs-debug-op-host-accuracy` | 调试（主机侧） | 已落地 | 搭建算子精度验证工程，覆盖 ONNX/TFLite、x86 与 RISC-V、FP32 与 INT8 端到端对比 | "验证算子"、"test operator"、"算子验证"、"精度调试" |
+| `hs-debug-op-board-accuracy` | 调试（板端） | 已落地 | 构建并烧录 WS63/Hi3863 固件，采集板端输出并与宿主机参考结果进行精度校验 | "板端精度验证"、"烧录固件"、"部署到板子"、"burn to board" |
+| `hs-workflow-mslite-env-setup` | 工作流 | 已落地 | 配置并执行 MindSpore Lite 源码编译、ONNX 模型转换与 RISC-V 静态库生成工作流 | "编译 MindSpore Lite"、"配置 MSLite 环境"、"转换 ONNX 模型"、"构建静态库" |
 
-> "规划中" 表示该 skill 目录暂为占位（仅含 `.gitkeep`），内容待补充。
+> “规划中”表示该目录尚未提供 `SKILL.md`，目前仅作为占位；“已落地”表示已提供可加载的 `SKILL.md` 及相应流程内容。
 
 ## 目录约定
 
@@ -40,7 +40,7 @@ hs-<phase>-<topic>/
 ## 加载机制
 
 - **运行时加载位置**：agent（Claude Code）从 `.claude/skills/` 加载 skill。本目录（仓库根 `skills/`）是**项目纳管的 skill 源库**，用于评审、版本管理与规划；已落地的 skill 需同步至 `.claude/skills/` 才会被 agent 识别。
-- 目前 `hs-dev-op-implement`、`hs-debug-op-host-accuracy`、`hs-debug-op-board-accuracy` 为已落地 skill；其余三个为规划占位。
+- 目前 `hs-design-op-manual`、`hs-dev-op-implement`、`hs-debug-op-host-accuracy`、`hs-debug-op-board-accuracy`、`hs-workflow-mslite-env-setup` 为已落地 skill；仅 `hs-dev-op-performance` 为规划占位。
 
 ## 新增 skill
 
