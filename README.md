@@ -8,6 +8,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 | 目录   | 二级目录 | 介绍                                                             |
 | ------ | ------  | ------------------------------------------------------------     |
 | docs   |         |存放AI工具链使用指南，以及AI应用开发指南等文档，帮助客户快速熟悉HiSpark.AI解决方案 |
+| skills |         |存放项目专用 AI Agent Skills，覆盖算子设计、开发、精度调试及 MindSpore Lite 环境工作流 |
 | src    | adaptor |AI平台所配套的适配层源码                                            |
 | src    | samples |HiSpark.AI提供的Samples，用于指导用户基于HiSpark各平台部署AI应用                                                                   |
 | src    | mindspore-lite | 基于RISC-V平台的AI推理框架，用于自动生成AI推理模块代码并提供对应的RISC-V算子库                  |
