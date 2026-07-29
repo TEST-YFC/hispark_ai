@@ -2,7 +2,7 @@
 # ===================================================================
 # hs-debug-op-board-accuracy 固件编译脚本
 #
-# 从 hs-verify-op 的测试用例模型构建 .fwpkg 固件。
+# 从 hs-debug-op-host-accuracy 的测试用例模型构建 .fwpkg 固件。
 # 针对单个模型编译固件。
 #
 # 用法:
@@ -174,7 +174,7 @@ if $QUANTIZED; then
         if [[ -d "$CASE_DIR/input/calib_0" ]]; then
             CALIB_DIR="$CASE_DIR/input"
         else
-            echo "ERROR: --quantized requires --calib-dir (or model must be under hs-verify-op case dir)"
+            echo "ERROR: --quantized requires --calib-dir (or model must be under hs-debug-op-host-accuracy case dir)"
             exit 2
         fi
     fi
@@ -243,7 +243,7 @@ fi
 cp "$TEMPLATE" "$WORK_DIR/ai_main.c"
 
 # Auto-adapt ai_main.c to the actual model (input count, sizes, data).
-# If the model is under an hs-verify-op case directory (model/model.onnx),
+# If the model is under an hs-debug-op-host-accuracy case directory (model/model.onnx),
 # read the test input data from the sibling input/ directory.
 DATA_DIR=""
 CASE_DIR="$(dirname "$(dirname "$MODEL")")"

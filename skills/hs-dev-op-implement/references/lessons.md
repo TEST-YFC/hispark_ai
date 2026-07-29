@@ -11,7 +11,7 @@
 | 同族两个 builtin 看着差不多，想共用 parser | TFLite 把无广播的 `SelectV2` 调用规范化成 `SELECT`，真广播形状才发 `SELECT_V2`——两者语义不同、输入域不同 | 广播版/非广播版 = 两个独立算子；同形输入收敛到非广播版（优先保证其链路完整）；形状→builtin 映射用可达性探针实证，不凭 raw_op 名推断 |
 | 语义摘要里有 `SameOperandsAndResultsScale`，想据此让 int8 跳过重量化 | 该 trait 是源框架自家 runtime 的约定；MSLite 全量化器给每个张量独立分配 scale/zp，不落实同 scale 约束。以 trait 为据省重量化，只在量化器恰好分配相同 qparams 的用例上侥幸通过，判别用例下即暴露 | int8 通路一律按 ⑤‴ 模板逐输入重量化（qparams 相同时自动退化为拷贝，永远正确） |
 | 链路表 ⑤ 有文件就标「已有」 | 存量 kernel 仅 fp32：FULL_QUANT 的 bias_correction 在宿主运行时执行 int8 模型，缺口拖到 int8 转换才以堆越界/卡死现身，排查代价最高 | 看 scan ⑤′ 段；无 int8 处理标「已有(仅fp32)」并把 int8 分支列入缺失 |
-| 复用分支想"只补三层就完" | 存量广播 kernel 跨维广播算错、同 rank 广播被拒、int8 数据被按 fp32 写入致堆越界——全部到 hs-verify-op 才暴露 | 「已有」≠「已验证」；呈现复用方案时讲明存量层可能要修；FAIL 定位到存量代码也在本次范围内 |
+| 复用分支想"只补三层就完" | 存量广播 kernel 跨维广播算错、同 rank 广播被拒、int8 数据被按 fp32 写入致堆越界——全部到 hs-debug-op-host-accuracy 才暴露 | 「已有」≠「已验证」；呈现复用方案时讲明存量层可能要修；FAIL 定位到存量代码也在本次范围内 |
 | 拿"既有 parser 已这样映射"当 decision2 复用依据 | 既有映射正是上一轮缺陷实现留下的，循环论证 → 超集 builtin 被并入子集 PrimType，且重复实现了仓内已有的广播设施 | 既有映射是审查对象不是裁决依据；四条判据独立裁决，冲突写进 decision4、改造既有代码 |
 | 探针表只填"验证方法"列就当作做过探针 | step3 呈现了一张断言"两 builtin 各自独立可达、不存在归一化"的探针表，实际没跑任何解包命令——实测同形 SelectV2 被 converter 归一化成 SELECT，第一版用例整轮全测错算子 | 探针表每行必须附本会话解包命令的实际输出；"不存在归一化"恰是探针要证明的命题，不得以该断言豁免探针 |
 | 链路/能力清单标「已有」只看文件存在 | 某 optimizer pass 文件存在但只挂在 GE 流程，CPU converter 根本不跑它——能力被标"✅ 已有"，缺口拖到 step7 验证才暴露 | 「已有」须给定义点 + 注册/可达点两处证据；未注册进本目标路径 = 不可达，按缺失计 |
@@ -48,7 +48,7 @@
 | 构建期间顺手改源码 | 中途改的文件不进本轮产物，得到"改完了但测的是旧码"的假状态 | 要改代码先 `--stop`（清整个进程组；裸 `kill` 留孤儿 make 互踩，`pkill -9 -f make` 误杀无关进程） |
 | 链接失败就清缓存/删 build 碰运气 | 盲目逐级清缓存连烧 4 轮构建约 1.5 小时仍未定位根因 | 先拿到 undefined 符号名与失败 target（`--status` 链接专项），读该 target 的 CMakeLists 看源收集方式、`nm` 核实符号归属，再动手 |
 | 编译报错文件不是本会话改的，顺手修掉 | 改了子模块内无关文件换编译通过，污染范围 | 对照本会话文件清单（`git status` 佐证）；预存问题停下报告用户裁决 |
-| 重写报错文件时"简化实现" | coder 首版编译报错，重写时把广播分支整段删掉——编译变绿，缺口拖到 hs-verify-op 才暴露，且仅因用例恰好覆盖才被发现 | 修编译错误只许最小改动；重写后立即对照能力清单核对每条能力代码仍在 |
+| 重写报错文件时"简化实现" | coder 首版编译报错，重写时把广播分支整段删掉——编译变绿，缺口拖到 hs-debug-op-host-accuracy 才暴露，且仅因用例恰好覆盖才被发现 | 修编译错误只许最小改动；重写后立即对照能力清单核对每条能力代码仍在 |
 | 工具链没搜到，上报"不存在"或退化 x86-only | 搜索命令被权限拒绝 / `-type f` 漏符号链接，得出假结论；x86-only 不产出交叉库，等于没验证 | 命令被拒或无果 = 未知不是否定证据；脚本报"未找到"的唯一动作 = 停下向用户要路径 |
 | `--status` 报 RUNNING 但日志尾部是上一轮的 BUILD OK，于是 `--stop`"清场" | 调用方把日志重定向到自定义文件，`--status` tail 的固定路径里残留上一轮内容——杀掉的是健康构建，多烧一轮 | 启动命令不自行重定向（脚本自管日志并截断旧内容）；RUNNING 行附"已运行时长"，时长在涨 = 真在跑，与日志尾部矛盾时信 RUNNING |
 | 新建 `nnacl_c/{base,fp32,int8}/*.c` 后直接增量 build | nnacl_c 的 CMake 用 `file(GLOB ...)` 收集源文件，GLOB 只在 **configure 期**展开；增量 `make` 不重配 → 新 `.c` 静默不参与编译，链接期缺符号、或更糟用到旧对象得假结论 | 新增源文件后先 `touch` 对应目录的 `CMakeLists.txt`（强制 re-glob/重配）再 `build_mslite.sh`；新 `.c` 用 `NNACL_OK/ERR` 记得 `#include "nnacl_c/errorcode.h"`（op_base.h 不含，quick_check 秒级抓） |
@@ -59,12 +59,12 @@
 | 症状 / 想做的事 | 真实事故 | 规则 |
 |---|---|---|
 | 把 FAIL 归因"量化精度固有限制/退化输入无意义" | 被这样合理化掉的 FAIL 后来证实正是实现 bug 的信号（全零/单元素轴暴露哨兵塌缩；多输入不同值域暴露重量化错误） | 任何 FAIL 先定位根因再结案；fp32 全过不能证明选择/归约逻辑对（fp32 哨兵常取 −∞，掩盖同构的 int8 塌缩） |
-| 用仓内其它能出余弦数字的流程替代 hs-verify-op | 厂商基准脚本/样例自带测试的用例未覆盖判别场景（敏感值域、退化输入、输出分布≠输入分布），全绿也排除不了真实缺陷 | 精度验证唯一入口是 hs-verify-op |
+| 用仓内其它能出余弦数字的流程替代 hs-debug-op-host-accuracy | 厂商基准脚本/样例自带测试的用例未覆盖判别场景（敏感值域、退化输入、输出分布≠输入分布），全绿也排除不了真实缺陷 | 精度验证唯一入口是 hs-debug-op-host-accuracy |
 | INT8 余弦恰好 `1.0000` 当 PASS | 量化没真正生效（算子缺 `support_int8_ops_`，tensor 保持 fp32，选了 fp32 coder）——真 INT8 应落 `[0.99, 1.0)` | 恰好 1.0000 默认按 FAIL 查 ⑦ 量化器列表 |
-| 自写 `op_spec.py` 的 int8 输入（`linspace+shuffle`／随机），不用模板的 `make_distinct_axis_inputs` | 排序/归约类（Hardmax/ArgMax/TopK 等输出由"谁更大"决定）的算子，大 shape 下同轴相邻元素被量化进同一桶（间隔 < 量化桶宽），argmax 在量化后漂移——**fp32 全过、仅大 4D int8 用例 FAIL**（实证 Hardmax tc6/tc11 首轮 FAIL），易误判成 kernel bug，实为输入设计缺陷；而 `operator_spec_template.py` 早有现成的 `make_distinct_axis_inputs` 解决此事，自写绕开了它 | op_spec **一律从 `operator_spec_template.py` 拷贝改写**（hs-verify-op「唯一模板」），排序类 int8 用例直接用其 `make_distinct_axis_inputs`（沿轴等距铺开+广播，间距远大于桶宽）；诊断信号「fp32 过、大 shape int8 独 FAIL」先排除输入分桶塌缩再怀疑 kernel。算法依据见 `references/int8-coder-conventions.md §2b` |
+| 自写 `op_spec.py` 的 int8 输入（`linspace+shuffle`／随机），不用模板的 `make_distinct_axis_inputs` | 排序/归约类（Hardmax/ArgMax/TopK 等输出由"谁更大"决定）的算子，大 shape 下同轴相邻元素被量化进同一桶（间隔 < 量化桶宽），argmax 在量化后漂移——**fp32 全过、仅大 4D int8 用例 FAIL**（实证 Hardmax tc6/tc11 首轮 FAIL），易误判成 kernel bug，实为输入设计缺陷；而 `operator_spec_template.py` 早有现成的 `make_distinct_axis_inputs` 解决此事，自写绕开了它 | op_spec **一律从 `operator_spec_template.py` 拷贝改写**（hs-debug-op-host-accuracy「唯一模板」），排序类 int8 用例直接用其 `make_distinct_axis_inputs`（沿轴等距铺开+广播，间距远大于桶宽）；诊断信号「fp32 过、大 shape int8 独 FAIL」先排除输入分桶塌缩再怀疑 kernel。算法依据见 `references/int8-coder-conventions.md §2b` |
 | 多算子任务只跑出一行 VERDICT 就宣布全部完成 | converter 按形状归一化 builtin（无广播用例被悄悄发成同族另一 builtin），目标算子可能从未被任何用例命中——"42/42 全绿"也证明不了它 | 逐算子各一行 VERDICT；同族多 builtin 附「形态→builtin」探针证据（解包命令见 decision2-reuse-decision.md） |
 | 贴着含 FAIL 的 VERDICT 写"状态: 完成"，理由是"存量缺陷，非本次引入，需后续修复" | 复用分支 = 接管存量质量，FAIL 在被复用 kernel 里同样是本任务的缺陷；"非本次引入"只是根因描述不是结案理由——格式合规（贴了 VERDICT）掩盖了实质造假（VERDICT 是红的） | `状态: 完成` 的判据是机械的：每行 VERDICT 0 FAIL + 退出码 0；做不完就如实写 `状态: 未完成（阻塞: ...）` 向用户求助——停下合法，包装失败不合法 |
 | FAIL 后不读现场、连换方案盲试 | 三个修复方案逐一全量构建后失败，每轮只浅层 grep 从未引用 stderr.log 的具体错误行；第三次失败后直接放弃整块能力 | step7 修复循环固定步骤：先贴错误行原文 + 查本表 + 呈现根因，才许动代码；同一能力连续 2 个方案失败 → 强制停下向用户呈报选项 |
-| 修不动就删 FAIL 用例重跑，拿 0 FAIL 宣布"完成 + 已知局限" | 广播用例实跑 FAIL 后被从 op_spec 删除，重跑 "36/36 PASS" 当完成上报——能力清单里两行能力静默消失，且"已知局限"包装恰是 SKILL.md 明令禁止的措辞 | VERDICT 的分母是 step3 能力清单不是现存用例；hs-verify-op 的 CASES_REDUCED 闸门拒跑缩水的用例集，豁免须 `OP_VERIFY_ACK_REDUCED=1` 且经用户裁决、在 VERDICT 留痕 |
+| 修不动就删 FAIL 用例重跑，拿 0 FAIL 宣布"完成 + 已知局限" | 广播用例实跑 FAIL 后被从 op_spec 删除，重跑 "36/36 PASS" 当完成上报——能力清单里两行能力静默消失，且"已知局限"包装恰是 SKILL.md 明令禁止的措辞 | VERDICT 的分母是 step3 能力清单不是现存用例；hs-debug-op-host-accuracy 的 CASES_REDUCED 闸门拒跑缩水的用例集，豁免须 `OP_VERIFY_ACK_REDUCED=1` 且经用户裁决、在 VERDICT 留痕 |
 | 回填能力清单时把行内容"顺手"改成实际跑的用例值 | step3 计划 `[1,8,32,32] axis=2`、`[4,10,16] axis=1` 两行，回填表被静默改写成实测的 axis=-1 形状——表面"全覆盖"，实际「大 shape × 中间轴」路径无任何用例，且漂移对用户不可见 | 回填只许**追加**落点/用例编号，形状/轴/属性照抄 step3 原文（SKILL.md 完成判据 4）；实测与计划不一致的行标「计划变更（原 X → 现 Y，理由）」呈现给用户裁决；对账存量 op_spec 的方向是改 spec 配清单，不得反向改清单配 spec |
 | 结案不做 diff 终审 | 被回滚方案的伴生改动（只挂 GE 流程的 pass 里的死代码、为它加的 include）与拆掉一半的存量入口守卫留在仓里交付——守卫拆一半 = "显式报错"变"静默算错" | 完成检查清单 `git diff` 终审：每个改动文件映射到能力/用例；废案连伴生改动一起还原；放开的守卫要么其路径有 PASS 用例、要么连守卫还原 |

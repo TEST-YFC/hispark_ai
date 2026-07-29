@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-"""Unit tests for the hs-verify-op FIXED harness (scripts/run_all_cases.py).
+"""Unit tests for the hs-debug-op-host-accuracy FIXED harness (scripts/run_all_cases.py).
 
 WHY THIS FILE EXISTS
 --------------------
@@ -240,7 +240,7 @@ def test_int8_no_net_files_is_not_genuine(tmp_path):
 
 def _write_summary(path: Path, op: str, entries):
     """entries: list of (framework, case_id, status). Mirrors the real summary format."""
-    lines = ["hs-verify-op summary", f"op={op}  frameworks=['onnx']", "-" * 60]
+    lines = ["hs-debug-op-host-accuracy summary", f"op={op}  frameworks=['onnx']", "-" * 60]
     for fw, cid, st in entries:
         lines.append(f"{fw:<6} tc{cid:<3} x86_fp32    {st:<4} cos=1.000000")
     lines += ["-" * 60, "VERDICT: ...", "HARNESS_EXIT=0"]

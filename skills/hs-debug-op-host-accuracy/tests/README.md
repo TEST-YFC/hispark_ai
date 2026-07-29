@@ -1,4 +1,4 @@
-# hs-verify-op harness self-tests
+# hs-debug-op-host-accuracy harness self-tests
 
 Hardware-free unit tests for the **fixed harness** (`../scripts/run_all_cases.py`).
 
@@ -22,7 +22,7 @@ its actual signatures):
 ## Run
 
 ```bash
-cd <skill>/hs-verify-op
+cd <skill>/hs-debug-op-host-accuracy
 python3 -m pytest tests/ -v
 ```
 

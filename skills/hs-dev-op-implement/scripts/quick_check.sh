@@ -199,7 +199,7 @@ PENDING_OPS="$(git diff HEAD 2>/dev/null -- '*ops_def.cc' \
 
 # ---- 原生整型 dtype 覆盖 advisory（非阻塞） ----
 # 量化 INT8 豁免 != 跳过规格里的 int8/uint8 派发键。ConvInteger/Quantize/Cast 等原生整型
-# 算子常见输入 dtype 是 int8 与 uint8；弱模型容易只注册 kNumberTypeInt8，直到 hs-verify-op 的
+# 算子常见输入 dtype 是 int8 与 uint8；弱模型容易只注册 kNumberTypeInt8，直到 hs-debug-op-host-accuracy 的
 # uint8 用例才暴露。这里按本次新增 OP_TYPE 与 mslite-op-output/<op>/scripts 下的 spec/checklist
 # 做保守提示，不作为 FAIL：有些算子确实只支持 int8 或只支持 uint8，最终以规格与能力清单为准。
 for op in ${PENDING_OPS:-}; do

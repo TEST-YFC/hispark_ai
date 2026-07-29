@@ -145,11 +145,11 @@ curl -X POST http://localhost:8500/serial/read -H "Content-Type: application/jso
 
 ## 推理结果错误
 
-**症状**：烧录成功，板端有输出，但推理结果（argmax 等）与 hs-verify-op 参考输出不一致。
+**症状**：烧录成功，板端有输出，但推理结果（argmax 等）与 hs-debug-op-host-accuracy 参考输出不一致。
 
 **排查步骤**：
 1. 确认烧录的是正确的 .fwpkg（检查 md5sum）
-2. 确认模型输入数据与 hs-verify-op 的 make_inputs() 一致
+2. 确认模型输入数据与 hs-debug-op-host-accuracy 的 make_inputs() 一致
 3. 烧录后重新上下电，确保是新固件在运行：
    ```bash
    curl -X POST http://localhost:8500/power/cycle -H "Content-Type: application/json" -d '{"port":"COM5","mode":"normal"}'

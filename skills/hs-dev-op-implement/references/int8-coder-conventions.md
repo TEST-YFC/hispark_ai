@@ -93,7 +93,7 @@ quant step), the int8 argmax can pick a different position than the float argmax
 carrying the input scale/zp does **not** help (dequantizing equal int8 values yields
 equal floats). So leaving input scale/zp out of the struct is still correct; the right
 mitigation is on the test side — keep neighbouring values farther apart than the quant
-step so no two elements collide into one bucket. hs-verify-op's spec template ships a
+step so no two elements collide into one bucket. hs-debug-op-host-accuracy's spec template ships a
 ready-made `make_distinct_axis_inputs()` for exactly this — use it for every int8 case
 of an ordering-class op when authoring the spec, instead of rediscovering the rule
 through a FAIL round.
@@ -217,5 +217,5 @@ q_out = MSMAX(MSMIN(q_out, 127), -128);
   and applies the same formula — it must not take an identity-copy shortcut while the
   opcoder requantizes, or `bias_correction` and the generated MCU code will diverge.
 - This bug only surfaces when the data inputs have **different value ranges** (hence
-  different scales); the verification suite must include such a case — see hs-verify-op's
+  different scales); the verification suite must include such a case — see hs-debug-op-host-accuracy's
   case-design guidance for multi-input ops.

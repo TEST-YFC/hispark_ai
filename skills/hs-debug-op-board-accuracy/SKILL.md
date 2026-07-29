@@ -1,20 +1,20 @@
 ---
 name: hs-debug-op-board-accuracy
-description: Use when the user asks to "flash firmware", "burn firmware", "deploy to device", "烧录固件", "烧录", "部署到板子", "烧到板子", "flash to board", "burn to WS63", "burn to Hi3863", "flash device", "下载固件", "刷机", "板端精度", "board accuracy", "精度比对", "accuracy check", or after hs-verify-op passes and the user wants to deploy to hardware. Covers automatic firmware flashing to HiSilicon WS63/Hi3863 RISC-V MCU boards via CH340G/Burntool, plus on-board accuracy verification (cosine similarity against hs-verify-op ground truth).
+description: Use when the user asks to "flash firmware", "burn firmware", "deploy to device", "烧录固件", "烧录", "部署到板子", "烧到板子", "flash to board", "burn to WS63", "burn to Hi3863", "flash device", "下载固件", "刷机", "板端精度", "board accuracy", "精度比对", "accuracy check", or after hs-debug-op-host-accuracy passes and the user wants to deploy to hardware. Covers automatic firmware flashing to HiSilicon WS63/Hi3863 RISC-V MCU boards via CH340G/Burntool, plus on-board accuracy verification (cosine similarity against hs-debug-op-host-accuracy ground truth).
 ---
 
 # 自动烧录固件到板端
 
-本 skill 是交付管线的最后一环：`hs-dev-op-implement` 编译完成 + `hs-verify-op` 精度验证全绿后，
+本 skill 是交付管线的最后一环：`hs-dev-op-implement` 编译完成 + `hs-debug-op-host-accuracy` 精度验证全绿后，
 编译固件并烧录到 WS63/Hi3863 开发板上运行。
 
 ```
-hs-dev-op-implement → hs-verify-op → hs-debug-op-board-accuracy
+hs-dev-op-implement → hs-debug-op-host-accuracy → hs-debug-op-board-accuracy
     编译(MSLITE_PKG)    精度验证      [编译fwpkg] → [烧录] → [板端精度比对]
 ```
 
 `hs-dev-op-implement` step6 产出 `MSLITE_PKG` 后即可进入本 skill。
-固件编译 (`build_fwpkg.sh`) 从 hs-verify-op 的测试用例模型自动生成 `.fwpkg`，
+固件编译 (`build_fwpkg.sh`) 从 hs-debug-op-host-accuracy 的测试用例模型自动生成 `.fwpkg`，
 用户也可直接提供固件路径跳过编译步骤。
 
 ## 用户能看到什么
@@ -65,7 +65,7 @@ bash <skill>/scripts/check_prerequisites.sh
 | 检查项 | PASS 条件 | FAIL 时 |
 |--------|----------|---------|
 | `MSLITE_PKG` | 已设置 + `converter_lite` 可执行 | **停下**，提示先跑 `hs-dev-op-implement` step6 |
-| hs-verify-op | 项目下有 `verify_summary.txt` 且 `0 FAIL` | 仅告警：`NONE`/`FAIL` 时提示用户确认风险 |
+| hs-debug-op-host-accuracy | 项目下有 `verify_summary.txt` 且 `0 FAIL` | 仅告警：`NONE`/`FAIL` 时提示用户确认风险 |
 
 **门控**：`PREREQ_GATE=PASS` → step0 标 `[x]`；`FAIL` → **停下**。
 
@@ -73,7 +73,7 @@ bash <skill>/scripts/check_prerequisites.sh
 
 ## step1 编译固件镜像 (.fwpkg)
 
-从 hs-verify-op 产出的测试用例模型编译固件。流程：converter 转换 → micro 编译 → SDK 打包。
+从 hs-debug-op-host-accuracy 产出的测试用例模型编译固件。流程：converter 转换 → micro 编译 → SDK 打包。
 
 ```bash
 # 非量化 (fp32)
@@ -267,9 +267,9 @@ curl -s --max-time 180 -X POST http://$(bash <skill>/scripts/discover_host.sh --
 
 ### 4d. 精度比对（烧录成功后强制执行）
 
-烧录成功且 `monitor_output` 非空后，提取串口输出中的张量数据，与 `hs-verify-op` 产出的参考输出计算余弦相似度。**此步骤不可跳过。**
+烧录成功且 `monitor_output` 非空后，提取串口输出中的张量数据，与 `hs-debug-op-host-accuracy` 产出的参考输出计算余弦相似度。**此步骤不可跳过。**
 
-**前提**：必须先跑过 `hs-verify-op`，其 `gt/output*.npy` 已落盘。
+**前提**：必须先跑过 `hs-debug-op-host-accuracy`，其 `gt/output*.npy` 已落盘。
 
 ```bash
 python3 <skill>/scripts/verify_accuracy.py \
@@ -282,7 +282,7 @@ python3 <skill>/scripts/verify_accuracy.py \
 
 1. 从 `monitor_output` 中解析 benchmark 的 `PrintTensorHandle` 输出（`name: ... Data:` 头行 + 逗号分隔数值行）
 2. 加载 `gt/output*.npy` 参考张量
-3. 逐张量计算余弦相似度，取 **min**（与 hs-verify-op 同逻辑）
+3. 逐张量计算余弦相似度，取 **min**（与 hs-debug-op-host-accuracy 同逻辑）
 4. 按阈值判定：
 
 | 模式 | 阈值 | 低于阈值 |
@@ -303,7 +303,7 @@ python3 <skill>/scripts/verify_accuracy.py \
 4. **WSL 路径必须转 Windows 格式。** `/mnt/d/...` → `D:\...`。
 5. **未经验证 (VERIFY_STATUS≠PASS) 的固件烧录前提示用户确认。**
 6. **精度不足即 FAIL。** 非量化 cos < 0.999999、量化 cos < 0.9 时 `ACCURACY_VERDICT=FAIL`，不得以"板端差异""串口噪声""硬件公差"等理由放行。阈值不可调。
-7. **参考数据必须来自 hs-verify-op 当轮产物。** `verify_accuracy.py` 只接受 `gt/` 目录下的 `output*.npy`——不得手填余弦、不得手写预期张量、不得复用跨轮次的旧 gt/。
+7. **参考数据必须来自 hs-debug-op-host-accuracy 当轮产物。** `verify_accuracy.py` 只接受 `gt/` 目录下的 `output*.npy`——不得手填余弦、不得手写预期张量、不得复用跨轮次的旧 gt/。
 
 ---
 
@@ -329,7 +329,7 @@ python3 <skill>/scripts/verify_accuracy.py \
 | Burntool 配置错误 | `burntool_h3863_found` 值 + 路径校验 |
 | 硬件故障 | `/power/cycle` 返回 + 两次烧录的 Burntool 错误对比 |
 | 精度不足 | `verify_accuracy.py` 完整输出（各张量余弦值 + 阈值 + ACCURACY_VERDICT） |
-| gt/ 参考缺失 | `hs-verify-op` 的 `verify_summary.txt` + `gt/` 目录列表 |
+| gt/ 参考缺失 | `hs-debug-op-host-accuracy` 的 `verify_summary.txt` + `gt/` 目录列表 |
 
 ---
 
@@ -346,7 +346,7 @@ python3 <skill>/scripts/verify_accuracy.py \
 | `scripts/detect_device.sh` | step2 独立使用（串口扫描 + 板卡识别） |
 | `scripts/probe_ports.sh` | step2 两个 CH340 无法区分时，自动探测控制口/烧录口 |
 | `scripts/flash.sh` | step4：封装烧录（health + 路径转换 + API + 判定）；支持 WSL 路径自动拷贝 |
-| `scripts/verify_accuracy.py` | step4d：解析串口张量 + 余弦比对 gt/output*.npy（与 hs-verify-op 同函数、同语义） |
+| `scripts/verify_accuracy.py` | step4d：解析串口张量 + 余弦比对 gt/output*.npy（与 hs-debug-op-host-accuracy 同函数、同语义） |
 | `references/troubleshooting.md` | 烧录失败时按症状查 |
 
 ## 结案检查清单

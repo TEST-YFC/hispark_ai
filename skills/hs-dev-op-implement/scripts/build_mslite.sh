@@ -322,7 +322,7 @@ for lib in build/riscv/build/nnacl/libnnacl.a build/arm/build/nnacl/libnnacl.a; 
   fi
 done
 
-# ---- 解压产物（hs-verify-op 必须用解压包，不是 build/）----
+# ---- 解压产物（hs-debug-op-host-accuracy 必须用解压包，不是 build/）----
 TARBALL=$(ls -t output/mindspore-lite-*-linux-x64.tar.gz output/tmp/mindspore-lite-*-linux-x64.tar.gz 2>/dev/null | head -1)
 if [ -z "${TARBALL}" ]; then
   echo "[!] 未找到产物 tar.gz（output/ 或 output/tmp/ 下）" >&2
@@ -339,7 +339,7 @@ fi
 # ---- 注册符号兜底断言：堵「假编译成功」（exit 6）----
 # 失败模式：改动的 parser 经 `XxxNodeRegister g_xxx(...)` 静态初始化注册；该全局是命名空间作用域
 # 外部对象，链进静态库后若无人引用，链接器会把整个对象 dead-strip——.o 编出来了、最终 .so 里却没有，
-# build.sh 仍 exit 0、交叉库与产物齐备，于是「BUILD OK」是假的，真相要到 step7 hs-verify-op 跑
+# build.sh 仍 exit 0、交叉库与产物齐备，于是「BUILD OK」是假的，真相要到 step7 hs-debug-op-host-accuracy 跑
 # converter_lite 才暴露（报 unsupported / parse 失败，且易被误读成算子本身缺陷）。
 # 这些注册全局是外部符号、存活于 .dynsym（strip 不删），可在 stripped release .so 上核验存在性。
 # 据 git 改动自动发现待断言符号，无需调用方传参；发现不到注册全局（纯复用/纯 kernel/coder 改动）则跳过。
@@ -370,7 +370,7 @@ if command -v nm >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/nu
       echo "[REG-ASSERT] build.sh exit 0 / 交叉库齐备 / 产物可解压，都不代表算子已链入——这正是「假编译成功」。"
       echo "[REG-ASSERT] 处置：① 新增源文件先 touch 对应 CMakeLists.txt 再 --full 重建（GLOB 需重配）；"
       echo "[REG-ASSERT]       ② 仍缺则为注册对象加强制引用 / 以 --whole-archive 链接其静态库；"
-      echo "[REG-ASSERT]       ③ 修复前严禁进 step7：hs-verify-op 必失败，且会被误读为算子缺陷。"
+      echo "[REG-ASSERT]       ③ 修复前严禁进 step7：hs-debug-op-host-accuracy 必失败，且会被误读为算子缺陷。"
       rm -f "${_SYMS}" "${_HAY}" "${_SOS}"
       exit 6
     fi
@@ -385,6 +385,6 @@ fi
 
 echo "=================================================="
 echo "BUILD OK（增量=$((1-FULL))）。交叉库齐备，产物已解压。"
-echo "hs-verify-op 请使用解压包（不是 build/）："
+echo "hs-debug-op-host-accuracy 请使用解压包（不是 build/）："
 echo "export MSLITE_PKG=${PWD}/${PKG_DIR}"
-echo "==> 下一步(step7): 立即调用 hs-verify-op skill 验证精度（不等用户要求）；汇报时粘贴上面的 MSLITE_PKG 行与 hs-verify-op 的 VERDICT 行。"
+echo "==> 下一步(step7): 立即调用 hs-debug-op-host-accuracy skill 验证精度（不等用户要求）；汇报时粘贴上面的 MSLITE_PKG 行与 hs-debug-op-host-accuracy 的 VERDICT 行。"

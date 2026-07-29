@@ -40,7 +40,7 @@
 
 **原因**：旧流程只检查串口有没有输出，不比较数值正确性。
 
-**修复**：step3d 增加 `verify_accuracy.py`，以 `hs-verify-op` 产出的 `gt/output*.npy` 为参考，
+**修复**：step3d 增加 `verify_accuracy.py`，以 `hs-debug-op-host-accuracy` 产出的 `gt/output*.npy` 为参考，
 用同一 `cosine_similarity()` 函数计算余弦相似度。非量化阈值 ≥ 0.999999，量化 ≥ 0.9。
 
-**规则**：红线 6 — 精度不足即 FAIL；红线 7 — 参考数据必须来自 hs-verify-op 当轮产物。
+**规则**：红线 6 — 精度不足即 FAIL；红线 7 — 参考数据必须来自 hs-debug-op-host-accuracy 当轮产物。

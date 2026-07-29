@@ -5,7 +5,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 
 # 新增 MindSpore Lite 算子
 
-本 skill 用来把一个 ONNX/TFLite 算子从需求走到 MindSpore Lite MCU 可用：先查证规格和仓内现状，再决定复用已有 `PrimitiveType` 还是新建，随后补齐代码、构建，`hs-verify-op` 做精度验收，最后 `hs-debug-op-board-accuracy` 烧录到板端做精度比对。
+本 skill 用来把一个 ONNX/TFLite 算子从需求走到 MindSpore Lite MCU 可用：先查证规格和仓内现状，再决定复用已有 `PrimitiveType` 还是新建，随后补齐代码、构建，`hs-debug-op-host-accuracy` 做精度验收，最后 `hs-debug-op-board-accuracy` 烧录到板端做精度比对。
 
 算子实现最多贯穿 **7 个代码层**，但**不是每个算子都要做满 7 层**。要做哪些层由 **step2 决策**算出；每层怎么写以 `references/implementation-guide.md` 的模板为底稿改名填空。本文只管流程、决策与门控，代码模板、注册宏、易错点在实现指南里。
 
@@ -56,7 +56,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 
 **必须拆开的条件**：广播版 vs 非广播版、可选输入导致输出语义不同、属性语义不是无损映射、一个 source entry 需要另一个不支持的行为、或 scan/规格不可达无法证明等价。名字相近不是合并理由；框架不同也不是拆分理由。裁决前不得凭记忆合并或拆分。
 
-**典型合并形态**：用户指定 `ONNX ConvTranspose` + `TFLite TransposeConv` 这类跨框架同语义入口时，step0 仍列两条 source entry，step1 两条都查证；若 step2 证明二者都是转置卷积、输出/shape/属性可无损映射，就合并为一个 ConvTranspose implementation unit：新增/复用一套 Primitive/kernel/coder，分别补 ONNX parser 与 TFLite parser，hs-verify-op 同一项目里覆盖 `onnx` 与 `tflite` 用例。
+**典型合并形态**：用户指定 `ONNX ConvTranspose` + `TFLite TransposeConv` 这类跨框架同语义入口时，step0 仍列两条 source entry，step1 两条都查证；若 step2 证明二者都是转置卷积、输出/shape/属性可无损映射，就合并为一个 ConvTranspose implementation unit：新增/复用一套 Primitive/kernel/coder，分别补 ONNX parser 与 TFLite parser，hs-debug-op-host-accuracy 同一项目里覆盖 `onnx` 与 `tflite` 用例。
 
 ### 语义名发现（用户只给一个通用算子名时）
 
@@ -73,7 +73,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 
 每个 **implementation unit** 的全部产物落在 `$MSLITE_OP_OUTPUT/<unit>/`（下称 `<opdir>`）。若多个 source entry 合并到同一 unit，用共同 Primitive/语义名作 `<unit>`；在 `docs/spec.md` 里列出全部 source entry，不为同一 unit 建多个重复 opdir。
 
-- `MSLITE_OP_OUTPUT` 缺省**与 mindspore-lite 仓平级**（HiSpark.AI 仓内即 `src/mslite-op-output/`），可由环境变量覆盖。它独立于业务仓、**不在 mslite 源码树内**（满足 hs-verify-op 红线），Claude 与 Codex 共享同一份。
+- `MSLITE_OP_OUTPUT` 缺省**与 mindspore-lite 仓平级**（HiSpark.AI 仓内即 `src/mslite-op-output/`），可由环境变量覆盖。它独立于业务仓、**不在 mslite 源码树内**（满足 hs-debug-op-host-accuracy 红线），Claude 与 Codex 共享同一份。
 - step0 建目录时从 `$MSLITE_OP_OUTPUT/_template/` 拷骨架。`<opdir>` 结构：
   - `docs/` — `spec.md` / `decision.md` / `link-analysis.md` / `reference-impl.md` / `builtin-probe.md`。**step1-step4 的思考产物逐份落盘，不止留在对话里。**
   - `scripts/` — `op_spec.py`、`capability_checklist.json`、`env_setup.sh`
@@ -86,11 +86,11 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 | 用户输入 | 模式 | 执行范围 |
 |---------|------|---------|
 | "分析XX算子" / "算子分析" / "XX算子链路" | **仅分析** | 只走 **step0-step3**，呈现链路分析表 + 能力清单后**停止**，不进实现 |
-| "新增XX算子" / "支持XX算子" / "add operator" | **完整实现** | **step0-step8** 全程：决策 → 写码 → 编译 → 精度验证（调 `hs-verify-op`）→ 烧录板端精度比对（调 `hs-debug-op-board-accuracy`） |
+| "新增XX算子" / "支持XX算子" / "add operator" | **完整实现** | **step0-step8** 全程：决策 → 写码 → 编译 → 精度验证（调 `hs-debug-op-host-accuracy`）→ 烧录板端精度比对（调 `hs-debug-op-board-accuracy`） |
 
 **多 source entry 先分组，不直接串行实现。** 用户一次点名多个框架/算子名时，先按上文 source grouping 做裁决：
 
-- 若裁决为 **同一个 implementation unit**：只做一套 ①③④⑤⑥⑦；② Parser 和 hs-verify-op 用例按 source entry 分别补齐；一个 `<opdir>` 内的 `framework_scope` 覆盖所有 source entry。
+- 若裁决为 **同一个 implementation unit**：只做一套 ①③④⑤⑥⑦；② Parser 和 hs-debug-op-host-accuracy 用例按 source entry 分别补齐；一个 `<opdir>` 内的 `framework_scope` 覆盖所有 source entry。
 - 若裁决为 **多个 implementation unit**：每个 unit 串行独立走 step1-step8（先验证+烧录完一个再开下一个）。
 - 若是同一框架同族 builtin（如广播/非广播、V2/V3 语义不同）：默认拆开，除非规格证明逐项等价。
 
@@ -100,8 +100,8 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 
 1. **不走 Custom 捷径。** 标准 ONNX/TFLite 算子必须落到真正的 `PrimitiveType`；**严禁** `ops::Custom` + `PrimType_Inner_*` + `REG_BUILIN_CUSTOM_CODER`。
 2. **存在性与语义只认查证，不认记忆。** 框架有无此算子由 scan 的 `FOUND/NOT_FOUND` 裁决，`NOT_FOUND` 即"无此算子"（**不翻案为"别名/旧名"，不用等价算子顶替**）；广播/形状/量化语义以语义摘要或规格原文为准。全部源不可达 → **停下问用户**（见 `references/spec-sources.md`）。
-3. **量化 INT8 默认必做（除 decision3 豁免）；原生整型 dtype 仍按规格全做。** "INT8 豁免"只表示不走 fp32→int8 量化器/INT8 genuine 符号闸门，不表示跳过 `int8/uint8/int32/...` 这类算子原生输入 dtype 的 kernel/coder 注册。完成 = 本会话亲自跑出 hs-verify-op 全绿；历史 PASS、x86-only、其它能出余弦数字的旁路流程都不算完成；精度验证唯一入口是 `hs-verify-op`。
-4. **不碰子模块 git 状态，不靠重建试错。** `mindspore` 是受管子模块（CLAUDE.md：不得直接改）。**严禁** `git checkout <commit>` / `git stash` / `git submodule update` 去"修"它，**严禁**手敲 `build.sh`/`tar`/清 `build/` 碰运气。构建唯一入口是 `build_mslite.sh`；它在构建前记录子模块 SHA，若 `build.sh` 把子模块推进到别的 commit 就以 `[SUBMOD-LOCK] exit 7` 硬停。**先立基线再改码**：动任何源码前，确认当前包能让一个已知用例 hs-verify-op 通过；基线本就失败、或出现「之前全绿的用例成片 converter 报错 / `SUBMOD-LOCK` 报警 / 报错文件不是本会话改的」= 环境或子模块漂移，**不是算子缺陷**，停下报告用户，不得改 parser/kernel/infer，也不得反复重建。
+3. **量化 INT8 默认必做（除 decision3 豁免）；原生整型 dtype 仍按规格全做。** "INT8 豁免"只表示不走 fp32→int8 量化器/INT8 genuine 符号闸门，不表示跳过 `int8/uint8/int32/...` 这类算子原生输入 dtype 的 kernel/coder 注册。完成 = 本会话亲自跑出 hs-debug-op-host-accuracy 全绿；历史 PASS、x86-only、其它能出余弦数字的旁路流程都不算完成；精度验证唯一入口是 `hs-debug-op-host-accuracy`。
+4. **不碰子模块 git 状态，不靠重建试错。** `mindspore` 是受管子模块（CLAUDE.md：不得直接改）。**严禁** `git checkout <commit>` / `git stash` / `git submodule update` 去"修"它，**严禁**手敲 `build.sh`/`tar`/清 `build/` 碰运气。构建唯一入口是 `build_mslite.sh`；它在构建前记录子模块 SHA，若 `build.sh` 把子模块推进到别的 commit 就以 `[SUBMOD-LOCK] exit 7` 硬停。**先立基线再改码**：动任何源码前，确认当前包能让一个已知用例 hs-debug-op-host-accuracy 通过；基线本就失败、或出现「之前全绿的用例成片 converter 报错 / `SUBMOD-LOCK` 报警 / 报错文件不是本会话改的」= 环境或子模块漂移，**不是算子缺陷**，停下报告用户，不得改 parser/kernel/infer，也不得反复重建。
 
 ## 总流程
 
@@ -114,7 +114,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 | **step4** | 编写算子代码 | 先冻结 `docs/implementation-contract.md` 并跑 artifact gate；每层动笔前打开实现指南对应小节，以模板为底稿改名填空；写 ⑤ 前先呈现参考实现对比表 | `ARTIFACT_GATE=PASS`；参考实现对比表；每层完成即回填能力清单落点 |
 | **step5** | 编译前预检 | `bash <skill>/scripts/quick_check.sh <代码根>` | 预检 **FAIL=0**（`SCHEMA_PENDING`/`UNVERIFIED` 均可） |
 | **step6** | 编译构建 | `build_mslite.sh` 后台构建 + `--wait` 阻塞等结果 | 末尾 `export MSLITE_PKG=...` 行 |
-| **step7** | 验证精度 | 先跑 artifact/op_spec/build-freshness 三闸门，再调用 `hs-verify-op` skill 验证精度 | 三闸门 PASS；每个 implementation unit 的 `VERDICT` 全绿，且 `framework_scope` 覆盖 step0 范围内全部 source entry（fp32 ≥ 0.999、INT8 ≥ 0.99） |
+| **step7** | 验证精度 | 先跑 artifact/op_spec/build-freshness 三闸门，再调用 `hs-debug-op-host-accuracy` skill 验证精度 | 三闸门 PASS；每个 implementation unit 的 `VERDICT` 全绿，且 `framework_scope` 覆盖 step0 范围内全部 source entry（fp32 ≥ 0.999、INT8 ≥ 0.99） |
 | **step8** | 烧录板端精度比对 | 调用 `hs-debug-op-board-accuracy` skill，烧录 fwpkg 到 WS63/Hi3863 板端并比对余弦相似度 | `FLASH_VERDICT=PASS` + `ACCURACY_VERDICT=PASS`（非量化 ≥ 0.999999、量化 ≥ 0.9） |
 
 ## 决策词汇
@@ -133,7 +133,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 **首行状态由最近一次 VERDICT 机械决定，不由你的叙述口吻决定**：只要存在 `HARNESS_EXIT≠0`、或任一 VERDICT 行含 `FAIL`/`ERR`/`[UNCOVERED]`，或 `ACCURACY_VERDICT=FAIL`，本次就处于「未完成」态，无可商量（见下「完成状态闸门」）。只有同时满足以下条件，首行才允许写 `状态: 完成`：
 
 1. **贴出 step6 的 `MSLITE_PKG` 行。**
-2. **step7 前三闸门均 PASS**：`gate_artifacts.py --stage pre-verify`、`validate_op_spec.py`、`check_build_freshness.py`。任一 FAIL 时不得启动/引用 hs-verify-op 结论。
+2. **step7 前三闸门均 PASS**：`gate_artifacts.py --stage pre-verify`、`validate_op_spec.py`、`check_build_freshness.py`。任一 FAIL 时不得启动/引用 hs-debug-op-host-accuracy 结论。
 3. **step0 范围内每个 implementation unit 各一行 VERDICT**，且每行都是 `0 FAIL`、日志中 VERDICT 后有 `HARNESS_EXIT=0` 行；合并多个 source entry 的 unit，其 `framework_scope`/用例必须覆盖每个 source entry。
    - 后台模式下进程退出码不可观测，退出码只认 harness 自报的 `HARNESS_EXIT=0` 这一行。
    - **禁止自行 `grep -c FAIL` 之类计数判定**：VERDICT 的 `0 FAIL` 也含 `FAIL` 字样，全绿会被误判为失败。
@@ -142,7 +142,7 @@ description: Use when working on MindSpore Lite operator support for HiSpark.AI 
 5. **原样重贴 step3 能力验收清单**：行内容（形状/轴/属性）不得改写，只追加落点与 PASS 用例编号（确需修订某行须明示修订原因）。逐行标注 PASS 用例编号，或「覆盖缺口（用户已裁决，VERDICT 含 `ACK_REDUCED` 留痕）」。
    - 存在既无 PASS 落点又未经用户裁决的行 = 未完成；回填时悄悄改写清单行、删用例换绿，同性质于伪造。
    - 清单已在 step3 落盘 `capability_checklist.json`，**VERDICT 须含 `capabilities=N/M` 且 N=M**；出现 `[UNCOVERED]` 行即未完成。
-   - **VERDICT 的分母是能力清单，不是 op_spec 现存用例**：删除/弱化用例后取得的 0 FAIL 不满足本判据（hs-verify-op 的 `CASES_REDUCED` 与能力覆盖闸门会拒跑并留痕，绕过它 = 伪造结论）。
+   - **VERDICT 的分母是能力清单，不是 op_spec 现存用例**：删除/弱化用例后取得的 0 FAIL 不满足本判据（hs-debug-op-host-accuracy 的 `CASES_REDUCED` 与能力覆盖闸门会拒跑并留痕，绕过它 = 伪造结论）。
 6. **step8 烧录板端精度比对完成**：`FLASH_VERDICT=PASS` + `ACCURACY_VERDICT=PASS`（非量化 cos ≥ 0.999999、量化 cos ≥ 0.9）。调用 `hs-debug-op-board-accuracy` skill，不跳过、不询问。
 
 中途停下向用户求助是合法动作（如实写 `未完成` + 阻塞原因即可）。但用"已知局限/存量缺陷/非本次引入/需后续修复"包装失败后宣布完成，与伪造数据同级。缺陷来历不改变完成判据（decision2 复用 = 接管存量质量）。
@@ -208,8 +208,8 @@ bash <skill>/scripts/scan_op.sh <Op> <代码根>   # 每个 source entry 各跑�
 裁决两分支：
 
 - **走新建** → decision4 必须附「已排查候选 + 逐项不等价理由」，每条带 `文件:行` 或规格证据；走 ①-⑦ + ①‴ 全做。
-- **走复用** → **只补现存链路缺失环节**（最常缺 ⑥、⑤int8、⑦），**严禁为它重建 ①③④⑤**；复用分支下创建这些层的新文件 = 越界信号，停下复查 decision2。**复用 = 接管被复用的 ①-⑦ 全部存量代码**：从裁决「复用」的那一刻起，这些 kernel/coder/infer 就是**本次实现的代码**，「已有」≠「已验证」，hs-verify-op 在其中测出的任何缺陷（含别人多年前写错的数学）与你亲手写的代码**同等**在本次修复范围内，处置见 step7「存量缺陷修复 playbook」。补 ⑤/⑥/⑦ 任一计算相关缺口前，也必须按 step4 做参考实现对比；“只打开已有 int8 路径”同样是计算正确性变更，不得免对比。
-  > 反例（弱会话实测）：decision2 判复用后把结论写成「全链路均已存在，主要任务是 step7 精度验证」，于是把验证当走过场；hs-verify-op 测出 output_padding 精度缺陷（cos=0.77）时以"存量缺陷、根因较深"搁置——这正是把"接管存量质量"读成了"存量缺陷与我无关"。复用分支的正确心智：**验证不是收尾，定位并修好它暴露的缺陷才是本次实现的主体工作。**
+- **走复用** → **只补现存链路缺失环节**（最常缺 ⑥、⑤int8、⑦），**严禁为它重建 ①③④⑤**；复用分支下创建这些层的新文件 = 越界信号，停下复查 decision2。**复用 = 接管被复用的 ①-⑦ 全部存量代码**：从裁决「复用」的那一刻起，这些 kernel/coder/infer 就是**本次实现的代码**，「已有」≠「已验证」，hs-debug-op-host-accuracy 在其中测出的任何缺陷（含别人多年前写错的数学）与你亲手写的代码**同等**在本次修复范围内，处置见 step7「存量缺陷修复 playbook」。补 ⑤/⑥/⑦ 任一计算相关缺口前，也必须按 step4 做参考实现对比；“只打开已有 int8 路径”同样是计算正确性变更，不得免对比。
+  > 反例（弱会话实测）：decision2 判复用后把结论写成「全链路均已存在，主要任务是 step7 精度验证」，于是把验证当走过场；hs-debug-op-host-accuracy 测出 output_padding 精度缺陷（cos=0.77）时以"存量缺陷、根因较深"搁置——这正是把"接管存量质量"读成了"存量缺陷与我无关"。复用分支的正确心智：**验证不是收尾，定位并修好它暴露的缺陷才是本次实现的主体工作。**
 
 两条分支的端到端范例见 `references/worked-example.md`，拿到算子先读它。
 
@@ -223,7 +223,7 @@ bash <skill>/scripts/scan_op.sh <Op> <代码根>   # 每个 source entry 各跑�
      - 「decision2 四条等价测试找不到逐项相等的 PrimType」对激活族不适用；见 decision2 第 0 步激活闸门，激活根本不进那个测试。
    - **真正的非子类型（需独立 PrimType，别走子类型）**：**PReLU**（parser 返回 `ops::PReLUFusion`，2 输入 + slope 张量，专属 `PrimType_PReLUFusion` + 专属 infer）。通则：需 >1 数据输入或带权重/slope 张量 → 不是纯激活子类型。（仓内 `Selu`/旧 `Celu` parser 返回独立 op 类是遗留欠佳实现，非范本；新算子按本判据走子类型。）
 2. **量化 INT8 豁免？** 先把本算子的 dtype 语义分成两层，禁止混用：
-   - **浮点输入算子**：源输入/输出是 float，`riscv_int8` 通过量化器把 float tensor 量化后运行。这类除明确豁免外，必须做 ⑤int8 + ⑥int8 + ⑦量化器列表，并由 hs-verify-op 的 `INT8_NOT_GENUINE` 闸门证明真的发到 int8 kernel。
+   - **浮点输入算子**：源输入/输出是 float，`riscv_int8` 通过量化器把 float tensor 量化后运行。这类除明确豁免外，必须做 ⑤int8 + ⑥int8 + ⑦量化器列表，并由 hs-debug-op-host-accuracy 的 `INT8_NOT_GENUINE` 闸门证明真的发到 int8 kernel。
    - **原生整型/索引/离散 dtype 算子**：规格本身要求 `int8/uint8/int32/int64/bool` 等输入或输出（如 ConvInteger、Cast、ArgMax、Shape、索引类）。这类可判 **量化 INT8 豁免**：不需要加入量化器列表，也可在 op_spec 中关闭 genuine 符号检查；但仍必须按规格列出的每个 dtype 注册 ⑤ kernel 与 ⑥ OpCoder。`int8` 与 `uint8` 是两个不同派发键，能力清单必须各有用例或明确证明某 dtype 不在规格内。
    - **完成表述**：对原生整型算子写「量化 INT8 豁免，原生 dtype 覆盖：int8/uint8/... 做」，不要写成「fp32 做 / int8 跳过」。
 3. **组合算子需融合 pass？**（HardSwish/GeLU/Swish 等被源框架拆成子图）→ **融合 pass + 单算子 ①-⑦ 两者都做**（融合只改图形态，从不替代通路），模板见 `references/optimizer-fusion-template.md`。裁决据 scan 的 ⑧ 融合审计段（grep 证据），不凭记忆：命中既有 pass→读懂它；0 命中且源框架是单算子→填「否」；0 命中但源框架拆成子图→缺融合 pass，填「是」须新建。
@@ -298,14 +298,14 @@ python3 <skill>/scripts/gate_artifacts.py --opdir <opdir> --op <Op> --stage step
 
 ### 3. 能力验收清单 → `scripts/capability_checklist.json`
 
-从 decision1 语义摘要 + decision2 裁决**逐条列出本算子必须支持的形态**（形状模式 × fp32/int8），每条标三个落点：① 承载的 nnacl_c 函数；② infer 是否感知（✅/❌）；③ 对应 hs-verify-op 用例。此后三处回查：每层写完回填落点；**启动编译前清单上不得有标「需新增」却无落点的能力**；写 op_spec 时每条能力 ≥1 用例。
+从 decision1 语义摘要 + decision2 裁决**逐条列出本算子必须支持的形态**（形状模式 × fp32/int8），每条标三个落点：① 承载的 nnacl_c 函数；② infer 是否感知（✅/❌）；③ 对应 hs-debug-op-host-accuracy 用例。此后三处回查：每层写完回填落点；**启动编译前清单上不得有标「需新增」却无落点的能力**；写 op_spec 时每条能力 ≥1 用例。
 
 **落盘规则（路径只此一处，落错等于没落）：**
 
-- 冻结落盘 `<opdir>/scripts/capability_checklist.json`（`<opdir>` = `$MSLITE_OP_OUTPUT/<op>`，与后续 hs-verify-op `op_spec.py` 同处一目录）。**严禁落到 mslite 源码树或 vendor/ 等工作区**，落错位置 hs-verify-op 的覆盖闸门读不到。
-- **别凭记忆手写 schema**：从 `<hs-verify-op>/scripts/capability_checklist.template.json` 拷贝改写。
-  > 实证：手写曾把 `framework`/`framework_scope`、`all_equal`/`value_domain`、空 `covered_by` 写错，连烧 3 轮 hs-verify-op 才对齐。
-- 每条 `{id, desc, covered_by:[用例id], match?:{param:value}}`。这是 hs-verify-op 的机械对账依据；step7 验证时 harness 校验每条能力都有 covered_by 通过用例，未覆盖即非绿。
+- 冻结落盘 `<opdir>/scripts/capability_checklist.json`（`<opdir>` = `$MSLITE_OP_OUTPUT/<op>`，与后续 hs-debug-op-host-accuracy `op_spec.py` 同处一目录）。**严禁落到 mslite 源码树或 vendor/ 等工作区**，落错位置 hs-debug-op-host-accuracy 的覆盖闸门读不到。
+- **别凭记忆手写 schema**：从 `<hs-debug-op-host-accuracy>/scripts/capability_checklist.template.json` 拷贝改写。
+  > 实证：手写曾把 `framework`/`framework_scope`、`all_equal`/`value_domain`、空 `covered_by` 写错，连烧 3 轮 hs-debug-op-host-accuracy 才对齐。
+- 每条 `{id, desc, covered_by:[用例id], match?:{param:value}}`。这是 hs-debug-op-host-accuracy 的机械对账依据；step7 验证时 harness 校验每条能力都有 covered_by 通过用例，未覆盖即非绿。
 - **非平凡能力必须写 `match`**：凡能力描述里出现 dtype、shape/rank、axis、stride、pads、dilation、group、可选输入、broadcast 形态等可参数化约束，都要在 `match` 写出关键参数（如 `{"dtype":"uint8"}`、`{"stride":2}`、`{"pad":"SAME_UPPER"}`、`{"group":8}`）。空 `{}` 只适合无法由 params 机械表达的总体验收行；不能用空 match 让任意 case id 冒充覆盖。
 - **禁止 proxy 覆盖**：`covered_by` 只能指向实际满足该行 `match` 的 PASS 用例；不得用普通 case 代理 depthwise、rank、batch、dtype、stride/pad 等不同能力，也不得把失败/未实现能力改写成「已知缺陷 ACK」后仍填 unrelated case。确需缩范围只能经用户裁决并让 VERDICT 留 `ACK_REDUCED`。
 - **原生整型算子能力清单按 dtype 列分**：如果规格支持 `int8` 和 `uint8`，至少分别有能力行和用例；如果还有 `int32/int64/bool`，同理。量化 INT8 豁免不合并这些 dtype。
@@ -326,7 +326,7 @@ python3 <skill>/scripts/gate_artifacts.py --opdir <opdir> --op <Op> --stage step
 - **反例 A（常量不一致，违反 ①）**：infer 放行 `DIMENSION_8D` 而 int8 数组只开 `DIMENSION_5D`，4D 全绿、6D 模型 infer 过、kernel 才静默算错。
 - **反例 B（常量全 4D 却仍越界，违反 ②）**：infer 用 `SetShapeTensor` 同形传播、无 rank 守卫，nnacl fp32 kernel 的 `input_shape_[DIMENSION_4D]` 数组在 `InitHardmaxParam` 里按 `for i<n_dim` 直写、填充前无守卫；各层常量都是 4D（① 满足），但 5D 模型 infer 放行、fp32 校准期数组越界。
 
-这条不变量靠 `quick_check.sh` 的 rank advisory（非阻塞预检）暴露。hs-verify-op 只能确认上限本身端到端可用，测不到"超界应报错"（用例都 ≤ 上限），故跨层一致性归预检管。advisory 现覆盖三类：(1) 多常量不一致；(2) 数组在、同 stem 单元无守卫（反例 B 的 kernel 侧）；(3) 存在无守卫数组层时 infer 也漏设闸（反例 B 的 infer 侧）。**advisory 命中即按缺陷处理，不得因"用例全 ≤4D 跑绿"放行。**
+这条不变量靠 `quick_check.sh` 的 rank advisory（非阻塞预检）暴露。hs-debug-op-host-accuracy 只能确认上限本身端到端可用，测不到"超界应报错"（用例都 ≤ 上限），故跨层一致性归预检管。advisory 现覆盖三类：(1) 多常量不一致；(2) 数组在、同 stem 单元无守卫（反例 B 的 kernel 侧）；(3) 存在无守卫数组层时 infer 也漏设闸（反例 B 的 infer 侧）。**advisory 命中即按缺陷处理，不得因"用例全 ≤4D 跑绿"放行。**
 
 ### 4. 输入形态 → 实际 builtin 探针表 → `docs/builtin-probe.md`
 
@@ -338,7 +338,7 @@ python3 <skill>/scripts/gate_artifacts.py --opdir <opdir> --op <Op> --stage step
 
 **动手前确认**：属性审计已填好；上游/业界参考实现已读、算法笔记在手边；decision4 链路分析表已展示给用户。
 
-**先冻结实现契约**：写任何 ①-⑦ 代码前，落盘并展示 `<opdir>/docs/implementation-contract.md`。它至少包含这些小标题：`source_entries`、`primitive_type`、`input_contract`、`optional_inputs`、`attribute_contract`、`layout_contract`、`dtype_contract`、`output_contract`、`verification_mode`、`unsupported_or_deferred`。原生整型/索引/布局敏感算子必须在这里写清外部 layout、内部 layout、输入/权重 dtype 矩阵、optional input 是 initializer 还是 dynamic input、输出 dtype、hs-verify-op 路径含义。然后跑：
+**先冻结实现契约**：写任何 ①-⑦ 代码前，落盘并展示 `<opdir>/docs/implementation-contract.md`。它至少包含这些小标题：`source_entries`、`primitive_type`、`input_contract`、`optional_inputs`、`attribute_contract`、`layout_contract`、`dtype_contract`、`output_contract`、`verification_mode`、`unsupported_or_deferred`。原生整型/索引/布局敏感算子必须在这里写清外部 layout、内部 layout、输入/权重 dtype 矩阵、optional input 是 initializer 还是 dynamic input、输出 dtype、hs-debug-op-host-accuracy 路径含义。然后跑：
 
 ```bash
 python3 <skill>/scripts/gate_artifacts.py --opdir <opdir> --op <Op> --stage pre-code --framework onnx
@@ -391,7 +391,7 @@ bash <skill>/scripts/build_mslite.sh --wait 540    # Bash 工具 timeout 设 600
 
 ## step7 验证精度
 
-- **hs-verify-op 前先过三闸门**（`--framework` 按 step0 范围逐个传；`MSLITE_PKG` 用 step6 输出）：
+- **hs-debug-op-host-accuracy 前先过三闸门**（`--framework` 按 step0 范围逐个传；`MSLITE_PKG` 用 step6 输出）：
 
 ```bash
 python3 <skill>/scripts/gate_artifacts.py --opdir <opdir> --op <Op> --stage pre-verify --framework onnx
@@ -399,8 +399,8 @@ python3 <skill>/scripts/validate_op_spec.py <opdir>
 python3 <skill>/scripts/check_build_freshness.py --code-root <代码根> --mslite-pkg "$MSLITE_PKG"
 ```
 
-任一闸门 FAIL 时，先修闸门指出的问题，不启动 hs-verify-op、不引用旧 `verify_summary.txt`。`check_build_freshness.py` FAIL 表示包比源码旧，必须回 step6 重建；手动解压/裸跑 `build.sh` 的结果视为不可信。
-- **编译成功后立即自动调 `hs-verify-op`，不等用户要求。** 完成判据见红线 3 与上文「完成判据」。
+任一闸门 FAIL 时，先修闸门指出的问题，不启动 hs-debug-op-host-accuracy、不引用旧 `verify_summary.txt`。`check_build_freshness.py` FAIL 表示包比源码旧，必须回 step6 重建；手动解压/裸跑 `build.sh` 的结果视为不可信。
+- **编译成功后立即自动调 `hs-debug-op-host-accuracy`，不等用户要求。** 完成判据见红线 3 与上文「完成判据」。
 - **完成判据按 implementation unit 计，同时按 source entry 查覆盖**：每个 unit 各自一行 VERDICT 全绿；合并了多个 source entry 的 unit，`framework_scope` 与 PASS 用例必须覆盖每个框架入口，一个框架入口全绿不覆盖另一个。**同族多 builtin / converter 会按形状归一化的算子，完成声明须附「输入形态 → 实际 builtin」探针证据**，因为 converter 可能把用例悄悄归一化成别的 builtin。
 - **任何 FAIL 都是缺陷**：先 fp32 隔离（无量化噪声）；fp32 过而 INT8 不过 → 回实现指南 ⑤‴ 模板修 int8（不在错误方案上叠特判）。**禁止合理化为"量化固有限制/退化输入无意义/存量代码局限"。**
 
@@ -413,13 +413,13 @@ python3 <skill>/scripts/check_build_freshness.py --code-root <代码根> --mslit
 1. 粘贴该用例 `output/<fw>/tc<id>/<path>/stderr.log` **首个错误行原文**，指明故障层（converter/codegen/交叉编译/运行时数值）。
 2. 查 `references/lessons.md` 当前阶段症状表，声明命中条目或「未命中」。
 3. 呈现根因 + 最小修复方案。
-4. 改码 → step5 预检 → step6 构建 → 重跑 hs-verify-op。
+4. 改码 → step5 预检 → step6 构建 → 重跑 hs-debug-op-host-accuracy。
 
 **同一能力连续 2 个方案失败 → 强制停下**，向用户呈报根因分析与方案选项（继续攻坚 / 经裁决列为覆盖缺口），等待用户决定。自行删用例缩范围、或换第 3 个未经根因分析的方案，都不合法。
 
 ### 存量缺陷修复 playbook（复用分支必读）
 
-decision2 判「复用」**不等于**「任务已完成、step7 只是走过场」。hs-verify-op 暴露的缺陷，定位并修好它就是本次实现的**主体工作**。先把缺陷分两类，分别处置：
+decision2 判「复用」**不等于**「任务已完成、step7 只是走过场」。hs-debug-op-host-accuracy 暴露的缺陷，定位并修好它就是本次实现的**主体工作**。先把缺陷分两类，分别处置：
 
 | 缺陷类型 | 典型信号 | 处置 |
 |---|---|---|
@@ -438,7 +438,7 @@ decision2 判「复用」**不等于**「任务已完成、step7 只是走过场
 
 ### FAIL 之后禁止征求"是否继续"
 
-hs-verify-op 跑出任一 FAIL，**就是继续进入 FAIL 修复循环的授权**——不要停下来问用户"要不要继续深入修复 / 要继续吗"。那是把本属于本次任务的工作退回给用户，也是本 skill 要消除的主要摩擦。合法的停下只有两种，且各自带强制证据，不能只写一句反问：
+hs-debug-op-host-accuracy 跑出任一 FAIL，**就是继续进入 FAIL 修复循环的授权**——不要停下来问用户"要不要继续深入修复 / 要继续吗"。那是把本属于本次任务的工作退回给用户，也是本 skill 要消除的主要摩擦。合法的停下只有两种，且各自带强制证据，不能只写一句反问：
 
 - 命中上文「系统性失败硬停」信号 → 先写诊断摘要（含「证据闸门」要求的命令输出）。
 - 「同一能力连续 2 个方案失败」→ 呈报根因分析与方案选项。
@@ -459,7 +459,7 @@ hs-verify-op 跑出任一 FAIL，**就是继续进入 FAIL 修复循环的授权
 | "要继续深入修复吗？" | FAIL 即继续的授权；问这句 = 在 FAIL 上停下 = 违规。 |
 | "先写个'最终状态'，剩下的标为后续" | `HARNESS_EXIT≠0` 时任何"完成/最终/达标"措辞（含换标题、括号 hedge、✅）都是未完成的形变绕过，见「完成状态闸门」。 |
 
-验证用例归 hs-verify-op 管，按其说明新建项目。
+验证用例归 hs-debug-op-host-accuracy 管，按其说明新建项目。
 
 ## 结案检查清单
 
@@ -476,7 +476,7 @@ hs-verify-op 跑出任一 FAIL，**就是继续进入 FAIL 修复循环的授权
 - [ ] （广播类）按实现指南 ⑤⁗：优先复用 nnacl 既有广播设施；快路守卫逐输入成立；禁 `i % num` 近似。
 - [ ] OpCoder `Collect()` 列全 `.h`/`.c`；新增的每个 serializer `CodeStruct` 重载都对应 nnacl 函数确实接收该结构体指针；⑦ 量化器列表已更新；无魔数；新文件版权年用 `date +%Y`。
 - [ ] 能力验收清单逐条闭环（每条有落点 + 有 PASS 用例）；`capability_checklist.json` 已落盘且 VERDICT `capabilities=N/M` 满 N=M（无 `[UNCOVERED]`）。
-- [ ] 编译成功 + hs-verify-op 全绿，**每个 implementation unit 各一行 VERDICT**，且 `framework_scope` 覆盖 step0 范围内全部 source entry（2D/小4D/大4D/batch>1 及有意义属性组合全 PASS；多 builtin 场景附「形态→builtin」命中证据）。
+- [ ] 编译成功 + hs-debug-op-host-accuracy 全绿，**每个 implementation unit 各一行 VERDICT**，且 `framework_scope` 覆盖 step0 范围内全部 source entry（2D/小4D/大4D/batch>1 及有意义属性组合全 PASS；多 builtin 场景附「形态→builtin」命中证据）。
 - [ ] **`git diff` 终审**：每个改动文件可映射到能力清单或某 PASS 用例；试错废案已还原；放开过的入口守卫，其暴露出的路径要么有 PASS 用例，要么连守卫一起还原。
 - [ ] **格式化**：编辑过的 `nnacl_c/**` 与生成的 `net0.c` 用 mindspore-lite 自带的 `.clang-format`（`<代码根>/.clang-format`，LLVM/IndentWidth 4）跑一遍 `clang-format -i --style=file <files>`。
 

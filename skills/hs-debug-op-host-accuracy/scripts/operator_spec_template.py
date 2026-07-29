@@ -1,5 +1,5 @@
 # coding: utf-8
-"""hs-verify-op operator spec — THE ONLY FILE YOU WRITE PER OPERATOR.
+"""hs-debug-op-host-accuracy operator spec — THE ONLY FILE YOU WRITE PER OPERATOR.
 
 Copy to your operator project's  scripts/op_spec.py  and fill it in. The fixed harness
 (run_all_cases.py) imports this module and drives the whole internal step1->step5 pipeline.

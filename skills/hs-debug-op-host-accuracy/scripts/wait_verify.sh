@@ -1,7 +1,7 @@
 #!/bin/bash
 # wait_verify.sh <日志文件> [max_secs=540] [pid]
 #
-# 阻塞等待后台 hs-verify-op（run_all_cases.py）跑完——内部轮询，杜绝调用方
+# 阻塞等待后台 hs-debug-op-host-accuracy（run_all_cases.py）跑完——内部轮询，杜绝调用方
 # "sleep N && tail" 盲等与 sleep 算术错误（sleep >110s 会被 Bash 工具默认
 # 120s 超时杀掉，exit 143 是 sleep 被杀、不是验证结果）。
 #
