@@ -1,285 +1,296 @@
 ---
 name: hs-design-op-manual
-description: 按四章节标准模板生成单算子规格限制文档（operator-desc/{op}.md）
+description: Use when generating or updating a standalone operator design document, projecting a design document during integrated operator development, synchronizing the final document at terminal state, migrating historical operator artifacts, or analyzing the four-chapter template.
 ---
 
-# 单算子规格限制文档生成器
+# 单算子设计文档生成器
 
-本 skill 用于为 MindSpore Lite Micro 算子生成标准化的规格限制文档。输出内容覆盖 ONNX/TFLITE 框架算子描述、MindSpore-Lite Micro 功能规格、关键场景分析和测试设计。
+## 概述
 
-执行时必须严格按本文 step 顺序推进。不得跳过前置查证直接生成文档；不得把未确认的信息写入规格；不得写入任何敏感信息。最终文档中禁止出现“待确认”。
+为 MindSpore Lite Micro 单算子生成四章节设计文档，内容包括框架语义、Micro 功能设计、关键使用场景和测试设计。独立模式负责查证事实；集成和历史模式只把父流程已经冻结的产物整理为面向设计评审和后续维护的公开文档，不重新解释开发结果。
 
-本文所称“敏感信息”指会暴露内部跟踪、人员身份、项目管理或内部流程的信息，重点包括敏感编号字段、内部单号、私有链接参数和内部占位符。本文所称“敏感编号字段”是敏感信息的一种，指需求号、任务号、缺陷号、工号、员工号、审批单号、评审单号，以及 `AR`、`MR`、`CR` 等内部流转编号，或任何仅用于项目内部流转的编号占位符。
+始终遵守三条原则：
 
-**路径基准**：工作前必须先询问用户 `mindspore-lite` 目录在哪里，并以用户确认的 `mindspore-lite` 目录作为项目文档根目录。目标输出文件为：
+1. 只写可公开、已验证的事实，不编造缺失字段，不在最终文档中保留“待确认”。
+2. 明确写出“不支持转换”“不支持该规格”或“不支持该类型”，不得把缺失链路包装成支持。
+3. 一次调用只有一个模式和一个文档发布目标。带 `opdir` 的写入型模式还必须创建或刷新 skill 明确规定的中间产物 `<opdir>/docs/operator-manual-facts.json`；它不算第二个文档发布目标。除该 facts 文件、唯一文档目标和发布门控临时候选外，不生成计划文件或旁路报告。
 
-| 文件 | 路径 |
-|------|------|
-| 算子规格说明 | `operator-desc/{op}.md` |
+## 六种模式
 
-保存算子规格文件前，必须再次向用户确认最终保存路径。仅生成 `operator-desc/{op}.md`，不得生成 `docs_operator/{op}/plan.md` 或其他计划文件。
+| 模式 | 触发场景 | 事实获取 | 输出 |
+|---|---|---|---|
+| `standalone-generate` | 独立生成新文档 | 用户材料、仓内证据、已有公开文档和必要的官方规格查证 | `<code_root>/operator-desc/{op}.md` |
+| `standalone-update` | 独立更新已有文档 | 同上，并读取现有目标文档 | 更新 `<code_root>/operator-desc/{op}.md` |
+| `template-analysis` | 只分析四章节模板 | 本 skill 的模板规则 | 不写文件 |
+| `integrated-initial` | 新算子编码前，父流程已冻结计划产物 | 仅 `<opdir>` 冻结产物 | 刷新 facts；发布 `<opdir>/docs/operator-manual-draft.md` |
+| `integrated-final` | 新算子终态同步 | 仅最新 `<opdir>` 冻结产物和父流程终态 | 刷新 facts；完成态发布正式文档，阻塞/硬停态只刷新草稿 |
+| `legacy-sync` | 历史算子从旧开发产物迁移文档 | 仅历史 `<opdir>` 产物和最后记录的 summary | A 且事实完整时发布正式文档；否则刷新 facts 并写迁移草稿；D 不写文件 |
 
-## 用户能看到什么
+先确定模式，再执行对应分支。不得把独立模式的路径确认、仓库扫描或外部查询带入集成/历史模式。
 
-执行时向用户展示四类信息：
+## 调用契约与路径授权
 
-1. **当前模式**：生成新文档、更新已有文档，或仅分析模板。
-2. **目录确认**：工作前询问并确认 `mindspore-lite` 目录；保存前确认 `operator-desc/{op}.md` 的最终保存路径。
-3. **todo 进度**：阶段性汇报使用 Markdown todo，不压缩成一句进度描述。
-4. **门控产物**：每个 step 完成前必须在对话正文给出证据或摘要；只落盘不展示不算完成。
+### 独立模式
 
-阶段性汇报固定格式：
+`standalone-generate` 和 `standalone-update` 保留交互确认：
 
-```markdown
-状态: step<n> 进行中
-待办:
-- [x] step0 确定算子与输出范围
-- [x] step1 收集框架规格与参考材料
-- [ ] step2 决定文档能力范围（进行中）
-- [ ] step3 生成四章节文档
-- [ ] step4 自检格式与敏感信息
-- [ ] step5 写入输出文件
-- [ ] step6 最终复核
+1. 工作前确认 `mindspore-lite` 代码根、`{op}`、`{Op}` 和框架范围。
+2. 写入前再次确认绝对目标路径 `<code_root>/operator-desc/{op}.md`。
+
+独立模式继续查证框架公开规格和仓内支持链路：parser/source entry 缺失写“不支持转换”；schema/infer/计算规格不覆盖某属性、shape、layout 或方向写“不支持该规格”；coder/目标类型未注册写“不支持该类型”。阶段更新用 Markdown todo 展示当前 step 和已得到的证据，不提前勾选未完成门控。
+
+`template-analysis` 只确认分析范围，不要求保存路径，不写文件。
+
+### 集成和历史模式
+
+父流程必须提供：
+
+| 参数 | 要求 |
+|---|---|
+| `mode` | `integrated-initial`、`integrated-final` 或 `legacy-sync` |
+| `code_root` | 绝对代码根路径 |
+| `opdir` | 该 implementation unit 的绝对工作目录 |
+| `op` / `Op` | 小写发布名 / 公开算子或 unit 名 |
+| `implementation_unit` | 父流程冻结的 implementation unit 标识 |
+| `framework_scope` | 父流程冻结的 source entry / 框架范围 |
+| `terminal_state` | `integrated-final` 必填：`completed`、`blocked` 或 `hard-stop` |
+
+这些父流程提供的路径和目标已经获得授权，不再询问目录或保存路径。仅做只读合法性检查：路径必须为绝对路径，核心产物必须位于给定 `opdir`，输出必须精确落到本模式规定的位置。参数缺失、路径冲突或框架范围冲突时返回父流程修正，不自行猜测。
+
+`integrated-final` 的 `completed` 只能来自父流程已经通过的 build、verify 和 board 等门控。本 skill 不重跑这些门控，也不从 summary 自行推导新算子的完成态。
+
+## 集成/历史模式的单一事实源
+
+| 文档位置 | 唯一主源 | 允许的辅助证据 |
+|---|---|---|
+| 文档头部、第 1 章 | `<opdir>/docs/spec.md` | `builtin-probe.md`、`reference-impl.md` |
+| 第 2 章 | `<opdir>/docs/implementation-contract.md` | `link-analysis.md` |
+| 第 3 章 | `<opdir>/scripts/capability_checklist.json` | `decision.md` |
+| 第 4 章 | `<opdir>/scripts/op_spec.py` | capability checklist、builtin probe |
+
+上述四个主源与最后记录的 `verify_summary.txt` 先规范化为唯一渲染输入：
+
+```text
+<opdir>/docs/operator-manual-facts.json
 ```
 
-某 step 标为 `[x]` 的前提是该 step 的门控产物已经真实出现在对话正文。不得为了进度好看提前勾选。
+该文件是本 skill 明确要求生成的中间产物，不是某个模型或工具的可选输出。`integrated-initial` 在草稿前首次生成；`integrated-final` 在终态文档前从最新产物整份重建；`legacy-sync` 从历史产物生成，不要求历史 `op_spec.py` 改成新 schema，也不重跑开发流程。Markdown 只读取该 facts 文件；audit 则独立读取原始产物、facts 和候选 Markdown 三方比对，不能用候选反向改写 facts。
 
-## 运行模式
+facts 顶层固定包含：
 
-先判断模式，向用户说明后再执行：
-
-| 用户输入 | 模式 | 执行范围 |
-|---------|------|---------|
-| "生成 XX 算子规格" / "编写 XX 算子规格" / "输出 XX 算子文档" | **生成新文档** | step0-step6 |
-| "更新 XX 算子规格" / "补充 XX 算子文档" | **更新已有文档** | step0-step6，step1 额外读取已有目标文件 |
-| "分析模板" / "只看格式" | **仅分析模板** | step0-step2 后停止，不写文件 |
-
-## 红线
-
-违反任一条即返工：
-
-1. **不得写入敏感信息。** 文档和变量表中禁止出现敏感编号字段、内部单号、私有链接参数、编号格式示例或任何类似占位符。
-2. **不得跳过规格查证。** ONNX/TFLITE 属性、输入输出、数据类型和布局必须来自用户提供信息、参考文档、已有文档或仓内材料；不得编造，不得在最终文档写"待确认"。
-3. **不得描述内部实现细节。** 功能规格只写对外可见的输入、属性、输出和限制；不要写 LUT、量化算法、kernel 分支、opcoder 细节等内部实现。
-4. **只生成算子规格文件。** 目标输出仅为 `operator-desc/{op}.md`，不得生成 `docs_operator/{op}/plan.md`。
-5. **测试用例必须具体。** 每条测试用例必须给出具体 `input_shape`、属性值和预期输出形状。
-6. **不支持必须明示。** 如果 parser 阶段、schema/infer 阶段或 coder 层没有找到对应算子映射，必须在第 2 章 Micro 功能规格中明确写“不支持转换”；如果 schema 文件或实际计算规格不支持某个属性、数据类型、维度、布局或方向，必须在规格限制中明确写“不支持该规格”，不得写成“待确认”。
-
-敏感信息的最低扫描规则如下；命中任一项即视为 FAIL，必须删除、泛化或改写：
-
-- 含“需求号”“需求编号”“任务号”“任务编号”“缺陷号”“Bug号”“问题单号”“审批单号”“评审单号”“工号”“员工号”“内部编号”“AR单号”“MR单号”“CR单号”等字段名。
-- 含常见内部编号前缀或模式，如 `REQ-123`、`TASK-123`、`BUG-123`、`JIRA-123`、`MS-1234`、`PRJ-1234`、`AR-123`、`MR-123`、`CR-123`、`ID: 123456`。
-- 含 6 位及以上、且以“编号/单号/ID/工号/需求号/任务号”等标签引出的纯数字串。
-- 含私有系统链接或其参数中带内部编号标识，如 URL 中出现 `ar_id=`、`mr_id=`、`cr_id=`、`taskId=`、`issueId=` 等。
-- 含“xxx编号”“请补编号”“内部单号”“补 AR/MR/CR 单号”等占位描述，即使未填写具体值也不允许保留。
-
-## 总流程
-
-| Step | 用户可读目标 | 必做动作 | 门控产物 |
-|------|--------------|----------|----------|
-| **step0** | 确定算子与输出范围 | 询问并确认 `mindspore-lite` 目录；确认 `{op}`、`{Op}`、框架范围、生成/更新模式、输出路径 | 范围声明 |
-| **step1** | 收集框架规格与参考材料 | 读取用户给定材料、已有文档；更新模式下读取已有目标文件；查证 parser、schema/infer、coder 三层映射 | 规格事实表与支持链路表 |
-| **step2** | 决定文档能力范围 | 确定数据类型、维度、布局、属性差异、TFLITE 是否有属性；将缺失链路或不支持规格写成明确限制 | 能力范围表 |
-| **step3** | 生成四章节文档 | 严格按模板生成四章节内容 | 文档草稿摘要 |
-| **step4** | 自检格式与敏感信息 | 检查章节、表格、用例、敏感信息、占位符完整性 | 自检清单 |
-| **step5** | 写入输出文件 | 保存前向用户确认最终保存路径；创建目录并写入目标文件 | 写入路径结果 |
-| **step6** | 最终复核 | 重新读取输出文件，确认格式和敏感信息 | 完成状态 |
-
-## step0 确定算子与输出范围
-
-必须确认以下信息：
-
-- `{op}`：小写算子名称，例如 `elu`、`celu`、`erf`
-- `{Op}`：PascalCase 算子名称，例如 `Elu`、`Celu`、`Erf`
-- `{Full Name}`：算子英文全称；无法确认则写通用名称
-- 框架范围：ONNX、TFLITE 或两者
-- 模式：生成新文档、更新已有文档或仅分析模板
-- `mindspore-lite` 目录：必须由用户确认
-- 输出路径：`operator-desc/{op}.md`
-
-门控产物必须包含：
-
-```markdown
-范围声明:
-- 算子: {Op} / {op}
-- 框架: ONNX/TFLITE
-- 模式: 生成新文档
-- mindspore-lite目录: {mindspore_lite_dir}
-- 输出: operator-desc/{op}.md
+```json
+{
+  "schema_version": 1,
+  "operator": "TopK",
+  "mode": "integrated-final",
+  "provenance": "production",
+  "production_eligible": true,
+  "sources": {},
+  "chapter_facts": [],
+  "capabilities": [],
+  "scenario_groups": [],
+  "coverage_principles": [],
+  "cases": []
+}
 ```
 
-## step1 收集框架规格与参考材料
+每个 `sources` 项记录相对 `path` 和当前文件 `sha256`。每个 `chapter_facts` 项记录 `chapter`、核心源中的逐字 `quote` 和公开 `manual_text`。每个 capability 保留原始 `id`、`description`、规范化 `covered_by`，可另加不改变语义的公开 `manual_text`。`scenario_groups` 只负责把 capability 归并为读者能理解的使用场景，不能删除、重复或改写源 capability；`coverage_principles` 负责第 4-1 的白话说明。每个 case 固定记录原始 ID、framework/source entry、模型 dtype、input shape、value domain、属性、逐 case PASS 验证路径、结构化预期输出、公开预期输出文本和预期输出证据。case 顺序必须等于 `op_spec.py`。
 
-必须收集并列出以下事实：
+capability 的公开改写不得扩大用例实际覆盖：case 只把属性写成默认值时，必须写“默认值配置”，不能写“省略属性后的默认解析”；只有模型构造确实省略该属性时才能宣称覆盖默认解析。同理，spec/contract 的 opset 策略不能写成另一个 opset 测试覆盖，除非对应验证模型真实使用该 opset。
 
-| 信息 | ONNX | TFLITE |
-|------|------|--------|
-| 算子名称 | `{Op}` | `{Op}` |
-| 公式/语义 | 已确认/不支持转换 | 已确认/不支持转换 |
-| 输入 | 已确认/不支持转换 | 已确认/不支持转换 |
-| 输出 | 已确认/不支持转换 | 已确认/不支持转换 |
-| 属性 | 已确认/无属性/不支持该规格 | 已确认/无属性/不支持该规格 |
-| 数据类型 | 已确认/不支持该类型 | 已确认/不支持该类型 |
+case 字段名和形状固定如下；算子特有属性只放在 `attributes`：
 
-资料来源优先级：
-
-1. 用户提供的规格说明或参考文件。
-2. 仓内已有 `operator-desc/` 文档（如存在与目标算子接近的已落地示例，则优先参考其章节结构与表格风格；若不存在，不得虚构参考文件）。
-3. 框架官方规格或已有项目材料。
-4. 框架规格存在但仓内支持链路缺失时，标记为 `不支持转换` 或 `不支持该规格`，不得编造。
-
-必须查证仓内支持链路：
-
-| 层级 | 必查内容 | 判定 |
-|------|----------|------|
-| parser 阶段 | ONNX/TFLITE/TF/PyTorch parser、fusion pass 或 op mapper 是否能生成目标 Lite 算子 | 未找到映射则该框架写“不支持转换” |
-| schema/infer 阶段 | `schema/ops.fbs`、primitive 属性、populate、infer shape 是否存在并覆盖对应输入/属性/输出 | schema 或 infer 不支持的属性、维度、布局、方向写“不支持该规格” |
-| coder 层 | Micro coder 是否注册目标算子和目标数据类型，例如 `REG_OPERATOR_CODER` / `REG_DYNAMIC_OPERATOR_CODER` | 未注册的数据类型或目标写“不支持该类型”或“不支持转换” |
-| 实际计算规格 | 计算函数、shape 推导或参数填充是否拒绝某种规格 | 明确写“不支持该规格”，不得写“待确认” |
-
-更新已有文档时，必须读取：
-
-- `operator-desc/{op}.md`
-
-门控产物：在对话正文给出"规格事实表"和"支持链路表"，并列明哪些字段已确认、哪些字段不支持转换或不支持该规格。不得出现“待确认”。
-
-## step2 决定文档能力范围
-
-根据 step1 事实决定文档中要覆盖的能力范围。能力范围必须只写实际支持内容；如果某框架、数据类型、维度、布局、属性或方向缺少 parser、schema/infer、coder 任一必要链路，必须在第 2 章对应规格限制中明确“不支持转换”或“不支持该规格”。
-
-| 项目 | 默认值 | 写法要求 |
-|------|--------|----------|
-| 数据类型 | 按 coder 注册结果 | 只写对外支持类型；未注册类型写“不支持该类型” |
-| 维度 | 按 schema/infer/计算规格 | 用 `2D/3D/4D` 或算子实际维度表述；不支持维度写“不支持该规格” |
-| ONNX 数据排布 | `ND/NCW/NCHW` | 写在 ONNX 输入/输出规格中 |
-| TFLITE 数据排布 | `ND/NWC/NHWC` | 写在 TFLITE 输入/输出规格中 |
-| 属性 | 按框架规格和仓内支持链路 | 无属性时明确写"无属性"；框架有但仓内不支持时写“不支持该规格” |
-
-TFLITE 无属性时使用：
-
-```markdown
-| — | — | TFLITE {Op} 无属性 | |
+```json
+{
+  "id": "TC-001",
+  "framework_source_entry": "ONNX TopK",
+  "framework": "onnx",
+  "model_dtype": "float32",
+  "input_shape": [2, 8],
+  "value_domain": "mixed",
+  "attributes": {
+    "axis": -1,
+    "k": 3,
+    "largest": true,
+    "sorted": true
+  },
+  "verification_paths": ["x86_fp32", "riscv_fp32", "riscv_int8"],
+  "expected_outputs": [
+    {"name": "Values", "shape": [2, 3], "dtype_rule": "same_as_input"},
+    {"name": "Indices", "shape": [2, 3], "dtype": "int32"}
+  ],
+  "expected_outputs_text": "Values/Indices shape=[2, 3]; Values 与输入同 dtype；Indices=int32",
+  "expected_output_evidence": {
+    "source": "docs/implementation-contract.md",
+    "quote": "Both output shapes equal the input shape with the selected axis replaced by K.",
+    "shape_rule": "replace_axis_with_k"
+  }
+}
 ```
 
-门控产物：给出能力范围表，且表内不得出现“待确认”。仅分析模板模式在 step2 后停止，不写文件。
+`shape_rule` 只允许 audit 已实现且原始源逐字陈述的规则（当前为 `replace_axis_with_k`），或 op_spec case 已显式给出完整输出时使用 `op_spec_explicit`。不能为了通过 audit 自造规则名。
 
-## step3 生成四章节文档
+辅助证据只能在以下边界内使用：
 
-输出文档必须严格使用以下四章节结构。
+- `decision.md`：只确认 source entry 的归并和场景分类，不公开 PrimitiveType、源码层级、工作区或内部流程。
+- `link-analysis.md`：只投影为“支持转换”“不支持该规格”“不支持该类型”，不公开文件、注册符号或缺陷动作。
+- `reference-impl.md`：只补充可观察语义和边界，不公开拉取命令、临时路径或工程取舍。
+- `builtin-probe.md`：只补充 source entry 与 builtin 的已验证映射。
+- capability checklist 作为第 4 章辅助证据时只检查 `covered_by` 关联；它和 builtin probe 都不得提供或改写 case 字段。
+
+在 `integrated-initial`、`integrated-final` 和 `legacy-sync` 中：
+
+- 禁止重新扫描代码仓，禁止查询外部或框架规格，禁止运行 scan、build、`hs-debug-op-host-accuracy` 或板端流程。
+- 现有 `operator-desc/{op}.md` 不是事实源，不得覆盖或“纠正”冻结产物；最终同步必须从最新冻结产物整篇重建。
+- 主源之间、主源与父参数之间有冲突，或公开事实缺失时，返回上游修正并输出 FAIL。不得选择“看起来更合理”的版本，不得发明补全。
+
+## 预检与历史分级
+
+对所有带 `opdir` 的模式，在生成前运行：
+
+```bash
+python3 <manual_skill_root>/scripts/audit_manual_inputs.py --opdir <absolute_opdir>
+```
+
+记录 `OP_MANUAL_INPUT_TIER`。集成模式用它检查核心资产是否可读；`legacy-sync` 必须严格按以下 A/B/C/D 分级：
+
+| 等级 | 条件 | 行为 |
+|---|---|---|
+| A：可直接同步 | 四个核心源完整、现行 capability schema 可读、最后完整 summary 全绿且能力全覆盖 | facts 内容完整且三项同步 PASS 时生成正式文档；否则只生成迁移草稿 |
+| B：可迁移同步 | 语义和用例核心源完整，但使用旧 capability schema、缺少非语义元数据或没有可信全绿 summary | 只读兼容，生成 `<opdir>/docs/operator-manual-draft.md`；不得覆盖正式文档 |
+| C：历史验证未通过 | 最新完整 summary 含非零 FAIL/ERR、`HARNESS_EXIT!=0` 或能力未覆盖 | 生成 `<opdir>/docs/operator-manual-draft.md`；不得覆盖正式文档 |
+| D：事实源不足 | 缺少或无法读取 spec、contract、capability 或 op_spec | 列出缺失/冲突后停止，不写文件 |
+
+旧 schema 只允许无损读取：
+
+- capability 缺少 `match` 时按空匹配读取，不得从 `desc` 猜结构化参数。
+- `framework_scope` 由 capability、op_spec 的非空框架用例和 spec 的 FOUND/NOT_FOUND 交叉确认；冲突即 FAIL。
+- 条件产物缺失仅在其触发条件不存在时放行。
+- 不重写历史 capability、op_spec、summary 或其他产物。
+
+历史 summary 只取最后一组完整 `VERDICT` + 紧随其后的 `HARNESS_EXIT`，只用于发布资格和已记录能力/验证路径的状态过滤；它不是框架语义、功能规格、shape、dtype 或属性的来源。
+
+验证路径只读取 summary 中逐 case 的明确 `PASS` 行。聚合 `paths=[...]`、全局目标列表或 dtype 名称都不能展开成逐 case 支持结论。历史 summary 没有逐 case 记录时，对应 facts 的 `verification_paths` 为空并降为迁移草稿；不得为了发布补写路径。
+
+对 C 级：
+
+- summary 明确标记失败或未覆盖的 variant/target/path，不得写成已支持，不得在测试表中标成正向通过路径。
+- 第 4 章仍逐 case 投影 op_spec 以保持 ID 完整，但行只表示冻结的用例设计；失败路径从“已支持验证路径”中移除或明确写“不支持该规格”。
+- summary 只有聚合失败而没有可靠映射时，不猜失败 case；整份文档保持迁移草稿状态，不宣称未证实路径已支持。
+
+## 四章节结构与模式分支
+
+最终文档必须有标题、简述和且仅有以下四个一级编号章节。
+
+### 独立模式的四章节构建
+
+`standalone-generate` 和 `standalone-update` 不要求存在 `opdir` 或冻结产物，也不套用集成/历史模式的逐产物投影规则：
+
+| 文档位置 | 独立模式事实来源与构建规则 |
+|---|---|
+| 文档头部、第 1 章 | 从用户材料、已有公开文档、仓内材料和必要的官方规格中交叉查证框架语义、属性、输入和输出 |
+| 第 2 章 | 扫描并核对 parser/source entry、schema/infer、coder 和实际计算规格，只记录公开支持范围和明确限制 |
+| 第 3 章 | 从上述已验证事实归纳关键支持/不支持场景，不写内部实现 |
+| 第 4 章 | 为已验证支持范围构造具体测试设计；每行给出 framework、模型 dtype、input_shape、输入数据特征、属性和预期输出，不为不支持规格生成正向用例 |
+
+独立模式使用下方相同的标题、四章节名称和公开表格形状，但把其中的冻结产物来源替换为本表的已查证来源。其测试用例从 `TC-001` 顺序编号，并覆盖已验证的典型值与边界值；它们不需要与不存在的 `op_spec.py` 做 case parity。更新模式可保留仍被当前证据支持的已有用例，但必须删除过时或无法验证的内容。
+
+### 集成/历史模式的四章节投影
+
+以下来源绑定、`covered_by` 检查和 op_spec 精确 case 规则只适用于 `integrated-initial`、`integrated-final` 和 `legacy-sync`。这三个模式不得回退到独立模式取材。
 
 ### 文档头部
 
 ```markdown
-# {Op} 算子规格说明文档
+# {Op} 算子设计文档
 
-**{Op}（{Full Name}）** 是一种{类别}，对输入张量逐元素应用非线性变换，数学公式为：
-
-$$
-{formula}
-$$
-
-{framework_differences_description}
+{来自 spec.md 的公开、已验证语义简述}
 ```
+
+集成/历史模式只有 `spec.md` 明确给出英文全名、类别或公式时才写对应内容。独立模式使用其已查证来源。所选来源缺少全名/类别时使用不增加新事实的中性已验证描述；缺少公式时省略公式块，不使用通用名称或经验公式补造。
 
 ### 第 1 章：ONNX/TFLITE 框架算子描述
 
 ```markdown
 ## 1. ONNX/TFLITE 框架算子描述
 
-### 1.1 ONNX 框架
+### 1.1 {framework/source entry}
 
 **Attributes**
 
 | Name | Type | Default | Required | Description |
-|------|------|---------|----------|-------------|
-| {attr_name} | {attr_type} | {attr_default} | {required} | {attr_desc} |
+|---|---|---|---|---|
+| ... | ... | ... | ... | ... |
 
 **Inputs**
 
 | Name | Type | Description |
-|------|------|-------------|
-| X | T (heterogeneous) | 输入张量 |
+|---|---|---|
+| ... | ... | ... |
 
 **Outputs**
 
 | Name | Type | Description |
-|------|------|-------------|
-| Y | T (heterogeneous) | 输出张量，形状与 X 相同 |
-
-### 1.2 TFLITE 框架
-
-**Attributes**
-
-{tflite_attributes_or_none}
-
-**Inputs**
-
-| Operand | Description |
-|---------|-------------|
-| x | tensor of 32-bit float or 8-bit signless integer values |
-
-**Outputs**
-
-| Result | Description |
-|--------|-------------|
-| y | tensor of 32-bit float or 8-bit signless integer values |
-
+|---|---|---|
+| ... | ... | ... |
 ```
+
+集成/历史模式按父流程的 `framework_scope`，独立模式按用户确认且已查证的框架范围，为每个 source entry 重复小节。无属性时写 `| — | — | — | — | 无属性 |`。集成/历史模式的 spec 或独立模式证据明确 NOT_FOUND/无转换入口时写“不支持转换”，不编造属性、类型或布局。
 
 ### 第 2 章：MindSpore-Lite Micro 功能规格
 
 ```markdown
 ## 2. MindSpore-Lite Micro 功能规格
 
-### 2.1 ONNX 算子规格
+### 2.1 {framework/source entry} 算子规格
 
 **输入**
 
-| 输入 | 数据类型 | 参数含义 | 规格限制 |
-|------|----------|----------|----------|
-| {input_name} | {data_types}，维度为{dims}，{onnx_layouts} 数据排布 | 输入张量 | |
+| 输入 | 模型数据类型 | 参数含义 | 规格限制 |
+|---|---|---|---|
+| ... | ... | ... | ... |
 
 **属性**
 
 | 属性 | 数据类型 | 参数含义 | 规格限制 |
-|------|----------|----------|----------|
-| {attr_name} | {attr_spec} | {attr_meaning} | |
+|---|---|---|---|
+| ... | ... | ... | ... |
 
 **输出**
 
-| 输出 | 数据类型 | 参数含义 | 规格限制 |
-|------|----------|----------|----------|
-| {output_name} | {data_types}，维度为{dims}，{onnx_layouts} 数据排布 | 输出张量，形状与 {input_name} 相同 | |
-
-### 2.2 TFLITE 算子规格
-
-{结构同 2.1，数据排布替换为 tflite_layouts}
+| 输出 | 模型数据类型 | 参数含义 | 规格限制 |
+|---|---|---|---|
+| ... | ... | ... | ... |
 ```
 
-### 第 3 章：关键场景分析
+集成/历史模式完全投影 implementation contract 的输入、dtype、属性、输出、shape/layout 和功能限制；独立模式从已查证支持链路构建本章。模型 dtype 与验证路径是两个概念，不能把 full-quant int8 验证路径改写成原生 int8 模型支持。
 
-不得出现敏感编号列。
+本章需要说明已验证运行通路时，使用设计语言描述实际覆盖，不公开验证脚本内部任务名：
+
+```markdown
+### 2.3 已验证运行通路与限制
+
+| 运行通路 | 已验证的设计范围 |
+|---|---|
+| x86 主机非量化通路 | 已验证的 float32 和/或原生整数模型 |
+| RISC-V 非量化通路 | 已验证的 float32 和/或原生整数模型 |
+| RISC-V 全量化 int8 通路 | float32 模型经全量化后实际使用 int8 数据和量化内核 |
+| RISC-V 原生整数通路 | 原生整数模型保持其整数数据类型，不计入 int8 量化覆盖 |
+```
+
+只保留当前算子真实覆盖的行。表格后直接写设计限制和不支持范围，不写“冻结汇总逐 case 记录了以下通过路径”等流程说明。
+
+### 第 3 章：关键场景分析
 
 ```markdown
 ## 3. 关键场景分析
 
-| 场景编号 | 场景描述 |
-| -------- | -------- |
-| 1 | ONNX 框架 {Op} 算子 {supported_dtype_1} 格式转换 |
-| 2 | ONNX 框架 {Op} 算子 {supported_dtype_2_or_other_supported_case} 格式转换 |
-| 3 | TFLITE 框架 {Op} 算子 {supported_dtype_1} 格式转换 |
-| 4 | TFLITE 框架 {Op} 算子 {supported_dtype_2_or_other_supported_case} 格式转换 |
-
-场景介绍：
-
-介绍：ONNX/TFLITE 框架 {Op} 算子已确认支持规格的格式转换
-
-输入：含已确认支持输入格式 {Op} 算子的 ONNX/TFLITE 标准模型
-
-输出：可供 RISC-V 端执行的 C 语言（Micro）工程
-
-处理：解析 ONNX/TFLITE 标准模型，对 {Op} 算子展开算子融合等优化，依据算子分配结果生成 C 语言（Micro）工程
+| 使用场景 | 什么时候会遇到 | 已覆盖行为与限制 | 对应用例 |
+|---|---|---|---|
+| 常规选择 | 用户在什么情况下使用 | 已验证的行为和必须知道的限制 | TC-... |
 ```
+
+集成/历史模式先完整保留 capability checklist，再通过 `scenario_groups` 组织公开章节。当 capability 多于 7 项时，必须归并为 3～7 个面向读者的场景；每个场景回答“什么时候会遇到”“已经验证什么”“有什么限制”，不得默认把每个内部 capability 直接公开成一行。每个 capability 必须恰好属于一个 group，group 的 `covered_by` 必须等于成员 capability 用例号的有序并集。找不到、重复或遗漏即 FAIL，禁止为补齐覆盖而新造用例。独立模式改用本节前述已验证场景构建规则，不要求 capability checklist。
 
 ### 第 4 章：测试设计
 
@@ -288,121 +299,152 @@ $$
 
 ### 4-1 测试用例覆盖原则
 
-1. 输入类型只覆盖 coder 层已注册支持的类型
-2. 输入张量维度只覆盖 schema/infer/实际计算已支持的维度
-3. 属性覆盖典型值与边界值
-4. 每条用例需给出具体的 input_shape、算子属性值和预期输出形状
+**输入是否覆盖常见规模？** 用读者能理解的语言说明 shape、rank、axis 和 batch 覆盖。
+
+**不同选择方式是否正确？** 说明属性、方向、排序或其他主要行为。
+
+**边界和数据内容是否覆盖？** 说明边界值和输入数据特征。
+
+**量化/非量化通路是否覆盖？** 根据逐用例 PASS 记录、模型数据类型和生成代码证据，分别说明非量化、全量化 int8 与原生整数通路覆盖。
 
 ### 4-2 用例总表
 
-| 用例编号 | 框架 | 数据类型 | 输入规格 | 算子属性 | 预期输出 |
-| -------- | ---- | -------- | -------- | -------- | -------- |
-| TC-{nn} | {framework} | {dtype} | input_shape: {shape} | {attrs} | shape: {out_shape} |
+| 用例编号 | 框架/source entry | 模型 dtype | 已覆盖运行通路 | input_shape | 输入数据特征（value_domain） | 算子属性 | 预期输出 |
+|---|---|---|---|---|---|---|---|
+| TC-... | ... | ... | ... | ... | ... | ... | ... |
 ```
 
-测试用例生成规则：
+上述四个问题的文字和顺序固定，问答来自 facts 的 `coverage_principles`，每项包含 `question` 和 `answer`。答案必须先解释用户能理解的覆盖含义，再让第 4-2 给出精确数据；不要在第 4-1 使用“逐用例投影”“冻结产物”“正向用例”等流程术语。
 
-- 顺序：按框架分组，先 ONNX 已支持类型，再 TFLITE 已支持类型；未支持类型不得生成正向测试用例
-- 每组内部：先遍历已确认支持的输入维度和形状，再遍历属性取值变化
-- 可配置属性需要覆盖默认值、典型值和边界值
-- TFLITE 固定属性标记为 `（固定）`
-- 无属性算子写 `无`
-- 如果某框架不支持转换，在第 2 章写“不支持转换”，第 3 章和第 4 章不生成该框架的正向场景或正向用例
-- 如果某数据类型、维度、布局、属性或方向不支持，在第 2 章写“不支持该类型”或“不支持该规格”，第 4 章不生成该规格的正向用例
-- 用例编号顺序递增：TC-001、TC-002、...
+第四个问题不能只罗列内部验证任务名。先按实际语义分类，再报告覆盖：
 
-门控产物：展示四章节草稿摘要，说明每章是否完整。
+- 非量化通路：依据无全量化配置的主机/RISC-V PASS 记录，说明覆盖的框架、用例数和模型数据类型。
+- 全量化 int8 通路：只统计 float32 模型经 FULL_QUANT 后确实生成 int8 张量/量化内核的 PASS 用例；必须有 `int8_genuine`、生成内核或等价产物证据。
+- 原生整数通路：单独说明 int32 等原生整数模型。即使它执行了名为 `riscv_int8` 的任务，只要张量和内核仍为原生整数，就不能计入 int8 量化覆盖。
 
-## step4 自检格式与敏感信息
+结论中的数量必须从 facts 的 cases、逐 case `verification_paths` 和实现/生成证据计算，不能从聚合路径列表或路径名称推断。`verification_paths` 保留机器任务名用于审计，但公开设计文档必须转换为“x86 主机非量化”“RISC-V 非量化”“RISC-V 全量化 int8”“RISC-V 原生整数”等实际含义；全文不得出现 `x86_fp32`、`riscv_fp32`、`riscv_int8`。
 
-写文件前必须自检：
+以下第 4 章规则只适用于集成/历史模式：
 
-| 检查项 | 要求 |
-|--------|------|
-| 四章节结构 | 必须包含第 1-4 章 |
-| 输入/属性/输出表 | 每个框架分别列出 |
-| 测试用例 | 具有具体 input_shape 和属性值 |
-| 敏感信息 | 不得出现敏感编号字段、AR/MR/CR 等内部单号、私有链接参数或占位符 |
-| 内部实现 | 不描述 LUT、kernel、opcoder、量化实现细节 |
-| 输出文件范围 | 仅写入 `operator-desc/{op}.md` |
-| 待确认 | 全文不得出现“待确认” |
-| 不支持规格 | parser/schema/infer/coder 或实际计算不支持的内容必须明确写“不支持转换”“不支持该规格”或“不支持该类型” |
+1. ONNX_TEST_CASES 和 TFLITE_TEST_CASES 中每个 case 恰好一行；不遗漏、不合并、不增加 op_spec 中不存在的 case。
+2. 保留原始 case ID。数字 `1` 显示为 `TC-001`，`101` 显示为 `TC-101`；不得按表格位置重新编号。
+3. framework、shape、K/属性、模型 dtype 和 `value_domain` 从 op_spec case 规范化进 facts；Markdown 逐字段按 facts 的规范格式渲染，不能把 `value_domain` 丢进泛化描述。
+4. “模型 dtype”和“已覆盖运行通路”分列。模型 dtype 只来自 op_spec case；内部验证记录只来自最后可信 summary 的同 case 明确 PASS 行，再结合模型 dtype 和生成代码证据转换为读者语言。不得从聚合路径、dtype 名称或经验规则推导覆盖。
+5. 预期输出必须有结构化 `expected_outputs`、公开 `expected_outputs_text` 和逐字证据。输出名称/dtype 来自 op_spec 模型构造或 implementation contract；shape 只有在上述来源明确写出 shape 规则时才可把规则应用到 case 参数。final 不允许任何必需字段写“未记录”“待确认”或“尚未执行验证”。
+6. `integrated-initial` 尚未产生验证证据时，验证路径单元格固定写“尚未执行验证”，且 facts 的 `production_eligible=false`；该措辞只允许 draft。
+7. `integrated-final` 和 legacy A 不增量修补旧表，而是从最新 facts 重建整表，删除已移除 case 并加入新增 case。
+8. 不支持的 framework/type/spec 不生成额外正向 case；C 级失败路径不得标成 PASS 或 supported。
 
-敏感信息扫描必须至少覆盖以下内容；若命中，必须删除或改写后重新检查：
+## 敏感信息与公开边界
 
-- 敏感字段名：`需求号`、`需求编号`、`任务号`、`任务编号`、`缺陷号`、`Bug号`、`问题单号`、`审批单号`、`评审单号`、`工号`、`员工号`、`内部编号`、`AR单号`、`MR单号`、`CR单号`
-- 常见敏感前缀：`REQ-`、`TASK-`、`BUG-`、`JIRA-`、`MS-`、`PRJ-`、`AR-`、`MR-`、`CR-`
-- 标签加数字模式：`(编号|单号|ID|工号|需求号|任务号)[:： ]*[0-9]{6,}`
-- 私有链接参数：`ar_id=`、`mr_id=`、`cr_id=`、`taskId=`、`issueId=`
-- 占位形式：`xxx编号`、`待补编号`、`内部单号`、`补 AR/MR/CR 单号`
+违反任一项即返工：
 
-门控产物：给出自检清单，逐项标记 PASS/FAIL。
+- 禁止写需求号、任务号、缺陷号、工号、员工号、审批/评审单号、内部编号，或 `AR/MR/CR` 等内部流转编号。
+- 禁止写 `REQ-123`、`TASK-123`、`BUG-123`、`JIRA-123`、`MS-1234`、`PRJ-1234`、`AR-123`、`MR-123`、`CR-123`、带标签的六位以上数字串，以及此类占位符。
+- 禁止写“Bug号”“问题单号”“xxx编号”“请补编号”“待补编号”“内部单号”或“补 AR/MR/CR 单号”等字段/占位描述。
+- 禁止私有系统链接和含 `ar_id=`、`mr_id=`、`cr_id=`、`taskId=`、`issueId=` 的参数。
+- 禁止写源码路径、注册符号、LUT、kernel/opcoder 分支、量化实现、工作区和内部缺陷动作。
+- 公开测试用例号 `TC-*` 是必要文档标识，不属于敏感编号，必须按 op_spec 保留。
+- 全文不得出现“待确认”。证据不足时停止并返回上游，而不是把不确定性发布出去。
 
-## step5 写入输出文件
+支持状态固定用语：
 
-写入前必须向用户确认最终保存路径，用户未确认前不得写入。
+| 情况 | 写法 |
+|---|---|
+| source entry/parser 无转换入口 | `不支持转换` |
+| 模型 dtype/目标类型无支持记录 | `不支持该类型` |
+| 属性、shape、layout、方向、variant 或验证 target 不支持 | `不支持该规格` |
 
-写入前先创建目录：
+## 执行顺序
+
+| Step | 动作 | 门控 |
+|---|---|---|
+| step0 | 选择模式；独立模式完成两次确认要求，集成/历史模式校验父参数和绝对路径 | 模式、范围、唯一目标明确 |
+| step1 | 带 opdir 的模式运行输入 audit；legacy 按 A/B/C/D 分级 | D 或核心冲突立即 FAIL |
+| step2 | 从原始主源创建/整份刷新 `operator-manual-facts.json`，逐项保存 source quote/hash | facts schema 完整；缺失和冲突返回上游，不发明 |
+| step3 | 只从 facts 在内存中生成完整候选；final 从最新 facts 整表重建第 4 章 | 四章完整；case 顺序和逐字段值一一对应 |
+| step4 | 对候选做格式、来源、支持措辞、敏感信息和 placeholder 自检 | 全部 PASS 才能进入发布门控 |
+| step5 | 将候选写入目标同目录的临时文件，对 facts 和临时候选运行完整 audit | facts/content/case 三项均 PASS |
+| step6 | 三项 audit PASS 后才把临时候选原子提升为唯一文档目标；重新读取并打印 `OP_MANUAL_SYNC` | PASS 或带阻塞原因的 FAIL |
+
+现有正式文档和现有草稿在发布门控通过前都不得修改。候选优先保留在内存；运行 audit 时，才在目标同目录创建可精确识别的临时候选，以保证 PASS 后可在同一文件系统原子提升：
 
 ```bash
-mkdir -p operator-desc
+candidate_path="$(mktemp "${target_path}.candidate.XXXXXX")"
+# 将内存候选写入 "$candidate_path"，不要写 "$target_path"
+python3 <manual_skill_root>/scripts/audit_manual_inputs.py \
+  --opdir <absolute_opdir> \
+  --facts <absolute_opdir>/docs/operator-manual-facts.json \
+  --manual "$candidate_path" \
+  --publication <draft|migration-draft|final>
 ```
 
-写入一个文件：
+只有 `OP_MANUAL_FACTS_SYNC=PASS`、`OP_MANUAL_CONTENT_SYNC=PASS` 和 `OP_MANUAL_CASE_SYNC=PASS` 同时成立，才以原子 rename/move 将临时候选提升为本模式唯一文档目标。若 FAIL 或命令异常，删除/丢弃该临时候选并保持已有文档 target 原样；先修 facts 或内存候选，再用新的临时候选重跑。临时候选不是持久输出，不得残留。不得为取得 PASS 修改 op_spec、capability 或 summary。独立模式没有 opdir/facts audit，但也必须先完成 step4 自检，再通过同目录临时候选原子提升目标。
+
+带 `opdir` 的正式发布必须同时满足：父终态允许发布、legacy 等级允许发布、facts `provenance=production`、`production_eligible=true`，以及 facts/content/case 三项同步 PASS。
+
+## 输出决策
+
+| 模式/状态 | publication | 唯一目标 |
+|---|---|---|
+| `standalone-generate` / `standalone-update` | `final` | `<code_root>/operator-desc/{op}.md` |
+| `template-analysis` | `none` | `NONE` |
+| `integrated-initial` | `draft` | `<opdir>/docs/operator-manual-draft.md` |
+| `integrated-final terminal_state=completed` | `final` | `<code_root>/operator-desc/{op}.md` |
+| `integrated-final terminal_state=blocked\|hard-stop` | `draft` | `<opdir>/docs/operator-manual-draft.md` |
+| `legacy-sync` A 且 facts 内容完整 | `final` | `<code_root>/operator-desc/{op}.md` |
+| `legacy-sync` A 但 facts 内容不完整 | `migration-draft` | `<opdir>/docs/operator-manual-draft.md` |
+| `legacy-sync` B/C | `migration-draft` | `<opdir>/docs/operator-manual-draft.md` |
+| `legacy-sync` D | `none` | `NONE` |
+
+一次调用不得同时刷新 draft 和 final，且除 mandatory facts 中间产物外最多提升一个持久文档目标。完成或失败时，最后一行使用：
 
 ```text
-operator-desc/{op}.md
+OP_MANUAL_SYNC=PASS mode=<mode> publication=<final|draft|migration-draft|none> path=<absolute-path|NONE>
+OP_MANUAL_SYNC=FAIL mode=<mode> publication=none path=NONE
 ```
 
-门控产物：给出用户确认的保存路径和实际写入结果。
+失败详情在终态行之前简要列出并返回父流程。`integrated-initial` 失败会阻塞进入编码；`integrated-final` 失败会阻塞完成声明。
 
-## step6 最终复核
+## 自检与最终复核
 
-最终复核必须重新读取输出文件，并确认：
+候选提升前逐项检查：
 
-1. 目标文件为 `operator-desc/{op}.md`。
-2. 文档包含第 1-4 章。
-3. 第 3 章没有敏感编号列或内部单号列。
-4. 全文不包含敏感信息，尤其不得包含敏感编号字段、`AR/MR/CR` 等内部单号、私有链接参数或占位符。
-5. 全文不包含“待确认”。
-6. 第 2 章对缺少 parser、schema/infer、coder 映射的框架/类型/规格明确写“不支持转换”“不支持该规格”或“不支持该类型”。
-7. 测试用例表包含具体 `input_shape`、属性值和预期输出形状，且只覆盖支持规格；不支持规格不得生成正向测试用例。
-8. 未生成或更新 `docs_operator/{op}/plan.md`。
+- [ ] 模式、授权和唯一输出与决策表一致；不生成 `docs_operator/{op}/plan.md` 或其他文件。
+- [ ] 带 opdir 的模式已从本次最新原始源刷新 `operator-manual-facts.json`；source path/hash、quote、case 顺序和 provenance 均正确。
+- [ ] 文档只有规定的四个编号章节；独立模式使用已查证事实构建，集成/历史模式每章来自规定主源。
+- [ ] capability 多于 7 项时，第 3 章已归并为 3～7 个读者场景；每个 capability 恰好出现一次，group 用例号是成员 `covered_by` 的准确并集。
+- [ ] 第 4-1 的四个问题和答案来自 `coverage_principles`，使用用户语言解释覆盖范围，没有流程术语堆叠。
+- [ ] 集成/历史模式没有仓库重扫、外部查询、build、verify 或 board 重跑。
+- [ ] 现有正式文档没有覆盖冻结事实；final 的第 4 章已经整表重建。
+- [ ] formula/full name/category 未被发明；缺公式时已省略。
+- [ ] 不支持项使用固定措辞，C 级失败 variant/target/path 未写成支持。
+- [ ] 模型 dtype、已覆盖运行通路、value_domain/输入数据特征各自保留且没有混淆；机器验证标识只保留在 facts，公开设计文档已转换为实际运行含义。
+- [ ] 文档标题和正文定位为算子设计文档；全文没有出现内部验证任务名。
+- [ ] 集成/历史模式中 op_spec 每个 case 恰好一行，原始 `TC-*` ID 未重排；每个 `covered_by` 都存在。
+- [ ] 全文没有敏感信息、内部实现、私有链接或“待确认”。
+- [ ] facts/content/case 任一 audit 尚未通过时，既有正式文档/草稿仍未被覆盖；失败临时候选会被丢弃。
 
-只有以上全部满足，最终状态才允许写：
+提升后重新读取目标并确认：
 
-```markdown
-状态: 完成
-```
+1. 实际只持久写入决策表中的一个文件，或命中允许的零写入分支；没有残留临时候选。
+2. 四章、表头和支持措辞完整，旧 case 不残留，新 case 不遗漏。
+3. 带 opdir 的输出得到 `OP_MANUAL_FACTS_SYNC=PASS`、`OP_MANUAL_CONTENT_SYNC=PASS` 和 `OP_MANUAL_CASE_SYNC=PASS`；否则不得发布正式文档或报告同步成功。
+4. terminal_state 和 legacy 等级没有被文档内容反向改写。
 
-存在任一未满足项时，最终状态必须写：
+## 变量与参考
 
-```markdown
-状态: 未完成
-```
+| 变量 | 含义 |
+|---|---|
+| `<manual_skill_root>` | `hs-design-op-manual` skill 的绝对目录 |
+| `<code_root>` | MindSpore Lite 代码根绝对路径 |
+| `<opdir>` | 单个 implementation unit 的绝对工作目录 |
+| `target_path` | 按输出决策表解析出的唯一持久文档目标绝对路径 |
+| `{op}` / `{Op}` | 小写发布文件名 / 公开算子或 unit 名 |
+| `framework_scope` | 父流程冻结的 source entry / 框架集合 |
+| `terminal_state` | `integrated-final` 的 `completed`、`blocked` 或 `hard-stop` |
+| `model dtype` | 模型输入本身的数据类型 |
+| `verification path` | fp32、full-quant int8 等独立验证路径，不等于模型 dtype |
+| `value_domain` | 输入值域/输入数据特征，如 mixed、positive、negative、ties |
 
-并列出阻塞项。
-
-## 变量参考
-
-| 变量 | 说明 | 示例 |
-|------|------|------|
-| `{Op}` | PascalCase 格式算子名称 | `Elu`, `Celu`, `Erf` |
-| `{op}` | 小写算子名称 | `elu`, `celu`, `erf` |
-| `{Full Name}` | 算子英文全称 | `Exponential Linear Unit` |
-| `{formula}` | LaTeX 公式 | `f(x) = \begin{cases} ... \end{cases}` |
-| `{data_types}` | 支持的数据类型，只能来自 coder 注册结果 | `float32/int8` |
-| `{dims}` | 支持的张量维度，只能来自 schema/infer/实际计算规格 | `2D/3D/4D` |
-| `{onnx_layouts}` | ONNX 张量数据排布 | `ND/NCW/NCHW` |
-| `{tflite_layouts}` | TFLITE 张量数据排布 | `ND/NWC/NHWC` |
-
-## 现有参考
-
-当前仓内可直接读取的规格示例包括：
-
-- `operator-desc/sub.md`
-- `operator-desc/lstm.md`
-
-上述文件可作为四章节结构、表格风格和章节粒度的参考样例，但不得将其中未查证的算子事实复用于新文档。
-
-若后续补充 `operator-desc/elu.md` 等更贴近激活类算子的示例，可在此节追加，并明确其提交状态与适用范围。
+独立模式可参考已确认的 `operator-desc/sub.md`、`operator-desc/lstm.md` 的结构和表格风格，但不得复用其算子事实。集成和历史模式不得把这些示例或现有目标文档当作事实源。
