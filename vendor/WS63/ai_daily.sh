@@ -29,7 +29,7 @@ CFG_PATH=$CUR_DIR/config
 MICRO_PATH=$CUR_DIR/micro
 OUTPUT_PATH=$CUR_DIR/output
 RESULT_PATH=$hispark_ai_path/archives
-compressed_file=$(find "$hispark_ai_path/src/mindspore-lite/output" -maxdepth 1 -type f -name "mindspore-lite-*-linux-x64.tar.gz" | head -n 1)
+compressed_file=$(find "$hispark_ai_path/src/mindspore-lite/output" -maxdepth 1 -type f -name "mindspore-*-*-linux-x64.tar.gz" | head -n 1)
 
 if [ -n "$compressed_file" ]; then
     tar -xzf "$compressed_file" -C "$hispark_ai_path/src/mindspore-lite/output/"
