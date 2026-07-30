@@ -503,8 +503,8 @@ def _handle_release_build(hiSpark_ai_path, samples_target, adaptor_target, archi
     
     # 处理mindspore-lite压缩包
     base_path = Path(hiSpark_ai_path) / ("archives" if build_os == 'all' else "src/mindspore-lite/output")
-    mindspore_files = list(base_path.glob("mindspore-lite*.tar.gz"))
-    mindspore_pattern = base_path / "mindspore-lite*.tar.gz"
+    mindspore_files = list(base_path.glob("mindspore-*.tar.gz"))
+    mindspore_pattern = base_path / "mindspore-*.tar.gz"
     
     if mindspore_files:
         mslite_dir = customer_dir / "MSLite"
