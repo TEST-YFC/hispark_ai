@@ -29,7 +29,7 @@ CFG_PATH=$CUR_DIR/config
 MICRO_PATH=$CUR_DIR/micro
 OUTPUT_PATH=$CUR_DIR/output
 RESULT_PATH=$hispark_ai_path/archives
-compressed_file=$(find "$hispark_ai_path/src/mindspore-lite/output" -maxdepth 1 -type f -name "mindspore-lite-*-linux-x64.tar.gz" | head -n 1)
+compressed_file=$(find "$hispark_ai_path/src/mindspore-lite/output" -maxdepth 1 -type f -name "mindspore-*-*-linux-x64.tar.gz" | head -n 1)
 
 if [ -n "$compressed_file" ]; then
     tar -xzf "$compressed_file" -C "$hispark_ai_path/src/mindspore-lite/output/"
@@ -84,7 +84,7 @@ process_quantized_sample() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=ONNX --modelFile="$sample_model_path" \
         --outputFile="$model_dir" --configFile="$quant_cfg_path/micro_quant.cfg" \
-        --inputDataFormat=NCHW --encryption=false --outputDataFormat=NCHW; then
+        --inputDataFormat=NCHW --outputDataFormat=NCHW; then
         # Compile micro
         cd "$model_dir" || exit 1
         compiling_micro
@@ -146,7 +146,7 @@ process_fp32() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=ONNX --modelFile="$MODEL_PATH/$model/$model.onnx" \
         --outputFile="$model_dir" --configFile="$CFG_PATH/micro_default.cfg" \
-        --inputDataFormat=NCHW --encryption=false --outputDataFormat=NCHW; then
+        --inputDataFormat=NCHW --outputDataFormat=NCHW; then
     
         cd "$model_dir" || exit 1
         compiling_micro
@@ -189,7 +189,7 @@ process_quantized() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=ONNX --modelFile="$MODEL_PATH/$model/$model.onnx" \
         --outputFile="$model_dir" --configFile="$quant_cfg" \
-        --inputDataFormat=NCHW --encryption=false --outputDataFormat=NCHW; then
+        --inputDataFormat=NCHW --outputDataFormat=NCHW; then
     
         # Compile micro
         cd "$model_dir" || exit 1
@@ -225,7 +225,7 @@ process_tflite() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=TFLITE --modelFile="$MODEL_PATH/$model/${model%_tf}.tflite" \
         --outputFile="$model_dir" --configFile="$CFG_PATH/micro_default.cfg" \
-        --inputDataFormat=NHWC --encryption=false --outputDataFormat=NHWC; then
+        --inputDataFormat=NHWC --outputDataFormat=NHWC; then
     
         # Compile micro
         cd "$model_dir" || exit 1
@@ -268,7 +268,7 @@ process_quantized_tflite() {
     mkdir -p "$model_dir"
     if converter_lite --fmk=TFLITE --modelFile="$MODEL_PATH/$model/${model%_tf}.tflite" \
         --outputFile="$model_dir" --configFile="$quant_cfg" \
-        --inputDataFormat=NHWC --encryption=false --outputDataFormat=NHWC; then
+        --inputDataFormat=NHWC --outputDataFormat=NHWC; then
 
         # Compile micro
         cd "$model_dir" || exit 1
@@ -346,7 +346,7 @@ main_build() {
         if [ -d "$model_dir" ]; then
             model=$(basename "$model_dir")
             echo "Found model: $model"
-            if ! [[ "$model" =~ ^(NeuralNetwork|MathModel)(_tf)?$ ]]; then
+            if ! [[ "$model" =~ ^(MathModel)(_tf)?$ ]]; then
                 echo "Skipping model: $model (not in allowed list)"
                 continue
             fi
