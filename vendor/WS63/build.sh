@@ -91,7 +91,7 @@ if [ "$build_linux" = true ]; then
     pushd ${hiSpark_ai_path}
     if [ ! -d "sdk" ]; then
         rm -rf "sdk"
-        git clone https://gitcode.com/HiSpark/fbb_ws63.git sdk
+        git clone --depth 1 https://gitcode.com/HiSpark/fbb_ws63.git sdk
     fi
     popd
 
