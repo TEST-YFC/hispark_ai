@@ -40,5 +40,33 @@
       "chip": "WS63",
       "buildDef": "MathModel_tf",
       "needSmoke": "false"
+    },
+    { 
+      "buildTarget": "ws63-ai-liteos", 
+      "relativePath": "default", 
+      "chip": "WS63", 
+      "buildDef": "NeuralNetwork", 
+      "needSmoke": "false" 
+    },
+    { 
+      "buildTarget": "ws63-ai-liteos", 
+      "relativePath": "onnx_quant", 
+      "chip": "WS63", 
+      "buildDef": "NeuralNetwork", 
+      "needSmoke": "false" 
+    },
+    { 
+      "buildTarget": "ws63-ai-liteos", 
+      "relativePath": "default", 
+      "chip": "WS63", 
+      "buildDef": "NeuralNetwork_tf", 
+      "needSmoke": "false" 
+    },
+    { 
+      "buildTarget": "ws63-ai-liteos", 
+      "relativePath": "tflite_quant", 
+      "chip": "WS63", 
+      "buildDef": "NeuralNetwork_tf", 
+      "needSmoke": "false" 
     }
 ]
