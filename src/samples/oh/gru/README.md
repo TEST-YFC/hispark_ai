@@ -1,7 +1,7 @@
 # HiSpark.AI GRU 音频固定词识别 Sample
 
 ## 介绍
-Gru固定词识别Sample基于Google开源的Open-Speech数据集以及ARM Softmax开源的KWS-MCU Benchmark的开源GRU模型，为海思智能终端芯片提供适配的量化，模型转换以及端侧部署的Sample。客户可以基于此Sample为范式迁移部署相应的固定词识别模型。
+Gru固定词识别Sample基于Google开源的Open-Speech数据集 以及 ARM Softmax开源的KWS-MCU Benchmark的开源GRU模型，为海思智能终端芯片提供适配的量化、模型转换以及端侧部署的Sample。客户可以基于此Sample为范式迁移部署相应的固定词识别模型。
 
 支持的芯片列表如下：
 - **Hi3863**: 基于MSLite-Micro平台进行模型部署，依靠RISC-V CPU核进行AI推理。
@@ -12,7 +12,7 @@ Gru固定词识别Sample基于Google开源的Open-Speech数据集以及ARM Softm
 ### 预处理
 
 - **准备模型**
-下载模型[GRU_S_STREAM.ONNX](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/gru/model/GRU_S_STREAM.onnx)；放置于model目录下
+对应的Gru原始模型 **GRU_S_STREAM.onnx**已放置在model一级目录下。
 
 - **preprocess_wave_data**
 运行Scripts目录下的预处理脚本，在samples一级目录下自动下载对应的原始Google Open-speech数据集。
@@ -39,7 +39,7 @@ quant_type=FULL_QUANT
 bit_num=8
 [data_preprocess_param]
 calibrate_path=mfcc_input:data/quant_data/quant_mfcc_input,hidden_states:data/quant_data/quant_hidden_states
-calibrate_size=64825
+calibrate_size=750
 input_type=BIN
 [full_quant_param]
 activation_quant_method=MAX_MIN
@@ -139,6 +139,7 @@ atc --model=./model/GRU_S_STREAM.onnx --framework=5 --output=./output/GRU_S --in
 ## RISC-V平台编译指南
 1. 获取Hi3863 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
     路径如下表示解压成功，且目录正确：
+    ```
     {SDK_PATH}
         |---- application
         |---- drivers
@@ -146,12 +147,15 @@ atc --model=./model/GRU_S_STREAM.onnx --framework=5 --output=./output/GRU_S --in
         |---- protocol
         |---- ....
         |---- build.py
+    ```
 2. 获取HiSpark.AI Adaptor包，并进行解压,其以及路径为{ADAPTOR_PATH}。
     解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz -C ${ADAPTOR_PATH}
     路径如下表示解压成功，且目录正确：
+    ```
     {ADAPTOR_PATH}
         |---- adaptor
         |---- include
+    ```
 3. 获取此HiSpark.AI Samples包
 4. 根据业务修改Sample包，根据下方新版本Sample的说明
 5. 将HiSpark.AI MSLite Micro工具链编译出的libmicro_runtime.a libnet.a复制到SDK的路径下
@@ -169,6 +173,7 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 ## Nano平台编译指南
 1. 获取Hi3322 SDK的代码，保存在用户指定路径
     路径如下表示解压成功，且目录正确：
+    ```
     {SDK_PATH}
         |---- application
         |---- bootloader
@@ -176,21 +181,26 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
         |---- drivers
         |---- ....
         |---- build.py
+    ```
 2. 获取HiSpark.AI Adaptor包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
     路径如下表示解压成功，且目录正确：
+    ```
     {ADAPTOR_PATH}
         |---- adaptor
         |---- include
         |---- README.md
+    ```
 3. 获取此HiSpark.AI Samples包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
     路径如下表示解压成功，且目录正确：
+    ```
     {SAMPLE_PATH}
         |---- amct
         |---- oh
         |---- CMakeLists.txt
         |---- README.md
+    ```
 4. 切换到gru目录，在命令行输入：
 ```
 export SDK_PATH=${SDK_PATH}
@@ -222,18 +232,22 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 3322
 2. 获取HiSpark.AI Adaptor包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
     路径如下表示解压成功，且目录正确：
+    ```
     {ADAPTOR_PATH}
         |---- adaptor
         |---- include
         |---- README.md
+    ```
 3. 获取此HiSpark.AI Samples包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
     路径如下表示解压成功，且目录正确：
+    ```
     {SAMPLE_PATH}
         |---- amct
         |---- oh
         |---- CMakeLists.txt
         |---- README.md
+    ```
 4. 切换到gru目录，在命令行输入：
 ```
 export SDK_PATH=${SDK_PATH}
@@ -275,15 +289,17 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 1156
     LABELS = ["silence", "unknown", "yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"]
 
 ## 目录结构
-gru Samples的目录结构如下所示：
+Gru Samples的目录结构如下所示：
+```
 samples
 ├── CMakeLists.txt
-├── oh
-│   ├── gru
+├── OH
+│   ├── Gru
 │   │   ├── build.sh
 │   │   ├── build_npu.sh
 │   │   ├── CMakeLists.txt
 │   │   ├── model
+│   │   │   ├── GRU_S_STREAM.onnx
 │   │   │   └── README.md
 │   │   ├── README.md
 │   │   ├── scripts
@@ -296,7 +312,8 @@ samples
 │   │       └── CMakeLists.txt
 │   └── ......
 └── README.md
-- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。Hi3863 以及 Hi3322的SDK下载链接为(https://xxx)。
+```
+- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。
 - **CMakeLists.txt**: Sample的编译框架，C代码实现。
 - **model目录**: 用于存放对应的onnx原始模型。
 - **scripts目录**: 用于存放对应的数据处理脚本，自动生成量化以及验证数据。
@@ -321,3 +338,8 @@ ln -s libstdc++.so.6.0.30 libstdc++.so.6
 # 3. 最后链接gcc的lib
 export LD_LIBRARY_PATH={gcc_lib}:$LD_LIBRARY_PATH
 ```
+
+## 引用和致谢
+
+本项目部分模型与代码参考或修改自以下开源项目：
+https://github.com/ARM-software/ML-KWS-for-MCU/blob/master/LICENSE

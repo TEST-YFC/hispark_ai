@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "std_def.h"
 #include "ai_mcu.h"
 #include "ai.h"
 #include "model_state.h"
-
-#ifdef __cplusplus
-#if __cplusplus
-extern "C" {
-#endif
-#endif
 
 OH_AI_ModelHandle OH_AI_ModelCreate(void)
 {
@@ -40,7 +35,7 @@ OH_AI_ModelHandle OH_AI_ModelCreate(void)
 OH_AI_Status OH_AI_ModelBuildFromFile(
     OH_AI_ModelHandle model, const char *model_path, const OH_AI_ContextHandle model_context)
 {
-    (void)(model_path);
+    UNUSED(model_path);
     if (model_context == NULL) {
         return OH_AI_STATUS_FAILED;
     }
@@ -82,7 +77,7 @@ OH_AI_Status OH_AI_ModelBuild(
 OH_AI_Status OH_AI_ModelBuildFromName(
     OH_AI_ModelHandle model, const char *model_name, const OH_AI_ContextHandle model_context)
 {
-    (void)(model_name);
+    UNUSED(model_name);
     if (model_context == NULL) {
         return OH_AI_STATUS_FAILED;
     }
@@ -122,24 +117,6 @@ OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle model)
 
     stub_array.handle_num = inputs.handle_num;
     stub_array.handle_list = (OH_AI_TensorHandle *)inputs.handle_list;
-
-    return stub_array;
-}
-
-OH_AI_TensorHandleArray OH_AI_ModelGetLabels(const OH_AI_ModelHandle model)
-{
-    OH_AI_TensorHandleArray stub_array;
-    stub_array.handle_num = 0;
-    stub_array.handle_list = NULL;
-
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
-        return stub_array;
-    }
-
-    MSTensorHandleArray labels = MSModelGetLabels((MSModelHandle)model);
-
-    stub_array.handle_num = labels.handle_num;
-    stub_array.handle_list = (OH_AI_TensorHandle *)labels.handle_list;
 
     return stub_array;
 }
@@ -220,63 +197,3 @@ OH_AI_Status OH_AI_ModelPredict(
         return OH_AI_STATUS_FAILED;
     }
 }
-
-OH_AI_Status OH_AI_ModelRunStep(OH_AI_ModelHandle model)
-{
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
-        return OH_AI_STATUS_FAILED;
-    }
-
-    MSStatus status = MSModelRunStep((MSModelHandle)model, NULL, NULL);
-    return status == kMSStatusSuccess ? OH_AI_STATUS_SUCCESS : OH_AI_STATUS_FAILED;
-}
-
-OH_AI_Status OH_AI_ModelSetTrainMode(OH_AI_ModelHandle model, bool train)
-{
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
-        return OH_AI_STATUS_FAILED;
-    }
-
-    MSStatus status = MSModelSetTrainMode((MSModelHandle)model, train);
-    return status == kMSStatusSuccess ? OH_AI_STATUS_SUCCESS : OH_AI_STATUS_FAILED;
-}
-
-OH_AI_Status OH_AI_ModelGetTrainMode(OH_AI_ModelHandle model, bool *train)
-{
-    if (train == NULL || !ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
-        return OH_AI_STATUS_FAILED;
-    }
-
-    *train = MSModelGetTrainMode((MSModelHandle)model);
-    return OH_AI_STATUS_SUCCESS;
-}
-
-OH_AI_Status OH_AI_ModelLoadWeight(OH_AI_ModelHandle model, uintptr_t flash_addr)
-{
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
-        return OH_AI_STATUS_FAILED;
-    }
-
-    const void *weight_addr = (flash_addr == 0U) ? NULL : (const void *)flash_addr;
-    MSStatus status = MSModelLoadWeight((MSModelHandle)model, weight_addr);
-    return status == kMSStatusSuccess ? OH_AI_STATUS_SUCCESS : OH_AI_STATUS_FAILED;
-}
-
-OH_AI_Status OH_AI_ModelSaveWeight(OH_AI_ModelHandle model, uintptr_t flash_addr)
-{
-    if (flash_addr == 0U || !ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
-        return OH_AI_STATUS_FAILED;
-    }
-
-    /*
-    * Saving RAM weights to Flash needs board-specific erase/write/verify logic.
-    * Keep this API as a visible placeholder until that storage path is implemented.
-    */
-    return OH_AI_STATUS_FAILED;
-}
-
-#ifdef __cplusplus
-#if __cplusplus
-}
-#endif
-#endif

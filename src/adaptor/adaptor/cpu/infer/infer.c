@@ -94,23 +94,30 @@ MS_AI_INFER_Status MS_AI_Init(void)
     g_ai_infer_param.context = context;
     if (context == NULL) {
         osal_printk("[ERROR] OH_AI_ContextCreate failed\n");
+        OH_AI_ModelDestroy(model);
         return MS_AI_INFER_STATUS_FAILED;
     }
     OH_AI_Status ret = OH_AI_ModelBuild(g_ai_infer_param.model, NULL, 0, g_ai_infer_param.context);
     if (ret != OH_AI_STATUS_SUCCESS) {
         osal_printk("[ERROR] OH_AI_ModelBuild failed (%d)\n", ret);
+        OH_AI_ModelDestroy(model);
+        OH_AI_ContextDestroy(context);
         return MS_AI_INFER_STATUS_FAILED;
     }
     OH_AI_TensorHandleArray inputs = OH_AI_ModelGetInputs(g_ai_infer_param.model);
     g_ai_infer_param.inputs = inputs;
     if (inputs.handle_list == NULL) {
         osal_printk("[ERROR] OH_AI_ModelGetInputs failed\n");
+        OH_AI_ModelDestroy(model);
+        OH_AI_ContextDestroy(context);
         return MS_AI_INFER_STATUS_FAILED;
     }
     OH_AI_TensorHandleArray outputs = OH_AI_ModelGetOutputs(g_ai_infer_param.model);
     g_ai_infer_param.outputs = outputs;
     if (outputs.handle_list == NULL) {
         osal_printk("[AI_MCU] OH_AI_ModelGetOutputs failed\n");
+        OH_AI_ModelDestroy(model);
+        OH_AI_ContextDestroy(context);
         return MS_AI_INFER_STATUS_FAILED;
     }
     return MS_AI_INFER_STATUS_SUCCESS;
@@ -119,11 +126,11 @@ MS_AI_INFER_Status MS_AI_Init(void)
 
 MS_AI_INFER_Status MS_AI_Destroy(void)
 {
-    if (g_ai_infer_param.context != NULL) {
-        (void)OH_AI_ContextDestroy(&(g_ai_infer_param.context));
-    }
     if (g_ai_infer_param.model != NULL) {
         (void)OH_AI_ModelDestroy(&(g_ai_infer_param.model));
+    }
+    if (g_ai_infer_param.context != NULL) {
+        (void)OH_AI_ContextDestroy(&(g_ai_infer_param.context));
     }
     return MS_AI_INFER_STATUS_SUCCESS;
 }

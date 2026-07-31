@@ -84,7 +84,7 @@ function build_cfbb()
         echo "target_group = {}" >> $SDK_PATH/build/config/target_config/ws63/config.py
     fi
     if ! grep -q "ai_mcu/adaptor/cpu" "$SDK_PATH/middleware/utils/CMakeLists.txt"; then
-        echo "add_subdirectory_if_exist(ai_mcu/adaptor/cpu)" >> $SDK_PATH/middleware/utils/CMakeLists.txt
+        echo -e "\nadd_subdirectory_if_exist(ai_mcu/adaptor/cpu)" >> $SDK_PATH/middleware/utils/CMakeLists.txt
     fi
     cd $SDK_PATH
     if [ -f "$SDK_PATH/application/wb02_3.mk" ]; then

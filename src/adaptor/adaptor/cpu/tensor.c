@@ -16,12 +16,6 @@
 #include "ai_mcu.h"
 #include "ai.h"
 
-#ifdef __cplusplus
-#if __cplusplus
-extern "C" {
-#endif
-#endif
-
 size_t OH_AI_TensorGetDataSize(const OH_AI_TensorHandle tensor)
 {
     if (tensor == NULL) {
@@ -70,9 +64,3 @@ void *OH_AI_TensorGetMutableData(const OH_AI_TensorHandle tensor)
 
     return MSTensorGetMutableData((MSTensorHandle)tensor);
 }
-
-#ifdef __cplusplus
-#if __cplusplus
-}
-#endif
-#endif
