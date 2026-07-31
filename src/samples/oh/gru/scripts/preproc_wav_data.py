@@ -123,26 +123,14 @@ def preprocess(path):
     return mfcc_input_npy
 
 
-def maybe_download_and_extract_dataset(dest_directory,
-    data_url="http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz"):
-    """Download and extract data set tar file.
-
-    If the data set we're using doesn't already exist, this function
-    downloads it from the TensorFlow.org website and unpacks it into a
-    directory.
-    If the data_url is none, don't download anything and expect the data
-    directory to contain the correct files already.
-
-    Args:
-      data_url: Web location of the tar file containing the data set.
-      dest_directory: File path to extract data to.
-    """
-    if not data_url:
+def maybe_download_and_extract_dataset(directory,
+    url="http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz"):
+    if not url:
         return
-    if not os.path.exists(dest_directory):
-        os.makedirs(dest_directory)
-    filename = data_url.split('/')[-1]
-    filepath = os.path.join(dest_directory, filename)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    filename = url.split('/')[-1]
+    filepath = os.path.join(directory, filename)
     if not os.path.exists(filepath):
 
         def _progress(count, block_size, total_size):
@@ -151,9 +139,9 @@ def maybe_download_and_extract_dataset(dest_directory,
                 (filename, float(count * block_size) / float(total_size) * 100.0))
 
         try:
-            filepath, _ = urllib.request.urlretrieve(data_url, filepath, _progress)
+            filepath, _ = urllib.request.urlretrieve(url, filepath, _progress)
         except:
-            logging.error('Failed to download URL: %s to folder: %s', data_url,
+            logging.error('Failed to download URL: %s to folder: %s', url,
                             filepath)
             logging.error('Please make sure you have enough free space and'
                             ' an internet connection')
@@ -162,7 +150,7 @@ def maybe_download_and_extract_dataset(dest_directory,
         statinfo = os.stat(filepath)
         logging.info('Successfully downloaded %s (%d bytes)', filename,
                         statinfo.st_size)
-    tarfile.open(filepath, 'r:gz').extractall(dest_directory)
+    tarfile.open(filepath, 'r:gz').extractall(directory)
 
 
 def preprocess_calibrate_data(data_root_dir, output_root_dir, onnx_model, sample_num):
@@ -235,7 +223,7 @@ if __name__ == '__main__':
     parser.add_argument('--sample_num', help='sample number', default=-1, required=False)
     parser.add_argument('--fp16', help='fp16 validation data', default=True, required=False)
     args = parser.parse_args()
-    maybe_download_and_extract_dataset(dest_directory=args.data_root_dir)
+    maybe_download_and_extract_dataset(directory=args.data_root_dir)
     preprocess_calibrate_data(data_root_dir=args.data_root_dir, output_root_dir=args.quant_data_dir,
         onnx_model=args.onnx_model_path, sample_num=int(args.sample_num))
     preprocess_validation_data(data_root_dir=args.data_root_dir, output_root_dir=args.validation_data_dir,
