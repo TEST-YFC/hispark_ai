@@ -1615,6 +1615,12 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
 -   **[SpaceToDepth](#ZH-CN_TOPIC_0000002630115702)**  
 
+-   **[Fill](#ZH-CN_TOPIC_0000002800000001)**  
+
+-   **[Neg](#ZH-CN_TOPIC_0000002900000001)**  
+
+-   **[Pow](#ZH-CN_TOPIC_0000002476598365)**  
+
 -   **[Shape](#ZH-CN_TOPIC_0000003030115702)**  
 
 -   **[TopK](#ZH-CN_TOPIC_0000003050115702)**  
@@ -6407,6 +6413,61 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+### Fill<a name="ZH-CN_TOPIC_0000002800000001"></a>
+
+**功能描述<a name="section_fill_func_desc"></a>**
+
+创建形状为 dims 的张量，所有元素填充为给定的标量 value。该算子仅在 TFLITE 框架中定义（BuiltinOperator 编号：94），ONNX 框架无对应标准算子。不支持 ONNX 格式转换。
+
+**参数说明<a name="section_fill_param_desc"></a>**
+
+**表 1**  Fill参数概览
+
+<a name="table_fill_param"></a>
+<table><thead align="left"><tr id="row_fill_header"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p_fill_h1"><a name="p_fill_h1"></a><a name="p_fill_h1"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p_fill_h2"><a name="p_fill_h2"></a><a name="p_fill_h2"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="mcps1.2.6.1.3"><p id="p_fill_h3"><a name="p_fill_h3"></a><a name="p_fill_h3"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p_fill_h4"><a name="p_fill_h4"></a><a name="p_fill_h4"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p_fill_h5"><a name="p_fill_h5"></a><a name="p_fill_h5"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row_fill_dims"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_fill_dims_p"><a name="p_fill_dims_p"></a><a name="p_fill_dims_p"></a>dims</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_fill_dims_io"><a name="p_fill_dims_io"></a><a name="p_fill_dims_io"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps1.2.6.1.3 "><p id="p_fill_dims_dt"><a name="p_fill_dims_dt"></a><a name="p_fill_dims_dt"></a>tensor(int32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_fill_dims_desc"><a name="p_fill_dims_desc"></a><a name="p_fill_dims_desc"></a>输出张量的形状，维度为1D，每个元素指定一个维度的大小。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_fill_dims_limit"><a name="p_fill_dims_limit"></a><a name="p_fill_dims_limit"></a>规格约束：每个元素 &ge; 0，维度数不超过 32</p>
+</td>
+</tr>
+<tr id="row_fill_value"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_fill_value_p"><a name="p_fill_value_p"></a><a name="p_fill_value_p"></a>value</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_fill_value_io"><a name="p_fill_value_io"></a><a name="p_fill_value_io"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps1.2.6.1.3 "><p id="p_fill_value_dt"><a name="p_fill_value_dt"></a><a name="p_fill_value_dt"></a>tensor(fp32/int32/bool/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_fill_value_desc"><a name="p_fill_value_desc"></a><a name="p_fill_value_desc"></a>填充值，标量（0-D 张量），数据类型决定输出张量的数据类型。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_fill_value_limit"><a name="p_fill_value_limit"></a><a name="p_fill_value_limit"></a>规格约束：fp16 不支持该类型</p>
+</td>
+</tr>
+<tr id="row_fill_output"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_fill_output_p"><a name="p_fill_output_p"></a><a name="p_fill_output_p"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_fill_output_io"><a name="p_fill_output_io"></a><a name="p_fill_output_io"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps1.2.6.1.3 "><p id="p_fill_output_dt"><a name="p_fill_output_dt"></a><a name="p_fill_output_dt"></a>tensor(fp32/int32/bool/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_fill_output_desc"><a name="p_fill_output_desc"></a><a name="p_fill_output_desc"></a>输出张量，形状 = dims，全部元素 = value，数据类型与 value 一致。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_fill_output_limit"><a name="p_fill_output_limit"></a><a name="p_fill_output_limit"></a>-</p>
+
 ### Shape<a name="ZH-CN_TOPIC_0000003030115702"></a>
 
 **功能描述<a name="section3030115702a"></a>**
@@ -6454,6 +6515,114 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+### Neg<a name="ZH-CN_TOPIC_0000002900000001"></a>
+
+**功能描述<a name="section_neg_tflite_desc"></a>**
+
+对张量的每个元素做取负运算（符号取反），即 y = -x。
+
+**参数说明<a name="section_neg_tflite_param"></a>**
+
+**表 1**  Neg参数概览
+
+<a name="table_neg_tflite"></a>
+<table><thead align="left"><tr id="row_neg_tflite_hdr"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p_neg_tflite_hdr1"><a name="p_neg_tflite_hdr1"></a><a name="p_neg_tflite_hdr1"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p_neg_tflite_hdr2"><a name="p_neg_tflite_hdr2"></a><a name="p_neg_tflite_hdr2"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="mcps1.2.6.1.3"><p id="p_neg_tflite_hdr3"><a name="p_neg_tflite_hdr3"></a><a name="p_neg_tflite_hdr3"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p_neg_tflite_hdr4"><a name="p_neg_tflite_hdr4"></a><a name="p_neg_tflite_hdr4"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p_neg_tflite_hdr5"><a name="p_neg_tflite_hdr5"></a><a name="p_neg_tflite_hdr5"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row_neg_tflite_in"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_neg_tflite_in_p"><a name="p_neg_tflite_in_p"></a><a name="p_neg_tflite_in_p"></a>x</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_neg_tflite_in_io"><a name="p_neg_tflite_in_io"></a><a name="p_neg_tflite_in_io"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps1.2.6.1.3 "><p id="p_neg_tflite_in_dt"><a name="p_neg_tflite_in_dt"></a><a name="p_neg_tflite_in_dt"></a>tensor(fp32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_neg_tflite_in_desc"><a name="p_neg_tflite_in_desc"></a><a name="p_neg_tflite_in_desc"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NWC/NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_neg_tflite_in_limit"><a name="p_neg_tflite_in_limit"></a><a name="p_neg_tflite_in_limit"></a>规格约束：fp16 不支持该类型；int8 需全量化 cfg</p>
+</td>
+</tr>
+<tr id="row_neg_tflite_out"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_neg_tflite_out_p"><a name="p_neg_tflite_out_p"></a><a name="p_neg_tflite_out_p"></a>y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_neg_tflite_out_io"><a name="p_neg_tflite_out_io"></a><a name="p_neg_tflite_out_io"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps1.2.6.1.3 "><p id="p_neg_tflite_out_dt"><a name="p_neg_tflite_out_dt"></a><a name="p_neg_tflite_out_dt"></a>tensor(fp32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_neg_tflite_out_desc"><a name="p_neg_tflite_out_desc"></a><a name="p_neg_tflite_out_desc"></a>输出张量，维度与输入 x 相同，每个元素为 x 对应元素的相反数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_neg_tflite_out_limit"><a name="p_neg_tflite_out_limit"></a><a name="p_neg_tflite_out_limit"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Pow<a name="ZH-CN_TOPIC_0000002476598365"></a>
+
+**功能描述<a name="section_pow_func"></a>**
+
+计算两个张量的逐元素幂运算，base 为底数张量，exponent 为指数张量，输出 result = base^exponent。支持 NumPy 风格广播。
+
+**参数说明<a name="section_pow_param"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：** 
+>1. Pow 无内置属性，转换时自动填充。支持广播特性，双向广播需在转换命令中明确配置 inputDataFormat 和 outputDataFormat 参数。
+>2. 推荐使用 X ≥ 0 的输入组合确保结果确定性；X < 0 且 Y 为非整数时实数域无定义，输出值取决于底层数学库。
+>3. INT8 量化仅支持 X ≥ 0 的输入，X < 0 时负数值在 int8 对称量化中将被映射为 0。
+
+**表 1**  Pow参数概览
+
+<a name="table_pow_tflite"></a>
+<table><thead align="left"><tr id="row_pow_tflite_hdr"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p_pow_tflite_hdr1"><a name="p_pow_tflite_hdr1"></a><a name="p_pow_tflite_hdr1"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p_pow_tflite_hdr2"><a name="p_pow_tflite_hdr2"></a><a name="p_pow_tflite_hdr2"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p_pow_tflite_hdr3"><a name="p_pow_tflite_hdr3"></a><a name="p_pow_tflite_hdr3"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p_pow_tflite_hdr4"><a name="p_pow_tflite_hdr4"></a><a name="p_pow_tflite_hdr4"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p_pow_tflite_hdr5"><a name="p_pow_tflite_hdr5"></a><a name="p_pow_tflite_hdr5"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row_pow_tflite_base"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_pow_tflite_base_name"><a name="p_pow_tflite_base_name"></a><a name="p_pow_tflite_base_name"></a>base</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_pow_tflite_base_io"><a name="p_pow_tflite_base_io"></a><a name="p_pow_tflite_base_io"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p_pow_tflite_base_dt"><a name="p_pow_tflite_base_dt"></a><a name="p_pow_tflite_base_dt"></a>tensor(fp32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_pow_tflite_base_desc"><a name="p_pow_tflite_base_desc"></a><a name="p_pow_tflite_base_desc"></a>底数张量，维度为 1D/2D/3D/4D，格式分别为 ND、NWC、NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_base_limit"><a name="p_pow_tflite_base_limit"></a><a name="p_pow_tflite_base_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；fp16 不支持该类型；INT8 不支持 X<0 的输入</p>
+</td>
+</tr>
+<tr id="row_pow_tflite_exp"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_pow_tflite_exp_name"><a name="p_pow_tflite_exp_name"></a><a name="p_pow_tflite_exp_name"></a>exponent</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_pow_tflite_exp_io"><a name="p_pow_tflite_exp_io"></a><a name="p_pow_tflite_exp_io"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p_pow_tflite_exp_dt"><a name="p_pow_tflite_exp_dt"></a><a name="p_pow_tflite_exp_dt"></a>tensor(fp32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_pow_tflite_exp_desc"><a name="p_pow_tflite_exp_desc"></a><a name="p_pow_tflite_exp_desc"></a>指数张量，维度为 1D/2D/3D/4D，与 base 广播兼容。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_exp_limit"><a name="p_pow_tflite_exp_limit"></a><a name="p_pow_tflite_exp_limit"></a>规格约束：最大维度 4D；fp16 不支持该类型</p>
+</td>
+</tr>
+<tr id="row_pow_tflite_out"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_pow_tflite_out_name"><a name="p_pow_tflite_out_name"></a><a name="p_pow_tflite_out_name"></a>result</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_pow_tflite_out_io"><a name="p_pow_tflite_out_io"></a><a name="p_pow_tflite_out_io"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p_pow_tflite_out_dt"><a name="p_pow_tflite_out_dt"></a><a name="p_pow_tflite_out_dt"></a>tensor(fp32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_pow_tflite_out_desc"><a name="p_pow_tflite_out_desc"></a><a name="p_pow_tflite_out_desc"></a>输出张量，维度为 base 与 exponent 的广播结果，格式分别为 ND、NWC、NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_out_limit"><a name="p_pow_tflite_out_limit"></a><a name="p_pow_tflite_out_limit"></a>规格约束：最大维度 4D；fp16 不支持该类型</p>
 
 ### TopK<a name="ZH-CN_TOPIC_0000003050115702"></a>
 
@@ -6676,6 +6845,10 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 -   **[SpaceToDepth](#ZH-CN_TOPIC_0000002660274511)**  
 
 -   **[GRU](#ZH-CN_TOPIC_0000002631448488)**  
+
+-   **[Neg](#ZH-CN_TOPIC_0000002900000002)**  
+
+-   **[Pow](#ZH-CN_TOPIC_0000002476598371)**  
 
 -   **[Shape](#ZH-CN_TOPIC_0000003030115802)**  
 
@@ -12767,6 +12940,118 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 # 专题<a name="ZH-CN_TOPIC_0000002562713759"></a>
 
 -   **[高效算子支持](#ZH-CN_TOPIC_0000002531793838)**  
+
+### Neg<a name="ZH-CN_TOPIC_0000002900000002"></a>
+
+**功能描述<a name="section_neg_onnx_desc"></a>**
+
+对张量的每个元素做取负运算（符号取反），即 y = -x。
+
+**参数说明<a name="section_neg_onnx_param"></a>**
+
+**表 1**  Neg参数概览
+
+<a name="table_neg_onnx"></a>
+<table><thead align="left"><tr id="row_neg_onnx_hdr"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p_neg_onnx_hdr1"><a name="p_neg_onnx_hdr1"></a><a name="p_neg_onnx_hdr1"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p_neg_onnx_hdr2"><a name="p_neg_onnx_hdr2"></a><a name="p_neg_onnx_hdr2"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="mcps1.2.6.1.3"><p id="p_neg_onnx_hdr3"><a name="p_neg_onnx_hdr3"></a><a name="p_neg_onnx_hdr3"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p_neg_onnx_hdr4"><a name="p_neg_onnx_hdr4"></a><a name="p_neg_onnx_hdr4"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p_neg_onnx_hdr5"><a name="p_neg_onnx_hdr5"></a><a name="p_neg_onnx_hdr5"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row_neg_onnx_in"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_neg_onnx_in_p"><a name="p_neg_onnx_in_p"></a><a name="p_neg_onnx_in_p"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_neg_onnx_in_io"><a name="p_neg_onnx_in_io"></a><a name="p_neg_onnx_in_io"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps1.2.6.1.3 "><p id="p_neg_onnx_in_dt"><a name="p_neg_onnx_in_dt"></a><a name="p_neg_onnx_in_dt"></a>tensor(fp32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_neg_onnx_in_desc"><a name="p_neg_onnx_in_desc"></a><a name="p_neg_onnx_in_desc"></a>输入张量，维度为2D/3D/4D，格式为ND/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_neg_onnx_in_limit"><a name="p_neg_onnx_in_limit"></a><a name="p_neg_onnx_in_limit"></a>规格约束：fp16/int32 不支持该类型（Micro coder 未注册）；不支持 rank>4</p>
+</td>
+</tr>
+<tr id="row_neg_onnx_out"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_neg_onnx_out_p"><a name="p_neg_onnx_out_p"></a><a name="p_neg_onnx_out_p"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p_neg_onnx_out_io"><a name="p_neg_onnx_out_io"></a><a name="p_neg_onnx_out_io"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps1.2.6.1.3 "><p id="p_neg_onnx_out_dt"><a name="p_neg_onnx_out_dt"></a><a name="p_neg_onnx_out_dt"></a>tensor(fp32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_neg_onnx_out_desc"><a name="p_neg_onnx_out_desc"></a><a name="p_neg_onnx_out_desc"></a>输出张量，维度与输入 X 相同，每个元素为 X 对应元素的相反数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_neg_onnx_out_limit"><a name="p_neg_onnx_out_limit"></a><a name="p_neg_onnx_out_limit"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Pow<a name="ZH-CN_TOPIC_0000002476598371"></a>
+
+**功能描述<a name="section_onnx_pow_func"></a>**
+
+计算两个张量的逐元素幂运算，X 为底数张量，Y 为指数张量，输出 Z = X^Y。支持 NumPy 风格广播。
+
+**参数说明<a name="section_onnx_pow_param"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：** 
+>1. Pow 无原生属性，转换时 MSLite 内部 scale=1.0, shift=0.0 等价于标准幂运算。支持广播特性，双向广播需在转换命令中明确配置 inputDataFormat 和 outputDataFormat 参数。
+>2. 推荐使用 X ≥ 0 的输入组合确保结果确定性；X < 0 且 Y 为非整数时实数域无定义，输出值取决于底层数学库。
+>3. INT8 量化仅支持 X ≥ 0 的输入，X < 0 时负数值在 int8 对称量化中将被映射为 0。
+
+**表 1**  Pow参数概览
+
+<a name="table_pow_onnx"></a>
+<table><thead align="left"><tr id="row_pow_onnx_hdr"><th class="cellrowborder" valign="top" width="17.07%" id="mcps1.2.6.1.1"><p id="p_pow_onnx_hdr1"><a name="p_pow_onnx_hdr1"></a><a name="p_pow_onnx_hdr1"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="14.49%" id="mcps1.2.6.1.2"><p id="p_pow_onnx_hdr2"><a name="p_pow_onnx_hdr2"></a><a name="p_pow_onnx_hdr2"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="14.95%" id="mcps1.2.6.1.3"><p id="p_pow_onnx_hdr3"><a name="p_pow_onnx_hdr3"></a><a name="p_pow_onnx_hdr3"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="29.73%" id="mcps1.2.6.1.4"><p id="p_pow_onnx_hdr4"><a name="p_pow_onnx_hdr4"></a><a name="p_pow_onnx_hdr4"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="23.76%" id="mcps1.2.6.1.5"><p id="p_pow_onnx_hdr5"><a name="p_pow_onnx_hdr5"></a><a name="p_pow_onnx_hdr5"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row_pow_onnx_x"><td class="cellrowborder" valign="top" width="17.07%" headers="mcps1.2.6.1.1 "><p id="p_pow_onnx_x_name"><a name="p_pow_onnx_x_name"></a><a name="p_pow_onnx_x_name"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.49%" headers="mcps1.2.6.1.2 "><p id="p_pow_onnx_x_io"><a name="p_pow_onnx_x_io"></a><a name="p_pow_onnx_x_io"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.95%" headers="mcps1.2.6.1.3 "><p id="p_pow_onnx_x_dt"><a name="p_pow_onnx_x_dt"></a><a name="p_pow_onnx_x_dt"></a>tensor(fp32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="29.73%" headers="mcps1.2.6.1.4 "><p id="p_pow_onnx_x_desc"><a name="p_pow_onnx_x_desc"></a><a name="p_pow_onnx_x_desc"></a>底数张量，维度为 1D/2D/3D/4D，格式为 ND/NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_x_limit"><a name="p_pow_onnx_x_limit"></a><a name="p_pow_onnx_x_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；fp16/fp64/int32/int64 不支持该类型；INT8 不支持 X<0 的输入</p>
+</td>
+</tr>
+<tr id="row_pow_onnx_y"><td class="cellrowborder" valign="top" width="17.07%" headers="mcps1.2.6.1.1 "><p id="p_pow_onnx_y_name"><a name="p_pow_onnx_y_name"></a><a name="p_pow_onnx_y_name"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.49%" headers="mcps1.2.6.1.2 "><p id="p_pow_onnx_y_io"><a name="p_pow_onnx_y_io"></a><a name="p_pow_onnx_y_io"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.95%" headers="mcps1.2.6.1.3 "><p id="p_pow_onnx_y_dt"><a name="p_pow_onnx_y_dt"></a><a name="p_pow_onnx_y_dt"></a>tensor(fp32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="29.73%" headers="mcps1.2.6.1.4 "><p id="p_pow_onnx_y_desc"><a name="p_pow_onnx_y_desc"></a><a name="p_pow_onnx_y_desc"></a>指数张量，维度为 1D/2D/3D/4D，与 X 广播兼容。</p>
+</td>
+<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_y_limit"><a name="p_pow_onnx_y_limit"></a><a name="p_pow_onnx_y_limit"></a>规格约束：最大维度 4D；fp16/fp64/int32/int64 不支持该类型</p>
+</td>
+</tr>
+<tr id="row_pow_onnx_z"><td class="cellrowborder" valign="top" width="17.07%" headers="mcps1.2.6.1.1 "><p id="p_pow_onnx_z_name"><a name="p_pow_onnx_z_name"></a><a name="p_pow_onnx_z_name"></a>Z</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.49%" headers="mcps1.2.6.1.2 "><p id="p_pow_onnx_z_io"><a name="p_pow_onnx_z_io"></a><a name="p_pow_onnx_z_io"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.95%" headers="mcps1.2.6.1.3 "><p id="p_pow_onnx_z_dt"><a name="p_pow_onnx_z_dt"></a><a name="p_pow_onnx_z_dt"></a>tensor(fp32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="29.73%" headers="mcps1.2.6.1.4 "><p id="p_pow_onnx_z_desc"><a name="p_pow_onnx_z_desc"></a><a name="p_pow_onnx_z_desc"></a>输出张量，维度为 X 与 Y 的广播结果，格式为 ND/NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_z_limit"><a name="p_pow_onnx_z_limit"></a><a name="p_pow_onnx_z_limit"></a>规格约束：最大维度 4D；fp16/fp64/int32/int64 不支持该类型</p>
+</td>
+</tr>
+</tbody>
+</table>
 
 ## 高效算子支持<a name="ZH-CN_TOPIC_0000002531793838"></a>
 
