@@ -15,19 +15,5 @@
  */
 #ifndef MCU_ENV_H
 #define MCU_ENV_H
-
-#ifdef __cplusplus
-#if __cplusplus
-extern "C" {
-#endif
-#endif
-
 extern bool g_is_env_inited;
-
-#ifdef __cplusplus
-#if __cplusplus
-}
-#endif
-#endif
-
 #endif /* MCU_ENV_H */

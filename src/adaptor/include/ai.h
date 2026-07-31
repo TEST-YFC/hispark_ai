@@ -18,7 +18,6 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <stdbool.h>
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -290,19 +289,6 @@ OH_AI_API OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle m
 
 /**
  * @if Eng
- * @brief  Obtains all label tensor handles of the model.
- * @param  [in] model Model object handle.
- * @retval The array that includes all label tensor handles.
- * @else
- * @brief  获取模型的所有标签张量句柄
- * @param  [in] model 模型对象句柄
- * @retval 包含所有标签张量句柄的数组
- * @endif
- */
-OH_AI_API OH_AI_TensorHandleArray OH_AI_ModelGetLabels(const OH_AI_ModelHandle model);
-
-/**
- * @if Eng
  * @brief  Obtains all output tensor handles of the model.
  * @param  [in] model Model object handle.
  * @retval The array that includes all output tensor handles.
@@ -363,79 +349,6 @@ OH_AI_API OH_AI_Status OH_AI_ModelPredict(
     OH_AI_ModelHandle model,
     const OH_AI_TensorHandleArray inputs,
     OH_AI_TensorHandleArray* outputs);
-
-/**
- * @if Eng
- * @brief  Run one model step in current mode.
- * @param  [in] model Model object handle.
- * @retval OH_AI_Status.
- * @else
- * @brief  按当前模式执行一次模型步骤
- * @param  [in] model 模型对象句柄
- * @retval OH_AI_Status.
- * @endif
- */
-OH_AI_API OH_AI_Status OH_AI_ModelRunStep(OH_AI_ModelHandle model);
-
-/**
- * @if Eng
- * @brief  Set model running mode.
- * @param  [in] model Model object handle.
- * @param  [in] train true for train mode, false for eval mode.
- * @retval OH_AI_Status.
- * @else
- * @brief  设置模型运行模式
- * @param  [in] model 模型对象句柄
- * @param  [in] train true表示训练模式，false表示评估模式
- * @retval OH_AI_Status.
- * @endif
- */
-OH_AI_API OH_AI_Status OH_AI_ModelSetTrainMode(OH_AI_ModelHandle model, bool train);
-
-/**
- * @if Eng
- * @brief  Get model running mode.
- * @param  [in] model Model object handle.
- * @param  [out] train Pointer to the running mode. true for train mode, false for eval mode.
- * @retval OH_AI_STATUS_SUCCESS if the running mode is obtained successfully, otherwise OH_AI_STATUS_FAILED.
- * @else
- * @brief  获取模型运行模式
- * @param  [in] model 模型对象句柄
- * @param  [out] train 运行模式输出指针，true表示训练模式，false表示评估模式
- * @retval 成功获取运行模式返回OH_AI_STATUS_SUCCESS，否则返回OH_AI_STATUS_FAILED
- * @endif
- */
-OH_AI_API OH_AI_Status OH_AI_ModelGetTrainMode(OH_AI_ModelHandle model, bool *train);
-
-/**
- * @if Eng
- * @brief  Save trainable weights of the model to the specified flash address.
- * @param  [in] model Model object handle.
- * @param  [in] flash_addr Flash address where current trainable weights are saved. 0 is invalid.
- * @retval OH_AI_Status.
- * @else
- * @brief  保存模型可训练权重到指定Flash地址
- * @param  [in] model 模型对象句柄
- * @param  [in] flash_addr 保存当前可训练权重的Flash地址
- * @retval OH_AI_Status.
- * @endif
- */
-OH_AI_API OH_AI_Status OH_AI_ModelSaveWeight(OH_AI_ModelHandle model, uintptr_t flash_addr);
-
-/**
- * @if Eng
- * @brief  Load trainable weights of the model from the specified flash address.
- * @param  [in] model Model object handle.
- * @param  [in] flash_addr Flash address where trainable weights are loaded from. 0 means restoring initial weights.
- * @retval OH_AI_Status.
- * @else
- * @brief  从指定Flash地址加载模型可训练权重
- * @param  [in] model 模型对象句柄
- * @param  [in] flash_addr 加载可训练权重的Flash地址，0表示恢复初始权重
- * @retval OH_AI_Status.
- * @endif
- */
-OH_AI_API OH_AI_Status OH_AI_ModelLoadWeight(OH_AI_ModelHandle model, uintptr_t flash_addr);
 
 /**
  * @if Eng
