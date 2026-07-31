@@ -81,7 +81,7 @@
 <td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p23280107282026"><a name="p23280107282026"></a><a name="p23280107282026"></a>2026-07-30</p>
 </td>
 <td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p33280107282026"><a name="p33280107282026"></a><a name="p33280107282026"></a>新增Onnx/TFLite算子规格：</p>
-<a name="ul33280107282026"></a><a name="ul33280107282026"></a><ul id="ul33280107282026"><li>新增“<a href="#ZH-CN_TOPIC_0000002026072801">Erf</a>、<a href="#ZH-CN_TOPIC_0000002026072802">HardSigmoid</a>、<a href="#ZH-CN_TOPIC_0000002026072803">Celu</a>”。</li></ul>
+<a name="ul33280107282026"></a><a name="ul33280107282026"></a><ul id="ul33280107282026"><li>新增“<a href="#ZH-CN_TOPIC_0000002026072801">Erf</a>、<a href="#ZH-CN_TOPIC_0000002026072802">HardSigmoid</a>、<a href="#ZH-CN_TOPIC_0000002026072803">Celu</a>”。</li><li>新增"<a href="#ZH-CN_TOPIC_0000003030115802">Shape</a>、<a href="#ZH-CN_TOPIC_0000003030115702">Shape</a>"。</li><li>新增"<a href="#ZH-CN_TOPIC_0000003040115702">MatMulInteger</a>"。</li><li>新增"<a href="#ZH-CN_TOPIC_0000003050115802">TopK</a>、<a href="#ZH-CN_TOPIC_0000003050115702">TopK</a>"。</li></ul>
 <p id="p2026073001"><a name="p2026073001"></a><a name="p2026073001"></a>新增训练特性：</p>
 <a name="ul2026073001"></a><a name="ul2026073001"></a><ul id="ul2026073001"><li>在“<a href="#ZH-CN_TOPIC_0000002353945877">开源框架的TFLite/ONNX模型转换为Micro工程</a>”中更新QAS INT8量化训练配置、FP32训练配置。</li><li>在“<a href="#ZH-CN_TOPIC_0000002319906348">参数说明</a>”中更新训练参数，新增MSE loss和Adam优化器参数。</li><li>新增QAS INT8和FP32训练支持规格。</li></ul>
 </td>
@@ -1614,6 +1614,10 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 -   **[DepthToSpace](#ZH-CN_TOPIC_0000002660395017)**  
 
 -   **[SpaceToDepth](#ZH-CN_TOPIC_0000002630115702)**  
+
+-   **[Shape](#ZH-CN_TOPIC_0000003030115702)**  
+
+-   **[TopK](#ZH-CN_TOPIC_0000003050115702)**  
 
 ### Conv2D<a name="ZH-CN_TOPIC_0000002326184638"></a>
 
@@ -6403,6 +6407,124 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+### Shape<a name="ZH-CN_TOPIC_0000003030115702"></a>
+
+**功能描述<a name="section3030115702a"></a>**
+
+获取输入张量的形状信息。
+
+**参数说明<a name="section3030115702b"></a>**
+
+**表 1**  Shape参数概览
+
+<a name="table3030115702a"></a>
+<table><thead align="left"><tr id="row3030115702h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p30301157021"><a name="p30301157021"></a><a name="p30301157021"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p30301157022"><a name="p30301157022"></a><a name="p30301157022"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p30301157023"><a name="p30301157023"></a><a name="p30301157023"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p30301157024"><a name="p30301157024"></a><a name="p30301157024"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p30301157025"><a name="p30301157025"></a><a name="p30301157025"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row3030115702r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3030115702r1a"><a name="p3030115702r1a"></a><a name="p3030115702r1a"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3030115702r1b"><a name="p3030115702r1b"></a><a name="p3030115702r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3030115702r1c"><a name="p3030115702r1c"></a><a name="p3030115702r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3030115702r1d"><a name="p3030115702r1d"></a><a name="p3030115702r1d"></a>输入张量，维度不限制。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115702r1e"><a name="p3030115702r1e"></a><a name="p3030115702r1e"></a>-</p>
+</td>
+</tr>
+<tr id="row3030115702r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3030115702r2a"><a name="p3030115702r2a"></a><a name="p3030115702r2a"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3030115702r2b"><a name="p3030115702r2b"></a><a name="p3030115702r2b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3030115702r2c"><a name="p3030115702r2c"></a><a name="p3030115702r2c"></a>tensor (int32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3030115702r2d"><a name="p3030115702r2d"></a><a name="p3030115702r2d"></a>输出张量，维度为1D，元素为输入张量的各维度大小。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115702r2e"><a name="p3030115702r2e"></a><a name="p3030115702r2e"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### TopK<a name="ZH-CN_TOPIC_0000003050115702"></a>
+
+**功能描述<a name="section3050115702a"></a>**
+
+获取输入张量中沿指定维度前K个最大值。
+
+**参数说明<a name="section3050115702b"></a>**
+
+**表 1**  TopK参数概览
+
+<a name="table3050115702a"></a>
+<table><thead align="left"><tr id="row3050115702h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p30501157021"><a name="p30501157021"></a><a name="p30501157021"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p30501157022"><a name="p30501157022"></a><a name="p30501157022"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p30501157023"><a name="p30501157023"></a><a name="p30501157023"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p30501157024"><a name="p30501157024"></a><a name="p30501157024"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p30501157025"><a name="p30501157025"></a><a name="p30501157025"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row3050115702r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115702r1a"><a name="p3050115702r1a"></a><a name="p3050115702r1a"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115702r1b"><a name="p3050115702r1b"></a><a name="p3050115702r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115702r1c"><a name="p3050115702r1c"></a><a name="p3050115702r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115702r1d"><a name="p3050115702r1d"></a><a name="p3050115702r1d"></a>输入张量，维度不限制。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115702r1e"><a name="p3050115702r1e"></a><a name="p3050115702r1e"></a>-</p>
+</td>
+</tr>
+<tr id="row3050115702r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115702r2a"><a name="p3050115702r2a"></a><a name="p3050115702r2a"></a>k</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115702r2b"><a name="p3050115702r2b"></a><a name="p3050115702r2b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115702r2c"><a name="p3050115702r2c"></a><a name="p3050115702r2c"></a>tensor (int32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115702r2d"><a name="p3050115702r2d"></a><a name="p3050115702r2d"></a>需要获取的TopK个数，标量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115702r2e"><a name="p3050115702r2e"></a><a name="p3050115702r2e"></a>-</p>
+</td>
+</tr>
+<tr id="row3050115702r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115702r3a"><a name="p3050115702r3a"></a><a name="p3050115702r3a"></a>values</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115702r3b"><a name="p3050115702r3b"></a><a name="p3050115702r3b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115702r3c"><a name="p3050115702r3c"></a><a name="p3050115702r3c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115702r3d"><a name="p3050115702r3d"></a><a name="p3050115702r3d"></a>TopK值张量，最后一维为K。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115702r3e"><a name="p3050115702r3e"></a><a name="p3050115702r3e"></a>-</p>
+</td>
+</tr>
+<tr id="row3050115702r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115702r4a"><a name="p3050115702r4a"></a><a name="p3050115702r4a"></a>indices</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115702r4b"><a name="p3050115702r4b"></a><a name="p3050115702r4b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115702r4c"><a name="p3050115702r4c"></a><a name="p3050115702r4c"></a>tensor (int32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115702r4d"><a name="p3050115702r4d"></a><a name="p3050115702r4d"></a>TopK值的索引张量，最后一维为K。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115702r4e"><a name="p3050115702r4e"></a><a name="p3050115702r4e"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
 ## ONNX算子规格参考<a name="ZH-CN_TOPIC_0000002320738138"></a>
 
 -   **[Conv](#ZH-CN_TOPIC_0000002326152940)**  
@@ -6554,6 +6676,12 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 -   **[SpaceToDepth](#ZH-CN_TOPIC_0000002660274511)**  
 
 -   **[GRU](#ZH-CN_TOPIC_0000002631448488)**  
+
+-   **[Shape](#ZH-CN_TOPIC_0000003030115802)**  
+
+-   **[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)**  
+
+-   **[TopK](#ZH-CN_TOPIC_0000003050115802)**  
 
 -   **[Erf](#ZH-CN_TOPIC_0000002026072801)**  
 
@@ -12196,6 +12324,260 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 <td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p113752491276"><a name="p113752491276"></a><a name="p113752491276"></a>区分GRU候选隐藏层状态计算范式：值为1代表先对隐藏层做线性变换再与重置门相乘否则咸鱼重置门相乘再做线性变换。</p>
 </td>
 <td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p2037554982712"><a name="p2037554982712"></a><a name="p2037554982712"></a>配置范围：0或1</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Shape<a name="ZH-CN_TOPIC_0000003030115802"></a>
+
+**功能描述<a name="section3030115802a"></a>**
+
+获取输入张量的形状信息。
+
+**参数说明<a name="section3030115802b"></a>**
+
+**表 1**  Shape参数概览
+
+<a name="table3030115802a"></a>
+<table><thead align="left"><tr id="row3030115802h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p30301158021"><a name="p30301158021"></a><a name="p30301158021"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p30301158022"><a name="p30301158022"></a><a name="p30301158022"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p30301158023"><a name="p30301158023"></a><a name="p30301158023"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p30301158024"><a name="p30301158024"></a><a name="p30301158024"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p30301158025"><a name="p30301158025"></a><a name="p30301158025"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row3030115802r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3030115802r1a"><a name="p3030115802r1a"></a><a name="p3030115802r1a"></a>data</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3030115802r1b"><a name="p3030115802r1b"></a><a name="p3030115802r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3030115802r1c"><a name="p3030115802r1c"></a><a name="p3030115802r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3030115802r1d"><a name="p3030115802r1d"></a><a name="p3030115802r1d"></a>输入张量，维度不限制。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115802r1e"><a name="p3030115802r1e"></a><a name="p3030115802r1e"></a>-</p>
+</td>
+</tr>
+<tr id="row3030115802r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3030115802r2a"><a name="p3030115802r2a"></a><a name="p3030115802r2a"></a>shape</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3030115802r2b"><a name="p3030115802r2b"></a><a name="p3030115802r2b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3030115802r2c"><a name="p3030115802r2c"></a><a name="p3030115802r2c"></a>tensor (int64)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3030115802r2d"><a name="p3030115802r2d"></a><a name="p3030115802r2d"></a>输出张量，维度为1D，元素为输入张量的各维度大小。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115802r2e"><a name="p3030115802r2e"></a><a name="p3030115802r2e"></a>-</p>
+</td>
+</tr>
+<tr id="row3030115802r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3030115802r3a"><a name="p3030115802r3a"></a><a name="p3030115802r3a"></a>start</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3030115802r3b"><a name="p3030115802r3b"></a><a name="p3030115802r3b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3030115802r3c"><a name="p3030115802r3c"></a><a name="p3030115802r3c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3030115802r3d"><a name="p3030115802r3d"></a><a name="p3030115802r3d"></a>指定输出形状切片的起始维度索引（默认0）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115802r3e"><a name="p3030115802r3e"></a><a name="p3030115802r3e"></a>-</p>
+</td>
+</tr>
+<tr id="row3030115802r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3030115802r4a"><a name="p3030115802r4a"></a><a name="p3030115802r4a"></a>end</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3030115802r4b"><a name="p3030115802r4b"></a><a name="p3030115802r4b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3030115802r4c"><a name="p3030115802r4c"></a><a name="p3030115802r4c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3030115802r4d"><a name="p3030115802r4d"></a><a name="p3030115802r4d"></a>指定输出形状切片的结束维度索引（不含，默认输出全部）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115802r4e"><a name="p3030115802r4e"></a><a name="p3030115802r4e"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### MatMulInteger<a name="ZH-CN_TOPIC_0000003040115702"></a>
+
+**功能描述<a name="section3040115702a"></a>**
+
+对两个量化后的整数矩阵进行乘积运算，计算 `Y = (A - a_zero_point) * (B - b_zero_point)`。
+
+**参数说明<a name="section3040115702b"></a>**
+
+**表 1**  MatMulInteger参数概览
+
+<a name="table3040115702a"></a>
+<table><thead align="left"><tr id="row3040115702h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p30401157021"><a name="p30401157021"></a><a name="p30401157021"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p30401157022"><a name="p30401157022"></a><a name="p30401157022"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p30401157023"><a name="p30401157023"></a><a name="p30401157023"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p30401157024"><a name="p30401157024"></a><a name="p30401157024"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p30401157025"><a name="p30401157025"></a><a name="p30401157025"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row3040115702r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3040115702r1a"><a name="p3040115702r1a"></a><a name="p3040115702r1a"></a>A</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3040115702r1b"><a name="p3040115702r1b"></a><a name="p3040115702r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3040115702r1c"><a name="p3040115702r1c"></a><a name="p3040115702r1c"></a>tensor (int8/uint8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3040115702r1d"><a name="p3040115702r1d"></a><a name="p3040115702r1d"></a>量化的左输入矩阵。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3040115702r1e"><a name="p3040115702r1e"></a><a name="p3040115702r1e"></a>-</p>
+</td>
+</tr>
+<tr id="row3040115702r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3040115702r2a"><a name="p3040115702r2a"></a><a name="p3040115702r2a"></a>B</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3040115702r2b"><a name="p3040115702r2b"></a><a name="p3040115702r2b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3040115702r2c"><a name="p3040115702r2c"></a><a name="p3040115702r2c"></a>tensor (int8/uint8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3040115702r2d"><a name="p3040115702r2d"></a><a name="p3040115702r2d"></a>量化的右输入矩阵。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3040115702r2e"><a name="p3040115702r2e"></a><a name="p3040115702r2e"></a>-</p>
+</td>
+</tr>
+<tr id="row3040115702r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3040115702r3a"><a name="p3040115702r3a"></a><a name="p3040115702r3a"></a>a_zero_point</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3040115702r3b"><a name="p3040115702r3b"></a><a name="p3040115702r3b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3040115702r3c"><a name="p3040115702r3c"></a><a name="p3040115702r3c"></a>tensor (int8/uint8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3040115702r3d"><a name="p3040115702r3d"></a><a name="p3040115702r3d"></a>输入A量化零点，可选输入，默认值为0。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3040115702r3e"><a name="p3040115702r3e"></a><a name="p3040115702r3e"></a>-</p>
+</td>
+</tr>
+<tr id="row3040115702r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3040115702r4a"><a name="p3040115702r4a"></a><a name="p3040115702r4a"></a>b_zero_point</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3040115702r4b"><a name="p3040115702r4b"></a><a name="p3040115702r4b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3040115702r4c"><a name="p3040115702r4c"></a><a name="p3040115702r4c"></a>tensor (int8/uint8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3040115702r4d"><a name="p3040115702r4d"></a><a name="p3040115702r4d"></a>输入B量化零点，可选输入，默认值为0。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3040115702r4e"><a name="p3040115702r4e"></a><a name="p3040115702r4e"></a>-</p>
+</td>
+</tr>
+<tr id="row3040115702r5"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3040115702r5a"><a name="p3040115702r5a"></a><a name="p3040115702r5a"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3040115702r5b"><a name="p3040115702r5b"></a><a name="p3040115702r5b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3040115702r5c"><a name="p3040115702r5c"></a><a name="p3040115702r5c"></a>tensor (int32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3040115702r5d"><a name="p3040115702r5d"></a><a name="p3040115702r5d"></a>去量化乘积结果输出矩阵。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3040115702r5e"><a name="p3040115702r5e"></a><a name="p3040115702r5e"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### TopK<a name="ZH-CN_TOPIC_0000003050115802"></a>
+
+**功能描述<a name="section3050115802a"></a>**
+
+获取输入张量中沿指定维度前K个最大值，并返回其值及对应的索引。
+
+**参数说明<a name="section3050115802b"></a>**
+
+**表 1**  TopK参数概览
+
+<a name="table3050115802a"></a>
+<table><thead align="left"><tr id="row3050115802h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p30501158021"><a name="p30501158021"></a><a name="p30501158021"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p30501158022"><a name="p30501158022"></a><a name="p30501158022"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p30501158023"><a name="p30501158023"></a><a name="p30501158023"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p30501158024"><a name="p30501158024"></a><a name="p30501158024"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p30501158025"><a name="p30501158025"></a><a name="p30501158025"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row3050115802r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115802r1a"><a name="p3050115802r1a"></a><a name="p3050115802r1a"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115802r1b"><a name="p3050115802r1b"></a><a name="p3050115802r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115802r1c"><a name="p3050115802r1c"></a><a name="p3050115802r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115802r1d"><a name="p3050115802r1d"></a><a name="p3050115802r1d"></a>输入张量，维度不限制。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r1e"><a name="p3050115802r1e"></a><a name="p3050115802r1e"></a>-</p>
+</td>
+</tr>
+<tr id="row3050115802r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115802r2a"><a name="p3050115802r2a"></a><a name="p3050115802r2a"></a>K</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115802r2b"><a name="p3050115802r2b"></a><a name="p3050115802r2b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115802r2c"><a name="p3050115802r2c"></a><a name="p3050115802r2c"></a>tensor (int64)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115802r2d"><a name="p3050115802r2d"></a><a name="p3050115802r2d"></a>需要获取的TopK个数，标量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r2e"><a name="p3050115802r2e"></a><a name="p3050115802r2e"></a>-</p>
+</td>
+</tr>
+<tr id="row3050115802r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115802r3a"><a name="p3050115802r3a"></a><a name="p3050115802r3a"></a>Values</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115802r3b"><a name="p3050115802r3b"></a><a name="p3050115802r3b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115802r3c"><a name="p3050115802r3c"></a><a name="p3050115802r3c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115802r3d"><a name="p3050115802r3d"></a><a name="p3050115802r3d"></a>TopK值张量，axis维度为K。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r3e"><a name="p3050115802r3e"></a><a name="p3050115802r3e"></a>-</p>
+</td>
+</tr>
+<tr id="row3050115802r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115802r4a"><a name="p3050115802r4a"></a><a name="p3050115802r4a"></a>Indices</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115802r4b"><a name="p3050115802r4b"></a><a name="p3050115802r4b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115802r4c"><a name="p3050115802r4c"></a><a name="p3050115802r4c"></a>tensor (int64)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115802r4d"><a name="p3050115802r4d"></a><a name="p3050115802r4d"></a>TopK值的索引张量，axis维度为K。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r4e"><a name="p3050115802r4e"></a><a name="p3050115802r4e"></a>-</p>
+</td>
+</tr>
+<tr id="row3050115802r5"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115802r5a"><a name="p3050115802r5a"></a><a name="p3050115802r5a"></a>axis</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115802r5b"><a name="p3050115802r5b"></a><a name="p3050115802r5b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115802r5c"><a name="p3050115802r5c"></a><a name="p3050115802r5c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115802r5d"><a name="p3050115802r5d"></a><a name="p3050115802r5d"></a>指定选取TopK的维度（默认-1，即最后一维）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r5e"><a name="p3050115802r5e"></a><a name="p3050115802r5e"></a>-</p>
+</td>
+</tr>
+<tr id="row3050115802r6"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115802r6a"><a name="p3050115802r6a"></a><a name="p3050115802r6a"></a>largest</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115802r6b"><a name="p3050115802r6b"></a><a name="p3050115802r6b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115802r6c"><a name="p3050115802r6c"></a><a name="p3050115802r6c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115802r6d"><a name="p3050115802r6d"></a><a name="p3050115802r6d"></a>控制返回最大值（1）还是最小值（0）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r6e"><a name="p3050115802r6e"></a><a name="p3050115802r6e"></a>默认1</p>
+</td>
+</tr>
+<tr id="row3050115802r7"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115802r7a"><a name="p3050115802r7a"></a><a name="p3050115802r7a"></a>sorted</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p3050115802r7b"><a name="p3050115802r7b"></a><a name="p3050115802r7b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p3050115802r7c"><a name="p3050115802r7c"></a><a name="p3050115802r7c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115802r7d"><a name="p3050115802r7d"></a><a name="p3050115802r7d"></a>控制返回结果是否按序排列（1）或不排序（0）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r7e"><a name="p3050115802r7e"></a><a name="p3050115802r7e"></a>默认1</p>
 </td>
 </tr>
 </tbody>
