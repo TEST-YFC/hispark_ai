@@ -740,7 +740,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p13469155112711"><a name="p13469155112711"></a><a name="p13469155112711"></a>-</p>
 </td>
 </tr>
-<tr id="row1746919511879"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p5469951574"><a name="p5469951574"></a><a name="p5469951574"></a>--fmk=&lt;FMK&gt;</p>
+<tr id="row1746919511879"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p5469951574"><a name="p5469951574"></a><a name="p5469951574"></a>--fmk=<FMK></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p546913511973"><a name="p546913511973"></a><a name="p546913511973"></a>是</p>
 </td>
@@ -751,7 +751,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p1046918514716"><a name="p1046918514716"></a><a name="p1046918514716"></a>-</p>
 </td>
 </tr>
-<tr id="row1946911511176"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p44691051370"><a name="p44691051370"></a><a name="p44691051370"></a>--modelFile=&lt;MODELFILE&gt;</p>
+<tr id="row1946911511176"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p44691051370"><a name="p44691051370"></a><a name="p44691051370"></a>--modelFile=<MODELFILE></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p846935120717"><a name="p846935120717"></a><a name="p846935120717"></a>是</p>
 </td>
@@ -762,7 +762,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p14691451772"><a name="p14691451772"></a><a name="p14691451772"></a>-</p>
 </td>
 </tr>
-<tr id="row204696511578"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p9469135112711"><a name="p9469135112711"></a><a name="p9469135112711"></a>--outputFile=&lt;OUTPUTFILE&gt;</p>
+<tr id="row204696511578"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p9469135112711"><a name="p9469135112711"></a><a name="p9469135112711"></a>--outputFile=<OUTPUTFILE></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p84691551272"><a name="p84691551272"></a><a name="p84691551272"></a>是</p>
 </td>
@@ -773,7 +773,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p164696511777"><a name="p164696511777"></a><a name="p164696511777"></a>-</p>
 </td>
 </tr>
-<tr id="row7469751173"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p1646914511473"><a name="p1646914511473"></a><a name="p1646914511473"></a>--configFile=&lt;CONFIGFILE&gt;</p>
+<tr id="row7469751173"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p1646914511473"><a name="p1646914511473"></a><a name="p1646914511473"></a>--configFile=<CONFIGFILE></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p15470135114711"><a name="p15470135114711"></a><a name="p15470135114711"></a>是</p>
 </td>
@@ -784,7 +784,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p15470951875"><a name="p15470951875"></a><a name="p15470951875"></a>-</p>
 </td>
 </tr>
-<tr id="row44706511273"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p94709511173"><a name="p94709511173"></a><a name="p94709511173"></a>--encryption=&lt;ENCRYPTION&gt;</p>
+<tr id="row44706511273"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p94709511173"><a name="p94709511173"></a><a name="p94709511173"></a>--encryption=<ENCRYPTION></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p1470185115717"><a name="p1470185115717"></a><a name="p1470185115717"></a>是</p>
 </td>
@@ -2560,7 +2560,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </td>
 <td class="cellrowborder" valign="top" width="31.169999999999998%" headers="mcps1.2.6.1.4 "><p id="p108197531101"><a name="p108197531101"></a><a name="p108197531101"></a>输入张量被切分的轴。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>-rank(value)&lt;=axis&lt;rank(value)，rank为张量的秩</p>
+<td class="cellrowborder" valign="top" width="26%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>-rank(value)<=axis<rank(value)，rank为张量的秩</p>
 </td>
 </tr>
 <tr id="row33451752161111"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p7218175312547"><a name="p7218175312547"></a><a name="p7218175312547"></a>batch_dims</p>
@@ -2719,7 +2719,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 </td>
 <td class="cellrowborder" valign="top" width="30.626937306269376%" headers="mcps1.2.6.1.4 "><p id="p18107442101017"><a name="p18107442101017"></a><a name="p18107442101017"></a>具体每一份分割的维度。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.72742725727427%" headers="mcps1.2.6.1.5 "><p id="p1071521961116"><a name="p1071521961116"></a><a name="p1071521961116"></a>[n<sub id="sub163541521663"><a name="sub163541521663"></a><a name="sub163541521663"></a>1</sub>, n<sub id="sub195419472612"><a name="sub195419472612"></a><a name="sub195419472612"></a>2</sub>, ..., n<sub id="sub1888985915616"><a name="sub1888985915616"></a><a name="sub1888985915616"></a>i</sub>]，∑n<sub id="sub1493118464"><a name="sub1493118464"></a><a name="sub1493118464"></a>i</sub> = axis，n &gt; 0</p>
+<td class="cellrowborder" valign="top" width="25.72742725727427%" headers="mcps1.2.6.1.5 "><p id="p1071521961116"><a name="p1071521961116"></a><a name="p1071521961116"></a>[n<sub id="sub163541521663"><a name="sub163541521663"></a><a name="sub163541521663"></a>1</sub>, n<sub id="sub195419472612"><a name="sub195419472612"></a><a name="sub195419472612"></a>2</sub>, ..., n<sub id="sub1888985915616"><a name="sub1888985915616"></a><a name="sub1888985915616"></a>i</sub>]，∑n<sub id="sub1493118464"><a name="sub1493118464"></a><a name="sub1493118464"></a>i</sub> = axis，n > 0</p>
 </td>
 </tr>
 <tr id="row610711426106"><td class="cellrowborder" valign="top" width="17.228277172282773%" headers="mcps1.2.6.1.1 "><p id="p1810754216104"><a name="p1810754216104"></a><a name="p1810754216104"></a>split_dim</p>
@@ -2730,7 +2730,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 </td>
 <td class="cellrowborder" valign="top" width="30.626937306269376%" headers="mcps1.2.6.1.4 "><p id="p108197531101"><a name="p108197531101"></a><a name="p108197531101"></a>被分割的轴。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.72742725727427%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>-rank(value)&lt;=axis&lt;rank(value)，rank为张量的秩</p>
+<td class="cellrowborder" valign="top" width="25.72742725727427%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>-rank(value)<=axis<rank(value)，rank为张量的秩</p>
 </td>
 </tr>
 </tbody>
@@ -2789,7 +2789,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 </td>
 <td class="cellrowborder" valign="top" width="32.00679932006799%" headers="mcps1.2.6.1.4 "><p id="p174988410177"><a name="p174988410177"></a><a name="p174988410177"></a>指定沿着哪个轴进行连接。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.637436256374365%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>规格约束：-rank(value)&lt;=axis&lt;rank(value)，rank为张量的秩</p>
+<td class="cellrowborder" valign="top" width="25.637436256374365%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>规格约束：-rank(value)<=axis<rank(value)，rank为张量的秩</p>
 </td>
 </tr>
 <tr id="row195632034203"><td class="cellrowborder" valign="top" width="17.078292170782923%" headers="mcps1.2.6.1.1 "><p id="p7218175312547"><a name="p7218175312547"></a><a name="p7218175312547"></a>fused_activation_function</p>
@@ -3031,7 +3031,7 @@ Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，�
 </td>
 <td class="cellrowborder" valign="top" width="30.556944305569438%" headers="mcps1.2.6.1.4 "><p id="p576810417443"><a name="p576810417443"></a><a name="p576810417443"></a>指定各输入维度填充范围。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p175411827202412"><a name="p175411827202412"></a><a name="p175411827202412"></a>规格约束：padding为离线常量，padding[i]&lt;input_dim[i]</p>
+<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p175411827202412"><a name="p175411827202412"></a><a name="p175411827202412"></a>规格约束：padding为离线常量，padding[i]<input_dim[i]</p>
 </td>
 </tr>
 <tr id="row158205562211"><td class="cellrowborder" valign="top" width="16.8983101689831%" headers="mcps1.2.6.1.1 "><p id="p163562048134411"><a name="p163562048134411"></a><a name="p163562048134411"></a>output</p>
@@ -3090,7 +3090,7 @@ Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，�
 </td>
 <td class="cellrowborder" valign="top" width="29.077092290770924%" headers="mcps1.2.6.1.4 "><p id="p576810417443"><a name="p576810417443"></a><a name="p576810417443"></a>指定各输入维度填充范围。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.977302269773023%" headers="mcps1.2.6.1.5 "><p id="p175411827202412"><a name="p175411827202412"></a><a name="p175411827202412"></a>规格约束：padding为离线常量，padding[i]&lt;input_dim[i]</p>
+<td class="cellrowborder" valign="top" width="26.977302269773023%" headers="mcps1.2.6.1.5 "><p id="p175411827202412"><a name="p175411827202412"></a><a name="p175411827202412"></a>规格约束：padding为离线常量，padding[i]<input_dim[i]</p>
 </td>
 </tr>
 <tr id="row735671642512"><td class="cellrowborder" valign="top" width="18.04819518048195%" headers="mcps1.2.6.1.1 "><p id="p8357121612258"><a name="p8357121612258"></a><a name="p8357121612258"></a>constant_values</p>
@@ -3160,7 +3160,7 @@ Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，�
 </td>
 <td class="cellrowborder" valign="top" width="30.556944305569438%" headers="mcps1.2.6.1.4 "><p id="p576810417443"><a name="p576810417443"></a><a name="p576810417443"></a>指定各输入维度填充范围。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p175411827202412"><a name="p175411827202412"></a><a name="p175411827202412"></a>规格约束：pad为离线常量，pad[i]&lt;input_dim[i]</p>
+<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p175411827202412"><a name="p175411827202412"></a><a name="p175411827202412"></a>规格约束：pad为离线常量，pad[i]<input_dim[i]</p>
 </td>
 </tr>
 <tr id="row735671642512"><td class="cellrowborder" valign="top" width="18.04819518048195%" headers="mcps1.2.6.1.1 "><p id="p335143153114"><a name="p335143153114"></a><a name="p335143153114"></a>output</p>
@@ -3411,7 +3411,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </td>
 <td class="cellrowborder" valign="top" width="28.777122287771224%" headers="mcps1.2.6.1.4 "><p id="p18141820435"><a name="p18141820435"></a><a name="p18141820435"></a>被压缩的轴列表。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(tensor) &lt;= axis &lt;  Rank(tensor)</p>
+<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(tensor) <= axis <  Rank(tensor)</p>
 </td>
 </tr>
 </tbody>
@@ -3470,7 +3470,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </td>
 <td class="cellrowborder" valign="top" width="28.777122287771224%" headers="mcps1.2.6.1.4 "><p id="p18141820435"><a name="p18141820435"></a><a name="p18141820435"></a>被扩展的轴。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(output) &lt;= axis &lt;  Rank(output)</p>
+<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(output) <= axis <  Rank(output)</p>
 </td>
 </tr>
 </tbody>
@@ -4540,7 +4540,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="32.05%" headers="mcps1.2.6.1.4 "><p id="p499234194217"><a name="p499234194217"></a><a name="p499234194217"></a><span>指定在张量中执行计算逻辑</span>的维度。</p>
 </td>
-<td class="cellrowborder" valign="top" width="27.33%" headers="mcps1.2.6.1.5 "><p id="p17661841144412"><a name="p17661841144412"></a><a name="p17661841144412"></a>规格约束：-rank(input)&lt;=axis&lt;rank(input)，rank为张量的秩</p>
+<td class="cellrowborder" valign="top" width="27.33%" headers="mcps1.2.6.1.5 "><p id="p17661841144412"><a name="p17661841144412"></a><a name="p17661841144412"></a>规格约束：-rank(input)<=axis<rank(input)，rank为张量的秩</p>
 </td>
 </tr>
 <tr id="row163619594919"><td class="cellrowborder" valign="top" width="14.06%" headers="mcps1.2.6.1.1 "><p id="p106376574912"><a name="p106376574912"></a><a name="p106376574912"></a>output</p>
@@ -4613,7 +4613,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="32.43%" headers="mcps1.2.6.1.4 "><p id="p499234194217"><a name="p499234194217"></a><a name="p499234194217"></a><span>指定在张量中执行计算逻辑</span>的维度。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.950000000000003%" headers="mcps1.2.6.1.5 "><p id="p17661841144412"><a name="p17661841144412"></a><a name="p17661841144412"></a>规格约束：-rank(input)&lt;=axis&lt;rank(input)，rank为张量的秩</p>
+<td class="cellrowborder" valign="top" width="26.950000000000003%" headers="mcps1.2.6.1.5 "><p id="p17661841144412"><a name="p17661841144412"></a><a name="p17661841144412"></a>规格约束：-rank(input)<=axis<rank(input)，rank为张量的秩</p>
 </td>
 </tr>
 <tr id="row163619594919"><td class="cellrowborder" valign="top" width="14.06%" headers="mcps1.2.6.1.1 "><p id="p106376574912"><a name="p106376574912"></a><a name="p106376574912"></a>output</p>
@@ -5097,7 +5097,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 **功能描述<a name="section270785104414"></a>**
 
-对输入张量进行量化操作。
+对输入张量进行反量化操作。
 
 **参数说明<a name="section1970335944611"></a>**
 
@@ -5327,7 +5327,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="32.940000000000005%" headers="mcps1.2.6.1.4 "><p id="p10558802416"><a name="p10558802416"></a><a name="p10558802416"></a>输入张量，维度为1D。</p>
 </td>
-<td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p25511814243"><a name="p25511814243"></a><a name="p25511814243"></a>数据类型仅支持int32，每个数据均满足0&lt;=seq_len&lt;=input_shape[seq_axis]</p>
+<td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p25511814243"><a name="p25511814243"></a><a name="p25511814243"></a>数据类型仅支持int32，每个数据均满足0<=seq_len<=input_shape[seq_axis]</p>
 </td>
 </tr>
 <tr id="row163619594919"><td class="cellrowborder" valign="top" width="13.22%" headers="mcps1.2.6.1.1 "><p id="p106376574912"><a name="p106376574912"></a><a name="p106376574912"></a>output</p>
@@ -5529,8 +5529,9 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 **参数说明<a name="section162919203502"></a>**
 
->![](public_sys-resources/icon-note.gif) **说明：** 
+>![img](public_sys-resources/icon-note.gif) **说明：**
 >LogicalAnd支持广播特性。双向广播需要在转换命令中明确配置inputDataFormat和outputDataFormat参数。
+>LogicalAnd算子不支持量化。
 
 **表 1**  LogicalAnd参数概览
 
@@ -5961,7 +5962,10 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 逐元素返回输入张量的取反值。
 
-**参数说明<a name="section15195134816462"></a>**
+**参数说明<a name="section162919203502"></a>**
+
+> ![img](public_sys-resources/icon-note.gif) **说明：**
+> LogicalNot算子不支持量化。
 
 **表 1**  LogicalNot参数概览
 
@@ -6011,8 +6015,9 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 **参数说明<a name="section162919203502"></a>**
 
->![](public_sys-resources/icon-note.gif) **说明：** 
+>![img](public_sys-resources/icon-note.gif) **说明：**
 >LogicalOr支持广播特性。双向广播需要在转换命令中明确配置inputDataFormat和outputDataFormat参数。
+>LogicalOr算子不支持量化。
 
 **表 1**  LogicalOr参数概览
 
@@ -6166,7 +6171,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p1564612213546"><a name="p1564612213546"></a><a name="p1564612213546"></a>从深度维度重组到空间维度的基础块尺寸</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p196467225548"><a name="p196467225548"></a><a name="p196467225548"></a>规格约束：block_size&gt;=2， C%block_size^2 == 0</p>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p196467225548"><a name="p196467225548"></a><a name="p196467225548"></a>规格约束：block_size>=2， C%block_size^2 == 0</p>
 </td>
 </tr>
 </tbody>
@@ -6225,7 +6230,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p1564612213546"><a name="p1564612213546"></a><a name="p1564612213546"></a>从空间维度重组到深度维度的基础块尺寸</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p196467225548"><a name="p196467225548"></a><a name="p196467225548"></a>规格约束：block_size&gt;=2， H%block_size == 0，W%block_size == 0</p>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p196467225548"><a name="p196467225548"></a><a name="p196467225548"></a>规格约束：block_size>=2， H%block_size == 0，W%block_size == 0</p>
 </td>
 </tr>
 </tbody>
@@ -6885,7 +6890,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="30.533053305330533%" headers="mcps1.2.6.1.4 "><p id="p108197531101"><a name="p108197531101"></a><a name="p108197531101"></a>Softmax的计算轴。</p>
 </td>
-<td class="cellrowborder" valign="top" width="24.672467246724672%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>-rank(input)&lt;=axis&lt;rank(input)，rank为张量的秩</p>
+<td class="cellrowborder" valign="top" width="24.672467246724672%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>-rank(input)<=axis<rank(input)，rank为张量的秩</p>
 </td>
 </tr>
 </tbody>
@@ -7355,7 +7360,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="29.049999999999997%" headers="mcps1.2.6.1.4 "><p id="p108197531101"><a name="p108197531101"></a><a name="p108197531101"></a>输入张量被切分的轴。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.84%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>-rank(data)&lt;=axis&lt;rank(data)，rank为张量的秩</p>
+<td class="cellrowborder" valign="top" width="23.84%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>-rank(data)<=axis<rank(data)，rank为张量的秩</p>
 </td>
 </tr>
 </tbody>
@@ -7436,7 +7441,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="29.007099290070997%" headers="mcps1.2.6.1.4 "><p id="p18107442101017"><a name="p18107442101017"></a><a name="p18107442101017"></a>具体每一份分割的维度。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.737626237376265%" headers="mcps1.2.6.1.5 "><p id="p1071521961116"><a name="p1071521961116"></a><a name="p1071521961116"></a>[n<sub id="sub3534611270"><a name="sub3534611270"></a><a name="sub3534611270"></a>1</sub>, n<sub id="sub1617612165714"><a name="sub1617612165714"></a><a name="sub1617612165714"></a>2</sub>, ..., n<sub id="sub19981122510712"><a name="sub19981122510712"></a><a name="sub19981122510712"></a>i</sub>]，∑n<sub id="sub516495511517"><a name="sub516495511517"></a><a name="sub516495511517"></a>i</sub> = 轴的值，n &gt; 0</p>
+<td class="cellrowborder" valign="top" width="23.737626237376265%" headers="mcps1.2.6.1.5 "><p id="p1071521961116"><a name="p1071521961116"></a><a name="p1071521961116"></a>[n<sub id="sub3534611270"><a name="sub3534611270"></a><a name="sub3534611270"></a>1</sub>, n<sub id="sub1617612165714"><a name="sub1617612165714"></a><a name="sub1617612165714"></a>2</sub>, ..., n<sub id="sub19981122510712"><a name="sub19981122510712"></a><a name="sub19981122510712"></a>i</sub>]，∑n<sub id="sub516495511517"><a name="sub516495511517"></a><a name="sub516495511517"></a>i</sub> = 轴的值，n > 0</p>
 </td>
 </tr>
 </tbody>
@@ -7495,7 +7500,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="37.286271372862714%" headers="mcps1.2.6.1.4 "><p id="p174988410177"><a name="p174988410177"></a><a name="p174988410177"></a>指定沿着哪个轴进行连接。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.807619238076192%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>规格约束：-rank(data)≤axis&lt;rank(data)，rank为张量的秩</p>
+<td class="cellrowborder" valign="top" width="23.807619238076192%" headers="mcps1.2.6.1.5 "><p id="p1525013286014"><a name="p1525013286014"></a><a name="p1525013286014"></a>规格约束：-rank(data)≤axis<rank(data)，rank为张量的秩</p>
 </td>
 </tr>
 </tbody>
@@ -8050,7 +8055,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="30.556944305569438%" headers="mcps1.2.6.1.4 "><p id="p576810417443"><a name="p576810417443"></a><a name="p576810417443"></a>指定各输入维度填充范围。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p18895954132310"><a name="p18895954132310"></a><a name="p18895954132310"></a>规格约束：pads为离线常量，pads[i]&lt;input_dim[i]</p>
+<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p18895954132310"><a name="p18895954132310"></a><a name="p18895954132310"></a>规格约束：pads为离线常量，pads[i]<input_dim[i]</p>
 <p id="p2490184017266"><a name="p2490184017266"></a><a name="p2490184017266"></a>pads[i]非负</p>
 </td>
 </tr>
@@ -8338,7 +8343,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="28.777122287771224%" headers="mcps1.2.6.1.4 "><p id="p18141820435"><a name="p18141820435"></a><a name="p18141820435"></a>被压缩的轴列表。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(tensor) &lt;= axis &lt;  Rank(tensor)</p>
+<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(tensor) <= axis <  Rank(tensor)</p>
 </td>
 </tr>
 </tbody>
@@ -8397,7 +8402,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="28.777122287771224%" headers="mcps1.2.6.1.4 "><p id="p18141820435"><a name="p18141820435"></a><a name="p18141820435"></a>被扩展的轴列表。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(expanded) &lt;= axis &lt;  Rank(expanded)</p>
+<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(expanded) <= axis <  Rank(expanded)</p>
 </td>
 </tr>
 </tbody>
@@ -8456,7 +8461,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="28.777122287771224%" headers="mcps1.2.6.1.4 "><p id="p714153362912"><a name="p714153362912"></a><a name="p714153362912"></a>展平终止维度 (不包括），默认为1。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(tensor) &lt;= axis &lt;=  Rank(tensor)</p>
+<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p458116104314"><a name="p458116104314"></a><a name="p458116104314"></a>-Rank(tensor) <= axis <=  Rank(tensor)</p>
 </td>
 </tr>
 </tbody>
@@ -9083,7 +9088,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="28.777122287771224%" headers="mcps1.2.6.1.4 "><p id="p11474181735514"><a name="p11474181735514"></a><a name="p11474181735514"></a>用于指定归一化的维度（默认-1）。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p7178121810585"><a name="p7178121810585"></a><a name="p7178121810585"></a>规格约束：-Rank(input) &lt;= axis &lt;  Rank(input)</p>
+<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p7178121810585"><a name="p7178121810585"></a><a name="p7178121810585"></a>规格约束：-Rank(input) <= axis <  Rank(input)</p>
 </td>
 </tr>
 </tbody>
@@ -9153,7 +9158,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="28.777122287771224%" headers="mcps1.2.6.1.4 "><p id="p11474181735514"><a name="p11474181735514"></a><a name="p11474181735514"></a>用于指定归一化的维度（默认-1）。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p7178121810585"><a name="p7178121810585"></a><a name="p7178121810585"></a>规格约束：-Rank(input) &lt;= axis &lt;  Rank(input)</p>
+<td class="cellrowborder" valign="top" width="23.747625237476253%" headers="mcps1.2.6.1.5 "><p id="p7178121810585"><a name="p7178121810585"></a><a name="p7178121810585"></a>规格约束：-Rank(input) <= axis <  Rank(input)</p>
 </td>
 </tr>
 </tbody>
@@ -9462,7 +9467,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="32.93%" headers="mcps1.2.6.1.4 "><p id="p15598130122515"><a name="p15598130122515"></a><a name="p15598130122515"></a><span>指定在张量中执行计算逻辑</span>的维度。</p>
 </td>
-<td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p125981130162518"><a name="p125981130162518"></a><a name="p125981130162518"></a>规格约束：-rank(value)&lt;=axis&lt;rank(value)，rank为张量的秩。默认为0</p>
+<td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p125981130162518"><a name="p125981130162518"></a><a name="p125981130162518"></a>规格约束：-rank(value)<=axis<rank(value)，rank为张量的秩。默认为0</p>
 </td>
 </tr>
 <tr id="row3838183521112"><td class="cellrowborder" valign="top" width="13.22%" headers="mcps1.2.6.1.1 "><p id="p58391835121118"><a name="p58391835121118"></a><a name="p58391835121118"></a>keepdims</p>
@@ -9546,7 +9551,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="32.93%" headers="mcps1.2.6.1.4 "><p id="p15598130122515"><a name="p15598130122515"></a><a name="p15598130122515"></a><span>指定在张量中执行计算逻辑</span>的维度。</p>
 </td>
-<td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p125981130162518"><a name="p125981130162518"></a><a name="p125981130162518"></a>规格约束：-rank(value)&lt;=axis&lt;rank(value)，rank为张量的秩。默认为0</p>
+<td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p125981130162518"><a name="p125981130162518"></a><a name="p125981130162518"></a>规格约束：-rank(value)<=axis<rank(value)，rank为张量的秩。默认为0</p>
 </td>
 </tr>
 <tr id="row3838183521112"><td class="cellrowborder" valign="top" width="13.22%" headers="mcps1.2.6.1.1 "><p id="p58391835121118"><a name="p58391835121118"></a><a name="p58391835121118"></a>keepdims</p>
@@ -10115,7 +10120,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 **功能描述<a name="section167661757173918"></a>**
 
-对输入张量进行参数化 ReLU 激活处理。其在输入为非负值时保持原值，在输入为负值时根据斜率参数进行线性缩放。
+对输入张量进行参数化 PRelu 激活处理。其在输入为非负值时保持原值，在输入为负值时根据斜率参数进行线性缩放。
 
 **参数说明<a name="section63411171435"></a>**
 
@@ -10296,7 +10301,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="32.940000000000005%" headers="mcps1.2.6.1.4 "><p id="p10558802416"><a name="p10558802416"></a><a name="p10558802416"></a>输入张量，维度为1D。</p>
 </td>
-<td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p25511814243"><a name="p25511814243"></a><a name="p25511814243"></a>数据类型仅支持int32，每个数据均满足0&lt;=seq_len&lt;=input_shape[time_axis]</p>
+<td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p25511814243"><a name="p25511814243"></a><a name="p25511814243"></a>数据类型仅支持int32，每个数据均满足0<=seq_len<=input_shape[time_axis]</p>
 </td>
 </tr>
 <tr id="row163619594919"><td class="cellrowborder" valign="top" width="13.22%" headers="mcps1.2.6.1.1 "><p id="p106376574912"><a name="p106376574912"></a><a name="p106376574912"></a>output</p>
@@ -10346,7 +10351,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >详细规则请参考[Einsum](https://onnx.com.cn/onnx/operators/onnx__Einsum.html)，不支持...操作。
 
-**表 1**  Cast参数概览
+**表 1**  Einsum参数概览
 
 <a name="table4179355155016"></a>
 <table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="13.22%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
@@ -10574,8 +10579,9 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 **参数说明<a name="section162919203502"></a>**
 
->![](public_sys-resources/icon-note.gif) **说明：** 
+>![img](public_sys-resources/icon-note.gif) **说明：**
 >And支持广播特性。双向广播需要在转换命令中明确配置inputDataFormat和outputDataFormat参数。
+>And算子不支持量化。
 
 **表 1**  And参数概览
 
@@ -10944,7 +10950,10 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 逐元素返回输入张量的取反值。
 
-**参数说明<a name="section15195134816462"></a>**
+**参数说明<a name="section162919203502"></a>**
+
+> ![img](public_sys-resources/icon-note.gif) **说明：**
+> Not算子不支持量化。
 
 **表 1**  Not参数概览
 
@@ -10994,8 +11003,9 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 **参数说明<a name="section162919203502"></a>**
 
->![](public_sys-resources/icon-note.gif) **说明：** 
+>![img](public_sys-resources/icon-note.gif) **说明：**
 >Or支持广播特性。双向广播需要在转换命令中明确配置inputDataFormat和outputDataFormat参数。
+>Or算子不支持量化。
 
 **表 1**  Or参数概览
 
@@ -11056,8 +11066,9 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 **参数说明<a name="section162919203502"></a>**
 
->![](public_sys-resources/icon-note.gif) **说明：** 
+>![img](public_sys-resources/icon-note.gif) **说明：**
 >Xor支持广播特性。双向广播需要在转换命令中明确配置inputDataFormat和outputDataFormat参数。
+>Xor算子不支持量化。
 
 **表 1**  Xor参数概览
 
@@ -11276,7 +11287,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 <td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p046011019919"><a name="p046011019919"></a><a name="p046011019919"></a>-</p>
 </td>
 </tr>
-<tr id="row498019321712"><td class="cellrowborder" valign="top" width="17.07%" headers="mcps1.2.6.1.1 "><p id="p698043213119"><a name="p698043213119"></a><a name="p698043213119"></a>Tind</p>
+<tr id="row498019321712"><td class="cellrowborder" valign="top" width="17.07%" headers="mcps1.2.6.1.1 "><p id="p698043213119"><a name="p698043213119"></a><a name="p698043213119"></a>indices</p>
 </td>
 <td class="cellrowborder" valign="top" width="14.49%" headers="mcps1.2.6.1.2 "><p id="p3980123213110"><a name="p3980123213110"></a><a name="p3980123213110"></a>input</p>
 </td>
@@ -11306,7 +11317,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="29.73%" headers="mcps1.2.6.1.4 "><p id="p13561016515"><a name="p13561016515"></a><a name="p13561016515"></a>重新按照元素取索引的轴。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p6356418510"><a name="p6356418510"></a><a name="p6356418510"></a>-rank(input) &lt;= axis &lt; rank(input)-1</p>
+<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p6356418510"><a name="p6356418510"></a><a name="p6356418510"></a>-rank(input) <= axis < rank(input)</p>
 </td>
 </tr>
 </tbody>
@@ -11320,7 +11331,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 **参数说明<a name="section1542812396314"></a>**
 
-**表 1**  GatherElements参数概览
+**表 1**  ReduceLogSum参数概览
 
 <a name="table39806321816"></a>
 <table><thead align="left"><tr id="row159801532115"><th class="cellrowborder" valign="top" width="17.07%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
@@ -11601,7 +11612,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p1564612213546"><a name="p1564612213546"></a><a name="p1564612213546"></a>从深度维度重组到空间维度的基础块尺寸。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p196467225548"><a name="p196467225548"></a><a name="p196467225548"></a>规格约束：blocksize&gt;=2， C%blocksize^2 == 0</p>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p196467225548"><a name="p196467225548"></a><a name="p196467225548"></a>规格约束：blocksize>=2， C%blocksize^2 == 0</p>
 </td>
 </tr>
 <tr id="row63381758105712"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps1.2.6.1.1 "><p id="p10339165818575"><a name="p10339165818575"></a><a name="p10339165818575"></a>mode</p>
@@ -11671,7 +11682,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.71%" headers="mcps1.2.6.1.4 "><p id="p1564612213546"><a name="p1564612213546"></a><a name="p1564612213546"></a>从空间维度重组到深度维度的基础块尺寸。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p196467225548"><a name="p196467225548"></a><a name="p196467225548"></a>规格约束：blocksize&gt;=2， H%blocksize == 0，W%blocksize == 0</p>
+<td class="cellrowborder" valign="top" width="25.95%" headers="mcps1.2.6.1.5 "><p id="p196467225548"><a name="p196467225548"></a><a name="p196467225548"></a>规格约束：blocksize>=2， H%blocksize == 0，W%blocksize == 0</p>
 </td>
 </tr>
 </tbody>
@@ -12106,7 +12117,7 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 <td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p5776175813266"><a name="p5776175813266"></a><a name="p5776175813266"></a>输入张量，维度为3D或4D，格式为NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p573518356592"><a name="p573518356592"></a><a name="p573518356592"></a>C在 [1, 8, 16, 32]列表中</p>
-<p id="p27351535105914"><a name="p27351535105914"></a><a name="p27351535105914"></a>H，W均满足 6&lt;=H, W &lt;= 32</p>
+<p id="p27351535105914"><a name="p27351535105914"></a><a name="p27351535105914"></a>H，W均满足 6<=H, W <= 32</p>
 </td>
 </tr>
 <tr id="row6971132912215"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p19727413172119"><a name="p19727413172119"></a><a name="p19727413172119"></a>Y</p>
@@ -12118,7 +12129,7 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 <td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p57261613112110"><a name="p57261613112110"></a><a name="p57261613112110"></a>输出张量，维度为3D或4D，格式为NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p10324174213592"><a name="p10324174213592"></a><a name="p10324174213592"></a>C在 [1, 8, 16, 32]列表中</p>
-<p id="p193241942175913"><a name="p193241942175913"></a><a name="p193241942175913"></a>H，W均满足 6&lt;=H, W &lt;= 32</p>
+<p id="p193241942175913"><a name="p193241942175913"></a><a name="p193241942175913"></a>H，W均满足 6<=H, W <= 32</p>
 </td>
 </tr>
 <tr id="row13973529102110"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p177785819261"><a name="p177785819261"></a><a name="p177785819261"></a>kernel_shape</p>
@@ -12183,7 +12194,7 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 <td class="cellrowborder" valign="top" width="25.480000000000004%" headers="mcps1.2.6.1.4 "><p id="p9421530351"><a name="p9421530351"></a><a name="p9421530351"></a>输入张量，维度为4D，格式为NHWC。</p>
 </td>
 <td class="cellrowborder" valign="top" width="38.35%" headers="mcps1.2.6.1.5 "><p id="p14237385316"><a name="p14237385316"></a><a name="p14237385316"></a>C在 [1, 8, 16, 32]列表中</p>
-<p id="p42375811311"><a name="p42375811311"></a><a name="p42375811311"></a>H，W均满足 6&lt;=H, W &lt;= 32</p>
+<p id="p42375811311"><a name="p42375811311"></a><a name="p42375811311"></a>H，W均满足 6<=H, W <= 32</p>
 </td>
 </tr>
 <tr id="row44831201652"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p194831017511"><a name="p194831017511"></a><a name="p194831017511"></a>output</p>
@@ -12195,7 +12206,7 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 <td class="cellrowborder" valign="top" width="25.480000000000004%" headers="mcps1.2.6.1.4 "><p id="p13483801352"><a name="p13483801352"></a><a name="p13483801352"></a>输出张量，维度为4D，格式为NHWC。</p>
 </td>
 <td class="cellrowborder" valign="top" width="38.35%" headers="mcps1.2.6.1.5 "><p id="p2659101217314"><a name="p2659101217314"></a><a name="p2659101217314"></a>C在 [1, 8, 16, 32]列表中</p>
-<p id="p1465941219318"><a name="p1465941219318"></a><a name="p1465941219318"></a>H，W均满足 6&lt;=H, W &lt;= 32</p>
+<p id="p1465941219318"><a name="p1465941219318"></a><a name="p1465941219318"></a>H，W均满足 6<=H, W <= 32</p>
 </td>
 </tr>
 <tr id="row869245925620"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p96921059125614"><a name="p96921059125614"></a><a name="p96921059125614"></a>padding</p>
@@ -12298,26 +12309,47 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 </td>
 </tr>
 <tr id="row48490213206"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p1254114101281"><a name="p1254114101281"></a><a name="p1254114101281"></a>alpha</p>
-<p id="p141832350812"><a name="p141832350812"></a><a name="p141832350812"></a>beta</p>
-<p id="p16966343883"><a name="p16966343883"></a><a name="p16966343883"></a>transA</p>
-<p id="p349564916814"><a name="p349564916814"></a><a name="p349564916814"></a>transB</p>
 </td>
 <td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p25419101988"><a name="p25419101988"></a><a name="p25419101988"></a>attribute</p>
-<p id="p1718316351819"><a name="p1718316351819"></a><a name="p1718316351819"></a>attribute</p>
-<p id="p39663431381"><a name="p39663431381"></a><a name="p39663431381"></a>attribute</p>
-<p id="p44954491885"><a name="p44954491885"></a><a name="p44954491885"></a>attribute</p>
 </td>
 <td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p954191019819"><a name="p954191019819"></a><a name="p954191019819"></a>float</p>
-<p id="p61831351586"><a name="p61831351586"></a><a name="p61831351586"></a>float</p>
-<p id="p496634317816"><a name="p496634317816"></a><a name="p496634317816"></a>int</p>
-<p id="p114951249283"><a name="p114951249283"></a><a name="p114951249283"></a>int</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p1631314581473"><a name="p1631314581473"></a><a name="p1631314581473"></a>A×B张量的缩放系数。</p>
-<p id="p518318359813"><a name="p518318359813"></a><a name="p518318359813"></a>C的乘数。</p>
-<p id="p796674319812"><a name="p796674319812"></a><a name="p796674319812"></a>决定输入A是否转置。</p>
-<p id="p18495184913816"><a name="p18495184913816"></a><a name="p18495184913816"></a>决定输入B是否转置。</p>
 </td>
 <td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p443312044717"><a name="p443312044717"></a><a name="p443312044717"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row18678242382"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p196785421812"><a name="p196785421812"></a><a name="p196785421812"></a><span id="ph1047817574113"><a name="ph1047817574113"></a><a name="ph1047817574113"></a>beta</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p1267810421187"><a name="p1267810421187"></a><a name="p1267810421187"></a><span id="ph20220250121218"><a name="ph20220250121218"></a><a name="ph20220250121218"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p4678104211819"><a name="p4678104211819"></a><a name="p4678104211819"></a><span id="ph13200943161217"><a name="ph13200943161217"></a><a name="ph13200943161217"></a>float</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p26781742289"><a name="p26781742289"></a><a name="p26781742289"></a><span id="ph525523561214"><a name="ph525523561214"></a><a name="ph525523561214"></a>C的乘数。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p96786421288"><a name="p96786421288"></a><a name="p96786421288"></a><span id="ph726891131316"><a name="ph726891131316"></a><a name="ph726891131316"></a>无特殊限制</span></p>
+</td>
+</tr>
+<tr id="row17998732181019"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p3998832121015"><a name="p3998832121015"></a><a name="p3998832121015"></a><span id="ph10691833124"><a name="ph10691833124"></a><a name="ph10691833124"></a>transA</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p899817323105"><a name="p899817323105"></a><a name="p899817323105"></a><span id="ph1996620596126"><a name="ph1996620596126"></a><a name="ph1996620596126"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p17998103213104"><a name="p17998103213104"></a><a name="p17998103213104"></a><span id="ph51857460126"><a name="ph51857460126"></a><a name="ph51857460126"></a>int</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p179986322104"><a name="p179986322104"></a><a name="p179986322104"></a><span id="ph71282038161218"><a name="ph71282038161218"></a><a name="ph71282038161218"></a>决定输入A是否转置。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p129988328102"><a name="p129988328102"></a><a name="p129988328102"></a><span id="ph117442115131"><a name="ph117442115131"></a><a name="ph117442115131"></a>无特殊限制</span></p>
+</td>
+</tr>
+<tr id="row13400111081217"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p8401710191214"><a name="p8401710191214"></a><a name="p8401710191214"></a><span id="ph44182118124"><a name="ph44182118124"></a><a name="ph44182118124"></a>transB</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p540151014123"><a name="p540151014123"></a><a name="p540151014123"></a><span id="ph14377019131"><a name="ph14377019131"></a><a name="ph14377019131"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p13401171091218"><a name="p13401171091218"></a><a name="p13401171091218"></a><span id="ph8369174781213"><a name="ph8369174781213"></a><a name="ph8369174781213"></a>int</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p10401310121219"><a name="p10401310121219"></a><a name="p10401310121219"></a><span id="ph19697740171214"><a name="ph19697740171214"></a><a name="ph19697740171214"></a>决定输入B是否转置。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p154011710151219"><a name="p154011710151219"></a><a name="p154011710151219"></a><span id="ph2016891211134"><a name="ph2016891211134"></a><a name="ph2016891211134"></a>无特殊限制</span></p>
 </td>
 </tr>
 </tbody>
@@ -12332,78 +12364,88 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 </th>
 <th class="cellrowborder" valign="top" width="17.549999999999997%" id="mcps1.2.6.1.2"><p id="p2136105314214"><a name="p2136105314214"></a><a name="p2136105314214"></a>参数/输入输出</p>
 </th>
-<th class="cellrowborder" valign="top" width="14.399999999999999%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+<th class="cellrowborder" valign="top" width="14.39%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
 </th>
-<th class="cellrowborder" valign="top" width="26.86%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+<th class="cellrowborder" valign="top" width="26.87%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
 </th>
 <th class="cellrowborder" valign="top" width="28.07%" id="mcps1.2.6.1.5"><p id="p11445381638"><a name="p11445381638"></a><a name="p11445381638"></a>高效算子规格支持范围说明</p>
 </th>
 </tr>
 </thead>
-<tbody><tr id="row0259114117411"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p2958154554612"><a name="p2958154554612"></a><a name="p2958154554612"></a>input</p>
+<tbody><tr id="row0259114117411"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p112257544213"><a name="p112257544213"></a><a name="p112257544213"></a>x</p>
 </td>
-<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p795864514615"><a name="p795864514615"></a><a name="p795864514615"></a>input</p>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p17783152895719"><a name="p17783152895719"></a><a name="p17783152895719"></a>input</p>
 </td>
-<td class="cellrowborder" valign="top" width="14.399999999999999%" headers="mcps1.2.6.1.3 "><p id="p149581645104617"><a name="p149581645104617"></a><a name="p149581645104617"></a>tensor</p>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.86%" headers="mcps1.2.6.1.4 "><p id="p39581845194613"><a name="p39581845194613"></a><a name="p39581845194613"></a>输入张量，维度为2D/3D/4D，格式分别为ND、NWC、NHWC。</p>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量，维度为3D/4D，格式分别为NWC、NHWC。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p3958445174614"><a name="p3958445174614"></a><a name="p3958445174614"></a>无特殊限制</p>
 </td>
 </tr>
-<tr id="row44831201652"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p19958184584618"><a name="p19958184584618"></a><a name="p19958184584618"></a>filter</p>
+<tr id="row44831201652"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p13777511528"><a name="p13777511528"></a><a name="p13777511528"></a>y</p>
 </td>
-<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p1895814458468"><a name="p1895814458468"></a><a name="p1895814458468"></a>input</p>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p768141275618"><a name="p768141275618"></a><a name="p768141275618"></a>input</p>
 </td>
-<td class="cellrowborder" valign="top" width="14.399999999999999%" headers="mcps1.2.6.1.3 "><p id="p59581345134616"><a name="p59581345134616"></a><a name="p59581345134616"></a>tensor</p>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p17573133716412"><a name="p17573133716412"></a><a name="p17573133716412"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.86%" headers="mcps1.2.6.1.4 "><p id="p1395824510463"><a name="p1395824510463"></a><a name="p1395824510463"></a>权重张量，维度为2D。</p>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p1077351627"><a name="p1077351627"></a><a name="p1077351627"></a>权重张量，维度为3D/4D，格式分别为NWC、NHWC。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p495814453468"><a name="p495814453468"></a><a name="p495814453468"></a>无特殊限制</p>
 </td>
 </tr>
-<tr id="row869245925620"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p095814455465"><a name="p095814455465"></a><a name="p095814455465"></a>bias</p>
+<tr id="row869245925620"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p085513466213"><a name="p085513466213"></a><a name="p085513466213"></a>output</p>
 </td>
-<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p18958104504615"><a name="p18958104504615"></a><a name="p18958104504615"></a>input</p>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p1245412116319"><a name="p1245412116319"></a><a name="p1245412116319"></a>output</p>
 </td>
-<td class="cellrowborder" valign="top" width="14.399999999999999%" headers="mcps1.2.6.1.3 "><p id="p795934584620"><a name="p795934584620"></a><a name="p795934584620"></a>tensor</p>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p148550467217"><a name="p148550467217"></a><a name="p148550467217"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.86%" headers="mcps1.2.6.1.4 "><p id="p8959245184613"><a name="p8959245184613"></a><a name="p8959245184613"></a>偏置张量，维度为1D。</p>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p188554460214"><a name="p188554460214"></a><a name="p188554460214"></a>输出张量，维度为3D/4D，格式分别为NWC、NHWC。符合矩阵乘法运算规则。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p14959745174611"><a name="p14959745174611"></a><a name="p14959745174611"></a>无特殊限制</p>
 </td>
 </tr>
-<tr id="row369235919566"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p1959645174613"><a name="p1959645174613"></a><a name="p1959645174613"></a>output</p>
+<tr id="row369235919566"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p191801255115014"><a name="p191801255115014"></a><a name="p191801255115014"></a>adj_x</p>
 </td>
-<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p12959134544613"><a name="p12959134544613"></a><a name="p12959134544613"></a>output</p>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p1150158930"><a name="p1150158930"></a><a name="p1150158930"></a>attribute</p>
 </td>
-<td class="cellrowborder" valign="top" width="14.399999999999999%" headers="mcps1.2.6.1.3 "><p id="p195924516469"><a name="p195924516469"></a><a name="p195924516469"></a>tensor</p>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p526953345212"><a name="p526953345212"></a><a name="p526953345212"></a>bool</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.86%" headers="mcps1.2.6.1.4 "><p id="p495974524619"><a name="p495974524619"></a><a name="p495974524619"></a>输出张量，维度为4D，格式为NHWC。</p>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p1486615211304"><a name="p1486615211304"></a><a name="p1486615211304"></a>是否对x的最后两个维度进行转置。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p09591845144614"><a name="p09591845144614"></a><a name="p09591845144614"></a>无特殊限制</p>
-<p id="p1595914452469"><a name="p1595914452469"></a><a name="p1595914452469"></a>-</p>
 </td>
 </tr>
-<tr id="row1198393324510"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p195914514617"><a name="p195914514617"></a><a name="p195914514617"></a>fused_activation_function</p>
+<tr id="row1198393324510"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p9156191441212"><a name="p9156191441212"></a><a name="p9156191441212"></a>adj_y</p>
 </td>
-<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p10959144517469"><a name="p10959144517469"></a><a name="p10959144517469"></a>attribute</p>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p15015581132"><a name="p15015581132"></a><a name="p15015581132"></a>attribute</p>
 </td>
-<td class="cellrowborder" valign="top" width="14.399999999999999%" headers="mcps1.2.6.1.3 "><p id="p895916459464"><a name="p895916459464"></a><a name="p895916459464"></a>string</p>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p17678145075410"><a name="p17678145075410"></a><a name="p17678145075410"></a>bool</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.86%" headers="mcps1.2.6.1.4 "><p id="p79591645164614"><a name="p79591645164614"></a><a name="p79591645164614"></a>融合的激活函数类型。</p>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p45991644144318"><a name="p45991644144318"></a><a name="p45991644144318"></a>是否对y的最后两个维度进行转置。</p>
 </td>
-<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p1495914554617"><a name="p1495914554617"></a><a name="p1495914554617"></a>仅支持NONE</p>
+<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p1495914554617"><a name="p1495914554617"></a><a name="p1495914554617"></a><span id="ph175114117194"><a name="ph175114117194"></a><a name="ph175114117194"></a>无特殊限制</span></p>
+</td>
+</tr>
+<tr id="row124651007199"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p147686913197"><a name="p147686913197"></a><a name="p147686913197"></a>asymmetric_quantize_inputs</p>
+</td>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p11741141351919"><a name="p11741141351919"></a><a name="p11741141351919"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p18720171691910"><a name="p18720171691910"></a><a name="p18720171691910"></a>bool</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p71921430151914"><a name="p71921430151914"></a><a name="p71921430151914"></a><span>BatchMatmul是否对输入进行非对称量化</span>。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p13465160131918"><a name="p13465160131918"></a><a name="p13465160131918"></a><span id="ph8733142101917"><a name="ph8733142101917"></a><a name="ph8733142101917"></a>无特殊限制</span></p>
 </td>
 </tr>
 </tbody>
 </table>
 
-### MaxPooling/AveragePooling优化<a name="ZH-CN_TOPIC_0000002661401189"></a>
+### MaxPool/AveragePool优化<a name="ZH-CN_TOPIC_0000002661401189"></a>
 
 以下规格的Onnx算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
 
-**表 1**  Maxpooling / AveragePooling Onnx高效算子支持规格列表
+**表 1**  MaxPool / AveragePool Onnx高效算子支持规格列表
 
 <a name="table189651429122117"></a>
 <table><thead align="left"><tr id="row1496911294216"><th class="cellrowborder" valign="top" width="14.032806561312263%" id="mcps1.2.6.1.1"><p id="p3340101235915"><a name="p3340101235915"></a><a name="p3340101235915"></a>参数名</p>
@@ -12463,32 +12505,58 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 </td>
 </tr>
 <tr id="row48490213206"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p211883675111"><a name="p211883675111"></a><a name="p211883675111"></a>dilations</p>
-<p id="p611873695118"><a name="p611873695118"></a><a name="p611873695118"></a>kernel_shape</p>
-<p id="p41191436195118"><a name="p41191436195118"></a><a name="p41191436195118"></a>pads</p>
-<p id="p11119123645111"><a name="p11119123645111"></a><a name="p11119123645111"></a>storage_order</p>
-<p id="p17121123613512"><a name="p17121123613512"></a><a name="p17121123613512"></a>strides</p>
 </td>
 <td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p811833615513"><a name="p811833615513"></a><a name="p811833615513"></a>attribute</p>
-<p id="p6118173618512"><a name="p6118173618512"></a><a name="p6118173618512"></a>attribute</p>
-<p id="p101191368518"><a name="p101191368518"></a><a name="p101191368518"></a>attribute</p>
-<p id="p3119183675110"><a name="p3119183675110"></a><a name="p3119183675110"></a>attribute</p>
-<p id="p14121123611515"><a name="p14121123611515"></a><a name="p14121123611515"></a>attribute</p>
 </td>
 <td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p17777145822614"><a name="p17777145822614"></a><a name="p17777145822614"></a>list(int)</p>
-<p id="p1837728133615"><a name="p1837728133615"></a><a name="p1837728133615"></a>list(int)</p>
-<p id="p189871429153615"><a name="p189871429153615"></a><a name="p189871429153615"></a>list(int)</p>
-<p id="p141191136145117"><a name="p141191136145117"></a><a name="p141191136145117"></a>int</p>
-<p id="p1270517343361"><a name="p1270517343361"></a><a name="p1270517343361"></a>list(int)</p>
 </td>
 <td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p3776105813265"><a name="p3776105813265"></a><a name="p3776105813265"></a>每个轴上的扩张系数。</p>
-<p id="p1011953613513"><a name="p1011953613513"></a><a name="p1011953613513"></a>kernel沿各轴的大小。</p>
-<p id="p85157422328"><a name="p85157422328"></a><a name="p85157422328"></a>各轴前后填充零的个数。</p>
-<p id="p7517113815389"><a name="p7517113815389"></a><a name="p7517113815389"></a>张量存储主序。</p>
-<p id="p18216141324"><a name="p18216141324"></a><a name="p18216141324"></a>各个方向上kernel的移动步长。</p>
 </td>
-<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p147561323132312"><a name="p147561323132312"></a><a name="p147561323132312"></a>dialations = 1</p>
-<p id="p218945214234"><a name="p218945214234"></a><a name="p218945214234"></a>1 &lt;= strides &lt;= 5</p>
-<p id="p47034784212"><a name="p47034784212"></a><a name="p47034784212"></a>1 &lt;= kernel_shape &lt;=5</p>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p147561323132312"><a name="p147561323132312"></a><a name="p147561323132312"></a><span id="ph183481916394"><a name="ph183481916394"></a><a name="ph183481916394"></a>dilations</span> = 1</p>
+</td>
+</tr>
+<tr id="row697811471398"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p8979647133920"><a name="p8979647133920"></a><a name="p8979647133920"></a><span id="ph958483420407"><a name="ph958483420407"></a><a name="ph958483420407"></a>kernel_shape</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p3979184718393"><a name="p3979184718393"></a><a name="p3979184718393"></a><span id="ph59404412408"><a name="ph59404412408"></a><a name="ph59404412408"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p139791447113914"><a name="p139791447113914"></a><a name="p139791447113914"></a><span id="ph7997135284013"><a name="ph7997135284013"></a><a name="ph7997135284013"></a>list(int)</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p15979114763915"><a name="p15979114763915"></a><a name="p15979114763915"></a><span id="ph189885813407"><a name="ph189885813407"></a><a name="ph189885813407"></a>kernel沿各轴的大小。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p20979164773916"><a name="p20979164773916"></a><a name="p20979164773916"></a><span id="ph14561167114115"><a name="ph14561167114115"></a><a name="ph14561167114115"></a>1 <= kernel_shape <=5</span></p>
+</td>
+</tr>
+<tr id="row4613111544115"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p36136152412"><a name="p36136152412"></a><a name="p36136152412"></a><span id="ph23589202418"><a name="ph23589202418"></a><a name="ph23589202418"></a>pads</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p0613215114112"><a name="p0613215114112"></a><a name="p0613215114112"></a><span id="ph1142523134116"><a name="ph1142523134116"></a><a name="ph1142523134116"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p7613121544112"><a name="p7613121544112"></a><a name="p7613121544112"></a><span id="ph1815828144113"><a name="ph1815828144113"></a><a name="ph1815828144113"></a>list(int)</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p1761319156416"><a name="p1761319156416"></a><a name="p1761319156416"></a><span id="ph1669283017411"><a name="ph1669283017411"></a><a name="ph1669283017411"></a>各轴前后填充零的个数。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p5613215154111"><a name="p5613215154111"></a><a name="p5613215154111"></a><span id="ph169811446154115"><a name="ph169811446154115"></a><a name="ph169811446154115"></a>无特殊限制</span></p>
+</td>
+</tr>
+<tr id="row58991352204119"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p10899185219412"><a name="p10899185219412"></a><a name="p10899185219412"></a><span id="ph76365412429"><a name="ph76365412429"></a><a name="ph76365412429"></a>storage_order</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p1089913522412"><a name="p1089913522412"></a><a name="p1089913522412"></a><span id="ph199245610427"><a name="ph199245610427"></a><a name="ph199245610427"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p289918520414"><a name="p289918520414"></a><a name="p289918520414"></a><span id="ph1658216818426"><a name="ph1658216818426"></a><a name="ph1658216818426"></a>int</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p58991352154113"><a name="p58991352154113"></a><a name="p58991352154113"></a><span id="ph114961511134212"><a name="ph114961511134212"></a><a name="ph114961511134212"></a>张量存储主序。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p1389915214112"><a name="p1389915214112"></a><a name="p1389915214112"></a><span id="ph3294651124417"><a name="ph3294651124417"></a><a name="ph3294651124417"></a>规格约束：仅支持0</span></p>
+</td>
+</tr>
+<tr id="row13111119104213"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p113123191421"><a name="p113123191421"></a><a name="p113123191421"></a><span id="ph9885822104212"><a name="ph9885822104212"></a><a name="ph9885822104212"></a>strides</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p19312141994220"><a name="p19312141994220"></a><a name="p19312141994220"></a><span id="ph734213255421"><a name="ph734213255421"></a><a name="ph734213255421"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p9312151974219"><a name="p9312151974219"></a><a name="p9312151974219"></a><span id="ph29007288424"><a name="ph29007288424"></a><a name="ph29007288424"></a>list(int)</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p14312111954212"><a name="p14312111954212"></a><a name="p14312111954212"></a><span id="ph07981031184214"><a name="ph07981031184214"></a><a name="ph07981031184214"></a>各个方向上kernel的移动步长。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p203121819124217"><a name="p203121819124217"></a><a name="p203121819124217"></a><span id="ph2811113444216"><a name="ph2811113444216"></a><a name="ph2811113444216"></a>1 <= strides <= 5</span></p>
 </td>
 </tr>
 </tbody>
@@ -12496,7 +12564,7 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 
 以下规格的TFLite算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
 
-**表 2**  Maxpooling2D / AveragePooling2D TFLite高效算子支持规格列表
+**表 2**  MaxPool2D / AveragePool2D TFLite高效算子支持规格列表
 
 <a name="table668985955612"></a>
 <table><thead align="left"><tr id="row13690359165613"><th class="cellrowborder" valign="top" width="13.120000000000001%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
@@ -12541,36 +12609,62 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 </td>
 <td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p126911459165613"><a name="p126911459165613"></a><a name="p126911459165613"></a>在H方向上的过滤窗口大小。</p>
 </td>
-<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p1447651443920"><a name="p1447651443920"></a><a name="p1447651443920"></a>1&lt;=filter_height&lt;=5</p>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p1447651443920"><a name="p1447651443920"></a><a name="p1447651443920"></a>1<=filter_height<=5</p>
 </td>
 </tr>
 <tr id="row1198393324510"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p1169119595569"><a name="p1169119595569"></a><a name="p1169119595569"></a>filter_width</p>
-<p id="p3692859195613"><a name="p3692859195613"></a><a name="p3692859195613"></a>fused_activation_function</p>
-<p id="p96921059125614"><a name="p96921059125614"></a><a name="p96921059125614"></a>padding</p>
-<p id="p106921159195616"><a name="p106921159195616"></a><a name="p106921159195616"></a>stride_h</p>
-<p id="p1898353317457"><a name="p1898353317457"></a><a name="p1898353317457"></a>stride_w</p>
 </td>
 <td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p65015581736"><a name="p65015581736"></a><a name="p65015581736"></a>attribute</p>
-<p id="p5501258232"><a name="p5501258232"></a><a name="p5501258232"></a>attribute</p>
-<p id="p1150158930"><a name="p1150158930"></a><a name="p1150158930"></a>attribute</p>
-<p id="p15015581132"><a name="p15015581132"></a><a name="p15015581132"></a>attribute</p>
-<p id="p16508581531"><a name="p16508581531"></a><a name="p16508581531"></a>attribute</p>
 </td>
 <td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p769119597568"><a name="p769119597568"></a><a name="p769119597568"></a>int32</p>
-<p id="p15692145965619"><a name="p15692145965619"></a><a name="p15692145965619"></a>string</p>
-<p id="p76921259115619"><a name="p76921259115619"></a><a name="p76921259115619"></a>string</p>
-<p id="p56921593564"><a name="p56921593564"></a><a name="p56921593564"></a>int32</p>
-<p id="p499819412458"><a name="p499819412458"></a><a name="p499819412458"></a>int32</p>
 </td>
 <td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p1614615144496"><a name="p1614615144496"></a><a name="p1614615144496"></a>在W方向上的过滤窗口大小。</p>
-<p id="p833042514011"><a name="p833042514011"></a><a name="p833042514011"></a>融合的激活函数类型。</p>
-<p id="p10118203645110"><a name="p10118203645110"></a><a name="p10118203645110"></a>填充类型。</p>
-<p id="p136921359195618"><a name="p136921359195618"></a><a name="p136921359195618"></a>filter在H方向上的移动步长。</p>
-<p id="p1399834134511"><a name="p1399834134511"></a><a name="p1399834134511"></a>filter在W方向上的移动步长。</p>
 </td>
-<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p4868183464414"><a name="p4868183464414"></a><a name="p4868183464414"></a>1&lt;=filter_height&lt;=5</p>
-<p id="p523152894518"><a name="p523152894518"></a><a name="p523152894518"></a>1&lt;=stride_h&lt;=5</p>
-<p id="p1798314337454"><a name="p1798314337454"></a><a name="p1798314337454"></a>1&lt;=stride_w&lt;=5</p>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p4868183464414"><a name="p4868183464414"></a><a name="p4868183464414"></a>1<=<span id="ph343635465210"><a name="ph343635465210"></a><a name="ph343635465210"></a>filter_width</span><=5</p>
+</td>
+</tr>
+<tr id="row993262644317"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p793312260434"><a name="p793312260434"></a><a name="p793312260434"></a><span id="ph55381038194319"><a name="ph55381038194319"></a><a name="ph55381038194319"></a>fused_activation_function</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p893372674320"><a name="p893372674320"></a><a name="p893372674320"></a><span id="ph756312401437"><a name="ph756312401437"></a><a name="ph756312401437"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p6933182654313"><a name="p6933182654313"></a><a name="p6933182654313"></a><span id="ph6327742174316"><a name="ph6327742174316"></a><a name="ph6327742174316"></a>string</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p99331726154312"><a name="p99331726154312"></a><a name="p99331726154312"></a><span id="ph663712442434"><a name="ph663712442434"></a><a name="ph663712442434"></a>融合的激活函数类型。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p1293342694311"><a name="p1293342694311"></a><a name="p1293342694311"></a><span id="ph158441816448"><a name="ph158441816448"></a><a name="ph158441816448"></a>配置范围：NONE、RELU</span></p>
+</td>
+</tr>
+<tr id="row16677233154317"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p5677533114319"><a name="p5677533114319"></a><a name="p5677533114319"></a><span id="ph198105894911"><a name="ph198105894911"></a><a name="ph198105894911"></a>padding</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p1267743324312"><a name="p1267743324312"></a><a name="p1267743324312"></a><span id="ph871215085013"><a name="ph871215085013"></a><a name="ph871215085013"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p1467716336437"><a name="p1467716336437"></a><a name="p1467716336437"></a><span id="ph78446319509"><a name="ph78446319509"></a><a name="ph78446319509"></a>string</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p16677103344313"><a name="p16677103344313"></a><a name="p16677103344313"></a><span id="ph184682545012"><a name="ph184682545012"></a><a name="ph184682545012"></a>填充类型。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p17677183315437"><a name="p17677183315437"></a><a name="p17677183315437"></a><span id="ph9253156165415"><a name="ph9253156165415"></a><a name="ph9253156165415"></a>配置范围：SAME、VALID</span></p>
+</td>
+</tr>
+<tr id="row198553296437"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p1285582916435"><a name="p1285582916435"></a><a name="p1285582916435"></a><span id="ph12951484502"><a name="ph12951484502"></a><a name="ph12951484502"></a>stride_h</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p3855172918433"><a name="p3855172918433"></a><a name="p3855172918433"></a><span id="ph421691165014"><a name="ph421691165014"></a><a name="ph421691165014"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p985502924312"><a name="p985502924312"></a><a name="p985502924312"></a><span id="ph9761350502"><a name="ph9761350502"></a><a name="ph9761350502"></a>int32</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p4855162916437"><a name="p4855162916437"></a><a name="p4855162916437"></a><span id="ph1832414270501"><a name="ph1832414270501"></a><a name="ph1832414270501"></a>filter在H方向上的移动步长。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p585520299434"><a name="p585520299434"></a><a name="p585520299434"></a><span id="ph172631628155319"><a name="ph172631628155319"></a><a name="ph172631628155319"></a>1<=stride_h<=5</span></p>
+</td>
+</tr>
+<tr id="row2232919114316"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p52337195436"><a name="p52337195436"></a><a name="p52337195436"></a><span id="ph878018106502"><a name="ph878018106502"></a><a name="ph878018106502"></a>stride_w</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p52331219144311"><a name="p52331219144311"></a><a name="p52331219144311"></a><span id="ph188311814509"><a name="ph188311814509"></a><a name="ph188311814509"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p5233619134311"><a name="p5233619134311"></a><a name="p5233619134311"></a><span id="ph1117314614509"><a name="ph1117314614509"></a><a name="ph1117314614509"></a>int32</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p1923311196432"><a name="p1923311196432"></a><a name="p1923311196432"></a><span id="ph753092915020"><a name="ph753092915020"></a><a name="ph753092915020"></a>filter在W方向上的移动步长。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p18233161919436"><a name="p18233161919436"></a><a name="p18233161919436"></a><span id="ph129761031105317"><a name="ph129761031105317"></a><a name="ph129761031105317"></a>1<=stride_w<=5</span></p>
 </td>
 </tr>
 </tbody>
