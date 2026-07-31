@@ -174,12 +174,11 @@ static OH_AI_Status ai_mcu_sample_process(struct ai_mcu_param sample_param)
         }
 
         /* PostProcess */
-        OH_AI_TensorHandle output = sample_param.outputs.handle_list[1];
-        if (output == NULL) {
-            osal_printk("[AI_MCU] OH_AI_ModelGetOutputs failed\n");
+        void *output_hidden_state = OH_AI_TensorGetMutableData(sample_param.outputs.handle_list[1]);
+        if (output_hidden_state == NULL) {
+            osal_printk("[AI_MCU] OH_AI_TensorGetMutableData 3 failed\n");
             return OH_AI_STATUS_FAILED;
         }
-        void *output_hidden_state = OH_AI_TensorGetMutableData(sample_param.outputs.handle_list[1]);
         memcpy_s(input_data_2, AI_MCU_SAMPLE_HIDDEN_STATE_SIZE * sizeof(float), output_hidden_state,
             AI_MCU_SAMPLE_HIDDEN_STATE_SIZE * sizeof(float));
     }

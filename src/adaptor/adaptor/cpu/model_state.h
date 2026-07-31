@@ -16,8 +16,13 @@
 #ifndef MODEL_STATE_H
 #define MODEL_STATE_H
 
-#include "std_def.h"
 #include "ai_mcu.h"
+
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif
 
 typedef enum {
     MODEL_STATE_UNINIT = 0,
@@ -39,5 +44,11 @@ bool ModelState_Check(int index, ModelState expect);
 void ModelState_Transition(int index, ModelState target);
 
 bool ModelState_HasUnreleasedModel(void);
+
+#ifdef __cplusplus
+#if __cplusplus
+}
+#endif
+#endif
 
 #endif // MODEL_STATE_H

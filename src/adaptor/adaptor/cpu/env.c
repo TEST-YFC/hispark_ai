@@ -13,17 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "std_def.h"
 #include "ai_mcu.h"
 #include "ai.h"
+
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif
 
 bool g_is_env_inited = false;
 static OH_AI_Status errorCode = OH_AI_STATUS_SUCCESS;
 
 OH_AI_Status OH_AI_Init(void* config_data, size_t data_size)
 {
-    UNUSED(config_data);
-    UNUSED(data_size);
+    (void)(config_data);
+    (void)(data_size);
     if (g_is_env_inited) {
         return OH_AI_STATUS_FAILED;
     }
@@ -44,3 +49,9 @@ int32_t OH_AI_GetErrorCode(void)
 {
     return (int32_t)errorCode;
 }
+
+#ifdef __cplusplus
+#if __cplusplus
+}
+#endif
+#endif
