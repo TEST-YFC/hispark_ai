@@ -77,4 +77,74 @@ elseif ("${CHIP_VERSION}" STREQUAL "1156")
         -lpthread
         -lm
     )
+elseif ("${CHIP_VERSION}" STREQUAL "1155")
+    cmake_minimum_required(VERSION 3.14.1)
+    project(ai_sample_mcu C CXX)
+
+    set(CMAKE_C_COMPILER ${COMPILER_PATH}/bin/arm-linux-musleabi-gcc)
+    set(CMAKE_CXX_COMPILER ${COMPILER_PATH}/bin/arm-linux-musleabi-g++)
+    set(CMAKE_STRIP ${COMPILER_PATH}/bin/arm-linux-musleabi-strip)
+
+    set(link_lib_list
+        stdc++
+    )
+
+    link_directories(
+        ${link_so_dir}
+        ${cann_so_dir}
+        ${link_secure_dir}
+    )
+
+    set(src_list
+        ${CMAKE_CURRENT_SOURCE_DIR}/ai_deploy_main_arm.c
+        ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/src/context.c
+        ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/src/model.c
+        ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/src/model0/model0.c
+        ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/src/model0/net0.c
+        ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/src/model0/weight0.c
+        ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/src/allocator.c
+        ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/src/tensor.c
+
+        ${ADAPTOR_PATH}/adaptor/cpu/tensor.c
+        ${ADAPTOR_PATH}/adaptor/cpu/context.c
+        ${ADAPTOR_PATH}/adaptor/cpu/env.c
+        ${ADAPTOR_PATH}/adaptor/cpu/model_state.c
+        ${ADAPTOR_PATH}/adaptor/cpu/model.c
+    )
+
+    add_executable(ai_sample_mcu
+        ${src_list}
+    )
+
+    target_include_directories(ai_sample_mcu
+                            PRIVATE
+                            ${MSLITE_PATH}/runtime/
+                            ${MSLITE_PATH}/runtime/include/
+                            ${MSLITE_PATH}/tools/codegen/include/
+                            ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/src/model0/
+                            ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/include/
+                            ${ADAPTOR_PATH}/adaptor/cpu/micro_gen/
+                            ${ADAPTOR_PATH}/adaptor/cpu/include
+                            ${ADAPTOR_PATH}/include
+    )
+
+    target_link_libraries(ai_sample_mcu PRIVATE
+        ${link_option}
+        ${link_lib_list}
+    )
+
+    target_link_libraries(ai_sample_mcu PRIVATE ${MSLITE_PATH}/tools/codegen/lib/arm/libnnacl.a)
+    target_link_libraries(ai_sample_mcu PRIVATE ${MSLITE_PATH}/tools/codegen/lib/arm/libwrapper.a)
+
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath-link=${link_so_dir}")
+
+    target_compile_options(
+        ai_sample_mcu
+        PRIVATE
+        ${compiler_config}
+    )
+
+    add_custom_command(TARGET ai_sample_mcu POST_BUILD
+        COMMAND ${CMAKE_STRIP} ai_sample_mcu
+    )
 endif()

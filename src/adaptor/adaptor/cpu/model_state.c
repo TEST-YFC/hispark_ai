@@ -15,6 +15,12 @@
  */
 #include "model_state.h"
 
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif
+
 static ModelState    g_model_status[MAX_MODEL_NUM] = {MODEL_STATE_UNINIT};
 static MSModelHandle g_model_handles[MAX_MODEL_NUM] = {NULL};
 
@@ -86,3 +92,9 @@ bool ModelState_HasUnreleasedModel(void)
     }
     return false;
 }
+
+#ifdef __cplusplus
+#if __cplusplus
+}
+#endif
+#endif
