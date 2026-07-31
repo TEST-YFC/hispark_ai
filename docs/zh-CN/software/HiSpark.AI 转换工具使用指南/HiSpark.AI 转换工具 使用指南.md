@@ -78,10 +78,12 @@
 </thead>
 <tbody><tr id="row13280107282026"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p13280107282026"><a name="p13280107282026"></a><a name="p13280107282026"></a>06</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p23280107282026"><a name="p23280107282026"></a><a name="p23280107282026"></a>2026-07-28</p>
+<td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p23280107282026"><a name="p23280107282026"></a><a name="p23280107282026"></a>2026-07-30</p>
 </td>
 <td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p33280107282026"><a name="p33280107282026"></a><a name="p33280107282026"></a>新增Onnx/TFLite算子规格：</p>
 <a name="ul33280107282026"></a><a name="ul33280107282026"></a><ul id="ul33280107282026"><li>新增“<a href="#ZH-CN_TOPIC_0000002026072801">Erf</a>、<a href="#ZH-CN_TOPIC_0000002026072802">HardSigmoid</a>、<a href="#ZH-CN_TOPIC_0000002026072803">Celu</a>”。</li></ul>
+<p id="p2026073001"><a name="p2026073001"></a><a name="p2026073001"></a>新增训练特性：</p>
+<a name="ul2026073001"></a><a name="ul2026073001"></a><ul id="ul2026073001"><li>在“<a href="#ZH-CN_TOPIC_0000002353945877">开源框架的TFLite/ONNX模型转换为Micro工程</a>”中更新QAS INT8量化训练配置、FP32训练配置。</li><li>在“<a href="#ZH-CN_TOPIC_0000002319906348">参数说明</a>”中更新训练参数，新增MSE loss和Adam优化器参数。</li><li>新增QAS INT8和FP32训练支持规格。</li></ul>
 </td>
 </tr>
 <tr id="row565010415485"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p065144194810"><a name="p065144194810"></a><a name="p065144194810"></a>05</p>
@@ -361,23 +363,59 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
     bias_correction=true
     #扩展量化算子,提升量化精度且牺牲性能可关闭
     enable_all_ops=true
-    #端侧训练参数配置项
+    #INT8量化训练参数配置项
     [train]
-    #训练模式，当前仅支持量化训练
-    trainMode=Quant
-    #loss节点，当前仅支持Softmax交叉熵
-    loss=SoftmaxCrossEntropy
-    #label张量名称
-    labelTensorName=label
-    #优化器，当前仅支持动量SGD
-    optimizer=SGDWithMomentum
-    #学习率
-    learningRate=0.005
-    #动量
+    #QAS INT8量化训练模式；配置后自动生成训练模式Micro工程
+    train_mode=qas_int8
+    #是否输出训练图和内存规划信息
+    dump_training_graph=false
+    #当前仅支持softmax_cross_entropy
+    loss=softmax_cross_entropy
+    #标签张量名称
+    label_tensor_name=label
+    #当前仅支持sgd_with_momentum
+    optimizer=sgd_with_momentum
+    #学习率，必须大于0
+    learning_rate=0.005
+    #动量，必须大于等于0
     momentum=0.9
-    #批大小
-    batchSize=1
+    #当前仅支持批大小为1
+    batch_size=1
     ```
+
+    场景四：以RISCV平台部署为例，将FP32原模型转换为FP32训练Micro工程目录。FP32训练与量化训练使用不同的训练配置，
+    不需要配置量化参数和校准数据集。
+
+    ```
+    #控制micro配置项
+    [micro_param]
+    #支持code-gen生成Micro工程代码
+    enable_micro=true
+    #支持x86、RISCV平台
+    target=RISCV
+    #配置是否并行执行，当前仅支持单线程
+    support_parallel=false
+
+    #FP32端侧训练参数配置项
+    [train]
+    #FP32训练模式；配置后自动生成训练模式Micro工程
+    train_mode=fp32
+    #支持softmax_cross_entropy、mean_squared_error
+    loss=softmax_cross_entropy
+    #标签或目标张量名称
+    label_tensor_name=label
+    #支持sgd_with_momentum、adam
+    optimizer=sgd_with_momentum
+    #学习率，必须大于0
+    learning_rate=0.005
+    #仅sgd_with_momentum使用，必须大于等于0
+    momentum=0.9
+    #当前仅支持批大小为1
+    batch_size=1
+    ```
+
+    使用Adam优化器时，将`optimizer`配置为`adam`，并删除`momentum`。Adam参数`beta1`、`beta2`和`epsilon`
+    可以省略，默认值依次为0.9、0.999和1e-8。
 
 6.  执行如下命令生成Micro工程代码（如下命令中使用的目录以及文件均为样例，请以实际为准）**。**
     1.  TFLite模型converter\_lite转换命令：
@@ -387,14 +425,14 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
         ./converter_lite --fmk=TFLITE --modelFile=mnist.tflite --outputFile=mnist --configFile=micro.cfg --encryption=false --inputDataFormat=NHWC --outputDataFormat=NHWC --inputDataType=FLOAT --outputDataType=FLOAT
         ```
 
-    1.  ONNX模型converter\_lite转换命令：
+    2.  ONNX模型converter\_lite转换命令：
 
         ```
         #转换ONNX框架的MNIST模型生成Micro工程代码，converter_lite转换时参数请参见“5-参数说明”章节
         ./converter_lite --fmk=ONNX --modelFile=mnist-7.onnx --outputFile=mnist --configFile=micro.cfg --encryption=false --inputDataFormat=NCHW --outputDataFormat=NCHW --inputDataType=FLOAT --outputDataType=FLOAT
         ```
 
-    2.  运行成功后的结果显示为：
+    3.  运行成功后的结果显示为：
 
         ```
         CONVERT RESULT SUCCESS:0
@@ -1278,13 +1316,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p20239757195515"><a name="p20239757195515"></a><a name="p20239757195515"></a>-</p>
     </td>
     </tr>
-    <tr id="row1442934365610"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p4429124395617"><a name="p4429124395617"></a><a name="p4429124395617"></a>trainMode</p>
+    <tr id="row1442934365610"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p4429124395617"><a name="p4429124395617"></a><a name="p4429124395617"></a>train_mode</p>
     </td>
     <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p442934316561"><a name="p442934316561"></a><a name="p442934316561"></a>否</p>
     </td>
     <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p14429143115610"><a name="p14429143115610"></a><a name="p14429143115610"></a>训练模式，仅端侧训练时选择。</p>
     </td>
-    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p174291643165615"><a name="p174291643165615"></a><a name="p174291643165615"></a>只支持Quant</p>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p174291643165615"><a name="p174291643165615"></a><a name="p174291643165615"></a>量化训练配置qas_int8；FP32训练配置fp32</p>
     </td>
     <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p34295430565"><a name="p34295430565"></a><a name="p34295430565"></a>-</p>
     </td>
@@ -1295,12 +1333,12 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     </td>
     <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p202649510581"><a name="p202649510581"></a><a name="p202649510581"></a>训练使用的loss函数，仅端侧训练时选择。</p>
     </td>
-    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p162641250587"><a name="p162641250587"></a><a name="p162641250587"></a>只支持SoftmaxCrossEntropy</p>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p162641250587"><a name="p162641250587"></a><a name="p162641250587"></a>量化训练支持softmax_cross_entropy；FP32训练还支持mean_squared_error</p>
     </td>
     <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p92646505816"><a name="p92646505816"></a><a name="p92646505816"></a>-</p>
     </td>
     </tr>
-    <tr id="row578145415581"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p137811954115820"><a name="p137811954115820"></a><a name="p137811954115820"></a>labelTensorName</p>
+    <tr id="row578145415581"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p137811954115820"><a name="p137811954115820"></a><a name="p137811954115820"></a>label_tensor_name</p>
     </td>
     <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p107819547587"><a name="p107819547587"></a><a name="p107819547587"></a>否</p>
     </td>
@@ -1317,12 +1355,12 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     </td>
     <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p138859294595"><a name="p138859294595"></a><a name="p138859294595"></a>权重更新使用的优化器，仅端侧训练时选择。</p>
     </td>
-    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p1088513293597"><a name="p1088513293597"></a><a name="p1088513293597"></a>只支持SGDWithMomentum</p>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p1088513293597"><a name="p1088513293597"></a><a name="p1088513293597"></a>量化训练支持sgd_with_momentum；FP32训练还支持adam</p>
     </td>
     <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p8885182965919"><a name="p8885182965919"></a><a name="p8885182965919"></a>-</p>
     </td>
     </tr>
-    <tr id="row6367281003"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p18697194016017"><a name="p18697194016017"></a><a name="p18697194016017"></a>learningRate</p>
+    <tr id="row6367281003"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p18697194016017"><a name="p18697194016017"></a><a name="p18697194016017"></a>learning_rate</p>
     </td>
     <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p63642815016"><a name="p63642815016"></a><a name="p63642815016"></a>否</p>
     </td>
@@ -1344,7 +1382,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p8846359009"><a name="p8846359009"></a><a name="p8846359009"></a>-</p>
     </td>
     </tr>
-    <tr id="row773043218116"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p47300321912"><a name="p47300321912"></a><a name="p47300321912"></a>batchSize</p>
+    <tr id="row773043218116"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p47300321912"><a name="p47300321912"></a><a name="p47300321912"></a>batch_size</p>
     </td>
     <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p1473043215114"><a name="p1473043215114"></a><a name="p1473043215114"></a>否</p>
     </td>
@@ -1354,6 +1392,30 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     </td>
     <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p773012326117"><a name="p773012326117"></a><a name="p773012326117"></a>-</p>
     </td>
+    </tr>
+    <tr><td class="cellrowborder">dump_training_graph</td>
+    <td class="cellrowborder">否</td>
+    <td class="cellrowborder">是否输出训练图和内存规划信息，仅端侧训练时选择。</td>
+    <td class="cellrowborder">true/false</td>
+    <td class="cellrowborder">false</td>
+    </tr>
+    <tr><td class="cellrowborder">beta1</td>
+    <td class="cellrowborder">否</td>
+    <td class="cellrowborder">Adam一阶矩衰减率，仅FP32训练使用Adam优化器时选择。</td>
+    <td class="cellrowborder">[0, 1)</td>
+    <td class="cellrowborder">0.9</td>
+    </tr>
+    <tr><td class="cellrowborder">beta2</td>
+    <td class="cellrowborder">否</td>
+    <td class="cellrowborder">Adam二阶矩衰减率，仅FP32训练使用Adam优化器时选择。</td>
+    <td class="cellrowborder">[0, 1)</td>
+    <td class="cellrowborder">0.999</td>
+    </tr>
+    <tr><td class="cellrowborder">epsilon</td>
+    <td class="cellrowborder">否</td>
+    <td class="cellrowborder">Adam数值稳定参数，仅FP32训练使用Adam优化器时选择。</td>
+    <td class="cellrowborder">大于0</td>
+    <td class="cellrowborder">1e-8</td>
     </tr>
     </tbody>
     </table>
@@ -1689,6 +1751,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 要求使用静态形状；仅对可微输入和可训练权重生成梯度 |
+| FP32 | 支持 | 要求使用静态形状；仅对可微输入和可训练权重生成梯度 |
+
 ### MaxPool2D<a name="ZH-CN_TOPIC_0000002360102989"></a>
 
 **功能描述<a name="section37550136507"></a>**
@@ -1803,6 +1872,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 仅支持MaxPool，输入和输出均为四维量化张量 |
+| FP32 | 不支持 | - |
+
 ### FullyConnected<a name="ZH-CN_TOPIC_0000002326344486"></a>
 
 **功能描述<a name="section37550136507"></a>**
@@ -1916,6 +1992,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 要求使用静态形状 |
+| FP32 | 支持 | 要求使用静态形状 |
 
 ### BatchMatmul<a name="ZH-CN_TOPIC_0000002421627894"></a>
 
@@ -2122,6 +2205,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 当前Activation训练反向仅支持ReLU |
+| FP32 | 支持 | 当前Activation训练反向仅支持ReLU |
+
 ### Tanh<a name="ZH-CN_TOPIC_0000002474804265"></a>
 
 **功能描述<a name="section37550136507"></a>**
@@ -2277,6 +2367,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 输入和输出元素数量必须一致 |
+| FP32 | 支持 | 输入和输出元素数量必须一致 |
+
 ### Mul<a name="ZH-CN_TOPIC_0000002421789214"></a>
 
 **功能描述<a name="section37550136507"></a>**
@@ -2349,6 +2446,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持范围取决于输入角色和广播规格 |
 
 ### Add<a name="ZH-CN_TOPIC_0000002454832349"></a>
 
@@ -2423,6 +2527,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持范围取决于输入角色和广播规格 |
+
 ### Sub<a name="ZH-CN_TOPIC_0000002454792461"></a>
 
 **功能描述<a name="section37550136507"></a>**
@@ -2495,6 +2606,13 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持范围取决于输入角色和广播规格 |
 
 ### Gather<a name="ZH-CN_TOPIC_0000002421683676"></a>
 
@@ -2805,6 +2923,13 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 输入rank、axis和静态形状必须满足拼接约束 |
 
 ### AveragePool2D<a name="ZH-CN_TOPIC_0000002455282373"></a>
 
@@ -3188,6 +3313,13 @@ Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | pads必须为转换期常量 |
+
 ### Resize<a name="ZH-CN_TOPIC_0000002513105415"></a>
 
 Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_Neighbor等api，其中tfl.Pad表示零填充，tfl.Resize\_Bilinear表示双线性插值缩放，tfl.Resize\_Nearest\_Neighbor表示最近邻插值缩放。
@@ -3417,6 +3549,13 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 输入和输出元素数量必须一致 |
+| FP32 | 支持 | 输入和输出元素数量必须一致 |
+
 ### ExpandDims<a name="ZH-CN_TOPIC_0000002482930280"></a>
 
 **功能描述<a name="section69069544112"></a>**
@@ -3523,6 +3662,13 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 要求使用FP32静态非空张量 |
 
 ### Ceil<a name="ZH-CN_TOPIC_0000002517479769"></a>
 
@@ -4289,6 +4435,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | begin、end和stride等结构输入必须为转换期常量 |
+
 ### DepthwiseConv2D<a name="ZH-CN_TOPIC_0000002529736261"></a>
 
 **功能描述<a name="section270785104414"></a>**
@@ -4494,6 +4647,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | perm必须是合法的常量全排列 |
+| FP32 | 支持 | perm必须是合法的常量全排列 |
 
 ### ArgMax<a name="ZH-CN_TOPIC_0000002509946184"></a>
 
@@ -4710,6 +4870,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持范围取决于输入角色和广播规格 |
 
 ### ReduceMax<a name="ZH-CN_TOPIC_0000002526421590"></a>
 
@@ -6530,6 +6697,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 要求使用静态形状；仅对可微输入和可训练权重生成梯度 |
+| FP32 | 支持 | 要求使用静态形状；仅对可微输入和可训练权重生成梯度 |
+
 ### MaxPool<a name="ZH-CN_TOPIC_0000002325993104"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -6658,6 +6832,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 仅支持MaxPool，输入和输出均为四维量化张量 |
+| FP32 | 不支持 | - |
+
 ### Gemm<a name="ZH-CN_TOPIC_0000002360071441"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -6772,6 +6953,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 要求使用静态形状；仅对可微输入和可训练权重生成梯度 |
+| FP32 | 支持 | 要求使用静态形状；仅对可微输入和可训练权重生成梯度 |
+
 ### Matmul<a name="ZH-CN_TOPIC_0000002455345333"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -6833,6 +7021,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 要求使用静态形状；仅对可微输入和可训练权重生成梯度 |
+| FP32 | 支持 | 要求使用静态形状；仅对可微输入和可训练权重生成梯度 |
 
 ### Softmax<a name="ZH-CN_TOPIC_0000002360191597"></a>
 
@@ -6943,6 +7138,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 当前Activation训练反向仅支持ReLU |
+| FP32 | 支持 | 当前Activation训练反向仅支持ReLU |
 
 ### Tanh<a name="ZH-CN_TOPIC_0000002474764481"></a>
 
@@ -7110,6 +7312,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 输入和输出元素数量必须一致 |
+| FP32 | 支持 | 输入和输出元素数量必须一致 |
+
 ### Mul<a name="ZH-CN_TOPIC_0000002455226053"></a>
 
 **功能描述<a name="section37550136507"></a>**
@@ -7171,6 +7380,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持范围取决于输入角色和广播规格 |
 
 ### Add<a name="ZH-CN_TOPIC_0000002454832353"></a>
 
@@ -7234,6 +7450,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持范围取决于输入角色和广播规格 |
+
 ### Sub<a name="ZH-CN_TOPIC_0000002454792465"></a>
 
 **功能描述<a name="section37550136507"></a>**
@@ -7295,6 +7518,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持范围取决于输入角色和广播规格 |
 
 ### Gather<a name="ZH-CN_TOPIC_0000002421843980"></a>
 
@@ -7505,6 +7735,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 输入rank、axis和静态形状必须满足拼接约束 |
 
 ### AveragePool<a name="ZH-CN_TOPIC_0000002455402925"></a>
 
@@ -8106,6 +8343,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | pads必须为转换期常量 |
+
 ### Resize<a name="ZH-CN_TOPIC_0000002512945433"></a>
 
 **功能描述<a name="section144144283412"></a>**
@@ -8349,6 +8593,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 输入和输出元素数量必须一致 |
+| FP32 | 支持 | 输入和输出元素数量必须一致 |
+
 ### Unsqueeze<a name="ZH-CN_TOPIC_0000002482804754"></a>
 
 **功能描述<a name="section144144283412"></a>**
@@ -8407,6 +8658,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 输入和输出元素数量必须一致 |
+| FP32 | 支持 | 输入和输出元素数量必须一致 |
 
 ### Flatten<a name="ZH-CN_TOPIC_0000002515124725"></a>
 
@@ -8467,6 +8725,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | 输入和输出元素数量必须一致 |
+| FP32 | 支持 | 输入和输出元素数量必须一致 |
+
 ### Abs<a name="ZH-CN_TOPIC_0000002485239888"></a>
 
 **功能描述<a name="section144144283412"></a>**
@@ -8514,6 +8779,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 要求使用FP32静态非空张量 |
 
 ### Ceil<a name="ZH-CN_TOPIC_0000002517399797"></a>
 
@@ -9256,6 +9528,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | starts、ends、axes和steps必须为转换期常量 |
+
 ### GlobalMaxPool<a name="ZH-CN_TOPIC_0000002497018654"></a>
 
 **功能描述<a name="section144144283412"></a>**
@@ -9410,6 +9689,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 支持 | perm必须是合法的常量全排列 |
+| FP32 | 支持 | perm必须是合法的常量全排列 |
 
 ### ArgMax<a name="ZH-CN_TOPIC_0000002510106182"></a>
 
@@ -9637,6 +9923,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持范围取决于输入角色和广播规格 |
 
 ### Clip<a name="ZH-CN_TOPIC_0000002552815891"></a>
 
@@ -9951,6 +10244,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | rank为1～8，axes必须为转换期常量 |
+
 ### ReduceMean<a name="ZH-CN_TOPIC_0000002526281478"></a>
 
 **功能描述<a name="section167661757173918"></a>**
@@ -10031,6 +10331,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | rank为1～8，axes必须为转换期常量 |
 
 ### Cast<a name="ZH-CN_TOPIC_0000002526464964"></a>
 
