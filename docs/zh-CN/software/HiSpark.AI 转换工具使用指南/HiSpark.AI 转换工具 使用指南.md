@@ -6481,7 +6481,10 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_fill_output_desc"><a name="p_fill_output_desc"></a><a name="p_fill_output_desc"></a>输出张量，形状 = dims，全部元素 = value，数据类型与 value 一致。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_fill_output_limit"><a name="p_fill_output_limit"></a><a name="p_fill_output_limit"></a>-</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_fill_output_limit"><a name="p_fill_output_limit"></a><a name="p_fill_output_limit"></a>-</p></td>
+</tr>
+</tbody>
+</table>
 
 ### Shape<a name="ZH-CN_TOPIC_0000003030115702"></a>
 
@@ -6615,7 +6618,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_pow_tflite_base_desc"><a name="p_pow_tflite_base_desc"></a><a name="p_pow_tflite_base_desc"></a>底数张量，维度为 1D/2D/3D/4D，格式分别为 ND、NWC、NHWC。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_base_limit"><a name="p_pow_tflite_base_limit"></a><a name="p_pow_tflite_base_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；fp16 不支持该类型；INT8 不支持 X<0 的输入</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_base_limit"><a name="p_pow_tflite_base_limit"></a><a name="p_pow_tflite_base_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；fp16 不支持该类型；INT8 不支持 X&lt;0 的输入</p>
 </td>
 </tr>
 <tr id="row_pow_tflite_exp"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_pow_tflite_exp_name"><a name="p_pow_tflite_exp_name"></a><a name="p_pow_tflite_exp_name"></a>exponent</p>
@@ -6637,7 +6640,10 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_pow_tflite_out_desc"><a name="p_pow_tflite_out_desc"></a><a name="p_pow_tflite_out_desc"></a>输出张量，维度为 base 与 exponent 的广播结果，格式分别为 ND、NWC、NHWC。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_out_limit"><a name="p_pow_tflite_out_limit"></a><a name="p_pow_tflite_out_limit"></a>规格约束：最大维度 4D；fp16 不支持该类型</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_out_limit"><a name="p_pow_tflite_out_limit"></a><a name="p_pow_tflite_out_limit"></a>规格约束：最大维度 4D；fp16 不支持该类型</p></td>
+</tr>
+</tbody>
+</table>
 
 ### TopK<a name="ZH-CN_TOPIC_0000003050115702"></a>
 
@@ -13814,7 +13820,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="29.73%" headers="mcps1.2.6.1.4 "><p id="p_pow_onnx_x_desc"><a name="p_pow_onnx_x_desc"></a><a name="p_pow_onnx_x_desc"></a>底数张量，维度为 1D/2D/3D/4D，格式为 ND/NCW/NCHW。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_x_limit"><a name="p_pow_onnx_x_limit"></a><a name="p_pow_onnx_x_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；fp16/fp64/int32/int64 不支持该类型；INT8 不支持 X<0 的输入</p>
+<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_x_limit"><a name="p_pow_onnx_x_limit"></a><a name="p_pow_onnx_x_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；fp16/fp64/int32/int64 不支持该类型；INT8 不支持 X&lt;0 的输入</p>
 </td>
 </tr>
 <tr id="row_pow_onnx_y"><td class="cellrowborder" valign="top" width="17.07%" headers="mcps1.2.6.1.1 "><p id="p_pow_onnx_y_name"><a name="p_pow_onnx_y_name"></a><a name="p_pow_onnx_y_name"></a>Y</p>
