@@ -341,7 +341,11 @@ def sample_build_main(bisheng_path, arm_path=None, daily=False, build_os='all', 
         
         process.wait()
         output_text = ''.join(captured_output)
-        return 0, output_text
+        # 透传 build.sh 的退出码：构建失败(exit 1)时必须让本脚本也异常退出，
+        # 否则 main() 拿到 result==0 会误报构建成功。
+        if process.returncode != 0:
+            print(f"{error_info} build.sh exited with code {process.returncode}")
+        return process.returncode, output_text
     except Exception as e:
         print(f"{error_info} 未预期的异常: {e}")
         import traceback
