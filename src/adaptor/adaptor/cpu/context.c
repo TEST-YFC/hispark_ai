@@ -18,6 +18,12 @@
 #include "env.h"
 #include "model_state.h"
 
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif
+
 static MSContextHandle g_singleton_context = NULL;
 
 OH_AI_ContextHandle OH_AI_ContextCreate(void)
@@ -42,3 +48,9 @@ void OH_AI_ContextDestroy(OH_AI_ContextHandle *context)
     MSContextDestroy((MSContextHandle*)context);
     g_singleton_context = NULL;
 }
+
+#ifdef __cplusplus
+#if __cplusplus
+}
+#endif
+#endif

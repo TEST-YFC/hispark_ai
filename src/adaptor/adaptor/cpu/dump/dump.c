@@ -167,7 +167,7 @@ static MS_AI_DUMP_Status MS_AI_DUMP_Fill_InfoSection(DumpInfo_t *info, MS_AI_DUM
     }
     info->nameLens = target_len;
     memcpy_s(info->name, sizeof(info->name), data_info->name, target_len);
-    memcpy_s(info->shape, sizeof(info->shape), data_info->shape, data_info->ndims * sizeof(uint16_t));
+    memcpy_s(info->shape, sizeof(info->shape), data_info->shape, info->ndims * sizeof(uint16_t));
     info->offset = offset;
     info->ndims = data_info->ndims;
     info->dtype = data_info->dtype;
