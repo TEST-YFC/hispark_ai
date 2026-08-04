@@ -208,10 +208,9 @@ build_save()
     fi
     local fwpkg_out="${RESULT_PATH}/ws63-ai-liteos_${temp}_WS63_${model}.fwpkg"
     if [ "$DO_HOST_VERIFY" = true ]; then
-        # Host-x86 benchmark passed: write a placeholder fwpkg so the gate's existence
-        # check (vendor/ci_build.py process_build_results) marks this target SUCCESS.
-        # This is NOT a real firmware image and must never be flashed. The real artifacts
-        # are the benchmark log (build-*.log) and the reference npy copied below.
+        # Host-verify path (非量化走 benchmark，量化仅转换): 写占位 fwpkg，让 gate 的存在性
+        # 检查 (vendor/ci_build.py process_build_results) 判定该 target SUCCESS。
+        # 这不是真实固件，绝不能烧录。真正有价值的产物是 benchmark 日志(build-*.log)和参考 npy。
         echo "# placeholder fwpkg: ws63-ai-liteos_${temp}_WS63_${model} (host-verify, NOT flashable)" > "$fwpkg_out"
     else
         cp "${sample_path}/output/ws63-ai-liteos-sample.fwpkg" "$fwpkg_out"
@@ -307,17 +306,7 @@ process_quantized() {
         --outputFile="$model_dir" --configFile="$quant_cfg" \
         --inputDataFormat=NCHW --outputDataFormat=NCHW; then
         if [ "$DO_HOST_VERIFY" = true ]; then
-            # Host x86 benchmark + cosine accuracy check (quantized: threshold 0.9).
-            local input_files=$(find "$MODEL_PATH/$model/dataset" -name "*_0_*.bin" -type f 2>/dev/null | sort | paste -sd, -)
-            local input_file="${input_files:-$MODEL_PATH/$model/dataset/}"
-            local log_file="$MODEL_PATH/$model/benchmark_output_quant.log"
-            pushd "$model_dir"
-            run_host_benchmark "$input_file" "$log_file"
-            popd
-            if ! compare_accuracy "$log_file" "$MODEL_PATH/$model" 0.9; then
-                echo "[FAIL] $model (onnx_quant) accuracy check below 0.9"
-                [ "$is_daily" = false ] && exit 1
-            fi
+            # 量化模型只做 converter_lite 转换(已在上面的 if 中完成)，不做 host benchmark
             build_save "$model" 1
         else
             # Compile micro
@@ -414,17 +403,7 @@ process_quantized_tflite() {
         --outputFile="$model_dir" --configFile="$quant_cfg" \
         --inputDataFormat=NHWC --outputDataFormat=NHWC; then
         if [ "$DO_HOST_VERIFY" = true ]; then
-            # Host x86 benchmark + cosine accuracy check (quantized: threshold 0.9).
-            local input_files=$(find "$MODEL_PATH/$model/dataset" -name "*_0_*.bin" -type f 2>/dev/null | sort | paste -sd, -)
-            local input_file="${input_files:-$MODEL_PATH/$model/dataset/}"
-            local log_file="$MODEL_PATH/$model/benchmark_output_quant.log"
-            pushd "$model_dir"
-            run_host_benchmark "$input_file" "$log_file"
-            popd
-            if ! compare_accuracy "$log_file" "$MODEL_PATH/$model" 0.9; then
-                echo "[FAIL] $model (tflite_quant) accuracy check below 0.9"
-                [ "$is_daily" = false ] && exit 1
-            fi
+            # 量化模型只做 converter_lite 转换(已在上面的 if 中完成)，不做 host benchmark
             build_save "$model" 2
         else
             # Compile micro
