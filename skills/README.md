@@ -11,7 +11,7 @@
 | `hs-workflow-op-development` | 工作流 | 已落地 | 默认串联算子实现、Host 测试、文档、固件构建、可选烧录与板测 | "适配算子"、"新增算子"、"支持算子"、"port operator" |
 | `hs-design-op-manual` | 设计 | 已落地 | 基于冻结事实生成四章节单算子规格限制文档 | "只生成算子文档"、"算子规格文档" |
 | `hs-dev-op-implement` | 开发 | 已落地 | 只分析、生成或修复 MindSpore Lite 算子源码并执行实现质量门禁 | "只实现算子"、"使用 hs-dev-op-implement" |
-| `hs-dev-op-performance` | 开发 | 规划中 | 算子性能评估、基准对比与调优 | "算子性能"、"benchmark"、"性能调优" |
+| `hs-dev-op-performance` | 开发 | 已落地 | 算子性能评估、可信基准、WS63 实测与逐变量调优 | "算子性能"、"benchmark"、"性能调优" |
 | `hs-verify-op-host` | 验证 | 已落地 | 设计用例并在 PC/WSL 运行固定测试执行器，验证 ONNX/TFLite、FP32/INT8 与 RISC-V 代码生成路径 | "只写算子测试"、"Host 验证"、"使用 hs-verify-op-host" |
 | `hs-verify-op-board` | 验证 | 已落地 | 复用 Host PASS 用例，在已构建和烧录的真实 WS63/Hi3863 上采集 Tensor 并判定板端精度 | "只做板端精度"、"使用 hs-verify-op-board" |
 | `hs-workflow-mslite-env-setup` | 工作流 | 已落地 | MindSpore Lite 工具链、模型转换与静态库构建流程 | "搭建环境"、"转换模型"、"构建静态库" |
