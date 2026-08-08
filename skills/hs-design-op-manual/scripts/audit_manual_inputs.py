@@ -569,7 +569,6 @@ def _validate_facts(
     if facts.get("schema_version") != 1:
         issues.add("schema_version")
     if facts.get("mode") not in {
-        "integrated-initial",
         "integrated-final",
         "legacy-sync",
     }:

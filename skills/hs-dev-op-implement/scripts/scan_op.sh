@@ -56,7 +56,7 @@ if [ "${MISSING_CLONE}" = "1" ]; then
   echo "      禁止直接 WebFetch/curl raw.githubusercontent.com（企业网被墙）；取不到时对比表"
   echo "      该源如实记 UNREACHABLE，禁止凭记忆补「算法要点」。"
 fi
-echo "==> 上述命中 + 仓内相似算子（decision2 候选段、SKILL.md「实现」节参考表）= 对比表三类取材来源；"
+echo "==> 上述命中 + decision2-reuse-decision.md 的候选规则 + 仓内同族算子 = 复用对比的三类证据来源；"
 echo "    动笔 ⑤ 前必须呈现「参考实现对比表」（来源｜算法要点｜边界情况处置｜采纳/不采纳+理由）。"
 
 cd "${ROOT}" || exit 1
@@ -226,9 +226,9 @@ fi
 if [ -n "${DESTROY}" ]; then printf '%s\n' "${DESTROY}" | sed 's/^/  /'; else echo "  (0 命中 —— 无既有「消除/重写型」pass 涉及本算子)"; fi
 echo "==> 开关3′「本算子被既有图 pass 消除/重写?」：上面「消除/重写型」段非空 = 本算子可能在转换期被既有 pass 整体删除或替换"
 echo "    （passthrough/no-op 类常见：Identity、推理期 Dropout、同 dtype Cast、空 Reshape）。这是合法优化——不禁用、不据此跳过 ①–⑦"
-echo "    （算子在该 pass 未触发的图里仍可达，仍须全做）；但忽略它 = ①–⑦ 可能是不可达死代码、step7 在被改写的空图上假绿。命中则必须："
+echo "    （算子在该 pass 未触发的图里仍可达，仍须全做）；但忽略它 = ①–⑦ 可能是不可达死代码、Host 验证在被改写的空图上假绿。命中则必须："
 echo "    (a) 读懂命中 pass 的 DefinePattern/Process，写出本算子「何时被删 / 何时存活」（单消费者? 非图输出? 前后 dtype/shape 一致?）→ 落 docs/decision.md；"
-echo "    (b) step7 能力清单含一条「该 pass 不触发、算子真正到达 kernel」用例（⑤/⑥/⑦ 与 INT8 genuine 的唯一落点），并对「该 pass 触发、算子被合法删除」情形给出用例与结果说明（输出仍正确，但不得据此声称 kernel 覆盖）。"
+echo "    (b) capability checklist 含一条「该 pass 不触发、算子真正到达 kernel」用例（⑤/⑥/⑦ 与 INT8 genuine 的唯一落点），并对「该 pass 触发、算子被合法删除」情形给出用例合同（输出仍正确，但不得据此声称 kernel 覆盖）。"
 echo "    0 命中=开关3′ 填「否」。"
 
 echo
