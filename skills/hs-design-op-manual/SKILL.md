@@ -1,6 +1,7 @@
 ---
 name: hs-design-op-manual
-description: Use when generating or updating a standalone operator design document, projecting a design document during integrated operator development, synchronizing the final document at terminal state, migrating historical operator artifacts, or analyzing the four-chapter template.
+description: >-
+  Generate, update, audit, or migrate the four-chapter design document for an existing MindSpore Lite Micro operator. Owns operator-manual-facts.json, draft/final Markdown rendering, public-information boundaries, and facts/content/case audits. Use when the user explicitly asks only for an operator specification/design document, names hs-design-op-manual, or hs-workflow-op-development routes a documentation stage here. Generic requests to adapt, add, support, implement, test, build, flash, or board-verify an operator belong to their workflow/leaf skills; this skill never modifies operator source or runs build/test/flash.
 ---
 
 # 单算子设计文档生成器
@@ -15,14 +16,13 @@ description: Use when generating or updating a standalone operator design docume
 2. 明确写出“不支持转换”“不支持该规格”或“不支持该类型”，不得把缺失链路包装成支持。
 3. 一次调用只有一个模式和一个文档发布目标。带 `opdir` 的写入型模式还必须创建或刷新 skill 明确规定的中间产物 `<opdir>/docs/operator-manual-facts.json`；它不算第二个文档发布目标。除该 facts 文件、唯一文档目标和发布门控临时候选外，不生成计划文件或旁路报告。
 
-## 六种模式
+## 五种模式
 
 | 模式 | 触发场景 | 事实获取 | 输出 |
 |---|---|---|---|
 | `standalone-generate` | 独立生成新文档 | 用户材料、仓内证据、已有公开文档和必要的官方规格查证 | `<code_root>/operator-desc/{op}.md` |
 | `standalone-update` | 独立更新已有文档 | 同上，并读取现有目标文档 | 更新 `<code_root>/operator-desc/{op}.md` |
 | `template-analysis` | 只分析四章节模板 | 本 skill 的模板规则 | 不写文件 |
-| `integrated-initial` | 新算子编码前，父流程已冻结计划产物 | 仅 `<opdir>` 冻结产物 | 刷新 facts；发布 `<opdir>/docs/operator-manual-draft.md` |
 | `integrated-final` | 新算子终态同步 | 仅最新 `<opdir>` 冻结产物和父流程终态 | 刷新 facts；完成态发布正式文档，阻塞/硬停态只刷新草稿 |
 | `legacy-sync` | 历史算子从旧开发产物迁移文档 | 仅历史 `<opdir>` 产物和最后记录的 summary | A 且事实完整时发布正式文档；否则刷新 facts 并写迁移草稿；D 不写文件 |
 
@@ -47,7 +47,7 @@ description: Use when generating or updating a standalone operator design docume
 
 | 参数 | 要求 |
 |---|---|
-| `mode` | `integrated-initial`、`integrated-final` 或 `legacy-sync` |
+| `mode` | `integrated-final` 或 `legacy-sync` |
 | `code_root` | 绝对代码根路径 |
 | `opdir` | 该 implementation unit 的绝对工作目录 |
 | `op` / `Op` | 小写发布名 / 公开算子或 unit 名 |
@@ -57,7 +57,7 @@ description: Use when generating or updating a standalone operator design docume
 
 这些父流程提供的路径和目标已经获得授权，不再询问目录或保存路径。仅做只读合法性检查：路径必须为绝对路径，核心产物必须位于给定 `opdir`，输出必须精确落到本模式规定的位置。参数缺失、路径冲突或框架范围冲突时返回父流程修正，不自行猜测。
 
-`integrated-final` 的 `completed` 只能来自父流程已经通过的 build、verify 和 board 等门控。本 skill 不重跑这些门控，也不从 summary 自行推导新算子的完成态。
+`integrated-final` 的 `completed` 只能来自父流程已经通过的必需 implementation、MindSpore Lite build 和 Host verify 门控；只有用户要求板测时才包含 board 门控。本 skill 不重跑这些门控，也不从 summary 自行推导新算子的完成态。
 
 ## 集成/历史模式的单一事实源
 
@@ -74,7 +74,7 @@ description: Use when generating or updating a standalone operator design docume
 <opdir>/docs/operator-manual-facts.json
 ```
 
-该文件是本 skill 明确要求生成的中间产物，不是某个模型或工具的可选输出。`integrated-initial` 在草稿前首次生成；`integrated-final` 在终态文档前从最新产物整份重建；`legacy-sync` 从历史产物生成，不要求历史 `op_spec.py` 改成新 schema，也不重跑开发流程。Markdown 只读取该 facts 文件；audit 则独立读取原始产物、facts 和候选 Markdown 三方比对，不能用候选反向改写 facts。
+该文件是本 skill 明确要求生成的中间产物，不是某个模型或工具的可选输出。`integrated-final` 在终态文档前从最新产物整份重建；`legacy-sync` 从历史产物生成，不要求历史 `op_spec.py` 改成新 schema，也不重跑开发流程。Markdown 只读取该 facts 文件；audit 则独立读取原始产物、facts 和候选 Markdown 三方比对，不能用候选反向改写 facts。
 
 facts 顶层固定包含：
 
@@ -138,9 +138,9 @@ case 字段名和形状固定如下；算子特有属性只放在 `attributes`�
 - `builtin-probe.md`：只补充 source entry 与 builtin 的已验证映射。
 - capability checklist 作为第 4 章辅助证据时只检查 `covered_by` 关联；它和 builtin probe 都不得提供或改写 case 字段。
 
-在 `integrated-initial`、`integrated-final` 和 `legacy-sync` 中：
+在 `integrated-final` 和 `legacy-sync` 中：
 
-- 禁止重新扫描代码仓，禁止查询外部或框架规格，禁止运行 scan、build、`hs-debug-op-host-accuracy` 或板端流程。
+- 禁止重新扫描代码仓，禁止查询外部或框架规格，禁止运行 scan、build、`hs-verify-op-host` 或板端流程。
 - 现有 `operator-desc/{op}.md` 不是事实源，不得覆盖或“纠正”冻结产物；最终同步必须从最新冻结产物整篇重建。
 - 主源之间、主源与父参数之间有冲突，或公开事实缺失时，返回上游修正并输出 FAIL。不得选择“看起来更合理”的版本，不得发明补全。
 
@@ -197,7 +197,7 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py --opdir <absolute_opd
 
 ### 集成/历史模式的四章节投影
 
-以下来源绑定、`covered_by` 检查和 op_spec 精确 case 规则只适用于 `integrated-initial`、`integrated-final` 和 `legacy-sync`。这三个模式不得回退到独立模式取材。
+以下来源绑定、`covered_by` 检查和 op_spec 精确 case 规则只适用于 `integrated-final` 和 `legacy-sync`。这两个模式不得回退到独立模式取材。
 
 ### 文档头部
 
@@ -331,9 +331,8 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py --opdir <absolute_opd
 3. framework、shape、K/属性、模型 dtype 和 `value_domain` 从 op_spec case 规范化进 facts；Markdown 逐字段按 facts 的规范格式渲染，不能把 `value_domain` 丢进泛化描述。
 4. “模型 dtype”和“已覆盖运行通路”分列。模型 dtype 只来自 op_spec case；内部验证记录只来自最后可信 summary 的同 case 明确 PASS 行，再结合模型 dtype 和生成代码证据转换为读者语言。不得从聚合路径、dtype 名称或经验规则推导覆盖。
 5. 预期输出必须有结构化 `expected_outputs`、公开 `expected_outputs_text` 和逐字证据。输出名称/dtype 来自 op_spec 模型构造或 implementation contract；shape 只有在上述来源明确写出 shape 规则时才可把规则应用到 case 参数。final 不允许任何必需字段写“未记录”“待确认”或“尚未执行验证”。
-6. `integrated-initial` 尚未产生验证证据时，验证路径单元格固定写“尚未执行验证”，且 facts 的 `production_eligible=false`；该措辞只允许 draft。
-7. `integrated-final` 和 legacy A 不增量修补旧表，而是从最新 facts 重建整表，删除已移除 case 并加入新增 case。
-8. 不支持的 framework/type/spec 不生成额外正向 case；C 级失败路径不得标成 PASS 或 supported。
+6. `integrated-final` 和 legacy A 不增量修补旧表，而是从最新 facts 重建整表，删除已移除 case 并加入新增 case。
+7. 不支持的 framework/type/spec 不生成额外正向 case；C 级失败路径不得标成 PASS 或 supported。
 
 ## 敏感信息与公开边界
 
@@ -389,7 +388,6 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py \
 |---|---|---|
 | `standalone-generate` / `standalone-update` | `final` | `<code_root>/operator-desc/{op}.md` |
 | `template-analysis` | `none` | `NONE` |
-| `integrated-initial` | `draft` | `<opdir>/docs/operator-manual-draft.md` |
 | `integrated-final terminal_state=completed` | `final` | `<code_root>/operator-desc/{op}.md` |
 | `integrated-final terminal_state=blocked\|hard-stop` | `draft` | `<opdir>/docs/operator-manual-draft.md` |
 | `legacy-sync` A 且 facts 内容完整 | `final` | `<code_root>/operator-desc/{op}.md` |
@@ -404,7 +402,7 @@ OP_MANUAL_SYNC=PASS mode=<mode> publication=<final|draft|migration-draft|none> p
 OP_MANUAL_SYNC=FAIL mode=<mode> publication=none path=NONE
 ```
 
-失败详情在终态行之前简要列出并返回父流程。`integrated-initial` 失败会阻塞进入编码；`integrated-final` 失败会阻塞完成声明。
+失败详情在终态行之前简要列出并返回父流程。`integrated-final` 失败会阻塞完成声明。实现阶段不再生成编码前手册草稿；规范、合同和能力清单由实现 leaf 持有，避免同一事实维护两份。
 
 ## 自检与最终复核
 

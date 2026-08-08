@@ -1,0 +1,9 @@
+{
+  "_doc": "hs-dev-op-implement step3 的能力验收清单模板。拷到 <算子项目目录>/scripts/capability_checklist.json 并按本算子的 step3 清单逐行填写。hs-verify-op-host 开跑前校验 covered_by 引用存在/非空/match，结束后按通过用例核对覆盖，未覆盖能力使 VERDICT 非绿。对账方向单向：以本清单为准改 op_spec，绝不反向改本 JSON 去贴合存量用例。",
+  "op": "<OpName>",
+  "framework_scope": ["onnx"],
+  "capabilities": [
+    {"id": "c1", "desc": "<能力描述，如 2D 小张量 axis=0 fp32+int8>", "covered_by": [1], "match": {"axis": 0}},
+    {"id": "c2", "desc": "<能力描述，covered_by 指向承载该能力的 op_spec 用例 id>", "covered_by": [2, 3]}
+  ]
+}

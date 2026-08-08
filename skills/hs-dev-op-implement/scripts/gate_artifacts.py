@@ -33,6 +33,14 @@ REQUIRED_CONTRACT_KEYS = [
     "unsupported_or_deferred",
 ]
 
+REQUIRED_REVIEW_KEYS = [
+    "reviewed_layers",
+    "definition_evidence",
+    "registration_evidence",
+    "code_findings",
+    "disposition",
+]
+
 
 def fail(msg):
     print(f"[FAIL] {msg}")
@@ -119,6 +127,19 @@ def check_contract(path, op, frameworks, errors):
             errors.append(f"{path} missing implementation-contract key: {key}")
 
 
+def check_existing_capability_review(path, op, frameworks, errors):
+    text = read_text(path, errors)
+    if not text:
+        return
+    require_mentions(text, path, [op] + frameworks, errors)
+    lower = text.lower()
+    for key in REQUIRED_REVIEW_KEYS:
+        if key.lower() not in lower:
+            errors.append(f"{path} missing existing-capability-review key: {key}")
+    if not any(value in lower for value in ("reuse_reviewed", "fix_required", "n/a")):
+        errors.append(f"{path} must contain REUSE_REVIEWED, FIX_REQUIRED, or N/A disposition")
+
+
 def check_op_spec_text(path, op, frameworks, errors):
     text = read_text(path, errors)
     if not text:
@@ -160,6 +181,10 @@ def main():
             require_mentions(text, docs / name, [args.op] + frameworks, errors)
 
     load_checklist(scripts / "capability_checklist.json", args.op, frameworks, errors)
+
+    # Review belongs to the frozen step3 analysis even for analysis-only and all-new
+    # operators.  A genuinely all-new layer set is represented by evidenced N/A rows.
+    check_existing_capability_review(docs / "existing-capability-review.md", args.op, frameworks, errors)
 
     if args.stage in ["pre-code", "pre-verify"]:
         check_contract(docs / "implementation-contract.md", args.op, frameworks, errors)

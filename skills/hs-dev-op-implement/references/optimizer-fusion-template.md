@@ -102,8 +102,9 @@ After rebuilding `converter_lite`:
 1. Convert a model containing the composite subgraph.
 2. Inspect the converted output graph to confirm the fusion fired and the
    replacement node appears in place of the composite.
-3. Run accuracy verification via the `hs-debug-op-host-accuracy` skill (or the repo-native
-   `converter_lite` + `benchmark`); if your fusion semantics are wrong, the
+3. Return the implementation to `hs-workflow-op-development`, which rebuilds MSLite and invokes
+   `hs-verify-op-host`. Do not use an ad-hoc `converter_lite` + `benchmark` path as a signing
+   substitute; if fusion semantics are wrong, the fixed Host harness
    cosine-similarity check fails. Remember the produced primitive still needs its
    full ②–⑦ pathway — the fusion alone does not make it convert/compute.
 

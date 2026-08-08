@@ -48,6 +48,6 @@ print([max(m.OperatorCodes(i).BuiltinCode(),m.OperatorCodes(i).DeprecatedBuiltin
 2. 探针逼不出的形态（典型：仅 legacy API 可达的特殊模式）列为**覆盖缺口报告用户裁决**，不自作主张扩 kernel/infer。
 3. 该表直接复用为 op_spec 的 docstring 证据与 `TFLITE_TARGET_BUILTIN` 声明（一次探针，三处受益）。
 
-环境无 TensorFlow 时（hs-debug-op-host-accuracy 本就依赖它，正常都有），把"未探针、按文档全集裁决"作为风险显式写进 decision4 报告。
+环境无 TensorFlow 时（hs-verify-op-host 本就依赖它，正常都有），把"未探针、按文档全集裁决"作为风险显式写进 decision4 报告。
 
 两个结构性推论（多 builtin 同族时）：**非广播版是公共地带的收敛目标**（用户上层无论写哪个 op，同形输入都落到它），优先保证其链路完整；**两版的"专属语义"可能互不包含**（如非广播版特有的"rank-1 条件匹配首维"模式不属于 numpy 广播，广播版反而表达不了），各自用例只覆盖各自规格列明的形态。

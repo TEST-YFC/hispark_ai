@@ -51,7 +51,7 @@
 
 4. **⑦ 量化器：** 在 `full_quant_quantizer.cc` 的 `enable_all_ops` 块 `support_int8_ops_.emplace(prim::kPrim<被复用算子>)`。漏了则 `riscv_quant` 余弦恰好 `1.0000`。
 
-### 验证用例设计（交给 hs-debug-op-host-accuracy）
+### 验证用例合同（交给 workflow，再路由 hs-verify-op-host）
 
 - **只为该算子真实存在的框架建用例**：若 ONNX 用等价算子表达、TFLite 才有该 builtin，就只写 TFLite 用例，别凭空造 ONNX 用例。
 - **用例形状要能逼出目标 builtin。** 源框架按输入形状择优发不同 builtin（条件选择：同形状→非广播版，需广播→广播版）。验证广播版 PrimType 时用例**必须带广播（不同形状）**；同形状用例会被发成非广播 builtin、落到另一个算子的通路上，测的根本不是本算子。非广播版那个算子则用**全同形状**用例单独建项目。两个算子据此各自分流，无需把两个 builtin 混进一个项目凑。
@@ -65,7 +65,7 @@
 
 ### decision1 查规格 + decision2 判定：新建
 
-decision1 查清输入/输出/属性/dtype/广播，并做属性审计（每个属性标注 支持/默认拒绝/不支持）。decision2 套"完全等价"判据——无任何已有 PrimitiveType 匹配 → **新建**，走决策总结表"新 PrimitiveType"列。
+先查清输入/输出/属性/dtype/广播，并做属性审计（每个属性标注支持/默认拒绝/不支持），再套 `decision2-reuse-decision.md` 的“完全等价”判据。无任何已有 PrimitiveType 匹配时裁决为**新建**，并在 `docs/decision.md` 逐层记录实现范围。
 
 ### decision4 链路分析（填好的表）
 
@@ -95,7 +95,8 @@ decision1 查清输入/输出/属性/dtype/广播，并做属性审计（每个�
 
 ### 验证
 
-同样交给 hs-debug-op-host-accuracy，按算子属性/值域/形状设计用例（细则见 hs-debug-op-host-accuracy skill）。
+实现 leaf 只冻结 capability checklist 和 implementation contract；随后交回 `hs-workflow-op-development`，由其调用
+`hs-verify-op-host` 按算子属性、值域和形状编写并运行用例。细则见 Host skill。
 
 ---
 
