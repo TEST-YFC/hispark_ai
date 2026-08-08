@@ -41,6 +41,95 @@ def test_parse_ai_mcu_accepts_integer_decimal_and_scientific_values():
     assert np.allclose(outputs[0], [1, -2.5, 0.03, 4.0])
 
 
+@pytest.mark.parametrize(
+    "monitor",
+    [
+        "name:out, Elements: 4, Shape: [-1 4], Data:\n1,2,3,4\n",
+        "[AI_MCU] Shape: [-1,4]\n[AI_MCU] Data: [1][2][3][4]\n",
+    ],
+)
+def test_shape_parsers_reject_negative_dimensions(monitor):
+    parser = (
+        board.parse_ai_mcu_tensors
+        if "[AI_MCU]" in monitor
+        else board.parse_benchmark_tensors
+    )
+    tensor = parser(monitor)[0]
+    assert tensor["shape"] is None
+    assert "invalid shape metadata" in tensor["shape_error"]
+
+
+def test_parse_ai_mcu_requires_complete_payload_and_accepts_spaces():
+    valid = board.parse_ai_mcu_tensors(
+        "[AI_MCU] Shape: [2]\n[AI_MCU] Data: [1] [2e-1]\n"
+    )[0]
+    bad = board.parse_ai_mcu_tensors(
+        "[AI_MCU] Shape: [2]\n[AI_MCU] Data: [1][BAD][2]\n"
+    )[0]
+    extra = board.parse_ai_mcu_tensors(
+        "[AI_MCU] Shape: [1]\n[AI_MCU] Data: [1][nan]\n"
+    )[0]
+
+    assert np.allclose(valid["data"], [1.0, 0.2])
+    assert valid["data_error"] is None
+    assert "invalid AI_MCU Data payload" in bad["data_error"]
+    assert "invalid AI_MCU Data payload" in extra["data_error"]
+
+
+def test_parse_benchmark_accepts_valid_empty_tensor():
+    tensor = board.parse_benchmark_tensors(
+        "name:empty, Elements: 0, Shape: [2 0], Data:\n\n"
+    )[0]
+    assert tensor["data"].shape == (2, 0)
+    assert tensor["data_error"] is None
+
+
+def test_parse_ai_mcu_rejects_multiple_ambiguous_data_lines():
+    tensor = board.parse_ai_mcu_tensors(
+        "[AI_MCU] Shape: [1]\n"
+        "[AI_MCU] Data: [1]\n"
+        "[AI_MCU] Shape: [1]\n"
+        "[AI_MCU] Data: [1]\n"
+    )[0]
+    assert "ambiguous AI_MCU protocol" in tensor["data_error"]
+
+
+def test_parse_ai_mcu_scalar_empty_and_float32_overflow():
+    scalar = board.parse_ai_mcu_tensors(
+        "[AI_MCU] Shape: []\n[AI_MCU] Data: [3.5]\n"
+    )[0]
+    empty = board.parse_ai_mcu_tensors(
+        "[AI_MCU] Shape: [0]\n[AI_MCU] Data:\n"
+    )[0]
+    overflow = board.parse_ai_mcu_tensors(
+        "[AI_MCU] Shape: [1]\n[AI_MCU] Data: [1e39]\n"
+    )[0]
+
+    assert scalar["data"].shape == ()
+    assert empty["data"].shape == (0,)
+    assert empty["data_error"] is None
+    assert "float32 overflow" in overflow["data_error"]
+
+
+def test_main_rejects_missing_elements_metadata(tmp_path):
+    gt_dir = tmp_path / "gt"
+    gt_dir.mkdir()
+    np.save(gt_dir / "output.npy", np.array([1.0], dtype=np.float32))
+    monitor = tmp_path / "monitor.txt"
+    monitor.write_text("name:out, Shape: [1], Data:\n1\n")
+
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--gt-dir", str(gt_dir), "--monitor", str(monitor)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    assert "Elements metadata missing" in completed.stdout
+    assert "Traceback" not in completed.stderr
+
+
 def test_cosine_rejects_mismatched_lengths():
     with pytest.raises(ValueError):
         board.cosine_similarity([1, 2], [1])
@@ -105,3 +194,25 @@ def test_main_rejects_ai_mcu_data_without_shape_metadata(tmp_path):
 
     assert completed.returncode == 1
     assert "SHAPE_UNVERIFIED" in completed.stdout
+
+
+def test_main_rejects_negative_shape_without_traceback(tmp_path):
+    gt_dir = tmp_path / "gt"
+    gt_dir.mkdir()
+    np.save(gt_dir / "output.npy", np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32))
+    monitor = tmp_path / "monitor.txt"
+    monitor.write_text(
+        "name:out, Elements: 4, Shape: [-1 4], Data:\n1,2,3,4\n"
+    )
+
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--gt-dir", str(gt_dir), "--monitor", str(monitor)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    assert "ACCURACY_VERDICT=FAIL" in completed.stdout
+    assert "invalid shape metadata" in completed.stdout
+    assert "Traceback" not in completed.stderr

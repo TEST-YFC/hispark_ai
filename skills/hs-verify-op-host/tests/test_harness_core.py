@@ -232,9 +232,119 @@ def test_parse_no_match_returns_empty():
     assert h.parse_benchmark_outputs("nothing here\njust logs\n") == []
 
 
-def test_parse_empty_data_line_skipped():
+def test_parse_empty_data_line_is_preserved_for_metadata_validation():
     stdout = "name:out Data:\n\n"
-    assert h.parse_benchmark_outputs(stdout) == []
+    tensors = h.parse_benchmark_tensors(stdout)
+    assert len(tensors) == 1
+    assert tensors[0]["data"].size == 0
+    assert tensors[0]["shape"] is None
+
+
+def test_parse_shape_metadata_rejects_negative_and_malformed_dimensions():
+    for header in (
+        "name:out, Elements: 4, Shape: [-1 4], Data:",
+        "name:out, Elements: 6, Shape: [2 x 3], Data:",
+        "name:out, Elements: 6, Shape: [2,,3], Data:",
+    ):
+        tensor = h.parse_benchmark_tensors(header + "\n1,2,3,4\n")[0]
+        assert tensor["shape"] is None
+        assert "invalid shape metadata" in tensor["shape_error"]
+
+
+def test_parse_real_printtensor_shape_scalar_and_zero_dimension():
+    real = h.parse_benchmark_tensors(
+        "name: out, DataType: 43, Elements: 10, Shape: [1 10 ], Data:\n"
+        "0,1,2,3,4,5,6,7,8,9,\n"
+    )[0]
+    scalar = h.parse_benchmark_tensors(
+        "name: scalar, Elements: 1, Shape: [], Data:\n3.5,\n"
+    )[0]
+    empty = h.parse_benchmark_tensors(
+        "name: empty, Elements: 0, Shape: [2 0], Data:\n\n"
+    )[0]
+
+    assert real["shape"] == (1, 10)
+    assert real["data"].shape == (1, 10)
+    assert scalar["data"].shape == ()
+    assert empty["data"].shape == (2, 0)
+    assert empty["data_error"] is None
+
+
+def test_parse_rejects_huge_dimension_and_shape_trailing_junk():
+    huge = h.parse_benchmark_tensors(
+        "name:out, Elements: 1, Shape: [999999999999999999999], Data:\n1\n"
+    )[0]
+    junk = h.parse_benchmark_tensors(
+        "name:out, Elements: 2, Shape: [2]oops, Data:\n1,2\n"
+    )[0]
+    assert huge["shape"] is None
+    assert "too large" in huge["shape_error"]
+    assert junk["shape"] is None
+    assert "invalid shape metadata header" in junk["shape_error"]
+
+
+def test_judge_reports_negative_shape_as_structured_fail(tmp_path):
+    case = tmp_path / "tc1"
+    gt_dir = case / "gt"
+    gt_dir.mkdir(parents=True)
+    np.save(gt_dir / "output.npy", np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32))
+
+    status, cos, msg = h.judge_path_from_stdout(
+        case, "x86_fp32",
+        "name:out, Elements: 4, Shape: [-1 4], Data:\n1,2,3,4\n", "", 0,
+    )
+
+    assert status == "FAIL"
+    assert cos is None
+    assert "invalid shape metadata" in msg
+
+
+def test_judge_accepts_valid_empty_tensor(tmp_path):
+    case = tmp_path / "tc1"
+    gt_dir = case / "gt"
+    gt_dir.mkdir(parents=True)
+    np.save(gt_dir / "output.npy", np.empty((2, 0), dtype=np.float32))
+
+    status, cos, msg = h.judge_path_from_stdout(
+        case, "x86_fp32",
+        "name:out, Elements: 0, Shape: [2 0], Data:\n\n", "", 0,
+    )
+
+    assert status == "PASS"
+    assert cos == 1.0
+    assert msg == ""
+
+
+@pytest.mark.parametrize("payload", ["1,,2", "1,BAD,2", "1,nan,2", "1,1e999,2"])
+def test_judge_reports_invalid_benchmark_data_without_traceback(tmp_path, payload):
+    case = tmp_path / "tc1"
+    gt_dir = case / "gt"
+    gt_dir.mkdir(parents=True)
+    np.save(gt_dir / "output.npy", np.array([1.0, 2.0], dtype=np.float32))
+
+    status, cos, msg = h.judge_path_from_stdout(
+        case, "x86_fp32",
+        f"name:out, Elements: 2, Shape: [2], Data:\n{payload}\n", "", 0,
+    )
+
+    assert status == "FAIL"
+    assert cos is None
+    assert "invalid tensor data" in msg
+
+
+def test_judge_rejects_missing_elements_metadata(tmp_path):
+    case = tmp_path / "tc1"
+    gt_dir = case / "gt"
+    gt_dir.mkdir(parents=True)
+    np.save(gt_dir / "output.npy", np.array([1.0], dtype=np.float32))
+
+    status, cos, msg = h.judge_path_from_stdout(
+        case, "x86_fp32", "name:out, Shape: [1], Data:\n1\n", "", 0,
+    )
+
+    assert status == "FAIL"
+    assert cos is None
+    assert "Elements metadata missing" in msg
 
 
 # =========================================================================== #

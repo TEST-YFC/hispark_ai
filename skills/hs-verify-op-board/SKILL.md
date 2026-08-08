@@ -89,7 +89,7 @@ python3 <skill_root>/scripts/board_accuracy.py \
   [--quantized]
 ```
 
-脚本解析 benchmark `PrintTensorHandle` 的 `Elements`/`Shape`/`Data`，或项目连续输出的 `[AI_MCU] Shape: [d1,d2,...]` 与 `[AI_MCU] Data: [v1]...`。它先精确核对 Tensor 数量、元素数和 shape，再使用与 Host 相同的余弦语义和签收门槛逐 Tensor 比较：fp32 `cos >= 0.999`，INT8 `cos >= 0.99`。只有 `[AI_MCU] Data` 而没有 shape 时输出 `SHAPE_UNVERIFIED` 并拒绝签收。Host 与 Board 复用同一 GT，Board 不得另设更松阈值把 Host 不合格精度判绿。
+脚本解析 benchmark `PrintTensorHandle` 的 `Elements`/`Shape`/`Data`，或项目连续输出的 `[AI_MCU] Shape: [d1,d2,...]` 与 `[AI_MCU] Data: [v1]...`。它先精确核对 Tensor 数量、元素数和 shape，再使用与 Host 相同的余弦语义和签收门槛逐 Tensor 比较：fp32 `cos >= 0.999`，INT8 `cos >= 0.99`。只有 `[AI_MCU] Data` 而没有 shape 时输出 `SHAPE_UNVERIFIED` 并拒绝签收。当前 `[AI_MCU] Shape/Data` 旧协议只支持单输出、单轮推理；出现多个没有 round/output 标识的 Data 行时按协议歧义 FAIL，不静默取第一条。Host 与 Board 复用同一 GT，Board 不得另设更松阈值把 Host 不合格精度判绿。
 
 失败分流：
 

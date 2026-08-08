@@ -24,6 +24,7 @@
 """
 
 import argparse
+import math
 import re
 import sys
 from pathlib import Path
@@ -60,6 +61,98 @@ def cosine_similarity(a, b):
 # 张量解析（与 hs-verify-op-host/run_all_cases.py 同一实现）
 # --------------------------------------------------------------------------- #
 
+_NUMBER_TEXT = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?"
+_NUMBER_TOKEN = re.compile(_NUMBER_TEXT)
+_MAX_PRINTED_DIM = 2**31 - 1
+_FLOAT32_MAX = float(np.finfo(np.float32).max)
+
+
+def _parse_shape_metadata(line, prefix=r"Shape:"):
+    """Return (shape, error) for a complete, non-negative Shape field."""
+    suffix = r"\s*\[([^\]]*)\]"
+    if prefix == r"Shape:":
+        suffix += r"\s*,?\s*Data:\s*$"
+    else:
+        suffix += r"\s*$"
+    match = re.search(r"(?:^|[,\s])" + prefix + suffix, line)
+    if match is None:
+        marker = "[AI_MCU] Shape:" if "AI_MCU" in prefix else "Shape:"
+        error = "invalid shape metadata header" if marker in line else None
+        return None, error
+    raw = match.group(1).strip()
+    if not raw:
+        return (), None
+    if re.fullmatch(r"[0-9]+(?:(?:\s*,\s*|\s+)[0-9]+)*", raw) is None:
+        return None, f"invalid shape metadata: [{raw}]"
+    tokens = re.findall(r"[0-9]+", raw)
+    if any(len(token) > 10 for token in tokens):
+        return None, "invalid shape metadata: dimension is too large"
+    try:
+        shape = tuple(int(token) for token in tokens)
+    except (ValueError, OverflowError):
+        return None, "invalid shape metadata: dimension is not an integer"
+    if any(dim > _MAX_PRINTED_DIM for dim in shape):
+        return None, "invalid shape metadata: dimension exceeds INT32_MAX"
+    return shape, None
+
+
+def _parse_elements_metadata(line):
+    match = re.search(r"(?:^|[,\s])Elements:\s*([0-9]+)\s*,", line)
+    if match is None:
+        error = "invalid Elements metadata" if "Elements:" in line else "Elements metadata missing"
+        return None, error
+    token = match.group(1)
+    if len(token) > 20:
+        return None, "invalid Elements metadata: value is too large"
+    try:
+        return int(token), None
+    except (ValueError, OverflowError):
+        return None, "invalid Elements metadata: value is not an integer"
+
+
+def _float32_array(tokens):
+    values = []
+    for token in tokens:
+        if _NUMBER_TOKEN.fullmatch(token) is None:
+            return np.array([], dtype=np.float32), f"invalid tensor data token: {token}"
+        try:
+            value = float(token)
+        except (ValueError, OverflowError):
+            return np.array([], dtype=np.float32), f"invalid tensor data token: {token}"
+        if not math.isfinite(value):
+            return np.array([], dtype=np.float32), "invalid tensor data: non-finite value"
+        if abs(value) > _FLOAT32_MAX:
+            return np.array([], dtype=np.float32), "invalid tensor data: float32 overflow"
+        values.append(value)
+    data = np.array(values, dtype=np.float32)
+    if not np.isfinite(data).all():
+        return np.array([], dtype=np.float32), "invalid tensor data: float32 overflow"
+    return data, None
+
+
+def _parse_benchmark_data_line(data_line):
+    raw = data_line.strip()
+    if not raw:
+        return np.array([], dtype=np.float32), None
+    parts = raw.split(",")
+    if parts[-1].strip() == "":
+        parts.pop()
+    if not parts or any(not part.strip() for part in parts):
+        return np.array([], dtype=np.float32), "invalid tensor data: empty CSV token"
+    return _float32_array([part.strip() for part in parts])
+
+
+def _parse_ai_mcu_data_line(line):
+    match = re.fullmatch(r"\s*\[AI_MCU\]\s*Data:\s*(.*?)\s*", line)
+    if match is None:
+        return None, None
+    payload = match.group(1)
+    if re.fullmatch(rf"(?:\s*\[\s*{_NUMBER_TEXT}\s*\]\s*)*", payload) is None:
+        return np.array([], dtype=np.float32), "invalid AI_MCU Data payload"
+    tokens = [item.group(1).strip() for item in re.finditer(rf"\[\s*({_NUMBER_TEXT})\s*\]", payload)]
+    return _float32_array(tokens)
+
+
 def parse_benchmark_tensors(text):
     """从 benchmark 打印的 stdout 中提取输出张量。
 
@@ -73,18 +166,19 @@ def parse_benchmark_tensors(text):
     for idx, line in enumerate(lines):
         if re.search(r"name:.*Data:\s*$", line.strip()):
             data_line = lines[idx + 1].strip() if idx + 1 < len(lines) else ""
-            vals = [float(x) for x in data_line.split(",") if x.strip()]
-            if vals:
-                shape_match = re.search(r"Shape:\s*\[([^\]]*)\]", line)
-                shape = None
-                if shape_match is not None:
-                    shape = tuple(int(x) for x in re.findall(r"-?\d+", shape_match.group(1)))
-                elements_match = re.search(r"Elements:\s*(\d+)", line)
-                elements = int(elements_match.group(1)) if elements_match else None
-                data = np.array(vals, dtype=np.float32)
-                if shape is not None and int(np.prod(shape, dtype=np.int64)) == data.size:
-                    data = data.reshape(shape)
-                outs.append({"data": data, "shape": shape, "elements": elements})
+            shape, shape_error = _parse_shape_metadata(line)
+            elements, elements_error = _parse_elements_metadata(line)
+            data, data_error = _parse_benchmark_data_line(data_line)
+            if shape is not None and math.prod(shape) == data.size:
+                data = data.reshape(shape)
+            outs.append({
+                "data": data,
+                "data_error": data_error,
+                "shape": shape,
+                "shape_error": shape_error,
+                "elements": elements,
+                "elements_error": elements_error,
+            })
     return outs
 
 
@@ -100,23 +194,36 @@ def parse_ai_mcu_tensors(text):
         [AI_MCU] Shape: [d1,d2,...]
         [AI_MCU] Data: [v1][v2]...[vN]
 
-    返回 list[np.ndarray]，每个元素是一个输出张量（dtype=float32）。
-    只取第一次推理结果（忽略后续循环重复输出）。
+    当前协议只能无歧义表达单输出、单轮推理；多个 Data 行会明确拒绝。
     """
     lines = text.splitlines()
     shape = None
+    shape_error = None
+    tensors = []
     for line in lines:
-        shape_match = re.search(r"\[AI_MCU\]\s*Shape:\s*\[([^\]]*)\]", line)
-        if shape_match is not None:
-            shape = tuple(int(x) for x in re.findall(r"-?\d+", shape_match.group(1)))
-        if '[AI_MCU] Data: ' in line:
-            vals = re.findall(r'\[([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)\]', line)
-            if vals:
-                data = np.array([float(v) for v in vals], dtype=np.float32)
-                if shape is not None and int(np.prod(shape, dtype=np.int64)) == data.size:
-                    data = data.reshape(shape)
-                return [{"data": data, "shape": shape, "elements": None}]
-    return []
+        parsed_shape, parsed_error = _parse_shape_metadata(
+            line, prefix=r"\[AI_MCU\]\s*Shape:",
+        )
+        if parsed_shape is not None or parsed_error is not None:
+            shape, shape_error = parsed_shape, parsed_error
+        data, data_error = _parse_ai_mcu_data_line(line)
+        if data is not None:
+            if shape is not None and math.prod(shape) == data.size:
+                data = data.reshape(shape)
+            tensors.append({
+                "data": data,
+                "data_error": data_error,
+                "shape": shape,
+                "shape_error": shape_error,
+                "elements": None,
+                "elements_error": None,
+            })
+    if len(tensors) > 1:
+        tensors[0]["data_error"] = (
+            "ambiguous AI_MCU protocol: multiple Data lines without round/output identifiers"
+        )
+        return tensors[:1]
+    return tensors
 
 
 def parse_ai_mcu_outputs(text):
@@ -188,6 +295,13 @@ def main():
 
     for i, (tensor, ref) in enumerate(zip(device_tensors, ref_outputs)):
         device = tensor["data"]
+        error = tensor["shape_error"] or tensor["elements_error"] or tensor["data_error"]
+        if error is not None:
+            print(
+                "ACCURACY_VERDICT=FAIL  "
+                f"(output[{i}] {error})"
+            )
+            sys.exit(1)
         if tensor["shape"] is None:
             print(
                 "ACCURACY_VERDICT=FAIL  "

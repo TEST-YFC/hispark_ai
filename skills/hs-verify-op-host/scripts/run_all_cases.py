@@ -37,6 +37,7 @@ import argparse
 import datetime
 import importlib.util
 import json
+import math
 import os
 import re
 import shlex
@@ -217,6 +218,81 @@ def run_reference(framework, model_path, inputs):
 # Benchmark output parsing / cosine
 # --------------------------------------------------------------------------- #
 
+_NUMBER_TOKEN = re.compile(
+    r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?"
+)
+_MAX_PRINTED_DIM = 2**31 - 1  # PrintTensorHandle casts runtime int64 dims to C int.
+_FLOAT32_MAX = float(np.finfo(np.float32).max)
+
+
+def _parse_shape_metadata(line):
+    """Return (shape, error) for a complete, non-negative Shape header."""
+    match = re.search(
+        r"(?:^|[,\s])Shape:\s*\[([^\]]*)\]\s*,?\s*Data:\s*$", line,
+    )
+    if match is None:
+        error = "invalid shape metadata header" if "Shape:" in line else None
+        return None, error
+    raw = match.group(1).strip()
+    if not raw:
+        return (), None
+    if re.fullmatch(r"[0-9]+(?:(?:\s*,\s*|\s+)[0-9]+)*", raw) is None:
+        return None, f"invalid shape metadata: [{raw}]"
+    tokens = re.findall(r"[0-9]+", raw)
+    if any(len(token) > 10 for token in tokens):
+        return None, "invalid shape metadata: dimension is too large"
+    try:
+        shape = tuple(int(token) for token in tokens)
+    except (ValueError, OverflowError):
+        return None, "invalid shape metadata: dimension is not an integer"
+    if any(dim > _MAX_PRINTED_DIM for dim in shape):
+        return None, "invalid shape metadata: dimension exceeds INT32_MAX"
+    return shape, None
+
+
+def _parse_elements_metadata(line):
+    match = re.search(r"(?:^|[,\s])Elements:\s*([0-9]+)\s*,", line)
+    if match is None:
+        error = "invalid Elements metadata" if "Elements:" in line else "Elements metadata missing"
+        return None, error
+    token = match.group(1)
+    if len(token) > 20:
+        return None, "invalid Elements metadata: value is too large"
+    try:
+        return int(token), None
+    except (ValueError, OverflowError):
+        return None, "invalid Elements metadata: value is not an integer"
+
+
+def _parse_benchmark_data_line(data_line):
+    raw = data_line.strip()
+    if not raw:
+        return np.array([], dtype=np.float32), None
+    parts = raw.split(",")
+    if parts[-1].strip() == "":
+        parts.pop()
+    if not parts or any(not part.strip() for part in parts):
+        return np.array([], dtype=np.float32), "invalid tensor data: empty CSV token"
+    values = []
+    for part in parts:
+        token = part.strip()
+        if _NUMBER_TOKEN.fullmatch(token) is None:
+            return np.array([], dtype=np.float32), f"invalid tensor data token: {token}"
+        try:
+            value = float(token)
+        except (ValueError, OverflowError):
+            return np.array([], dtype=np.float32), f"invalid tensor data token: {token}"
+        if not math.isfinite(value):
+            return np.array([], dtype=np.float32), "invalid tensor data: non-finite value"
+        if abs(value) > _FLOAT32_MAX:
+            return np.array([], dtype=np.float32), "invalid tensor data: float32 overflow"
+        values.append(value)
+    data = np.array(values, dtype=np.float32)
+    if not np.isfinite(data).all():
+        return np.array([], dtype=np.float32), "invalid tensor data: float32 overflow"
+    return data, None
+
+
 def parse_benchmark_tensors(stdout):
     """The generated benchmark (x86 AND riscv — same benchmark.c) ALWAYS prints each output
     tensor with Elements/Shape metadata followed by a comma-separated values line."""
@@ -224,18 +300,19 @@ def parse_benchmark_tensors(stdout):
     for idx, line in enumerate(lines):
         if re.search(r"name:.*Data:\s*$", line.strip()):
             data_line = lines[idx + 1].strip() if idx + 1 < len(lines) else ""
-            vals = [float(x) for x in data_line.split(",") if x.strip()]
-            if vals:
-                shape_match = re.search(r"Shape:\s*\[([^\]]*)\]", line)
-                shape = None
-                if shape_match is not None:
-                    shape = tuple(int(x) for x in re.findall(r"-?\d+", shape_match.group(1)))
-                elements_match = re.search(r"Elements:\s*(\d+)", line)
-                elements = int(elements_match.group(1)) if elements_match else None
-                data = np.array(vals, dtype=np.float32)
-                if shape is not None and int(np.prod(shape, dtype=np.int64)) == data.size:
-                    data = data.reshape(shape)
-                outs.append({"data": data, "shape": shape, "elements": elements})
+            shape, shape_error = _parse_shape_metadata(line)
+            elements, elements_error = _parse_elements_metadata(line)
+            data, data_error = _parse_benchmark_data_line(data_line)
+            if shape is not None and math.prod(shape) == data.size:
+                data = data.reshape(shape)
+            outs.append({
+                "data": data,
+                "data_error": data_error,
+                "shape": shape,
+                "shape_error": shape_error,
+                "elements": elements,
+                "elements_error": elements_error,
+            })
     return outs
 
 
@@ -286,6 +363,13 @@ def judge_path_from_stdout(case_dir, path_key, stdout, stderr="", rc=0, spec=Non
         msg = _err_msg(stdout, stderr, log_dir, rc)
         _write_judge_report(log_dir, path_key, "FAIL", None, msg)
         return "FAIL", None, msg
+
+    for i, tensor in enumerate(bench_tensors):
+        error = tensor["shape_error"] or tensor["elements_error"] or tensor["data_error"]
+        if error is not None:
+            msg = f"output[{i}] {error}"
+            _write_judge_report(log_dir, path_key, "FAIL", None, msg)
+            return "FAIL", None, msg
 
     bench = [tensor["data"] for tensor in bench_tensors]
 
