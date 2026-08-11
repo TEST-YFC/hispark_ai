@@ -86,7 +86,11 @@ fi
 if [ "$build_linux" = true ]; then
     pushd ${hiSpark_ai_path}/src/mindspore-lite
     echo "========== Building for Linux =========="
-    bash build.sh -I x86_64 -j$(nproc) 
+    if [ -d build/riscv ] || [ -d build/arm ]; then
+        rm -rf build/riscv build/arm
+        echo "Removed stale cross-build dirs: build/riscv build/arm"
+    fi
+    bash build.sh -I x86_64 -j$(nproc) -i
     popd
     pushd ${hiSpark_ai_path}
     if [ ! -d "sdk" ]; then
