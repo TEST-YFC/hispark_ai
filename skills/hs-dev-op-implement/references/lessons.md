@@ -1,7 +1,7 @@
-# 历史事故教训（按症状索引）
+# 已知故障与处置规则（按症状索引）
 
-这些事故仍是实现决策和失败回流的证据库。旧文中的 step6/step7 表示原一体化流程的构建/Host 阶段；在当前职责
-划分中分别由 `hs-workflow-op-development` stage2/stage3 持有，源码根因才回流 `hs-dev-op-implement`。
+这些已知故障是实现决策和失败回流的证据库。构建与Host验证分别由
+`hs-workflow-op-development` stage2/stage3持有，只有源码根因才回流 `hs-dev-op-implement`。
 
 本文承接 SKILL.md 正文撤下的全部"实证"事故：每条 = 症状 → 根因 → 规则。**用法：卡住、报错、或想走捷径时，先按当前阶段在这里查症状**；命中就照"规则"列执行，不要重新发明绕过方案——下面每条都是某次会话真实烧掉数小时后总结的。
 
@@ -47,13 +47,13 @@
 | 跳过预检直接构建 | narrowing/未声明变量这类秒级可查的语法错误，烧了 3 轮 10–30 分钟构建才清完 | `quick_check.sh` FAIL 清零才许启动构建 |
 | 构建失败后改手敲 `export MSLITE_*` + 裸跑 `build.sh` | env 全丢、产物配置错误，连续多轮 20 分钟构建作废后才发现 | 重跑也只经 `build_mslite.sh` |
 | `wait <PID>` 判断构建完成 | 每次 Bash 工具调用是新 shell，构建进程不是其子进程，`wait` 必返 127；把 127 误读为构建退出码会造成状态误判 | 启动时保存 `RUN_ID`，只用 `--wait 540 "$RUN_ID"` 或 `--status "$RUN_ID"` |
-| 用长 `sleep` 等构建，或不带 run identity 读取固定历史日志 | 工具超时与旧 RC/日志会被误读为本轮失败 | 使用本轮 `RUN_ID`；陈旧/不完整记录开启新 run，不阻断为源码失败 |
+| 用长 `sleep` 等构建，或不带 run identity 读取固定日志 | 工具超时与其他运行的 RC/日志会被误读为本轮失败 | 使用本轮 `RUN_ID`；陈旧/不完整记录开启新 run，不阻断为源码失败 |
 | 构建期间顺手改源码 | 中途改的文件不进本轮产物，得到"改完了但测的是旧码"的假状态 | 要改代码先 `--stop`（清整个进程组；裸 `kill` 留孤儿 make 互踩，`pkill -9 -f make` 误杀无关进程） |
 | 链接失败就清缓存/删 build 碰运气 | 盲目逐级清缓存连烧 4 轮构建约 1.5 小时仍未定位根因 | 先拿到 undefined 符号名与失败 target（`--status` 链接专项），读该 target 的 CMakeLists 看源收集方式、`nm` 核实符号归属，再动手 |
 | 编译报错文件不是本会话改的，顺手修掉 | 改了子模块内无关文件换编译通过，污染范围 | 对照本会话文件清单（`git status` 佐证）；预存问题停下报告用户裁决 |
 | 重写报错文件时"简化实现" | coder 首版编译报错，重写时把广播分支整段删掉——编译变绿，缺口拖到 hs-verify-op-host 才暴露，且仅因用例恰好覆盖才被发现 | 修编译错误只许最小改动；重写后立即对照能力清单核对每条能力代码仍在 |
 | 工具链没搜到，上报"不存在"或退化 x86-only | 搜索命令被权限拒绝 / `-type f` 漏符号链接，得出假结论；x86-only 不产出交叉库，等于没验证 | 命令被拒或无果 = 未知不是否定证据；脚本报"未找到"的唯一动作 = 停下向用户要路径 |
-| 用户手工修复后继续，`--status` 把旧失败当成本轮失败 | 固定 RC/日志没有 run identity 和源码新鲜度 | 新脚本校验 RUN_ID、日志头、RC 与源码指纹；修复后生成新 RUN_ID 重建，旧记录只算历史 |
+| 用户手工修复后继续，`--status` 把其他运行的失败当成本轮失败 | 固定 RC/日志没有 run identity 和源码新鲜度 | 脚本校验 RUN_ID、日志头、RC 与源码指纹；修复后生成新 RUN_ID 重建，其他运行记录不作为本轮结论 |
 | 新建 `nnacl_c/{base,fp32,int8}/*.c` 后直接增量 build | nnacl_c 的 CMake 用 `file(GLOB ...)` 收集源文件，GLOB 只在 **configure 期**展开；增量 `make` 不重配 → 新 `.c` 静默不参与编译，链接期缺符号、或更糟用到旧对象得假结论 | 新增源文件后先 `touch` 对应目录的 `CMakeLists.txt`（强制 re-glob/重配）再 `build_mslite.sh`；新 `.c` 用 `NNACL_OK/ERR` 记得 `#include "nnacl_c/errorcode.h"`（op_base.h 不含，quick_check 秒级抓） |
 | 构建后之前全绿的用例成片 converter 报错 / 报 `gen_lite_ops.h: No such file` / converter 一启动就崩，于是去改算子代码 | `build.sh` 的 `update_submodule` 跑 `git submodule update --init --remote`，把受管 `mindspore` 子模块从基线 commit 静默推进到上游最新（如 `2365375a→0487e01a`）：converter 行为漂移、之前全绿用例成片失败，新 commit 还与已 configure 的 `build/` 不兼容报缺生成头。一次会话误判成算子 bug——先改 INT8/fp32 coder，再 `git checkout` 子模块到不同 commit、`git stash`、改 `build.sh`、反复清 `build/` 重建，越陷越深、数小时无果 | **成片回归先查环境不查算子。** `build_mslite.sh` 已在构建前记录子模块 SHA，漂移即 `[SUBMOD-LOCK] exit 7` 硬停；命中即按提示把子模块 `checkout` 回构建前 SHA、注释 `build.sh` 第一处 `update_submodule` 调用后经本脚本重建（红线 4）。**禁止** `git checkout` 子模块到别的 commit / `git stash` / 反复重建试错；改码前先用一个已知用例确认基线可过 |
 

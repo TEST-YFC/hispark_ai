@@ -43,6 +43,7 @@ import re
 import shlex
 import shutil
 import signal
+import uuid
 import subprocess
 import sys
 from pathlib import Path
@@ -115,9 +116,9 @@ def _check_pkg_freshness(pkg: str):
                 "[ERROR] MSLITE_PKG 解压包比其旁的构建产物 tar.gz 旧（解压发生在最近一次构建之前）。\n"
                 f"        包:     {pkg_path}\n"
                 f"        tar.gz: {tb}  (更新)\n"
-                "        在旧 converter_lite 上跑出的结论不反映当前代码——这是历史上真实发生过的假结论来源。\n"
+                "        在陈旧 converter_lite 上跑出的结论不反映当前代码。\n"
                 "        重新解压后再跑（build_mslite.sh 构建成功后会自动解压；或手动 rm -rf 包目录后 tar xzf）。\n"
-                "        确要用旧包对比历史行为时，OP_VERIFY_ALLOW_STALE=1 显式放行。")
+                "        确要用陈旧包做显式兼容性对比时，OP_VERIFY_ALLOW_STALE=1 放行。")
 
 
 def resolve_mslite_pkg(start: Path) -> str:
@@ -656,6 +657,36 @@ def _assert_target_source_op(spec, framework, model_file):
     _assert_target_builtin(spec, framework, model_file)
 
 
+def _verify_post_conversion_identity(spec, framework, build_dir):
+    """Prove that conversion preserved the target or produced the declared rewrite.
+
+    Source-graph identity alone is insufficient: a converter may fold or normalize
+    the node afterwards.  Each spec declares marker strings expected in generated
+    model/net sources (target kernel for a blocked-fold case, or replacement marker
+    for an allowed rewrite).  Persist the evidence for board handoff and fail the
+    path when the declaration cannot be observed.
+    """
+    declaration = getattr(spec, "POST_CONVERSION_IDENTITY", None)
+    if not declaration:
+        return "UNPROVEN", "op_spec must declare POST_CONVERSION_IDENTITY"
+    markers = declaration if isinstance(declaration, list) else declaration.get("markers", [])
+    markers = [str(x) for x in markers if str(x).strip()]
+    files = sorted(Path(build_dir).glob("**/*.c")) + sorted(Path(build_dir).glob("**/*.h"))
+    blob = "\n".join(p.read_text(errors="ignore") for p in files)
+    found = [m for m in markers if m in blob]
+    evidence = {
+        "framework": framework, "markers": markers, "found": found,
+        "files": [str(p) for p in files],
+        "status": "PASS" if found else "UNPROVEN",
+    }
+    out = Path(build_dir) / "conversion_identity.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n")
+    if not found:
+        return "UNPROVEN", f"post-conversion markers not found in generated sources: {markers}"
+    return "PASS", f"post-conversion identity markers found: {found}"
+
+
 def _names_from_value_infos(value_infos):
     return [getattr(v, "name", str(v)) for v in value_infos]
 
@@ -779,6 +810,13 @@ def run_path(framework, path_key, case_dir, mslite_pkg, model_file,
         framework, path_key, build_dir, log_dir, mslite_pkg, model_file, cfg_file, input_files,
         case_dir=case_dir, spec_path=getattr(spec, "__file__", None),
     )
+    # Preserve the converter/compiler's first real failure and its stderr.  Do
+    # not replace an environment/tool failure with a secondary identity error.
+    if rc != 0:
+        return judge_path_from_stdout(case_dir, path_key, stdout, stderr, rc, spec=spec, build_dir=build_dir)
+    identity, identity_msg = _verify_post_conversion_identity(spec, framework, build_dir)
+    if identity != "PASS":
+        return "FAIL", None, identity_msg
     return judge_path_from_stdout(case_dir, path_key, stdout, stderr, rc, spec=spec, build_dir=build_dir)
 
 
@@ -978,7 +1016,7 @@ _SUMMARY_LINE_RE = re.compile(r"^(\w+)\s+tc(\S+)\s+(\S+)\s+(PASS|FAIL)\b")
 def check_case_regression(prev_summary: Path, spec, frameworks):
     """防"删用例换绿"闸门：本轮用例集相比上一轮 verify_summary.txt 缩水 → 拒绝开跑。
 
-    历史事故：广播用例实跑 FAIL 后被从 op_spec 删除，重跑得到 "0 FAIL" 当作完成上报。
+    防止广播用例实跑 FAIL 后被从 op_spec 删除，再以重跑得到的 "0 FAIL" 当作完成上报。
     VERDICT 的分母是能力覆盖，不是 op_spec 现存用例——删用例不会让缺陷消失，只会让结论失效。
     确属有意缩减（须经用户裁决、汇报中列为覆盖缺口）时，OP_VERIFY_ACK_REDUCED=1 显式放行，
     豁免行会写进本轮 VERDICT 留痕。返回值：要附进 verdict 的留痕行（无缩水 / 未 ack 时为空）。
@@ -1138,7 +1176,11 @@ def main():
     ap.add_argument("--driver-rc", type=int, default=0,
                     help="--judge-case 对应 _run.sh driver 退出码")
     ap.add_argument("-v", "--verbose", action="store_true")
+    ap.add_argument("--run-id", default="", help="本轮唯一任务 ID；后台运行和日志追踪必填")
     args = ap.parse_args()
+
+    run_id = args.run_id or f"host-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:8]}"
+    print(f"RUN_ID={run_id}", flush=True)
 
     threshold_overridden = (
         args.threshold_fp32 != DEFAULT_THRESHOLD_FP32
@@ -1283,7 +1325,7 @@ def main():
     cap_block = (["-" * 60, *cap_lines] if cap_lines else [])
     # HARNESS_EXIT 紧跟 VERDICT 写入日志与 summary：nohup 后台模式下进程退出码不可观测，
     # 这一行是调用方唯一可靠的退出码来源（自行 grep FAIL 计数会把 "0 FAIL" 也算成失败）。
-    report = "\n".join([header, *summary_lines, *cap_block, "-" * 60, *ack_lines, verdict,
+    report = "\n".join([f"RUN_ID={run_id}", *header.splitlines(), *summary_lines, *cap_block, "-" * 60, *ack_lines, verdict,
                         f"HARNESS_EXIT={exit_code}"])
     (project_dir / "verify_summary.txt").write_text(report + "\n")
     print("\n" + report)

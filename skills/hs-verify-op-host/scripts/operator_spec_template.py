@@ -42,6 +42,11 @@ Required when the corresponding framework case list is non-empty:
                                         argmax/select) legitimately print cos=1.0 even with
                                         genuine int8, so symbol presence — not the cosine — is
                                         what proves the int8 path ran.
+    POST_CONVERSION_IDENTITY: {"markers": [str, ...]}  one or more symbols/node markers
+                                        expected in generated Micro C sources after conversion;
+                                        required to distinguish target execution from folding or
+                                        rewrite. If no rewrite is possible, declare the reason in
+                                        the capability checklist's folding_and_rewrite N/A entry.
 
 Design rules (see SKILL.md 五):
   * Two case sets are INDEPENDENT — ONNX uses ONNX spec/NCHW, TFLite uses TFLite spec/NHWC.
@@ -74,6 +79,9 @@ TFLITE_TARGET_BUILTIN = 117
 # 不是默认推断的 "HardSwishInt8"。这正是需要显式声明 INT8_KERNEL_SYMBOL 的典型场景——
 # 默认值（f"{OP_NAME}Int8"）对独立 PrimType 算子（如 Hardmax→HardmaxInt8）才成立。
 INT8_KERNEL_SYMBOL = "HSwishInt8"
+# Marker(s) required in generated Micro C after converter_lite.  Replace with
+# the target kernel/rewrite symbols for the operator under test.
+POST_CONVERSION_IDENTITY = {"markers": ["HSwishInt8", "HardSwish"]}
 
 # ---- ONNX cases (NCHW) -------------------------------------------------------
 ONNX_TEST_CASES = [

@@ -65,6 +65,12 @@ _NUMBER_TEXT = r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?"
 _NUMBER_TOKEN = re.compile(_NUMBER_TEXT)
 _MAX_PRINTED_DIM = 2**31 - 1
 _FLOAT32_MAX = float(np.finfo(np.float32).max)
+_OH_AI_DTYPE_TO_NUMPY = {
+    30: np.dtype(np.bool_), 32: np.dtype(np.int8), 33: np.dtype(np.int16),
+    34: np.dtype(np.int32), 35: np.dtype(np.int64), 37: np.dtype(np.uint8),
+    38: np.dtype(np.uint16), 39: np.dtype(np.uint32), 40: np.dtype(np.uint64),
+    42: np.dtype(np.float16), 43: np.dtype(np.float32), 44: np.dtype(np.float64),
+}
 
 
 def _parse_shape_metadata(line, prefix=r"Shape:"):
@@ -197,6 +203,81 @@ def parse_ai_mcu_tensors(text):
     当前协议只能无歧义表达单输出、单轮推理；多个 Data 行会明确拒绝。
     """
     lines = text.splitlines()
+    indexed_protocol = any(re.fullmatch(
+        r"\s*\[AI_MCU\]\s*OUTPUT:\s*index=[0-9]+\s*", line,
+    ) for line in lines)
+    if indexed_protocol:
+        tensors = []
+        current = None
+        seen = set()
+        for line in lines:
+            output_match = re.fullmatch(
+                r"\s*\[AI_MCU\]\s*OUTPUT:\s*index=([0-9]+)\s*", line,
+            )
+            if output_match:
+                index = int(output_match.group(1))
+                if current is not None and current.get("data") is None:
+                    current["data_error"] = "output block has no Data line"
+                    tensors.append(current)
+                current = {
+                    "index": index, "data": None, "data_error": None,
+                    "shape": None, "shape_error": None,
+                    "elements": None, "elements_error": None,
+                    "dtype": None, "dtype_error": None,
+                }
+                if index in seen:
+                    current["data_error"] = f"duplicate output index: {index}"
+                seen.add(index)
+                continue
+            if current is None:
+                continue
+            dtype_match = re.fullmatch(
+                r"\s*\[AI_MCU\]\s*DType:\s*([0-9]+)\s*", line,
+            )
+            if dtype_match:
+                current["dtype"] = int(dtype_match.group(1))
+                if current["dtype"] not in _OH_AI_DTYPE_TO_NUMPY:
+                    current["dtype_error"] = f"unsupported DType metadata: {current['dtype']}"
+                continue
+            if "[AI_MCU] DType:" in line:
+                current["dtype_error"] = "invalid DType metadata"
+                continue
+            parsed_shape, parsed_error = _parse_shape_metadata(
+                line, prefix=r"\[AI_MCU\]\s*Shape:",
+            )
+            if parsed_shape is not None or parsed_error is not None:
+                current["shape"], current["shape_error"] = parsed_shape, parsed_error
+                continue
+            elements_match = re.fullmatch(
+                r"\s*\[AI_MCU\]\s*Elements:\s*([0-9]+)\s*", line,
+            )
+            if elements_match:
+                current["elements"] = int(elements_match.group(1))
+                continue
+            if "[AI_MCU] Elements:" in line:
+                current["elements_error"] = "invalid Elements metadata"
+                continue
+            data, data_error = _parse_ai_mcu_data_line(line)
+            if data is not None:
+                current["data"], current["data_error"] = data, data_error
+                if current["shape"] is not None and math.prod(current["shape"]) == data.size:
+                    current["data"] = data.reshape(current["shape"])
+                tensors.append(current)
+                current = None
+        if current is not None:
+            current["data_error"] = current["data_error"] or "output block has no Data line"
+            tensors.append(current)
+        tensors.sort(key=lambda item: item["index"])
+        if [item["index"] for item in tensors] != list(range(len(tensors))):
+            if tensors:
+                tensors[0]["data_error"] = "output indices must be contiguous from zero"
+        for tensor in tensors:
+            if tensor["elements"] is None and tensor["elements_error"] is None:
+                tensor["elements_error"] = "Elements metadata missing"
+            if tensor["dtype"] is None and tensor["dtype_error"] is None:
+                tensor["dtype_error"] = "DType metadata missing"
+        return tensors
+
     shape = None
     shape_error = None
     tensors = []
@@ -217,6 +298,8 @@ def parse_ai_mcu_tensors(text):
                 "shape_error": shape_error,
                 "elements": None,
                 "elements_error": None,
+                "dtype": None,
+                "dtype_error": None,
             })
     if len(tensors) > 1:
         tensors[0]["data_error"] = (
@@ -295,7 +378,8 @@ def main():
 
     for i, (tensor, ref) in enumerate(zip(device_tensors, ref_outputs)):
         device = tensor["data"]
-        error = tensor["shape_error"] or tensor["elements_error"] or tensor["data_error"]
+        error = (tensor["shape_error"] or tensor["elements_error"] or
+                 tensor.get("dtype_error") or tensor["data_error"])
         if error is not None:
             print(
                 "ACCURACY_VERDICT=FAIL  "
@@ -327,6 +411,13 @@ def main():
                 "ACCURACY_VERDICT=FAIL  "
                 f"(output[{i}] shape mismatch: "
                 f"device={tensor['shape']} vs reference={ref.shape})"
+            )
+            sys.exit(1)
+        if tensor.get("dtype") is not None and _OH_AI_DTYPE_TO_NUMPY[tensor["dtype"]] != ref.dtype:
+            print(
+                "ACCURACY_VERDICT=FAIL  "
+                f"(output[{i}] dtype mismatch: device={_OH_AI_DTYPE_TO_NUMPY[tensor['dtype']]} "
+                f"vs reference={ref.dtype})"
             )
             sys.exit(1)
 

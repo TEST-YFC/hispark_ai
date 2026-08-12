@@ -45,7 +45,7 @@ print([max(m.OperatorCodes(i).BuiltinCode(),m.OperatorCodes(i).DeprecatedBuiltin
 产出「输入形态 → 实际 builtin」映射表并入 decision4 呈现。三条用法：
 
 1. 每个 builtin **只为探针证实可达的形态**建链路、列能力清单与用例。
-2. 探针逼不出的形态（典型：仅 legacy API 可达的特殊模式）列为**覆盖缺口报告用户裁决**，不自作主张扩 kernel/infer。
+2. 探针逼不出的形态（典型：仅兼容 API 可达的特殊模式）列为**覆盖缺口报告用户裁决**，不自作主张扩 kernel/infer。
 3. 该表直接复用为 op_spec 的 docstring 证据与 `TFLITE_TARGET_BUILTIN` 声明（一次探针，三处受益）。
 
 环境无 TensorFlow 时（hs-verify-op-host 本就依赖它，正常都有），把"未探针、按文档全集裁决"作为风险显式写进 decision4 报告。

@@ -1,7 +1,7 @@
 # 故障排查：错误信息 → 根因
 
-本表用于 workflow 将构建或 Host 失败回流实现 leaf 后定位根因。先保存原始错误，再按表做最小源码修复；修复后
-重新执行实现质量门禁并交回 workflow 构建和验证。本 leaf 不直接修改 Host harness，也不自行烧录。
+本表用于 workflow 将构建或 Host 失败回流算子实现专项 Skill 后定位根因。先保存原始错误，再按表做最小源码修复；修复后
+重新执行实现质量门禁并交回 workflow 构建和验证。本专项 Skill 不直接修改 Host harness，也不自行烧录。
 
 很多算子 bug 在 codegen 时（`session.cc::CreateOpCoders` 跑 ③populate、④infer 再选 ⑥opcoder）才暴露。按日志对照根因；每行的"修复"列指向 `implementation-guide.md` 对应层的细节。
 
@@ -17,7 +17,7 @@
 | **构建**报 `'<Op>T' is not a member of 'mindspore::schema'` / `has no member named 'value_as_<Op>'`，而 ops_def.cc 的 `OP_TYPE/OP_SCHEMA_DEF` 明明已正确添加 | CMake 不追踪 `ops_def.cc → ops.fbs → model_generated.h` 的再生成链，`build/schema/{,inner/}model_generated.h` 是上一轮的陈旧缓存——重跑构建**不会自愈**（实证：烧一整轮构建才定位） | `build_mslite.sh` 已按 mtime 自动删缓存头（ops_def.cc 新于生成头即删）；手工处置 = `rm -f build/schema/model_generated.h build/schema/inner/model_generated.h` 后仍经脚本重跑。预检阶段的同型报错由 `quick_check.sh` 判 `SCHEMA_PENDING`，不阻塞、不要试图在预检层"修复"它 |
 | 算子在生成代码里凭空消失（parser 明明跑了） | 激活子类型 parser 返回了独立 op 类，MetaGraph 序列化时静默丢弃；或某融合 pass 重写了子图 | parser 改返回 `ops::Activation`（见实现指南 ②）；或审计 `tools/optimizer/fusion/`（见 decision3 融合判定） |
 | hs-verify-op-host 里 MCU 端 `make failed`（但 `converter_lite` 转换成功） | ⑥ opcoder 的 `Collect()` 漏列了生成代码引用的头/源（如 parameter 头），或生成的 C 用了未 Collect 的符号——**宿主侧转换通过 ≠ 目标侧编译通过**，遗漏只在 MCU `make` 暴露 | 看 `benchmark_work/<Op>_*/stderr.log` 找缺失符号/头，在 `Collect()` 补齐生成代码用到的每个 `.h`/`.c`；标量属性按实现指南 ⑥′ 直接传值可免收 parameter 头 |
-| hs-verify-op-host 某路径 `error while loading shared libraries` / `c_api/model_c.h: No such file` | `MSLITE_PKG` 指向了原始 `build/` 而非解压包 | 回流 workflow stage2，改指 `output/mindspore-lite-<ver>-linux-x64/`；详见 `<hs-workflow-op-development>/references/build-and-toolchain.md`。 |
+| hs-verify-op-host 某路径 `error while loading shared libraries` / `c_api/model_c.h: No such file` | `MSLITE_PKG` 指向了原始 `build/` 而非解压包 | 回流 workflow stage3，改指 `output/mindspore-lite-<ver>-linux-x64/`；详见 `<hs-workflow-op-development>/references/build-and-toolchain.md`。 |
 | `malloc(): corrupted top size` / `sysmalloc: Assertion failed`，发生在 riscv_int8 全量化（bias_correction）阶段，**大张量崩、小张量侥幸过**，fp32 与 x86 路正常，ASAN 下因分配向上取整反而不崩 | 首输入为 condition/index（bool/int）的算子按 `inputs[0]` 派发选中了 **fp32** kernel，它把 int8 数据缓冲当 `float*` 写（4 字节/元素）→ 堆越界 | 固定键（bool）的 runtime kernel 内部按**数据张量** `in_[1]->data_type_` 分支，int8 走 ⑤‴ 模板**逐输入重量化**；不要给 int8 单独注册 kernel（死代码）。见实现指南 ⑤″/⑤‴ |
 | converter **一启动就 SIGSEGV / `SEGV_ACCERR`**，无任何日志，解析模型前就崩，fp32-only 变体同样崩，注释掉 `REG_KERNEL_CREATOR` 就不崩 | 新 `PrimType_Xxx` 放进了 inner 段（10000+）或没把 `PrimType_MAX` +1 → kernel 注册表 `g_kernelCreatorRegistry[PrimType_MAX][16]` 在静态初始化期被越界写穿（`nnacl_c/kernel.c`） | 把 `PrimType_Xxx` 移到 `op_base.h` **标准段**末尾（当前最大值 +1），并 `PrimType_MAX = PrimType_Xxx + 1`（见实现指南 ① 的 ⚠️ 两区段说明） |
 | fp32 全过；`riscv_int8` **仅「输出分布≠输入分布」判别用例 FAIL**（cos≈0.9x），其余 int8 用例 ≥0.99 | int8 通路是字节拷贝/漏重量化——输入侧 qparams 被原样带进输出，形成仿射失真；同分布用例因 scale 恰好相近而侥幸通过 | 按实现指南 ⑤‴ 模板逐输入重量化；量化 trait 不构成豁免（int8 约定 §9） |

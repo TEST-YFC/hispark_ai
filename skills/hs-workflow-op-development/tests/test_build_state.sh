@@ -15,25 +15,36 @@ echo baseline > "${REPO_ROOT}/tracked.txt"
 git -C "${REPO_ROOT}" add tracked.txt
 git -C "${REPO_ROOT}" commit -qm baseline
 
+fingerprint_repo() {
+  local repo="$1" label="$2"
+  echo "${label}:HEAD=$(git -C "${repo}" rev-parse HEAD)"
+  git -C "${repo}" diff --no-ext-diff --raw --no-abbrev -z HEAD --
+  echo "${label}:TRACKED_CONTENT"
+  git -C "${repo}" diff --no-ext-diff --name-only -z HEAD -- |
+    while IFS= read -r -d '' rel; do
+      [ -f "${repo}/${rel}" ] || [ -L "${repo}/${rel}" ] || continue
+      printf '%s\0' "${repo}/${rel}"
+    done | xargs -0 -r sha256sum --
+  echo "${label}:UNTRACKED_NAMES"
+  git -C "${repo}" ls-files --others --exclude-standard -z
+  echo "${label}:UNTRACKED_CONTENT"
+  git -C "${repo}" ls-files --others --exclude-standard -z |
+    while IFS= read -r -d '' rel; do printf '%s\0' "${repo}/${rel}"; done |
+    xargs -0 -r sha256sum --
+  git -C "${repo}" ls-files --others --exclude-standard -z |
+    while IFS= read -r -d '' rel; do printf '%s\0' "${repo}/${rel}"; done |
+    xargs -0 -r stat -c 'MODE:%a:%n' --
+}
+
 fingerprint() {
   # Ask the production script to compute it by starting a deliberately invalid
   # build would mutate state, so mirror its payload here for this tiny repo.
   {
-    echo "ROOT_HEAD=$(git -C "${REPO_ROOT}" rev-parse HEAD)"
-    git -C "${REPO_ROOT}" diff --no-ext-diff --binary HEAD --
-    while IFS= read -r -d '' file; do
-      printf 'UNTRACKED:%s:' "${file}"
-      sha256sum "${REPO_ROOT}/${file}"
-    done < <(git -C "${REPO_ROOT}" ls-files --others --exclude-standard -z)
+    fingerprint_repo "${REPO_ROOT}" ROOT
     while read -r path; do
       [ -n "${path}" ] || continue
-      echo "SUBMODULE:${path}:HEAD=$(git -C "${REPO_ROOT}/${path}" rev-parse HEAD)"
-      git -C "${REPO_ROOT}/${path}" diff --no-ext-diff --binary HEAD --
-      while IFS= read -r -d '' file; do
-        printf 'SUBMODULE_UNTRACKED:%s/%s:' "${path}" "${file}"
-        sha256sum "${REPO_ROOT}/${path}/${file}"
-      done < <(git -C "${REPO_ROOT}/${path}" ls-files --others --exclude-standard -z)
-    done < <(git -C "${REPO_ROOT}" submodule status --recursive 2>/dev/null | awk '{print $2}')
+      fingerprint_repo "${REPO_ROOT}/${path}" "SUBMODULE:${path}"
+    done < <(git -C "${REPO_ROOT}" submodule status 2>/dev/null | awk '{print $2}')
   } | sha256sum | awk '{print $1}'
 }
 
@@ -117,5 +128,17 @@ echo sub-changed-again >> "${REPO_ROOT}/modules/sub/sub.txt"
 echo "[SUBMOD-LOCK] test drift" >> "${STATE_DIR}/mslite_build.log"
 echo "drift-run 7" > "${STATE_DIR}/mslite_build.rc"
 expect_rc_and_text 7 SUBMOD-DRIFT --status drift-run
+
+# --stop must clear startup-stage descendants even before the build PGID file exists.
+setsid bash -c 'sleep 60 & wait' &
+early_wrapper=$!
+printf '%s\n' "${early_wrapper}" > "${STATE_DIR}/mslite_build.pid"
+rm -f "${STATE_DIR}/mslite_build.pgid"
+expect_rc_and_text 0 STOPPED --stop
+if kill -0 "${early_wrapper}" 2>/dev/null || ps -g "${early_wrapper}" -o pid= 2>/dev/null | grep -q .; then
+  echo "FAIL: --stop left startup-stage process-group descendants" >&2
+  kill -KILL -- "-${early_wrapper}" 2>/dev/null || true
+  exit 1
+fi
 
 echo "BUILD_STATE_TEST=PASS"

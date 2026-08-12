@@ -569,8 +569,9 @@ def _validate_facts(
     if facts.get("schema_version") != 1:
         issues.add("schema_version")
     if facts.get("mode") not in {
+        "integrated-initial",
         "integrated-final",
-        "legacy-sync",
+        "artifact-sync",
     }:
         issues.add("mode")
     if publication == "final":
@@ -1205,7 +1206,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--manual", type=Path)
     parser.add_argument(
         "--publication",
-        choices=("draft", "migration-draft", "final"),
+        choices=("draft", "evidence-draft", "final"),
         default="draft",
     )
     args = parser.parse_args(argv)

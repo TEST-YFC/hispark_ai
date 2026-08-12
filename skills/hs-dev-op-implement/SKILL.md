@@ -1,7 +1,7 @@
 ---
 name: hs-dev-op-implement
 description: >-
-  Implement or repair MindSpore Lite Micro operator source code for HiSpark.AI, including source-entry analysis, PrimitiveType reuse decisions, parser/populate/infer/kernel/opcoder/quantizer changes, INT8 paths, and implementation quality gates. Use this leaf skill only when the user explicitly names hs-dev-op-implement, asks to only analyze or implement operator code, or an operator workflow routes an implementation defect back here. Generic requests such as “适配一个算子”, “新增算子”, “支持算子”, “port an operator”, or requests that also include testing, documentation, build, flash, or board verification belong to hs-workflow-op-development instead.
+  Implement or repair MindSpore Lite Micro operator source code for HiSpark.AI, including source-entry analysis, PrimitiveType reuse decisions, parser/populate/infer/kernel/opcoder/quantizer changes, INT8 paths, and implementation quality gates. Use this stage-specific skill only when the user explicitly names hs-dev-op-implement, explicitly requests source-only work with no testing/build/documentation, or an operator workflow routes an implementation defect back here. Generic requests such as “适配一个算子”, “新增算子”, “支持算子”, “port an operator”, or requests that also include testing, documentation, build, flash, or board verification belong to hs-workflow-op-development instead.
 ---
 
 # MindSpore Lite 算子实现
@@ -13,6 +13,12 @@ description: >-
 ```text
 ① Schema  ② Parser  ③ Populate  ④ Infer  ⑤ Kernel  ⑥ OpCoder  ⑦ Quantizer
 ```
+
+本 skill 的默认触发范围是“只分析/只实现算子源码”。用户只说“实现算子 X”时，若没有
+明确“只实现、不验证/不构建/不写文档”，应回到 `hs-workflow-op-development`；若用户明确
+只实现源码，则在开始前说明不会自动生成测试、构建、烧录或最终文档。带有“在 WS63 上运行”、
+“编译并测试”、“完整流程”、“生成文档”或“烧录/板测”的请求一律交给 workflow，不在本
+skill 内截断流程。
 
 路径以 MindSpore Lite 代码根为基准，即包含 `schema/`、`tools/` 和 `src/litert/` 的目录。HiSpark.AI 仓库中的常见位置是 `src/mindspore-lite/mindspore-lite/`。`<skill_root>` 表示本 skill 目录。
 
@@ -26,11 +32,11 @@ description: >-
 | 实现阶段 code style 与安全门禁 | 烧录固件 | `hs-dev-flash`，由 workflow 调用 |
 | 输出能力清单和实现交接单 | 板端精度判定 | `hs-verify-op-board` |
 
-如果收到超出边界的任务，只完成被明确指定的 leaf 阶段，并输出交接信息；不要自行串联其他 skill。
+如果收到超出边界的任务，只完成被明确指定的专项阶段，并输出交接信息；不要自行串联其他 Skill。
 
 ## 用户可见进度
 
-仅分析模式执行 step0-step3；实现模式执行 step0-step5。阶段完成前先展示门控证据，再勾选 todo。
+仅分析模式执行 step0-step3；实现模式执行 step0-step6。阶段完成前先展示门控证据，再勾选 todo。
 
 ```markdown
 待办[<implementation_unit>]:
@@ -39,7 +45,8 @@ description: >-
 - [ ] step2 完成 grouping、复用/新建和层集裁决
 - [ ] step3 冻结链路分析与能力清单
 - [ ] step4 编写或修复算子源码
-- [ ] step5 通过实现质量门禁
+- [ ] step5 完成编码后交叉代码审查
+- [ ] step6 通过实现质量门禁
 ```
 
 ## 两层任务对象
@@ -62,15 +69,21 @@ description: >-
 │   ├── link-analysis.md
 │   ├── existing-capability-review.md
 │   ├── implementation-contract.md
+│   ├── operator-manual-facts.json  # 编码前由文档skill冻结
+│   ├── operator-manual-draft.md    # 编码前审计草稿
 │   ├── reference-impl.md          # 计算路径变化时
 │   └── builtin-probe.md           # 同族多 builtin 时
 ├── scripts/
-│   └── capability_checklist.json
+│   ├── capability_checklist.json
+│   └── op_spec.py                  # 编码前冻结的计划版用例
 └── logs/
     └── scan_op_<Op>.log
 ```
 
-`op_spec.py` 属于 host 验证 skill；算子手册 facts/Markdown 属于文档 skill；构建包、固件和烧录结果属于 workflow 及其对应 leaf skill。本 skill 不预先代写这些产物。
+`op_spec.py`的语义和执行属于Host验证skill，但编码前必须按能力清单生成计划版并通过
+机械校验；本skill必须触发并核对该交接产物，不能等源码写完后才设计
+用例。算子手册facts/Markdown仍由文档skill生成，但编码前必须调用
+`integrated-initial`冻结facts和草稿。构建包、固件和烧录结果属于workflow及对应leaf。
 
 ## 安全红线
 
@@ -79,7 +92,7 @@ description: >-
 1. 标准 ONNX/TFLite 算子不得使用 `ops::Custom`、`PrimType_Inner_*` 或 `REG_BUILIN_CUSTOM_CODER` 走捷径。
 2. 存在性、语义、注册可达性只认可本次查证；文件存在不等于已注册或可达。
 3. 不通过 `git checkout`、`git stash`、`git submodule update` 改写受管子模块状态，不删除整个 build 目录碰运气。
-4. 不为编译通过删除功能分支，不把旧 kernel 当作天然正确；复用即接管该实现单元的存量质量。
+4. 不为编译通过删除功能分支，不把已有 kernel 当作天然正确；复用即接管该实现单元的存量质量。
 5. 浮点输入算子默认实现真实 INT8 通路；原生整数算子按规格逐 dtype 覆盖，不能把“量化豁免”解释成跳过原生 `int8/uint8/int32/...`。
 6. 不删除校验、边界保护或错误传播来压住失败；不以未运行的猜测宣称“不支持某形态”。
 7. 不在源码、日志或文档中写入密钥、令牌、私有地址、用户数据或内部单号；外部输入用于路径、长度、索引、格式串或进程参数前必须校验。
@@ -93,7 +106,8 @@ description: >-
 | step2 | 冻结实现决策 | source grouping；decision2 复用/新建；decision3 层集开关 | `docs/decision.md` 与逐层做/跳表 |
 | step3 | 冻结能力合同 | 生成 spec、链路分析和能力清单；review 所有已有/复用能力；必要时做 builtin 探针 | spec、link analysis、existing capability review、capability checklist |
 | step4 | 实现源码 | 冻结 implementation contract；必要时对比参考实现；按七层模板最小修改 | 源码 diff 与能力落点 |
-| step5 | 实现质量门禁 | 运行快速预检、code style、安全和 diff 审计 | `IMPLEMENT_GATE=PASS` 或结构化 FAIL |
+| step5 | 编码后交叉审查 | 审核注册键、分支可达性、量化归属、折叠/重写和死代码 | `docs/code-review.md` |
+| step6 | 实现质量门禁 | 运行快速预检、code style、安全和 diff 审计 | `IMPLEMENT_GATE=PASS` 或结构化 FAIL |
 
 ## step0：冻结范围
 
@@ -126,7 +140,7 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 - `reviewed_layers`：逐层列出已有能力和实际文件/符号；
 - `definition_evidence`：核心实现、dtype/shape/属性/可选输入/量化参数和错误传播是否符合本次合同；
 - `registration_evidence`：目标 parser、runtime、Micro codegen 和量化路径是否真实可达，有无重复注册或死代码；
-- `code_findings`：边界检查、rank、内存、返回值、code style、安全红线和历史缺陷模式；
+- `code_findings`：边界检查、rank、内存、返回值、code style、安全红线和已知缺陷模式；
 - `disposition`：每层只能是 `REUSE_REVIEWED`、`FIX_REQUIRED` 或 `N/A`，并映射 capability ID。
 
 任何已有层存在 `FIX_REQUIRED` 都进入 step4 修复范围。禁止因为“这不是本次新增代码”而延期；Host 测试前才首次阅读存量实现，说明 step3 review 没完成。
@@ -157,15 +171,110 @@ python3 <skill_root>/scripts/gate_artifacts.py \
 
 只有每个 framework 都输出 `ARTIFACT_GATE=PASS` 才能动源码。能力清单或 contract 后续变化时，先重跑本门禁再继续。
 
+在任何①-⑦源码动笔前，继续完成两个不可删减的编码前门禁：
+
+1. 使用 `hs-verify-op-host/scripts/operator_spec_template.py`作为唯一模板，把step3能力
+   清单逐项落实到 `<opdir>/scripts/op_spec.py`。每条 `covered_by`必须指向计划版中的
+   真实case ID，非平凡能力保留可机械核对的 `match`。随后运行：
+
+   ```bash
+   python3 <hs-verify-op-host>/scripts/validate_op_spec.py <opdir>
+   ```
+
+   只有 `OP_SPEC_GATE=PASS`才能继续。能力清单是单向真值：修正或补充op_spec，禁止
+   为迁就现有case反向删除、改弱能力行。
+
+2. 调用 `hs-design-op-manual mode=integrated-initial`，传入冻结的绝对 `code_root`、
+   `opdir`、算子名、implementation unit和framework scope。它必须生成/刷新：
+
+   ```text
+   <opdir>/docs/operator-manual-facts.json
+   <opdir>/docs/operator-manual-draft.md
+   ```
+
+   并完成facts/content/case三项audit。只有收到：
+
+   ```text
+   OP_MANUAL_SYNC=PASS mode=integrated-initial publication=draft
+   ```
+
+   且两份文件存在，才允许编码。草稿不是完成态，但能防止实现、测试和公开规格在
+   编码过程中各自发明一套事实。
+
 每一层动笔前打开 `references/implementation-guide.md` 的对应小节，以仓内同族实现和模板为底稿。INT8 另读 `references/int8-coder-conventions.md`；fusion 另读 `references/optimizer-fusion-template.md`。
+
+写Parser前必须把规格中的属性、输入顺序和可选输入逐项审计并展示，不能只写“Parser
+已实现”：
+
+| 项目 | 必须记录的结论 |
+|---|---|
+| 每个属性 | 支持并转发到哪个字段 / 明确暂不支持并在Parser注释留痕 |
+| 每个opset版本变化 | 仅默认值变化 / 计算语义变化，分别列出，不可合并描述 |
+| 输入顺序 | source entry顺序 → Primitive/Parameter顺序的逐项映射 |
+| optional input | initializer还是dynamic input；缺省时由哪层补默认值 |
+| dtype/layout | Parser是否只搬运，还是需要显式转换/重排；与contract逐字一致 |
+
+项目策略是：默认值与语义按最新opset实现，不临时发明opset分支；扫描发现
+版本差异时Parser加入 `Project policy: parse per opset <N> semantics regardless of model
+opset.` 注释，语义差异另写事实注释。属性审计必须落到 `decision.md`或
+`implementation-contract.md`，并由 `gate_artifacts.py --stage pre-code`机械验收。
+
+组合算子还必须完成构造型fusion审计；任何算子都要完成消除/重写型pass审计。命中
+消除型pass时，必须记录触发/存活条件，并在能力清单设计“一条pass不触发且真到Kernel”
+和“一条pass触发且模型整体正确”的两类case；后者不得冒充Kernel覆盖。
 
 实现中持续回填能力落点。复用分支只补缺失或有缺陷的部分，不重建已经证明等价且可达的层；但验证反馈定位到存量代码时，该缺陷仍属于本 implementation unit。
 
-新增代码完成后，再对“新增/修改代码 + 已复用代码的接口边界”做一次交叉 review：逐条沿 capability 从 parser 输入走到生成代码调用，确认新旧字段、dtype、shape、默认属性和量化参数没有断层。把新增发现更新到 `existing-capability-review.md`，重跑 pre-code artifact gate 后再进入 step5。
+新增代码完成后，再对“新增/修改代码 + 已复用代码的接口边界”做一次交叉 review：逐条沿 capability 从 parser 输入走到生成代码调用，确认修改侧与复用侧的字段、dtype、shape、默认属性和量化参数没有断层。把新增发现更新到 `existing-capability-review.md`，重跑 pre-code artifact gate 后再进入 step5。
+
+### 编码后交叉代码审查（强制）
+
+这不是“看一眼 diff”的可选步骤，而是 `IMPLEMENT_GATE` 的组成部分。审查人或 agent 必须
+从注册表、派发键、分支条件和生成调用四个方向独立核对，不能只依据编译成功或单个 PASS 用例：
+
+1. **注册键与分支可达性**：列出每个 `REG_KERNEL*`、`REG_OPERATOR_CODER`、parser、populate、
+   infer 和 quantizer 注册的完整键（primitive、target、首输入 dtype、其他选择字段），逐键
+   对照运行时/coder 内的 dtype 分支。每个已注册 dtype 必须有可达且被 case 覆盖的处理；
+   分支条件使用的 dtype 必须是实际数据输入，而不是 condition/index 的派发键。发现永不成立
+   的分支、重复键、被更高优先级注册遮蔽的路径或“注册了但 `Collect()` 不会生成调用”的
+   路径时，标 `FIX_REQUIRED`，不能以 dead code 留在交付中。
+2. **量化注册归属**：逐项核对量化器支持列表、通用白名单、算子专用白名单和 parser 返回
+   primitive 的查找路径。支持项必须落在与其语义对应的最窄注册点；不能仅把算子塞进通用
+   白名单来绕过专用策略。审查记录实际 lookup 符号、命中的列表和生成模型的量化属性，
+   并至少用一个真正进入量化 coder 的 case 验证，而不是只看 fp32 通过。
+3. **优化/折叠后的语义**：确认 converter 可能执行的常量折叠、节点消除、重写和 fusion。
+   对每个可能替换目标算子的 pass，设计两类 case：一类阻止该 pass 使节点真实到达
+   Kernel/OpCoder，另一类允许 pass 触发并验证替换后的整图语义。若算子输入全为 initializer，
+   必须明确这是“算子执行覆盖”还是“折叠结果覆盖”，不能把折叠后的 Broadcast/Reshape/
+   常量节点误报成原算子 Kernel 已执行。模型图、转换日志或生成 C 中必须有可核验的证据。
+4. **整数与混合 dtype**：按规格逐 dtype 检查注册、参数解析、Kernel、OpCoder 和测试输入；
+   `int8`、`uint8` 混用时逐输入核对 scale/zero-point、累加和饱和，不能因类型名相近而共享
+   未审计的分支。对支持列表中未实现或不可达的 dtype，必须明确写入暂不支持范围并让门禁失败，
+   不能保留永不执行的注册作为“已支持”证据。
+5. **死代码与失败路径**：启用编译器 warning（至少 unreachable/dead branch、未使用变量、
+   switch 覆盖和隐式 fall-through 的等价检查）并结合静态搜索；所有错误返回、边界守卫和
+   `Collect()` 依赖必须可追踪。修复编译错误时禁止删除能力分支；若确需删除，必须同步更新
+   decision、contract、capability checklist 和测试覆盖。
+
+审查结果写入 `<opdir>/docs/code-review.md`。除说明文字外，文件必须包含一个 fenced JSON
+对象（或整个文件为 JSON），顶层至少有 `reviewed_files`、`registration_matrix`、
+`branch_reachability`、`quantizer_ownership`、`folding_and_rewrite_cases`、`findings` 和
+`disposition`。四个矩阵必须是非空对象列表：注册矩阵逐项记录
+`key/dtype/condition/callee/case_id/status`；分支矩阵记录 `branch/case_id/status`；量化归属记录
+`capability/expected_owner/actual_owner/lookup_evidence/model_evidence/status`；折叠矩阵记录
+`mode(blocked|allowed|N/A)/case_id/expected_node/evidence/status`。每个注册 dtype 和分支都必须
+指向真实 case 或明确的 N/A 证据；`UNREACHABLE`、`DEAD_CODE`、`FIX_REQUIRED`、`FAIL` 均不得
+留在最终审查中。折叠/重写的 blocked case 必须证明目标 Kernel/OpCoder 真执行，allowed case
+必须证明重写后的整图语义正确，不能把后者冒充目标算子覆盖。缺少该文件、JSON 结构不完整、
+身份/分支/折叠证据无法追踪时，`IMPLEMENT_GATE` 必须为 FAIL。
+
+若本轮新增了 `.c/.cc`源文件而非只修改已有文件，进入构建前必须触发对应CMake重新
+configure：先确认该目录的 `CMakeLists.txt`通过GLOB或显式列表消费新文件，再由workflow
+构建前 `touch`该 `CMakeLists.txt`。否则增量构建可能不收新对象，却链接旧库产生假结论。
 
 ## step5：实现质量门禁
 
-完整执行 `references/code-quality-gate.md`。门禁同时放在本 leaf 和顶层 workflow：这里在交付实现前执行，workflow 在构建前复核，避免 leaf 单独调用时漏检，也避免跨阶段修改绕过门禁。
+完整执行 `references/code-quality-gate.md`。门禁同时放在本专项 Skill 和顶层 workflow：这里在交付实现前执行，workflow 在构建前复核，避免本 Skill 单独调用时漏检，也避免跨阶段修改绕过门禁。编码后交叉审查必须先通过，才可执行本 step6。
 
 最低证据：
 
@@ -183,14 +292,78 @@ IMPLEMENT_GATE=PASS unit=<implementation_unit>
 ```
 
 - decision、spec、link analysis、contract 和 capability checklist 存在且互相一致；
+- 计划版 `op_spec.py`已经通过validator，且每条能力均映射到计划case；
+- `integrated-initial` facts/content/case audit均PASS，编码前草稿存在；
 - 本次源码 diff 的每个文件都能映射到某条能力或必要注册点；
 - `quick_check.sh` 没有真实 FAIL，rank advisory 已逐项处置；
 - code style 与安全检查没有未解决项；
 - 没有构建、host、文档、flash 或 board 的虚假完成声明。
 
+在输出 `IMPLEMENT_GATE=PASS`前逐项执行以下结案检查；任一项不适用要写N/A及证据，
+不能静默删除：
+
+- decision2新建/复用裁决有候选排查和逐项等价/不等价证据；属性审计、构造型fusion
+  审计、消除/重写pass审计均已呈现。
+- Parser注册名/builtin与规格逐字一致；激活子类型返回 `ops::Activation`；复用路线的
+  Parser返回冻结的复用Primitive。
+- 新PrimType的schema、`REG_MINDSPORE_OPERATOR`、独立Parameter（`OpParameter`首字段）、
+  Populate、Infer注册和⑤/⑥使用的PrimitiveType全部一致。
+- 浮点输入且需量化的算子有真实float与INT8 Kernel/Coder及量化器；原生整数算子按规格
+  分别覆盖int8/uint8/int32/int64/bool，不用“量化豁免”跳过原生dtype。
+- INT8签名携带真实scale/zero-point；逐输入重量化、累加位宽、饱和、per-tensor/
+  per-channel与 `Collect()`依赖经过审计；生成代码确实调用目标INT8符号。
+- 首输入为condition/index时⑤/⑥只有一组首输入派发键，内部再按数据Tensor dtype分支；
+  不存在同键第二注册抢占。
+- infer/runtime/coder固定shape数组使用同一rank上界；infer显式拒绝超界，每个写定长数组
+  的循环前有守卫；Init/Resize/Prepare返回值均传播。
+- 广播实现使用真实stride/tile设施，快路条件逐输入成立，不以 `i % num`近似一般广播。
+- OpCoder `Collect()`列全所需 `.h/.c`，serializer结构与底层函数签名一致，无模板残留、
+  魔数、错误arity或过期版权年。
+- `capability_checklist.json`原行内容未被静默改弱，每行均有实现落点和计划case；若验证
+  已回流，则只有真实PASS case可填covered_by，最终必须 `capabilities=N/M`且N=M，除非
+  用户裁决并由VERDICT记录 `ACK_REDUCED`。
+- `git diff`终审将每个修改文件映射到能力/注册点；失败方案的伴生include、dead pass、
+  半拆守卫全部清理；被放开的路径有PASS用例，否则连守卫一起还原。
+- `docs/code-review.md` 已完成并且每个注册键、dtype 分支、量化列表、优化/折叠 case 和
+  生成调用均有证据；死代码、重复注册和错误白名单归属均为 0 个未处置项。
+- 所有修改C/C++按代码根 `.clang-format`检查，`git diff --check`无错误；新增源文件的
+  CMake消费点与重新configure要求已交给workflow。
+
 ## 失败修复与交接
 
-workflow 回流实现缺陷时，先贴首个失败原文并归类到 parser、infer、kernel、opcoder、quantizer 或构建接线，再查 `references/troubleshooting.md` 和 `references/lessons.md`。呈现根因和最小修复后才改代码；连续两个有证据的方案都失败时，返回结构化阻塞，不盲试第三个方案。
+workflow回流实现缺陷时，必须持续执行以下根因修复循环：
+
+```text
+保存并展示首个真实失败
+    ↓
+按parser/infer/kernel/opcoder/quantizer/构建接线分类
+    ↓
+查references/troubleshooting.md与lessons.md
+    ↓
+从失败case反推数学语义、shape、dtype、地址和量化参数
+    ↓
+定位最小根因并修复源码
+    ↓
+重跑质量门禁、workflow stage3重建、stage4同case及回归矩阵
+```
+
+FP32数值错误不能靠更换输入、删除case、放宽余弦或归咎环境处理；先用小Tensor逐元素
+对比参考公式和Kernel中间值。INT8错误先核对scale/zero-point、累加位宽、乘法顺序、
+饱和、per-tensor/per-channel和生成代码是否确实调用INT8 Kernel。
+
+出现单次FAIL后不要询问用户“是否继续修复”。完整实现/工作流请求已经授权在既定算子
+范围内完成根因分析、最小修复和重跑；只有需要扩展framework/dtype/芯片范围、破坏性
+操作或缺少外部授权时才询问。
+
+**同一能力连续2个有证据的方案失败时必须强制停下**：向用户呈报两个方案各自的
+根因假设、修改、首错和对算证据，并提供“继续攻坚”或“经裁决列为覆盖缺口”两个
+选项，等待用户决定。未经用户裁决不得盲试第三个方案、删除FAIL用例或缩小能力清单；
+用户选择缩范围时，Host VERDICT必须保留 `ACK_REDUCED`，并在最终能力清单和文档中
+明确该覆盖缺口。
+
+任何“环境问题”“存量局限”“非本次引入”“不支持某形态”“覆盖缺口”等收缩范围的
+措辞，必须在同一条消息中先给本轮命令、首错、控制用例或源码证据。没有证据时继续按
+算子缺陷处理，不能用措辞提前结案。
 
 结束时输出：
 
@@ -206,21 +379,27 @@ next_owner=hs-workflow-op-development
 
 `IMPLEMENT_GATE=PASS` 只表示源码实现与静态质量门禁通过，不表示构建、host 精度、文档、烧录或板测已经通过。
 
+完成措辞锁：只有真实门禁满足时才能写PASS/完成；缺少任一计划用例、编码前audit、
+质量证据或修改文件映射时只能写FAIL/未完成，不能写“基本完成”“代码已就绪”等模糊
+完成语义。leaf不因任务耗时、后台运行或用户暂时离开而提前提交最终答复。
+
 ## 资源索引
 
 | 资源 | 何时读取 |
 |---|---|
 | `scripts/scan_op.sh` | step1 规格与七层扫描 |
-| `scripts/gate_artifacts.py` | step3/step4 检查实现产物完整性 |
-| `scripts/quick_check.sh` | step5 快速编译与结构预检 |
+| `scripts/gate_artifacts.py` | step3/step4/pre-verify 检查实现、代码审查和验证前产物完整性 |
+| `scripts/quick_check.sh` | step6 快速编译与结构预检 |
+| `../hs-verify-op-host/scripts/operator_spec_template.py` | step4编码前计划版op_spec唯一模板 |
+| `../hs-verify-op-host/scripts/validate_op_spec.py` | step4编码前能力清单与计划case机械校验 |
 | `scripts/fetch_ref_impl.py` | 计算路径变化时获取上游参考 |
 | `references/worked-example.md` | step2 前理解复用/新建范例 |
 | `references/decision2-reuse-decision.md` | 复用裁决和 builtin 探针 |
 | `references/implementation-guide.md` | step4 七层模板唯一权威 |
 | `references/int8-coder-conventions.md` | INT8 kernel/opcoder |
-| `references/code-quality-gate.md` | step5 code style 与安全门禁 |
+| `references/code-quality-gate.md` | step5/step6 代码审查、code style 与安全门禁 |
 | `references/spec-sources.md` | 规格来源和不可达回退 |
 | `references/troubleshooting.md` | workflow 回流失败时 |
-| `references/lessons.md` | 出现历史症状或想走捷径时 |
+| `references/lessons.md` | 出现已知故障症状或想走捷径时 |
 
-MindSpore Lite 工具包重建、构建新鲜度与工具链分诊资源归 `hs-workflow-op-development` stage2；本 leaf 不托管也不执行构建流程。
+MindSpore Lite 工具包重建、构建新鲜度与工具链分诊资源归 `hs-workflow-op-development` stage3；本专项 Skill 不托管也不执行构建流程。

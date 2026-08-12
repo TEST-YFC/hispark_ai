@@ -53,6 +53,29 @@
 - OpCoder 只发数据和 nnacl 函数调用，不内联复制算法；`Collect()` 包含生成代码实际引用的全部头和源。
 - 防止重复注册或平行 kernel 劫持既有路径；新增源文件已接入正确构建 target。
 
+## 编码后结构审查
+
+在 `IMPLEMENT_GATE` 前必须生成 `docs/code-review.md`，并逐项记录：
+
+- 注册键（primitive/target/首输入 dtype/选择字段）与每个分支的实际可达性；
+- `int8`、`uint8` 或其他 dtype 注册是否都有对应 Kernel、OpCoder 和测试，是否存在永不执行的分支；
+- 量化器的专用列表、通用白名单和 lookup 路径，确认算子没有被放入错误的通用入口；
+- 常量折叠、节点消除、重写和 fusion 的触发/不触发两类模型，区分“原算子 Kernel 执行”与“折叠结果正确”；
+- 新增/复用代码之间的字段、shape、dtype、qparam 和生成调用接口。
+
+编译通过不能替代这项审查。任一注册键、分支、量化归属或折叠语义没有证据，或存在
+未处置的 `FIX_REQUIRED`，门禁必须 FAIL。
+
+`docs/code-review.md` 除说明文字外必须含一个可解析的 JSON 对象。四个矩阵字段必须是
+非空列表，并使用固定共性字段：`registration_matrix` 使用
+`key,dtype,condition,callee,case_id,status`；`branch_reachability` 使用
+`branch,case_id,status`；`quantizer_ownership` 使用
+`capability,expected_owner,actual_owner,lookup_evidence,model_evidence,status`；
+`folding_and_rewrite_cases` 使用 `mode,case_id,expected_node,evidence,status`。
+`mode` 必须覆盖 `blocked` 和 `allowed`，或以 `N/A` 加证据说明不适用。门禁因此能机械拦截
+空表、未达分支、量化归属漂移、死代码和把重写结果冒充原算子执行等情况；具体算子名称
+不写入规则。
+
 ## 建议命令
 
 ```bash
@@ -61,7 +84,7 @@ bash <skill_root>/scripts/quick_check.sh <code_root>
 clang-format --dry-run --Werror --style=file <changed C/C++ files>
 ```
 
-旧版 clang-format 不支持 `--dry-run --Werror` 时，使用临时副本格式化后比较，禁止为检查而覆盖用户无关修改。
+当前 clang-format 不支持 `--dry-run --Werror` 时，使用临时副本格式化后比较，禁止为检查而覆盖用户无关修改。
 
 ## 输出格式
 

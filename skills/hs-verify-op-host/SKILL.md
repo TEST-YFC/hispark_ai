@@ -7,7 +7,9 @@ description: >-
 # 算子 Host 正确性验证
 
 MSLite 算子在 PC/WSL 上的正确性与精度验证。验证由 `scripts/` 下一套**固定测试执行器（下文简称 harness）**（`run_all_cases.py` + 驱动脚本 + cfg）
-完成,它把模型生成→转换→编译→推理→比对→Excel 全流程编排为**不可改的代码**。每个算子你**只写一个
+完成,它把模型生成→转换→编译→推理→比对→Excel 全流程编排为**不可改的代码**。每次运行必须由入口生成唯一
+`RUN_ID` 并写入本轮状态和日志首行；后台调用和 `wait_verify.sh` 必须携带该 ID，终态明确记录
+`SUCCESS` 或 `FAILED`，没有匹配 RUN_ID 的旧日志不能作为本轮结论。每个算子你**只写一个
 `op_spec.py`**(用例集 + 模型构建),其余一律复用 harness。
 
 支持 **ONNX 与 TFLite 两条独立路径**,每条各跑 x86 fp32 / riscv fp32 / riscv INT8 三个代码生成目标；当前 benchmark 最终均在 x86 Host 执行，`riscv` 不表示真板运行。两框架用例
@@ -75,6 +77,12 @@ python3 <hs-verify-op-host skill root>/scripts/validate_op_spec.py <absolute pro
 
 每个激活 framework 都要得到 `ARTIFACT_GATE=PASS`，且 validator 退出码为 0。前者确认实现合同、已有能力 review、能力清单和测试 spec 没有断链；后者在长转换前拦截动态输入数量、initializer 声明、capability case ID 及 ONNX `auto_pad/pads` 冲突。独立 Host 任务没有实现工作区时不伪造这些产物，但仍执行 harness 内建的 spec、目标算子身份和能力覆盖门禁。
 
+`ARTIFACT_GATE=PASS` 还要求实现工作区存在编码后 `docs/code-review.md`。该审查必须覆盖注册
+键与 dtype 分支可达性、量化器列表归属、常量折叠/节点重写双路径和生成代码调用；没有审查
+文件或存在未处置 `FIX_REQUIRED` 时，禁止启动长转换。这样可以在 Host 之前拦截“注册了
+uint8/int8 但 coder 未分支”“永不执行死代码”“量化项落错白名单”“Fill 被折叠后误报
+原算子已执行”等结构性问题。
+
 ## 必守约束(Red Flags — 违反即作废)
 
 以下红线**任何情况都不得越过**:
@@ -105,7 +113,7 @@ python3 <hs-verify-op-host skill root>/scripts/validate_op_spec.py <absolute pro
 - **多条互不相关的用例同时 converter 报错 / 全 FAIL / converter 一启动就崩 ≠ 单个算子缺陷,先疑构建环境。**
   失败面远超本算子改动可能影响的范围(多框架、多形态、连之前 PASS 的用例一起塌)时,八成是工具链包陈旧或
   `mindspore` 子模块被构建脚本 `--remote` 推进到别的 commit(converter 行为整体漂移)。处置:回
-  hs-workflow-op-development stage2 核对**构建新鲜度**与**子模块 SHA 未漂移**（`build_mslite.sh` 的 `[SUBMOD-LOCK]` 守卫），
+  hs-workflow-op-development stage3 核对**构建新鲜度**与**子模块 SHA 未漂移**（`build_mslite.sh` 的 `[SUBMOD-LOCK]` 守卫），
   **不要逐用例去改算子代码,更不要 `git checkout` 子模块/`git stash` 反复试**——那只会越改越乱。
 - **工具链缺失就停下如实报告,不伪造 PASS / 不模拟运行。**
 - **harness 内部 step1→step5 强制串行。** 某步失败即该用例 FAIL,不跳步、不臆断通过。
@@ -121,12 +129,12 @@ python3 <hs-verify-op-host skill root>/scripts/validate_op_spec.py <absolute pro
   - **docstring / 注释里的存在性与语义断言必须与查证结果一致**，过时或错误的说法（声称某框架有此算子、写错广播规则或映射关系）一律删除，不得留存误导后续。
   - **一个 `op_spec.py` 只针对一个算子的一个 builtin**；`build_*_model` 不得按形状等条件**静默切换到另一个 builtin**（否则本算子的用例会被悄悄测成别的算子，结论无效）。
   - **覆盖也要对账**：现有用例若缺本节要求的强制用例（尤其多数据输入算子的「量级悬殊」用例），同样算不通过。
-  - **对账/覆盖任一不通过 → 整体重写该 `op_spec.py`，不要在旧文件上打补丁**（打补丁极易残留过时断言/用例）。用户调用若明确写了「从头设计用例」「重新设计用例」，则**无条件整体重写**，不复用任何旧内容。
+  - **对账/覆盖任一不通过 → 整体重写该 `op_spec.py`，不要在已有文件上打补丁**（打补丁极易残留过时断言/用例）。用户调用若明确写了「从头设计用例」「重新设计用例」，则**无条件整体重写**，不复用任何已有内容。
   - **对账方向是单向的：以本次 implement step3 能力清单为准改 spec，不得反向改写清单去匹配存量 spec。** 存量用例与清单某行的形状/轴不一致时，改 spec 或新增用例；汇报回填时把清单行"顺手"换成存量用例的实测值 = 静默缩减覆盖（实证：计划的「大 shape × 中间轴」两行被改写成存量的 axis=-1 形状，该路径实际无用例却显示全覆盖）。确需调整某行能力，标「计划变更（原 X → 现 Y，理由）」呈现给用户裁决。
 - **「还没跑」不是删除用例的豁免。** 以"转换器无法生成该形态""内核不支持该模式""估计测不了"为由在**未实跑**的情况下删除规格形态用例，与删除 FAIL 用例同属作废行为——这类断言恰恰只能由实跑产生（converter 可能有形态规范化 pass，"不支持"的直觉常是错的）。合法处置只有三种，全部要求本会话日志证据：①实跑通过 → 保留；②builder 确实无法以**本 builtin** 产出该形态（如 TF 高层 API 必然 lower 成另一个 builtin）→ 用例保留为占位、在汇报中如实列为「覆盖缺口」结论，**不得**换用另一 builtin 顶替（那是偷测别的算子）；③converter/编译拒绝 → 按「失败排查」如实上报 FAIL/不支持结论。**任何"无法生成/不支持"的说法不得写进 docstring 或注释当作事实，除非附有本次实跑的日志依据。**
 - **能力清单是单向真值，不得反向改写去匹配存量用例。** `hs-dev-op-implement` step3 产出的能力验收清单冻结为 `<proj>/scripts/capability_checklist.json`，harness 据此机械核对覆盖：开跑前查每条能力的 `covered_by` 引用存在且非空（且声明了 `match` 时用例 params 须匹配），结束后按本轮通过用例算覆盖，未覆盖的能力使 VERDICT 非绿。**对账方向单向——以清单为准改 spec / 补用例，绝不反向删改能力行去贴合现有用例**（实证：弱会话曾把「大 shape×中间轴」能力行回填时悄悄换成存量 axis=-1 形状，该路径实际无用例却显示全覆盖）。确需调整某能力行须标「计划变更（原 X→现 Y，理由）」呈给用户裁决，不得静默改 JSON。
 - **FAIL 用例不得删除、不得调弱换绿。** harness 对此有机械闸门：本轮用例集比上轮 `verify_summary.txt` 缩水即拒跑（`CASES_REDUCED`），`OP_VERIFY_ACK_REDUCED=1` 仅在**用户明确裁决**将该形态列为覆盖缺口后使用，且豁免会记入 VERDICT——靠删 summary、改算子名等方式绕过闸门与伪造数据同级。
-  - **`CASES_REDUCED` 的基线就是 `verify_summary.txt`——所以严禁把它当"残留"删除。** harness 每轮已自动清空 `output/`，**无需任何手动清理**；尤其**不要** `rm verify_summary.txt`。删掉它 = 抹掉上一轮用例基线，闸门下一轮无可对比直接放行，删 FAIL 用例就此蒙混过关（实证：弱会话以"清理旧残留"为名连删 `verify_summary.txt` 与 `output/`，随后删掉一条 FAIL 的 group>1 用例而闸门未触发）。要换 spec 直接改 `op_spec.py` 重跑即可，基线由 harness 自己维护。出现 FAIL 后只有两个合法动作：**修实现代码**，或**证明用例本身设计错误**。把 FAIL 归因为"用例设计问题"必须给出**生成代码/日志级证据**（如生成 `.c` 里的量化参数失配、塌缩的输出值），不得只凭"量化精度固有限制""退化输入无意义"一类说辞——历史上被这样合理化掉的 FAIL 后来证实正是实现 bug 的信号。任何用例修改（值域、形状、条件模式）必须在汇报中**列出修改前后对照与理由**，且修改后的严酷度（量级跨度、形状规模、边界覆盖）**不得低于原用例**；"把用例调到刚好能过"与放宽阈值同属作废行为。
+  - **`CASES_REDUCED` 的基线就是 `verify_summary.txt`——所以严禁把它当"残留"删除。** harness 每轮已自动清空 `output/`，**无需任何手动清理**；尤其**不要** `rm verify_summary.txt`。删掉它会抹掉上一轮用例基线，使闸门无法发现用例被减少。要换 spec 直接改 `op_spec.py` 重跑即可，基线由 harness 自己维护。出现 FAIL 后只有两个合法动作：**修实现代码**，或**证明用例本身设计错误**。把 FAIL 归因为"用例设计问题"必须给出**生成代码/日志级证据**（如生成 `.c` 里的量化参数失配、塌缩的输出值），不得只凭"量化精度固有限制""退化输入无意义"一类说辞。任何用例修改（值域、形状、条件模式）必须在汇报中**列出修改前后对照与理由**，且修改后的严酷度（量级跨度、形状规模、边界覆盖）**不得低于原用例**；"把用例调到刚好能过"与放宽阈值同属作废行为。
 - **只为该算子真实存在的框架建用例，且禁止用等价算子顶替。** 先按「用例设计原则」里的确定性命令查证每个框架是否定义该算子（ONNX 页面 HTTP 码 / TFLite builtin 枚举）；某框架查证为"无"就不写该框架用例、不测该框架——**不得为了让模型建得起来，把 `build_*_model` 改成另一个"等价算子"**。那样测的是别的算子，结论无效。
 - **序关系类算子（argmax/hardmax/topk/sort 等输出由"谁更大"决定）的 int8 用例必须用模板的 `make_distinct_axis_inputs()` 造数。** 普通 linspace 在大张量下相邻值间距 < 量化桶宽（全幅/254），多个浮点不同的值落进同一 int8 桶，int8 取到的极值位置就偏离 fp32 参考——FAIL 但 kernel 没错（实证：Hardmax 大 4D 两次 FAIL 烧掉一轮验证）。这是「证明用例本身设计错误」的已知合法模式之一，证据即沿轴相邻值间距与量化步长的对比计算。
 - **多数据输入/搬运·选择类算子必须含一条「输出分布 ≠ 输入分布」的判别用例（抓漏重量化/字节拷贝）。** 设计：各数据输入**同量级**、正负混合（如都在 `[-6, 6]`），条件/选择**只命中单一符号侧**，使输出值域单边、其 scale/zp 与输入明显不同。漏重量化会把输入域 qparams 原样带进输出形成仿射失真，cosine 可测（实测：字节拷贝 ~0.95 FAIL，正确重量化 ≥0.9999 PASS）。**各输入之间不要拉开数量级**（量化器按值域并集分配共享输入 scale，量级悬殊的用例无判别力，不要设）。
@@ -145,7 +153,7 @@ test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" && echo OK || ech
 
 **`MSLITE_PKG` 必须指向构建产物顶层（`output/mindspore-lite-<ver>-linux-x64/`）——即解压后的 tar.gz 包。禁止指向原始 `build/` 目录。** 后者缺少 `include/c_api/`、`runtime/include/` 等头文件，共享库分散在多处，会导致 `converter_lite` 找不到 `.so` 或 `make` 缺头文件。用错目录时最常见症状是 `error while loading shared libraries` / `c_api/model_c.h: No such file`——遇到此症状先检查 `MSLITE_PKG` 是否为解压包。
 
-**解压包必须不旧于最近一次构建——harness 自动校验并拒绝陈旧包。** 重新编译只刷新 tar.gz，不会自动重新解压；忘记重解压时验证跑的是上一版 `converter_lite`，旧二进制照样"能跑"，结论却不反映最新代码（真实发生过的假结论来源）。harness 发现旁边的 tar.gz 比解压包新即报错停止——处置就是重新解压（`build_mslite.sh` 构建成功后自动完成）。`OP_VERIFY_ALLOW_STALE=1` 仅用于有意对比历史行为，不得用于结论性签收。`verify_summary.txt` 头部记录本轮 `converter_lite` 的构建时间，便于追溯结论对应哪次构建。
+**解压包必须不早于最近一次构建——harness 自动校验并拒绝陈旧包。** 重新编译只刷新 tar.gz，不会自动重新解压；若忘记重解压，验证会运行陈旧的 `converter_lite`，结论不能反映当前代码。harness 发现旁边的 tar.gz 比解压包新即报错停止——处置就是重新解压（`build_mslite.sh` 构建成功后自动完成）。`OP_VERIFY_ALLOW_STALE=1` 只允许用于显式兼容性对比，不得用于结论性签收。`verify_summary.txt` 头部记录本轮 `converter_lite` 的构建时间，便于追溯结论对应哪次构建。
 
 未构建时**停止并告知用户先构建工具链**,不要继续、不要伪造结果。
 
@@ -153,7 +161,7 @@ test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" && echo OK || ech
 
 | 文件 | 作用 |
 |---|---|
-| `scripts/run_all_cases.py` | **唯一入口**,算子无关。编排每用例内部 step1-step5、解析 benchmark 打印的输出张量、**在 Python 侧统一算余弦**、写 Excel。另自带六道防假结论闸门:开跑前清空本框架 `output/`(结论只来自本轮产物)、拒绝比旁边 tar.gz 陈旧的解压包、按 spec 的 `TFLITE_TARGET_BUILTIN` 解包校验每个模型确含目标 builtin、**`riscv_int8` 跑完 grep 生成 `net*.c` 确认 int8 kernel 符号被真调用**(`INT8_NOT_GENUINE` 闸门,防量化旁路的 fp32 回退冒充 INT8;符号默认 `{OP_NAME}Int8`,异名时 spec 声明 `INT8_KERNEL_SYMBOL`)、**用例集比上轮 `verify_summary.txt` 缩水时拒跑**(防删 FAIL 用例换绿;确属用户裁决的覆盖缺口用 `OP_VERIFY_ACK_REDUCED=1` 放行,豁免记入 VERDICT 留痕)、**按 `<proj>/scripts/capability_checklist.json`(若存在)校验 implement step3 承诺能力都有 covered_by 用例**(开跑前查引用存在/非空/match,结束后按通过用例核对覆盖,未覆盖能力使 VERDICT 非绿并附 `capabilities=N/M`) |
+| `scripts/run_all_cases.py` | **唯一入口**,算子无关。编排每用例内部 step1-step5、解析 benchmark 打印的输出张量、**在 Python 侧统一算余弦**、写 Excel。每次运行携带唯一 `RUN_ID`，旧日志不能冒充本轮结论。另自带防假结论闸门：按 spec 的目标节点校验源模型，并按 `<proj>/scripts/capability_checklist.json` 校验能力 covered_by 引用；清单还必须声明 `folding_and_rewrite` 矩阵，分别覆盖阻止折叠以证明目标 Kernel 真执行、允许重写以证明整图语义，或给出 N/A 证据。转换后必须保留 target/rewrite identity evidence，不能只凭原始模型节点判定 |
 | `scripts/validate_op_spec.py` | Host 拥有的长测试前机械门禁：检查动态输入、initializer、capability case ID 和 ONNX 属性冲突 |
 | `scripts/wait_verify.sh` | 后台启动后的**唯一等待方式**:内部轮询日志到 VERDICT 出现/进程退出/到时,免 sleep 算术 |
 | `scripts/judge.sh` | **手动判定辅助**(不改驱动、不复制公式):`judge.sh <case_dir> [path_key]` 转发到 `run_all_cases.py --judge-case`,读取最新 `output/<path>/stdout.log`,刷新 `output/<path>/output*.npy`,再用 harness 的 `cosine_similarity()` + `PATH_META` 对比稳定的 `gt/output*.npy` 打印 PASS/FAIL。`output/<path>/_run.sh` 手动重跑后也走同一入口刷新判定;**权威结论仍以 run_all_cases.py 的 VERDICT 为准** |
@@ -217,7 +225,7 @@ spec **只描述"算什么",不碰"结果对不对"**。
      - TFLite:`curl -sL https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/lite/builtin_ops.h | grep -nE 'kTfLiteBuiltin<OpName>\s*='` —— 命中(含 builtin 编号)=有、空=无。
       **只为"有"的框架写 `*_TEST_CASES`;`build_*_model` 里 `helper.make_node` / TFLite op 用的名字必须是查证命中的确切框架名。** 某框架"无" → 该框架 `*_TEST_CASES = []`,对应 `build_*_model` **保留为占位**(函数体直接 `raise NotImplementedError("<框架> has no <Op>")`——harness 校验符号存在,删函数会报错);**绝不改用"等价算子"顶替来让模型建得起来**(那测的是别的算子,结论无效)。
    - **目标算子身份是前置硬门禁**：ONNX 用例声明 `ONNX_TARGET_OP_TYPE`，TFLite 用例声明 `TFLITE_TARGET_BUILTIN`。harness 在参考运行和 converter 之前逐 case 解包源模型；如果 Fill 等节点被模型 API 常量折叠、lower 或规范化为 BroadcastTo 等别的节点，立即 `OP_MISMATCH`，先修 builder/shape/动态输入设计，不进入精度比较。不要把替代节点的 PASS 当成目标算子 PASS。
-   - **converter 参数按当前包探测**：harness 对 `$MSLITE_PKG/tools/converter/converter/converter_lite --help` 只探测一次并缓存。只有 help 明确声明 `--encryption` 时才传 `--encryption=false`；2.8 等不支持该选项的版本自动省略。每条 driver 日志记录 converter 绝对路径、help 返回码和最终选择，四个驱动不得再硬编码版本专属参数。
+   - **converter 参数按当前包探测**：harness 对 `$MSLITE_PKG/tools/converter/converter/converter_lite --help` 只探测一次并缓存。只有 help 明确声明 `--encryption` 时才传 `--encryption=false`；不支持或无法探测时默认省略，不得让版本专属参数阻塞 converter 启动。每条 driver 日志记录 converter 绝对路径、help 返回码和最终选择，所有驱动不得再硬编码版本专属参数。若探测命令本身失败，先按工具包/环境问题分诊，不把该失败归到算子。
    - **模型输入契约**：`make_inputs()` 返回的数组数必须等于模型动态输入数。ONNX 权重/zero-point 等若同时作为 graph input 与 initializer 存在,必须在 `INITIALIZER_INPUTS` 显式列名；否则 harness 会在 reference 前拒跑。不要依赖 Python `zip(input_names, inputs)` 静默截断,那会让测试少喂输入却看似通过。
    - **原生整型/索引算子**：可声明 `INT8_KERNEL_SYMBOL=""` 表示量化 INT8 genuine 检查不适用,但仍要按规格覆盖每个原生 dtype（如 int8 与 uint8 分开用例）,并在能力清单用 `match` 锁定 dtype。
    - **属性按规格枚举**:ONNX `https://onnx.com.cn/onnx/operators/onnx__<OpName>.html`;TFLite `https://tensorflow.google.cn/mlir/tfl_ops`、`.../api_docs/python/tf`、`.../lite/performance/quantization_spec`(属性/量化/布局与 ONNX 可能不同,不要照搬;WebFetch 不可达回退 `curl -sL <url> | head -300`)。参考输出由 harness 用真实 runtime 现算,故属性**取值**的正确性自校验——你的风险是**漏掉属性组合**和**用了不存在的属性名**,不是属性数学算错。列全属性,每个有意义组合各一条用例。
@@ -299,16 +307,18 @@ harness 串行跑「生成→转换→编译→推理」,单轮 10+ 分钟。**�
 被杀不是验证结果;实证多次算错）:
 
 ```bash
-nohup python "$SKILL/scripts/run_all_cases.py" --spec "$PROJ/scripts/op_spec.py" \
-    > /tmp/op_verify.log 2>&1 & echo $! > /tmp/op_verify.pid
+RUN_ID="host-$(date +%Y%m%d%H%M%S)-$$"
+nohup python "$SKILL/scripts/run_all_cases.py" --run-id "$RUN_ID" --spec "$PROJ/scripts/op_spec.py" \
+    > "/tmp/op_verify_${RUN_ID}.log" 2>&1 & echo $! > "/tmp/op_verify_${RUN_ID}.pid"
 # 一条命令内部轮询到结束或到时（Bash 工具 timeout 设 (max_secs+60)*1000 毫秒,如 540 配 600000）:
-bash "$SKILL/scripts/wait_verify.sh" /tmp/op_verify.log 540 "$(cat /tmp/op_verify.pid)"
+bash "$SKILL/scripts/wait_verify.sh" "/tmp/op_verify_${RUN_ID}.log" 540 \
+    "$(cat /tmp/op_verify_${RUN_ID}.pid)" "$RUN_ID"
 # 退出码: 0=已出 VERDICT(贴出末尾,照抄) / 1=进程退出无 VERDICT(闸门拦截或崩溃,读贴出的日志)
 #        / 10=还在跑(再跑一次 wait_verify.sh 接着等)
 ```
 
 - **崩溃/卡死由 harness 自己兜底,无需人肉盯进程。** 每条路径有超时上限(默认 1200s,环境变量 `OP_VERIFY_PATH_TIMEOUT` 秒可调),超时即**连同 `converter_lite` 子进程整组 kill**,不再无限等。converter 因堆损坏 abort(SIGABRT)、段错误、或日志出现 `malloc/sysmalloc/encounter an unknown error` 时,harness 把该路径判 FAIL 并在结论里写明原因(如 `converter crashed: SIGABRT — abort / heap corruption`、`TIMEOUT — converter hung`)。
-- 这类 crash 几乎都是**算子量化通路的空指针/越界（implement 实现侧 bug）**,不是验证流程问题——照结论给的路径去查 `stderr.log` 与生成代码，并交 workflow 回流实现 leaf。
+- 这类 crash 几乎都是**算子量化通路的空指针/越界（implement 实现侧 bug）**,不是验证流程问题——照结论给的路径去查 `stderr.log` 与生成代码，并交 workflow 回流算子实现专项 Skill。
 - 某路径**确实只是慢**(大 4D + 量化)被超时误杀时,调高 `OP_VERIFY_PATH_TIMEOUT` 重跑,而不是降覆盖或放宽阈值。
 
 ## 读取结果(汇报只认这些)

@@ -441,7 +441,7 @@ for (int j = 1; j < axis_size; j++) { if (in[base + j * inner] > max_val) { ... 
 
 1. **整个算子只有一个 kernel 键**（首输入的固定 dtype，如 `bool`），不分 fp32/int8。
 2. **注册在 `kNumberTypeInt8` 键上的运行时 kernel 永不被选中 = 死代码**，别写它。
-3. **注册在固定键（bool）上的那个 kernel 必须自己按数据张量 `in_[1]->data_type_` 分支**，处理 fp32 / int8 / fp16。**int8 分支按 ⑤‴ 模板做逐输入重量化**——重量化在各方 qparams 相同时自动退化为恒等拷贝，永远正确；直接字节拷贝只在量化器把各输入与输出绑到同一 scale+zp 时才对，**而这不能假设、必须从生成代码核实**（历史上字节拷贝多次在输入/输出 scale 不同的场景下以 ~0.99 假绿混过阈值）。
+3. **注册在固定键（bool）上的那个 kernel 必须自己按数据张量 `in_[1]->data_type_` 分支**，处理 fp32 / int8 / fp16。**int8 分支按 ⑤‴ 模板做逐输入重量化**——重量化在各方 qparams 相同时自动退化为恒等拷贝，永远正确；直接字节拷贝只在量化器把各输入与输出绑到同一 scale+zp 时才对，**而这不能假设、必须从生成代码核实**，否则输入/输出 scale 不同的场景可能以接近阈值的结果假绿。
 4. **致命陷阱**：若 bool 键 kernel 对 int8 数据仍按 fp32 计算（把 int8 缓冲当 `float*` 写），每元素写 4 字节进 1 字节缓冲 → 堆越界，表现为全量化 **bias_correction** 阶段 `malloc(): corrupted top size` / `sysmalloc: Assertion failed`（**大张量崩、小张量侥幸过**，fp32/x86 路正常，ASAN 下因分配向上取整反而不崩——极难定位）。
 5. **放置**：这个唯一的运行时 kernel 放数据搬运类常规位置（C++ `LiteKernel` 放 `base/`，C `KernelBase` 放 `nnacl_c/kernel/`），按 bool 键注册一处；别散落多个按 dtype 注册的 kernel（其余都是死的）。
 6. **在已有 kernel 上加 int8 分支 = 先做全执行路径审计**。打开该 kernel 的 `Run()`/`Compute()`，列出**每一条**写输出的路径：按 dtype 的 switch 各分支、scalar/单元素条件的**快路**（`MoveData`/`memcpy` 整块搬运）、in-place 与 early-return 分支。逐条裁决「int8 数据可达吗？可达则经过重量化吗？」——只给主 switch 加 int8 case 而放过旧快路，quantized 数据从快路漏过去就是绕开重量化的字节拷贝，且这类路径常由单元素用例触发、其余弦恒为 1.0，行为验证无法暴露（详见 hs-verify-op-host 用例设计的单元素告诫）。快路对 int8 不安全时，把 int8 显式从快路条件中排除、并入重量化分支。
@@ -707,7 +707,7 @@ REG_OPERATOR_CODER(kAllTargets, kNumberTypeFloat32,
 
 本仓算子代码以代码根 `.clang-format` 和 HiSpark.AI `docs/zh-CN/software/code-style.md` 为准；两者发生
 格式差异时，格式由 `.clang-format` 决定，安全与可维护性规则由 `code-style.md` 决定。完整执行清单见
-`references/code-quality-gate.md`。不要继续沿用旧版“固定 2 空格、函数 100 行”的泛化描述：当前项目门禁要求
+`references/code-quality-gate.md`。不要使用“固定 2 空格、函数 100 行”这类泛化描述：当前项目门禁要求
 函数尽量不超过 50 个非空非注释行、5 个参数和 4 层嵌套，并对修改代码执行仓内 clang-format。
 Python 遵循 PEP 8。
 
