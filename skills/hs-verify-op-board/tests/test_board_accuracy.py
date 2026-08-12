@@ -94,6 +94,34 @@ def test_parse_ai_mcu_rejects_multiple_ambiguous_data_lines():
     assert "ambiguous AI_MCU protocol" in tensor["data_error"]
 
 
+def test_parse_ai_mcu_indexed_protocol_supports_multiple_outputs():
+    tensors = board.parse_ai_mcu_tensors(
+        "[AI_MCU] OUTPUT: index=0\n"
+        "[AI_MCU] DType: 43\n"
+        "[AI_MCU] Shape: [2]\n"
+        "[AI_MCU] Elements: 2\n"
+        "[AI_MCU] Data: [1][2]\n"
+        "[AI_MCU] OUTPUT: index=1\n"
+        "[AI_MCU] DType: 35\n"
+        "[AI_MCU] Shape: [1]\n"
+        "[AI_MCU] Elements: 1\n"
+        "[AI_MCU] Data: [3]\n"
+    )
+    assert len(tensors) == 2
+    assert tensors[0]["shape"] == (2,)
+    assert tensors[0]["elements"] == 2
+    assert tensors[0]["dtype"] == 43
+    assert np.allclose(tensors[1]["data"], [3])
+
+
+def test_indexed_protocol_requires_dtype_metadata():
+    tensor = board.parse_ai_mcu_tensors(
+        "[AI_MCU] OUTPUT: index=0\n"
+        "[AI_MCU] Shape: [1]\n[AI_MCU] Elements: 1\n[AI_MCU] Data: [1]\n"
+    )[0]
+    assert tensor["dtype_error"] == "DType metadata missing"
+
+
 def test_parse_ai_mcu_scalar_empty_and_float32_overflow():
     scalar = board.parse_ai_mcu_tensors(
         "[AI_MCU] Shape: []\n[AI_MCU] Data: [3.5]\n"

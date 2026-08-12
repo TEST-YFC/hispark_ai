@@ -230,11 +230,11 @@ def _onnx_version_audit(op):
         for c in changed:
             out.append("    " + c)
         out.append("    → 处置二选一：parser 按模型 opset 分支处理；或对旧 opset 显式 MS_LOG(ERROR) 拒绝。")
-        out.append("    旧版语义可能整体不同（不止默认值）——逐版本核对 Doc："
+        out.append("    较低 opset 的语义可能整体不同（不止默认值）——逐版本核对 Doc："
                    "python3 -c \"from onnx import defs; print(defs.get_schema('%s', <opset>).doc)\"" % op)
     else:
         out.append("[i] 各版本属性默认值未变，但语义文本仍可能随版本变化（机检不到）——"
-                   "模型 opset 低于 %d 时核对旧版 Doc 再下结论。" % per_ver[-1][0])
+                   "模型 opset 低于 %d 时核对对应版本 Doc 再下结论。" % per_ver[-1][0])
     return "\n  ".join(out)
 
 

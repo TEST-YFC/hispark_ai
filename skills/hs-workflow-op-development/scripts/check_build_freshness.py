@@ -29,7 +29,11 @@ def source_candidates(root):
     paths = []
     git_top_text = run_git(root, ["rev-parse", "--show-toplevel"]).strip()
     git_top = Path(git_top_text).resolve() if git_top_text else root
-    status = run_git(root, ["status", "--porcelain"])
+    # Submodule revisions are frozen and checked by build_mslite.sh. Asking
+    # status to recurse into them can start Git LFS filters for unrelated test
+    # repositories and make this pre-verify gate hang for minutes, while the
+    # directory entry would be discarded below anyway.
+    status = run_git(root, ["status", "--porcelain", "--ignore-submodules=all"])
     for line in status.splitlines():
         if not line:
             continue

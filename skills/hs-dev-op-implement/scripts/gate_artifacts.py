@@ -10,7 +10,9 @@
 # gate_artifacts.py --opdir <opdir> --op <Op> --stage step3|pre-code|pre-verify [--framework onnx ...]
 #
 # Hard gate for hs-dev-op-implement artifacts. This script intentionally checks
-# only mechanical invariants; semantic judgement remains in SKILL.md.
+# only mechanical invariants; semantic judgement remains in SKILL.md. In
+# pre-verify it also requires the post-code review artifact, so host PASS cannot
+# hide an unreviewed registration, dtype branch, quantizer route, or fold/rewrite.
 
 import argparse
 import json
@@ -40,6 +42,28 @@ REQUIRED_REVIEW_KEYS = [
     "code_findings",
     "disposition",
 ]
+
+REQUIRED_CODE_REVIEW_KEYS = [
+    "reviewed_files",
+    "registration_matrix",
+    "branch_reachability",
+    "quantizer_ownership",
+    "folding_and_rewrite_cases",
+    "findings",
+    "disposition",
+]
+
+REVIEW_LIST_RULES = {
+    "registration_matrix": ["key", "dtype", "condition", "callee", "case_id", "status"],
+    "branch_reachability": ["branch", "case_id", "status"],
+    "quantizer_ownership": [
+        "capability", "expected_owner", "actual_owner", "lookup_evidence",
+        "model_evidence", "status",
+    ],
+    "folding_and_rewrite_cases": [
+        "mode", "case_id", "expected_node", "evidence", "status",
+    ],
+}
 
 
 def fail(msg):
@@ -113,6 +137,32 @@ def load_checklist(path, op, frameworks, errors):
             errors.append(f"{path} capability {cid or idx} missing match object")
         elif not isinstance(cap.get("match"), dict):
             errors.append(f"{path} capability {cid or idx} match must be an object")
+
+    # Constant folding and graph rewrites are part of the operator contract, not
+    # an optional afterthought.  The checklist must explicitly distinguish a
+    # case that keeps the target node alive from a case that permits a rewrite;
+    # N/A is accepted only with an evidence string explaining why no rewrite can
+    # occur for this operator/framework.
+    fold = data.get("folding_and_rewrite")
+    if fold is None:
+        errors.append(f"{path} missing folding_and_rewrite matrix")
+    elif isinstance(fold, dict) and str(fold.get("mode", "")).upper() == "N/A":
+        if not str(fold.get("evidence", "")).strip():
+            errors.append(f"{path} folding_and_rewrite N/A requires evidence")
+    elif isinstance(fold, list) and fold:
+        modes = set()
+        for idx, row in enumerate(fold, start=1):
+            if not isinstance(row, dict):
+                errors.append(f"{path} folding_and_rewrite[{idx}] must be an object")
+                continue
+            for key in ("mode", "case_id", "expected_node", "evidence", "status"):
+                if not str(row.get(key, "")).strip():
+                    errors.append(f"{path} folding_and_rewrite[{idx}] missing {key}")
+            modes.add(str(row.get("mode", "")).lower())
+        if "n/a" not in modes and not {"blocked", "allowed"}.issubset(modes):
+            errors.append(f"{path} folding_and_rewrite must cover blocked and allowed modes, or N/A")
+    else:
+        errors.append(f"{path} folding_and_rewrite must be a non-empty list or evidenced N/A object")
     return data
 
 
@@ -150,6 +200,82 @@ def check_op_spec_text(path, op, frameworks, errors):
         errors.append(f"{path} missing ONNX_TEST_CASES")
     if "TFLITE_TEST_CASES" not in text and "tflite" in frameworks:
         errors.append(f"{path} missing TFLITE_TEST_CASES")
+    if "POST_CONVERSION_IDENTITY" not in text:
+        errors.append(f"{path} missing POST_CONVERSION_IDENTITY markers")
+
+
+def check_code_review(path, op, frameworks, errors):
+    """Require the post-code review before host verification can be signed off."""
+    text = read_text(path, errors)
+    if not text:
+        return
+    require_mentions(text, path, [op] + frameworks, errors)
+    lower = text.lower()
+    for key in REQUIRED_CODE_REVIEW_KEYS:
+        if key.lower() not in lower:
+            errors.append(f"{path} missing code-review key: {key}")
+    # The review must contain one machine-readable JSON object.  Human prose is
+    # useful context, but cannot prove that every registration and branch was
+    # checked.  Accept either a fenced JSON block or a file containing JSON so
+    # the gate remains independent of a particular Markdown layout.
+    review = None
+    fenced = re.findall(r"```(?:json)?\s*(.*?)\s*```", text, flags=re.I | re.S)
+    candidates = []
+    for block in fenced:
+        start, end = block.find("{"), block.rfind("}")
+        candidates.append(block[start:end + 1] if start >= 0 and end > start else block)
+    candidates.append(text.strip())
+    for candidate in candidates:
+        try:
+            value = json.loads(candidate)
+        except (ValueError, TypeError):
+            continue
+        if isinstance(value, dict):
+            review = value
+            break
+    if review is None:
+        errors.append(f"{path} must contain a machine-readable JSON review object")
+        return
+    for name, fields in REVIEW_LIST_RULES.items():
+        rows = review.get(name)
+        if not isinstance(rows, list) or not rows:
+            errors.append(f"{path} {name} must be a non-empty list")
+            continue
+        for index, row in enumerate(rows, start=1):
+            if not isinstance(row, dict):
+                errors.append(f"{path} {name}[{index}] must be an object")
+                continue
+            for field in fields:
+                if not isinstance(row.get(field), str) or not row[field].strip():
+                    errors.append(f"{path} {name}[{index}] missing non-empty field {field}")
+            status = str(row.get("status", "")).upper()
+            if status in {"UNREACHABLE", "DEAD_CODE", "FIX_REQUIRED", "FAIL"}:
+                errors.append(f"{path} {name}[{index}] unresolved status={status}")
+    fold_rows = review.get("folding_and_rewrite_cases")
+    if isinstance(fold_rows, list) and fold_rows:
+        modes = {str(row.get("mode", "")).lower() for row in fold_rows if isinstance(row, dict)}
+        if "n/a" not in modes and not {"blocked", "allowed"}.issubset(modes):
+            errors.append(f"{path} folding_and_rewrite_cases must cover blocked and allowed paths, or explicit N/A")
+    # ``disposition: FIX_REQUIRED``.  A review is a hard gate: an unresolved
+    # finding must never be hidden by choosing a different spelling or column
+    # order.  Explicitly negated prose ("no FIX_REQUIRED findings") is allowed.
+    unresolved = False
+    for line in lower.splitlines():
+        if "fix_required" not in line:
+            continue
+        if re.search(r"\b(no|none|without|zero|0)\s+(?:unresolved\s+)?fix_required\b", line):
+            continue
+        if re.search(r"(?:disposition|status|finding|result|resolution|state)\s*[:|=]\s*[^\n]*\bfix_required\b", line):
+            unresolved = True
+            break
+        if re.search(r"\bfix_required\b\s*[:|=]", line):
+            unresolved = True
+            break
+    disposition = str(review.get("disposition", "")).upper()
+    if disposition not in {"PASS", "REVIEWED", "N/A"}:
+        errors.append(f"{path} disposition must be PASS, REVIEWED, or N/A")
+    if unresolved:
+        errors.append(f"{path} contains unresolved FIX_REQUIRED findings")
 
 
 def main():
@@ -191,6 +317,7 @@ def main():
 
     if args.stage == "pre-verify":
         check_op_spec_text(scripts / "op_spec.py", args.op, frameworks, errors)
+        check_code_review(docs / "code-review.md", args.op, frameworks, errors)
 
     if errors:
         for err in errors:

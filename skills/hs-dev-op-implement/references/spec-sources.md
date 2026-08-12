@@ -4,7 +4,7 @@ decision1 的存在性裁决与语义摘要由 `scripts/fetch_op_spec.py` 给出
 
 ## 两条原则
 
-- **一律按最新 opset 实现（项目裁决）**：opset 间默认值/语义有变时只实现最新版，parser **不做 opset 分支、不拒绝旧 opset 模型**——旧模型按最新语义解析（如 Hardmax：axis 默认 -1 逐轴语义，无视模型声明的 opset）。要求两件事：① parser 加一行策略注释留痕（模板见 SKILL.md step4）；② 差异本身写进属性审计呈现。**禁止为该行为编造技术依据**（如"旧 opset 模型会序列化显式属性值"——ONNX 不序列化等于默认值的属性，此类断言即臆造，见下文证据标准）。仓内个别旧 parser（如 onnx_softmax_parser.cc 的 opset 分支）是历史写法，不作为新算子的范式。
+- **一律按最新 opset 实现（项目裁决）**：opset 间默认值/语义有变时只实现当前选定版本，parser **不做 opset 分支、不拒绝较低 opset 模型**——较低 opset 模型按当前语义解析（如 Hardmax：axis 默认 -1 逐轴语义，无视模型声明的 opset）。要求两件事：① parser 加一行策略注释留痕（模板见 SKILL.md step4）；② 差异本身写进属性审计呈现。**禁止为该行为编造技术依据**（如"较低 opset 模型会序列化显式属性值"——ONNX 不序列化等于默认值的属性，此类断言即臆造，见下文证据标准）。仓内个别已有 parser（如 onnx_softmax_parser.cc 的 opset 分支）不作为新增算子的范式。
 - **deprecated ≠ 可跳过**：规格里仍有就按最新 opset 完整处置。
 
 ## 取材优先级：本地 onnx 包 > 本地克隆 > WebFetch > curl/wget > 问用户

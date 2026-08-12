@@ -1,6 +1,6 @@
 # 端到端范例
 
-两个范例分别演示 **decision2** 的两条分支——复用已有 PrimitiveType / 新建 PrimitiveType。教的是**可迁移的决策过程**，不是某算子的速查表：拿到任意算子时，按同样的次序走 decision1→decision4，落到对应分支的实现清单。
+两个范例分别演示 **decision2** 的两条分支——复用已有 PrimitiveType / 新建 PrimitiveType。教的是**可复用的决策过程**，不是某算子的速查表：拿到任意算子时，按同样的次序走 decision1→decision4，落到对应分支的实现清单。
 
 范例里的算子只是载体；把它换成你手上的算子，每一步问的问题不变。
 
@@ -95,7 +95,7 @@
 
 ### 验证
 
-实现 leaf 只冻结 capability checklist 和 implementation contract；随后交回 `hs-workflow-op-development`，由其调用
+算子实现专项 Skill 只冻结 capability checklist 和 implementation contract；随后交回 `hs-workflow-op-development`，由其调用
 `hs-verify-op-host` 按算子属性、值域和形状编写并运行用例。细则见 Host skill。
 
 ---

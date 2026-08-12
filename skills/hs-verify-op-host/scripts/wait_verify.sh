@@ -1,5 +1,5 @@
 #!/bin/bash
-# wait_verify.sh <日志文件> [max_secs=540] [pid]
+# wait_verify.sh <日志文件> [max_secs=540] [pid] [RUN_ID]
 #
 # 阻塞等待后台 hs-verify-op-host（run_all_cases.py）跑完——内部轮询，杜绝调用方
 # "sleep N && tail" 盲等与 sleep 算术错误（sleep >110s 会被 Bash 工具默认
@@ -17,12 +17,17 @@
 # HARNESS_EXIT=N 行（0=全 PASS，非 0=有 FAIL）。禁止自行 `grep -c FAIL` 之类计数判定
 # ——VERDICT 的 "0 FAIL" 字样也会被计入，全绿会被误判成失败。
 set -u
-LOG="${1:?用法: wait_verify.sh <日志文件> [max_secs] [pid]}"
+LOG="${1:?用法: wait_verify.sh <日志文件> [max_secs] [pid] [RUN_ID]}"
 MAX="${2:-540}"
 PID="${3:-}"
+RUN_ID="${4:-}"
 case "${MAX}" in (*[!0-9]*|"") echo "[!] max_secs 须为秒数" >&2; exit 1;; esac
 
 waited=0
+if [ -n "${RUN_ID}" ] && ! grep -q "^RUN_ID=${RUN_ID}$" "${LOG}" 2>/dev/null; then
+  echo "RUN_ID_MISMATCH：日志不属于本轮任务：${RUN_ID}" >&2
+  exit 1
+fi
 while :; do
   if grep -q "^VERDICT:" "${LOG}" 2>/dev/null; then
     echo "DONE——日志末尾（VERDICT 行照抄进汇报，不得复述/美化）："
@@ -30,8 +35,14 @@ while :; do
     ex="$(grep -o '^HARNESS_EXIT=[0-9]*' "${LOG}" 2>/dev/null | tail -1)"
     if [ -n "${ex}" ]; then
       echo "[i] harness 退出码：${ex}（0=全 PASS，非 0=有 FAIL）——退出码只认这一行。"
+      if [ -n "${RUN_ID}" ]; then
+        case "${ex}" in
+          HARNESS_EXIT=0) echo "TERMINAL=${RUN_ID}:SUCCESS" ;;
+          *) echo "TERMINAL=${RUN_ID}:FAILED" ;;
+        esac
+      fi
     else
-      echo "[i] 日志无 HARNESS_EXIT 行（旧版 harness）——以 VERDICT 行的 'N FAIL' 数为准。"
+      echo "[i] 日志无 HARNESS_EXIT 行（兼容格式）——以 VERDICT 行的 'N FAIL' 数为准。"
     fi
     echo "    禁止自行 'grep -c FAIL' 之类计数判定——VERDICT 的 '0 FAIL' 也含 'FAIL' 字样，全绿会被误判为失败。"
     exit 0

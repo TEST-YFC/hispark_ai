@@ -1,13 +1,24 @@
 # 板端精度故障分流
 
+## 通用安全规则
+
+- WSL路径交给Windows侧工具前必须转换成Windows绝对路径；若当前 `fbb flash`已经封装
+  转换，则核对其最终JSON中的firmware路径，不再调用旁路HTTP烧录服务。
+- WS63烧录常用的921600波特率和启动日志串口115200不是同一个配置；烧录成功后出现
+  乱码时先核对monitor使用115200，不要用烧录波特率读日志。
+- 构建/烧录前置不能只写在说明文字里：必须看到 `BOARD_SDK_GATE=PASS`、
+  `SAMPLE_PREP_GATE=PASS`、`BOARD_WIRING_GATE=PASS`、
+  `FIRMWARE_CONTENT_GATE=PASS`和新鲜固件证据。
+- 板端只出现日志不算精度验证；完整Tensor必须与当轮Host GT机械比较。
+
 本页只处理“固件已构建、已烧录”之后的串口 Tensor 和精度问题。构建失败回到
-`hs-dev-build`，烧录失败回到 `hs-dev-flash`；不得从本 skill 直接调用 BurnTool、
-旧 HTTP 烧录服务或历史脚本。
+`hs-dev-build`，烧录失败回到 `hs-dev-flash`；不得从本 skill 直接调用 BurnTool 或其他
+旁路烧录入口。
 
 ## 没有串口输出
 
 1. 核对 workflow 交付的 `target`、串口端口、烧录 JSON 和本轮 monitor 时间。
-2. 确认 monitor 包含本次烧录后的启动标志；没有启动标志时不能复用旧日志。
+2. 确认 monitor 包含本次烧录后的启动标志；没有启动标志时不能复用其他轮次日志。
 3. 确认 sample 已接入所选 Host PASS case 的模型和输入，并会打印完整 Tensor。
 4. 启动失败或模型未接入归 workflow 的固件/sample 接线，不归精度脚本。
 

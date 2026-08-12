@@ -12,8 +12,8 @@
 # build_mslite.sh --status <id>             只报告指定构建轮次
 # build_mslite.sh --stop                    终止当前构建（杀整个进程组，含 make/编译器子进程）
 #
-# hs-workflow-op-development stage2 标准工具包重建入口，一条命令完成：
-#   并发锁（同一时刻只允许一个构建）→ 固定 env 开关 → 定位 RISC-V/ARM 工具链
+# hs-workflow-op-development stage3 标准工具包重建入口，一条命令完成：
+#   并发锁（同一时刻只允许一个构建）→ 固定 env 开关 → 定位 RISC-V 工具链
 #   → bash build.sh（默认增量 -i，--full 全量）→ 断言交叉库产出 → 解压产物
 #   → 断言改动的 parser 注册符号已真正链入产物（堵「假编译成功」，exit 6）→ 打印 MSLITE_PKG
 # 失败即非零退出并说明原因。不要绕过本脚本直接跑 build.sh / make——裸跑丢 env、
@@ -60,35 +60,49 @@ read_meta() {
   [ -n "${META_RUN_ID}" ] && [ -n "${META_ROOT}" ]
 }
 
+fingerprint_repo() {
+  local repo="$1" label="$2"
+  echo "${label}:HEAD=$(git -C "${repo}" rev-parse HEAD 2>/dev/null || echo NO_HEAD)"
+
+  # Raw metadata preserves status, object IDs and mode changes without materializing
+  # a potentially enormous binary patch for line-ending-dirty repositories.
+  git -C "${repo}" diff --no-ext-diff --raw --no-abbrev -z HEAD -- 2>/dev/null
+  echo "${label}:TRACKED_CONTENT"
+  git -C "${repo}" diff --no-ext-diff --name-only -z HEAD -- 2>/dev/null |
+    while IFS= read -r -d '' rel; do
+      [ -f "${repo}/${rel}" ] || [ -L "${repo}/${rel}" ] || continue
+      printf '%s\0' "${repo}/${rel}"
+    done | xargs -0 -r sha256sum -- 2>/dev/null
+
+  echo "${label}:UNTRACKED_NAMES"
+  git -C "${repo}" ls-files --others --exclude-standard -z 2>/dev/null
+  echo "${label}:UNTRACKED_CONTENT"
+  git -C "${repo}" ls-files --others --exclude-standard -z 2>/dev/null |
+    while IFS= read -r -d '' rel; do printf '%s\0' "${repo}/${rel}"; done |
+    xargs -0 -r sha256sum -- 2>/dev/null
+  git -C "${repo}" ls-files --others --exclude-standard -z 2>/dev/null |
+    while IFS= read -r -d '' rel; do printf '%s\0' "${repo}/${rel}"; done |
+    xargs -0 -r stat -c 'MODE:%a:%n' -- 2>/dev/null
+}
+
 source_fingerprint() {
-  local root="$1" repo rel file
+  local root="$1" repo rel
   {
     if ! git -C "${root}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       echo NO_GIT_REPOSITORY
       return
     fi
-    # Hash actual tracked content, not only porcelain status letters.  edit1 -> edit2
-    # must change the identity even though both states display the same " M file".
-    echo "ROOT_HEAD=$(git -C "${root}" rev-parse HEAD 2>/dev/null || echo NO_HEAD)"
-    git -C "${root}" diff --no-ext-diff --binary HEAD -- 2>/dev/null
-    while IFS= read -r -d '' rel; do
-      file="${root}/${rel}"
-      printf 'UNTRACKED:%s:' "${rel}"
-      sha256sum "${file}" 2>/dev/null || echo MISSING
-    done < <(git -C "${root}" ls-files --others --exclude-standard -z 2>/dev/null)
+    fingerprint_repo "${root}" ROOT
 
-    # An outer repo only reports a stable "submodule dirty" marker.  Hash each
-    # nested repository's real diff and untracked source blobs as well.
+    # Hash direct build dependencies in full. Do not recursively enter nested
+    # test/model submodules: their gitlink/dirty metadata is already captured
+    # by the direct parent's raw diff, while content-walking them can delay a
+    # converter build for hours on a line-ending-dirty Windows worktree.
     while read -r rel; do
       [ -n "${rel}" ] || continue
       repo="${root}/${rel}"
-      echo "SUBMODULE:${rel}:HEAD=$(git -C "${repo}" rev-parse HEAD 2>/dev/null || echo NO_HEAD)"
-      git -C "${repo}" diff --no-ext-diff --binary HEAD -- 2>/dev/null
-      while IFS= read -r -d '' file; do
-        printf 'SUBMODULE_UNTRACKED:%s/%s:' "${rel}" "${file}"
-        sha256sum "${repo}/${file}" 2>/dev/null || echo MISSING
-      done < <(git -C "${repo}" ls-files --others --exclude-standard -z 2>/dev/null)
-    done < <(git -C "${root}" submodule status --recursive 2>/dev/null | awk '{print $2}')
+      fingerprint_repo "${repo}" "SUBMODULE:${rel}"
+    done < <(git -C "${root}" submodule status 2>/dev/null | awk '{print $2}')
   } | sha256sum | awk '{print $1}'
 }
 
@@ -100,7 +114,7 @@ if [ "${1:-}" = "--status" ]; then
     if [ -f "${PIDFILE}" ] && kill -0 "$(cat "${PIDFILE}")" 2>/dev/null; then
       EXPECTED_RUN_ID="${CURRENT_RUN_ID}"
     else
-      echo "NO_CURRENT_BUILD：没有运行中的构建；历史结果只能带 RUN_ID 显式查询，不能作为本轮结论。"
+      echo "NO_CURRENT_BUILD：没有运行中的构建；其他运行结果只能带 RUN_ID 显式查询，不能作为本轮结论。"
       [ -n "${CURRENT_RUN_ID}" ] && echo "HISTORICAL_RUN_ID=${CURRENT_RUN_ID}"
       exit 12
     fi
@@ -131,7 +145,7 @@ if [ "${1:-}" = "--status" ]; then
     exit 10
   fi
   if [ ! -f "${RCFILE}" ]; then
-    echo "INCOMPLETE_BUILD_RECORD：RUN_ID=${EXPECTED_RUN_ID} 的进程已退出但本轮 RC 尚未写入；禁止回退读取历史 RC。"
+    echo "INCOMPLETE_BUILD_RECORD：RUN_ID=${EXPECTED_RUN_ID} 的进程已退出但本轮 RC 尚未写入；禁止回退读取其他运行的 RC。"
     exit 12
   fi
   read -r RC_RUN_ID rc < "${RCFILE}"
@@ -188,7 +202,7 @@ if [ "${1:-}" = "--wait" ]; then
   EXPECTED_RUN_ID="${3:-}"
   case "${MAX}" in (*[!0-9]*|"") echo "[!] --wait 的上限须为秒数，如 --wait 540" >&2; exit 1;; esac
   if [ -z "${EXPECTED_RUN_ID}" ]; then
-    echo "[!] --wait 必须携带启动时保存的 RUN_ID，避免把历史构建当成本轮结果。" >&2
+    echo "[!] --wait 必须携带启动时保存的 RUN_ID，避免把其他构建当成本轮结果。" >&2
     exit 12
   fi
   # nohup 启动与下一次工具调用之间存在短竞态：wait 可能先读到上一轮 RUNIDFILE。
@@ -219,13 +233,23 @@ if [ "${1:-}" = "--stop" ]; then
     exit 0
   fi
   wrapper="$(cat "${PIDFILE}")"
-  pg="$(cat "${PGIDFILE}" 2>/dev/null || true)"
-  [ -n "${pg}" ] && kill -TERM -- "-${pg}" 2>/dev/null
+  build_pg="$(cat "${PGIDFILE}" 2>/dev/null || true)"
+  wrapper_pg="$(ps -o pgid= -p "${wrapper}" 2>/dev/null | tr -d ' ')"
+  stopper_pg="$(ps -o pgid= -p $$ 2>/dev/null | tr -d ' ')"
+  [ -n "${build_pg}" ] && kill -TERM -- "-${build_pg}" 2>/dev/null
+  if [ -n "${wrapper_pg}" ] && [ "${wrapper_pg}" != "${stopper_pg}" ]; then
+    kill -TERM -- "-${wrapper_pg}" 2>/dev/null
+  else
+    kill -TERM "${wrapper}" 2>/dev/null
+  fi
   for _ in 1 2 3 4 5; do kill -0 "${wrapper}" 2>/dev/null || break; sleep 1; done
-  [ -n "${pg}" ] && kill -KILL -- "-${pg}" 2>/dev/null
+  [ -n "${build_pg}" ] && kill -KILL -- "-${build_pg}" 2>/dev/null
+  if [ -n "${wrapper_pg}" ] && [ "${wrapper_pg}" != "${stopper_pg}" ]; then
+    kill -KILL -- "-${wrapper_pg}" 2>/dev/null
+  fi
   kill -KILL "${wrapper}" 2>/dev/null
   rm -f "${PIDFILE}" "${PGIDFILE}"
-  echo "STOPPED：构建已终止（进程组 ${pg:-未知} 已清场）。改完代码后仍经本脚本重跑。"
+  echo "STOPPED：构建已终止（wrapper 进程组 ${wrapper_pg:-未知}，build 进程组 ${build_pg:-未生成} 已清场）。改完代码后仍经本脚本重跑。"
   exit 0
 fi
 
@@ -278,9 +302,10 @@ export MSLITE_ENABLE_INT8=ON
 export MSLITE_ENABLE_TRAIN=OFF
 export MSLITE_ENABLE_TESTCASES=OFF
 export MSLITE_TARGET_RISCV=ON
+export HISPARK_SKIP_SUBMODULE_UPDATE=1
 
 # ---- 工具链定位通用函数 ----
-# 工具链 bin/ 下的入口常是符号链接（clang -> clang-15、arm-...-gcc -> arm-linux-musleabi-gcc），
+# 工具链 bin/ 下的入口常是符号链接（如 clang -> clang-15），
 # find 必须 \( -type f -o -type l \)；只写 -type f 会永远漏掉符号链接（已实际踩过）。
 # 两级策略：①按可执行名搜（f 或 l + --version 验证）；②兜底按目录名模糊搜（如 *bisheng*），再验 bin/<名>。
 
@@ -325,22 +350,7 @@ if ! { [ -n "${HISPARK_RISCV_TOOLCHAIN_PATH:-}" ] \
   export HISPARK_RISCV_TOOLCHAIN_PATH="${found_root}"
 fi
 
-# ---- ARM 工具链（--version 含 musl）：尊重已设 env，否则定位 ----
-if ! { [ -n "${HISPARK_ARM_TOOLCHAIN_PATH:-}" ] \
-       && [ -x "${HISPARK_ARM_TOOLCHAIN_PATH}/bin/arm-v01c01-linux-musleabi-gcc" ] \
-       && ver_ok "${HISPARK_ARM_TOOLCHAIN_PATH}/bin/arm-v01c01-linux-musleabi-gcc" musl; }; then
-  found_root=$(find_toolchain arm-v01c01-linux-musleabi-gcc musl "*arm*musl*")
-  if [ -z "${found_root}" ]; then
-    echo "[!] 未找到 ARM musl GCC 工具链——设置 HISPARK_ARM_TOOLCHAIN_PATH 后重跑。" >&2
-    echo "    人工排查（注意可执行文件可能是符号链接，勿用 find -type f）：" >&2
-    echo "      find ~ /opt -maxdepth 5 -type d -iname '*arm*musl*'" >&2
-    exit 2
-  fi
-  export HISPARK_ARM_TOOLCHAIN_PATH="${found_root}"
-fi
-
 echo "RISC-V toolchain: ${HISPARK_RISCV_TOOLCHAIN_PATH}"
-echo "ARM    toolchain: ${HISPARK_ARM_TOOLCHAIN_PATH}"
 
 # ---- 陈旧 schema 生成头自检：CMake 不追踪 ops_def.cc → ops.fbs → model_generated.h 的再生成链 ----
 # ops_def.cc 改完后旧 model_generated.h 缓存仍被使用 → 编译报
@@ -432,14 +442,15 @@ if [ ${rc} -ne 0 ]; then
   exit 3
 fi
 
-# ---- 交叉库是必须产物：缺失 = ExternalProject 静默失败 ----
-for lib in build/riscv/build/nnacl/libnnacl.a build/arm/build/nnacl/libnnacl.a; do
-  if [ ! -f "${lib}" ]; then
-    echo "[!] 交叉库缺失: ${lib}" >&2
-    echo "    查 build/*/src/*-stamp/*-build-*.log；新增 nnacl_c 文件未进 riscv 库时删 build/riscv 重跑" >&2
-    exit 4
-  fi
-done
+# ---- RISC-V 交叉库是必须产物：缺失 = ExternalProject 静默失败 ----
+# 当前 MindSpore Lite 的 MSLITE_TARGET_RISCV 只注册 nnacl_riscv ExternalProject；
+# 不存在 nnacl_arm/build/arm 目标，不能用不适用的 ARM 路径误拦截成功构建。
+RISCV_NNACL=build/riscv/build/nnacl/libnnacl.a
+if [ ! -f "${RISCV_NNACL}" ]; then
+  echo "[!] RISC-V 交叉库缺失: ${RISCV_NNACL}" >&2
+  echo "    查 build/riscv/src/*-stamp/*-build-*.log；新增 nnacl_c 文件未进库时删 build/riscv 重跑" >&2
+  exit 4
+fi
 
 # ---- 解压产物（hs-verify-op-host 必须用解压包，不是 build/）----
 TARBALL=$(ls -t output/mindspore-lite-*-linux-x64.tar.gz output/tmp/mindspore-lite-*-linux-x64.tar.gz 2>/dev/null | head -1)
