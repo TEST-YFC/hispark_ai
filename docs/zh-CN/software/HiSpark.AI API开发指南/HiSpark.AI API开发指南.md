@@ -372,14 +372,14 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </tr>
 <tr id="row178301113319"><td class="cellrowborder" rowspan="2" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p16830018312"><a name="p16830018312"></a><a name="p16830018312"></a>Tensor管理</p>
 </td>
-<td class="cellrowborder" valign="top" width="48.71512848715129%" headers="mcps1.2.5.1.2 "><p id="p387811995113"><a name="p387811995113"></a><a name="p387811995113"></a>int64_t OH_AI_TensorGetElementNum(const MSTensorHandle tensor);</p>
+<td class="cellrowborder" valign="top" width="48.71512848715129%" headers="mcps1.2.5.1.2 "><p id="p387811995113"><a name="p387811995113"></a><a name="p387811995113"></a>int64_t OH_AI_TensorGetElementNum(const OH_AI_TensorHandle tensor);</p>
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p4115382220"><a name="p4115382220"></a><a name="p4115382220"></a>获取OH_AI_Tensor的元素个数。</p>
 </td>
 <td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p161821835122313"><a name="p161821835122313"></a><a name="p161821835122313"></a>Hi3322、Hi1156E、WS63</p>
 </td>
 </tr>
-<tr id="row98301119312"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p16464218329"><a name="p16464218329"></a><a name="p16464218329"></a>void *OH_AI_TensorGetMutableData(const MSTensorHandle tensor);</p>
+<tr id="row98301119312"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p16464218329"><a name="p16464218329"></a><a name="p16464218329"></a>void *OH_AI_TensorGetMutableData(const OH_AI_TensorHandle tensor);</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p2067854691014"><a name="p2067854691014"></a><a name="p2067854691014"></a>获取可变的OH_AI_Tensor的数据。</p>
 </td>
@@ -1214,7 +1214,7 @@ OH\_AI\_TensorHandleArray OH\_AI\_ModelGetLabels\(const OH\_AI\_ModelHandle mode
 </tbody>
 </table>
 
-【返回值】指向标签数组结构体的指针。
+【返回值】模型标签对应的张量数组结构体。
 
 ### OH\_AI\_ModelRunStep<a name="ZH-CN_TOPIC_0000002624618606"></a>
 
@@ -1224,7 +1224,7 @@ OH\_AI\_TensorHandleArray OH\_AI\_ModelGetLabels\(const OH\_AI\_ModelHandle mode
 
 【语法】
 
-OH\_AI\_Status OH\_AI\_ModelTrainStep\(OH\_AI\_ModelHandle model\)
+OH\_AI\_Status OH\_AI\_ModelRunStep\(OH\_AI\_ModelHandle model\)
 
 【参数说明】
 
@@ -1309,7 +1309,7 @@ OH\_AI\_Status OH\_AI\_ModelGetTrainMode\(OH\_AI\_ModelHandle model, bool \*mode
 </tr>
 <tr id="row152313230388"><td class="cellrowborder" valign="top" width="35.8%" headers="mcps1.1.3.1.1 "><p id="p1523192319388"><a name="p1523192319388"></a><a name="p1523192319388"></a>mode</p>
 </td>
-<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p62314239387"><a name="p62314239387"></a><a name="p62314239387"></a>指向存储当前模型的训练模式模式的变量的指针。</p>
+<td class="cellrowborder" valign="top" width="64.2%" headers="mcps1.1.3.1.2 "><p id="p62314239387"><a name="p62314239387"></a><a name="p62314239387"></a>指向存储当前模型的训练模式的变量的指针。</p>
 </td>
 </tr>
 </tbody>
@@ -1449,9 +1449,9 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
 1.  环境初始化。
 
     ```
-    OH_AI_Status ret = OH_AI_InitFromFile(NULL);
+    OH_AI_Status ret = OH_AI_Init(NULL, 0);
     if (ret != OH_AI_STATUS_SUCCESS) {
-        common_printf("[AI_NPU] OH_AI_InitFromFile failed (%d)\n", ret);
+        common_printf("[AI_NPU] OH_AI_Init failed (%d)\n", ret);
         return ret;
     }
     ```
@@ -1466,7 +1466,7 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
     }
     ```
 
-1.  模型创建加载。
+3.  模型创建加载。
 
     ```
     OH_AI_ModelHandle model_handle = OH_AI_ModelCreate();
@@ -1479,40 +1479,52 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
     if (ret != OH_AI_STATUS_SUCCESS) {
       printf("OH_AI_ModelBuild failed, ret: %d.\n", ret);
       OH_AI_ModelDestroy(&model_handle);
+      OH_AI_ContextDestroy(&context_handle);
       return ret;
     }
     ```
 
-1.  设置输入与输出数据。
+4.  设置输入与输出数据。
 
     ```
     OH_AI_TensorHandleArray inputs_handle = OH_AI_ModelGetInputs(model_handle);
     if (inputs_handle.handle_list == NULL) {
       printf("OH_AI_ModelGetInputs failed");
+      OH_AI_ModelDestroy(&model_handle);
+      OH_AI_ContextDestroy(&context_handle);
       return OH_AI_STATUS_FAILED;
     }
     OH_AI_TensorHandleArray outputs_handle = OH_AI_ModelGetOutputs(model_handle);
     if (!outputs_handle.handle_list) {
       printf("OH_AI_ModelGetOutputs failed");
+      OH_AI_ModelDestroy(&model_handle);
+      OH_AI_ContextDestroy(&context_handle);
       return OH_AI_STATUS_FAILED;
     }
     ```
 
-1.  模型推理。
+5.  模型推理。
 
     ```
     ret = OH_AI_ModelPredict(model_handle, inputs_handle, &outputs_handle);
     if (ret != OH_AI_STATUS_SUCCESS) {
       OH_AI_ModelDestroy(&model_handle);
+      OH_AI_ContextDestroy(&context_handle);
       return ret;
     }
     ```
 
-1.  资源释放。
+6.  资源释放。
 
     ```
-    OH_AI_ContextDestroy(&context_handle);
     OH_AI_ModelDestroy(&model_handle);
+    OH_AI_ContextDestroy(&context_handle);
+    ```
+
+7.  环境去初始化。
+
+    ```
+    OH_AI_Deinit();
     ```
 
 ## NPU平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762563"></a>
@@ -1534,7 +1546,17 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >状态码说明：OH\_AI\_STATUS\_FAILED表示相关API调用失败；OH\_AI\_STATUS\_SUCCESS表示相关API调用成功。
 
-1.  创建配置上下文。
+1.  环境初始化。
+
+    ```
+    OH_AI_Status ret = OH_AI_InitFromFile(NULL);
+    if (ret != OH_AI_STATUS_SUCCESS) {
+        common_printf("[AI_NPU] OH_AI_InitFromFile failed (%d)\n", ret);
+        return ret;
+    }
+    ```
+
+2.  创建配置上下文。
 
     ```
     OH_AI_ContextHandle context_handle = OH_AI_ContextCreate();
@@ -1544,7 +1566,7 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
     }
     ```
 
-1.  模型创建加载。
+3.  模型创建加载。
 
     ```
     OH_AI_ModelHandle model_handle = OH_AI_ModelCreate();
@@ -1561,7 +1583,7 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
     }
     ```
 
-1.  设置输入与输出数据。
+4.  设置输入与输出数据。
 
     ```
     OH_AI_TensorHandleArray inputs_handle = OH_AI_ModelGetInputs(model_handle);
@@ -1576,7 +1598,7 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
     }
     ```
 
-1.  模型推理。
+5.  模型推理。
 
     ```
     ret = OH_AI_ModelPredict(model_handle, inputs_handle, &outputs_handle);
@@ -1586,14 +1608,14 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
     }
     ```
 
-1.  资源释放。
+6.  资源释放。
 
     ```
     OH_AI_ModelDestroy(&model_handle);
     OH_AI_ContextDestroy(&context_handle);
     ```
 
-2.  环境去初始化。
+7.  环境去初始化。
 
     ```
     OH_AI_Deinit();

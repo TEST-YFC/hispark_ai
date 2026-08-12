@@ -110,7 +110,7 @@
 1.  将Python3.11的路径添加到LD\_LIBRARY\_PATH中。
 
     ```
-    export LD_LIBRARY_PATH=${py311_inptsll_path}/lib:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=${py311_install_path}/lib:$LD_LIBRARY_PATH
     ```
 
 2.  将GCC的libstdc++6.0.30库路径添加到LD\_LIBRARY\_PATH中。
@@ -462,7 +462,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
     cd $HOME/micro/
     ```
 
-1.  下载并解压converter\_lite工具包。
+3.  下载并解压converter\_lite工具包。
 
     ```
     #进入到算子库在开发环境的路径
@@ -471,19 +471,19 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
     tar -xvf mindspore-enterprise-lite-{version}-linux-x64.tar.gz
     ```
 
-1.  在Micro工程目录新建“build\_riscv.sh”脚本，配置如下：
+4.  在Micro工程目录新建“build\_riscv.sh”脚本，配置如下：
 
     ```
     #mindspore-enterprise-lite-{version}-linux-x64为converter_lite工具包在开发环境的路径，sdk_path为海思工具包在开发环境的路径
     rm -rf build
     cmake -S . -B build -D OP_LIB="${mindspore-enterprise-lite-{version}-linux-x64安装目录}/tools/codegen/lib/riscv/libnnacl.a" \
-        -D WRAPPER_LIB="${mindspore-enterprise-lite-{version}-linux-x64安装目录}/tools/codegen/lib/riscv/libwrapper.a" -D RISCV_TOOLCHAIN_PATH="${sdk_path}/tools/bin/compiler/riscv/cc_riscv32_musl_b090/cc_riscv32_musl/bin" \
+        -D WRAPPER_LIB="${mindspore-enterprise-lite-{version}-linux-x64安装目录}/tools/codegen/lib/riscv/libwrapper.a" -D RISCV_TOOLCHAIN_PATH="${sdk_path}/tools/bin/compiler/riscv/cc_riscv32_musl_105/cc_riscv32_musl/bin" \
         -D PKG_PATH="${mindspore-enterprise-lite-{version}-linux-x64安装目录}"
     cd build
     make -j4
     ```
 
-1.  在"Micro工程目录/build ”目录中生成算子执行文件，目录如下：
+5.  在"Micro工程目录/build ”目录中生成算子执行文件，目录如下：
 
     ```
     Micro工程目录/build                                       # MCU推理代码目录
@@ -506,11 +506,11 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
     [100%] Built target micro_runtime
     ```
 
-1.  将编译产物libnet.a与libmicro\_runtime.a上传至海思工具包再次编译得到编译产物\*.fwpkg文件。然后，使用海思工具在Windows平台烧录推理，具体步骤请参考对应的application/samples/ai中的readme.md。
+6.  将编译产物libnet.a与libmicro\_runtime.a上传至海思工具包再次编译得到编译产物\*.fwpkg文件。然后，使用海思工具在Windows平台烧录推理，具体步骤请参考对应的application/samples/ai中的readme.md。
 
 ## ARM平台编译部署<a name="ZH-CN_TOPIC_0000002590121500" id="ZH-CN_TOPIC_0000002590121500"></a>
 
-本节以FP32的mnist.onnx模型为例，介绍如何利用生成的Micro INT8量化推理代码，并在RISCV平台部署推理。
+本节以FP32的mnist.onnx模型为例，介绍如何利用生成的Micro INT8量化推理代码，并在ARM平台部署推理。
 
 1.  converter\_lite工具转换开源框架模型生成Micro工程，请参见“[快速入门](#ZH-CN_TOPIC_0000002319973524)”章节。
 
@@ -526,7 +526,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
     cd $HOME/micro/
     ```
 
-1.  下载并解压converter\_lite工具包。
+3.  下载并解压converter\_lite工具包。
 
     ```
     #进入到算子库在开发环境的路径
@@ -534,6 +534,43 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
     #解压tar包
     tar -xvf mindspore-enterprise-lite-{version}-linux-x64.tar.gz
     ```
+
+4.  在Micro工程目录新建“build\_riscv.sh”脚本，配置如下：
+
+    ```
+    #mindspore-enterprise-lite-{version}-linux-x64为converter_lite工具包在开发环境的路径，sdk_path为海思工具包在开发环境的路径
+    rm -rf build
+    cmake -S . -B build -D OP_LIB="${mindspore-enterprise-lite-{version}-linux-x64安装目录}/tools/codegen/lib/riscv/libnnacl.a" \
+        -D WRAPPER_LIB="${mindspore-enterprise-lite-{version}-linux-x64安装目录}/tools/codegen/lib/riscv/libwrapper.a" -D HISPARK_ARM_TOOLCHAIN_PATH="${arm_compiler_path}/gcc-arm-v01c01-linux-musleabi/arm-v01c01-linux-musleabi-gcc" \
+        -D PKG_PATH="${mindspore-enterprise-lite-{version}-linux-x64安装目录}"
+    cd build
+    make -j4
+    ```
+
+5.  在"Micro工程目录/build ”目录中生成算子执行文件，目录如下：
+
+    ```
+    Micro工程目录/build                                       # MCU推理代码目录
+    ├── CMakeCache.txt
+    ├── CMakeFiles
+    ├── cmake_install.cmake
+    ├── libmicro_runtime.a			          # 算子运行时静态库
+    ├── Makefile
+    └── src											
+        ├── CMakeFiles
+        ├── cmake_install.cmake
+        ├── libnet.a				          # 算子定义与实现的静态库
+        └── Makefile
+    ```
+
+    代码编译成功，屏幕显示结果如下：
+
+    ```
+    [ 50%] Built target net
+    [100%] Built target micro_runtime
+    ```
+
+6.  将编译产物libnet.a与libmicro\_runtime.a上传至海思工具包再次编译得到编译产物\*.fwpkg文件。然后，使用海思工具在Windows平台烧录推理，具体步骤请参考对应的application/samples/ai中的readme.md。
 
 ## 基于x86\_64平台精度调试<a name="ZH-CN_TOPIC_0000002320125106" id="ZH-CN_TOPIC_0000002320125106"></a>
 
@@ -1104,7 +1141,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     </td>
     <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p208104398275"><a name="p208104398275"></a><a name="p208104398275"></a>Micro工程代码部署推理平台。</p>
     </td>
-    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p1081019390273"><a name="p1081019390273"></a><a name="p1081019390273"></a>x86/RISCV</p>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p1081019390273"><a name="p1081019390273"></a><a name="p1081019390273"></a>x86/RISCV/ARM32</p>
     </td>
     <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p17810123919279"><a name="p17810123919279"></a><a name="p17810123919279"></a>x86</p>
     </td>
