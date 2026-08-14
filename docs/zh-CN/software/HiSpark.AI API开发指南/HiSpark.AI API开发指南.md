@@ -231,7 +231,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 在[接口调用流程图](#fig18338134105017)中展示了应用开发中的典型功能抽象出主要接口的调用流程。当前接口调用流程覆盖模型推理、模型评估和模型训练三类典型通路。
 
-1.  系统初始化：通过调用OH\_AI\_Init/OH\_AI\_InitFromeFile接口完成环境初始化，具体流程参见“[3.2-系统配置](#ZH-CN_TOPIC_0000002486873536)”。
+1.  系统初始化：通过调用OH\_AI\_Init/OH\_AI\_InitFromFile接口完成环境初始化，具体流程参见“[3.2-系统配置](#ZH-CN_TOPIC_0000002486873536)”。
 2.  运行管理资源申请：通过调用OH\_AI\_ContextCreate接口申请运行管理资源，具体流程请参见“[Context管理](#ZH-CN_TOPIC_0000002357273153)”。
 3.  模型加载：在执行模型推理、评估或训练前，需要先调用OH\_AI\_ModelBuild/OH\_AI\_ModelBuildFromFile/OH\_AI\_ModelBuildFromName接口将对应模型加载到系统中。具体流程参见“[3.5 模型加载与执行](#ZH-CN_TOPIC_0000002323314674)”。
 4.  模型输入输出获取：模型加载完成后，可通过OH\_AI\_ModelGetInputs获取模型输入，通过OH\_AI\_ModelGetOutputs获取模型输出。对于评估和训练场景，还需要通过OH\_AI\_ModelGetLabels获取标签输入，用于计算loss或评估指标。
@@ -596,6 +596,10 @@ OH\_AI\_Status OH\_AI\_Init\(void\* config\_data, size\_t data\_size\)
 【语法】
 
 OH\_AI\_Status OH\_AI\_Deinit\(\)
+
+【返回值】
+
+枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
 ## Context管理<a name="ZH-CN_TOPIC_0000002357273153"></a>
 
@@ -1575,10 +1579,11 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
       OH_AI_ContextDestroy(&context_handle);
       return OH_AI_STATUS_FAILED;
     }
-    int ret = OH_AI_ModelBuild(model_handle, "./path_to_model/model.exeom", context_handle);
+    int ret = OH_AI_ModelBuildFromFile(model_handle, "./path_to_model/model.exeom", context_handle);
     if (ret != OH_AI_STATUS_SUCCESS) {
       printf("OH_AI_ModelBuild failed, ret: %d.\n", ret);
       OH_AI_ModelDestroy(&model_handle);
+      OH_AI_ContextDestroy(&context_handle);
       return ret;
     }
     ```
@@ -1589,11 +1594,15 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
     OH_AI_TensorHandleArray inputs_handle = OH_AI_ModelGetInputs(model_handle);
     if (inputs_handle.handle_list == NULL) {
       printf("OH_AI_ModelGetInputs failed");
+      OH_AI_ModelDestroy(&model_handle);
+      OH_AI_ContextDestroy(&context_handle);
       return OH_AI_STATUS_FAILED;
     }
     OH_AI_TensorHandleArray outputs_handle = OH_AI_ModelGetOutputs(model_handle);
     if (!outputs_handle.handle_list) {
       printf("OH_AI_ModelGetOutputs failed");
+      OH_AI_ModelDestroy(&model_handle);
+      OH_AI_ContextDestroy(&context_handle);
       return OH_AI_STATUS_FAILED;
     }
     ```
@@ -1604,6 +1613,7 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
     ret = OH_AI_ModelPredict(model_handle, inputs_handle, &outputs_handle);
     if (ret != OH_AI_STATUS_SUCCESS) {
       OH_AI_ModelDestroy(&model_handle);
+      OH_AI_ContextDestroy(&context_handle);
       return ret;
     }
     ```
