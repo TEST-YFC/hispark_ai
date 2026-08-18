@@ -5,7 +5,7 @@ cur_path=$(cd $(dirname $0) && pwd -P)
 echo $cur_path
 hiSpark_ai_path="$cur_path/../.."
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <bisheng_compiler_path> [--arm-path <arm_compiler_path>] [--target <linux|windows|all>] [--daily] [--daily-num <num>]"
+    echo "Usage: $0 <bisheng_compiler_path> [--arm-path <arm_compiler_path>] [--target <linux|windows|all>] [--daily] [--daily-num <num>] [--cache]"
     exit 1
 fi
 bisheng_path=$1
@@ -14,6 +14,7 @@ is_daily=false
 daily_num=""
 target="all"
 arm_path=""
+cache=false
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--target" ]; then
@@ -37,6 +38,9 @@ while [ $# -gt 0 ]; do
     elif [ "$1" = "--daily" ]; then
         is_daily=true
         shift
+    elif [ "$1" = "--cache" ]; then
+        cache=true
+        shift
     elif [ "$1" = "--daily-num" ]; then
         if [ $# -lt 2 ]; then
             echo "Error: --daily-num requires an argument"
@@ -46,7 +50,7 @@ while [ $# -gt 0 ]; do
         shift 2
     else
         echo "Error: Unknown option: $1"
-        echo "Usage: $0 <bisheng_compiler_path> [--arm-path <arm_compiler_path>] [--target <linux|windows|all>] [--daily] [--daily-num <num>]"
+        echo "Usage: $0 <bisheng_compiler_path> [--arm-path <arm_compiler_path>] [--target <linux|windows|all>] [--daily] [--daily-num <num>] [--cache]"
         exit 1
     fi
 done
@@ -57,6 +61,14 @@ echo "  arm_path: $arm_path"
 echo "  target: $target"
 echo "  is_daily: $is_daily"
 echo "  daily_num: $daily_num"
+echo "  cache: $cache"
+
+# cache为true时为mindspore-lite构建脚本追加增量编译参数-i，否则全量编译
+if [ "$cache" = true ]; then
+    cache_flag="-i"
+else
+    cache_flag=""
+fi
 
 # 编译mindspore-lite
 
@@ -90,7 +102,7 @@ if [ "$build_linux" = true ]; then
         rm -rf build/riscv build/arm
         echo "Removed stale cross-build dirs: build/riscv build/arm"
     fi
-    bash build.sh -I x86_64 -j$(nproc) -i
+    bash build.sh -I x86_64 -j$(nproc) ${cache_flag}
     popd
     pushd ${hiSpark_ai_path}
     if [ ! -d "sdk" ]; then
@@ -122,7 +134,7 @@ if [ "$build_windows" = true ]; then
     fi
     cp output/*.tar.gz ${hiSpark_ai_path}/archives/ 2>/dev/null || true
     # 执行构建
-    bash build_cross_win64.sh -i|| { echo "Build for Win64 failed!"; exit 1; }
+    bash build_cross_win64.sh ${cache_flag} || { echo "Build for Win64 failed!"; exit 1; }
     if ls output/*.tar.gz 1>/dev/null 2>&1; then
         mkdir -p ${hiSpark_ai_path}/archives
         cp output/*.tar.gz ${hiSpark_ai_path}/archives/
