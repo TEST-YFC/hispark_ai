@@ -10,6 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License
+import argparse
 import subprocess
 import os
 import re
@@ -301,9 +302,34 @@ def process_build_results(result_list, special_targets, result_path='archives', 
                 f.writelines(all_lines)
 
 
-def sample_build_main(bisheng_path, arm_path=None, daily=False, build_os='all', daily_num=None):
+def str2bool(v):
+    """解析布尔值，兼容 --cache / --cache true / --cache=true / --cache false 写法"""
+    if str(v).lower() in ('true', '1', 'yes', 'y'):
+        return True
+    if str(v).lower() in ('false', '0', 'no', 'n'):
+        return False
+    raise argparse.ArgumentTypeError(f"无效的布尔值: '{v}' (可选: true/false/1/0)")
+
+def parse_args():
+    """解析命令行参数，未指定的参数回退到环境变量"""
+    parser = argparse.ArgumentParser(description='HiSpark.AI CI构建脚本')
+    parser.add_argument('--build-type', default=None,
+                        help='构建类型: gate/daily/release，未指定时使用环境变量BUILD_TYPE')
+    parser.add_argument('--build-os', default=None,
+                        help='构建平台: linux/windows/all，未指定时使用环境变量BUILD_OS(默认all)')
+    parser.add_argument('--daily-num', default=None,
+                        help='daily构建编号，未指定时使用环境变量DAILY_NUM')
+    parser.add_argument('--cache', nargs='?', const='true', default='false',
+                        type=str2bool,
+                        help='启用编译缓存(为mindspore-lite构建脚本追加-i增量参数)，支持--cache/--cache true/--cache=false，默认不启用')
+    parser.add_argument('--j', type=int, default=None,
+                        help='并行编译任务数，未指定时build.sh默认使用nproc核数')
+    return parser.parse_args()
+
+
+def sample_build_main(bisheng_path, arm_path=None, daily=False, build_os='all', daily_num=None, cache=False, j_num=None):
     print(f"=== 进入 sample_build_main 函数 ===")
-    print(f"参数: bisheng_path={bisheng_path}, arm_path={arm_path}, daily={daily}, build_os={build_os}, daily_num={daily_num}")
+    print(f"参数: bisheng_path={bisheng_path}, arm_path={arm_path}, daily={daily}, build_os={build_os}, daily_num={daily_num}, cache={cache}, j_num={j_num}")
     sys.stdout.flush()
 
     # 确保 bisheng_path 是字符串
@@ -318,6 +344,11 @@ def sample_build_main(bisheng_path, arm_path=None, daily=False, build_os='all', 
             cmd.extend(["--arm-path", arm_path])
         if daily:
             cmd.append("--daily")
+        if cache:
+            cmd.append("--cache")
+        if j_num:
+            cmd.append("--j")
+            cmd.append(str(j_num))
         if daily_num:
             cmd.append("--daily-num")
             cmd.append(str(daily_num))
@@ -621,10 +652,15 @@ def _cleanup_directory(directory, keep_files=None):
 
 def main():
     print(f"start main")
+    args = parse_args()
     build_filename = BUILD_INFO_FILENAME
-    build_type = os.environ.get('BUILD_TYPE', '').strip().lower()
-    build_os = os.environ.get('BUILD_OS', 'all').strip().lower()
-    daily_num = os.environ.get('DAILY_NUM', '').strip()
+    # 命令行参数优先，未指定时回退到环境变量，保持环境变量兼容
+    build_type = (args.build_type if args.build_type is not None else os.environ.get('BUILD_TYPE', '')).strip().lower()
+    build_os = (args.build_os if args.build_os is not None else os.environ.get('BUILD_OS', 'all')).strip().lower()
+    daily_num = (args.daily_num if args.daily_num is not None else os.environ.get('DAILY_NUM', '')).strip()
+    cache = args.cache
+    j_num = args.j
+    print(f"构建配置: build_type={build_type or 'gate'}, build_os={build_os}, daily_num={daily_num or 'N/A'}, cache={cache}, j_num={j_num or 'nproc'}")
     samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
     generating_dataset()
     if build_type in ('gate', 'release'):
@@ -662,7 +698,7 @@ def main():
         sys.stdout = previous_output
         sys.stderr = previous_output
 
-    result, output_text = sample_build_main(bisheng_path, arm_path=arm_path, daily=daily, build_os=build_os, daily_num=daily_num)
+    result, output_text = sample_build_main(bisheng_path, arm_path=arm_path, daily=daily, build_os=build_os, daily_num=daily_num, cache=cache, j_num=j_num)
 
     if build_type == 'daily':
         # 恢复stdout和stderr
