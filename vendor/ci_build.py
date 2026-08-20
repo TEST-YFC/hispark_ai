@@ -313,12 +313,14 @@ def parse_args():
                         help='daily构建编号，未指定时使用环境变量DAILY_NUM')
     parser.add_argument('--cache', action='store_true', default=False,
                         help='启用编译缓存(为mindspore-lite构建脚本追加-i增量参数)，默认不启用')
+    parser.add_argument('--j', type=int, default=None,
+                        help='并行编译任务数，未指定时build.sh默认使用nproc核数')
     return parser.parse_args()
 
 
-def sample_build_main(bisheng_path, arm_path=None, daily=False, build_os='all', daily_num=None, cache=False):
+def sample_build_main(bisheng_path, arm_path=None, daily=False, build_os='all', daily_num=None, cache=False, j_num=None):
     print(f"=== 进入 sample_build_main 函数 ===")
-    print(f"参数: bisheng_path={bisheng_path}, arm_path={arm_path}, daily={daily}, build_os={build_os}, daily_num={daily_num}, cache={cache}")
+    print(f"参数: bisheng_path={bisheng_path}, arm_path={arm_path}, daily={daily}, build_os={build_os}, daily_num={daily_num}, cache={cache}, j_num={j_num}")
     sys.stdout.flush()
 
     # 确保 bisheng_path 是字符串
@@ -335,6 +337,9 @@ def sample_build_main(bisheng_path, arm_path=None, daily=False, build_os='all', 
             cmd.append("--daily")
         if cache:
             cmd.append("--cache")
+        if j_num:
+            cmd.append("--j")
+            cmd.append(str(j_num))
         if daily_num:
             cmd.append("--daily-num")
             cmd.append(str(daily_num))
@@ -645,7 +650,8 @@ def main():
     build_os = (args.build_os if args.build_os is not None else os.environ.get('BUILD_OS', 'all')).strip().lower()
     daily_num = (args.daily_num if args.daily_num is not None else os.environ.get('DAILY_NUM', '')).strip()
     cache = args.cache
-    print(f"构建配置: build_type={build_type or 'gate'}, build_os={build_os}, daily_num={daily_num or 'N/A'}, cache={cache}")
+    j_num = args.j
+    print(f"构建配置: build_type={build_type or 'gate'}, build_os={build_os}, daily_num={daily_num or 'N/A'}, cache={cache}, j_num={j_num or 'nproc'}")
     samples_target, adaptor_target = prepare_tar_gz(hiSpark_ai_path)
     generating_dataset()
     if build_type in ('gate', 'release'):
@@ -683,7 +689,7 @@ def main():
         sys.stdout = previous_output
         sys.stderr = previous_output
 
-    result, output_text = sample_build_main(bisheng_path, arm_path=arm_path, daily=daily, build_os=build_os, daily_num=daily_num, cache=cache)
+    result, output_text = sample_build_main(bisheng_path, arm_path=arm_path, daily=daily, build_os=build_os, daily_num=daily_num, cache=cache, j_num=j_num)
 
     if build_type == 'daily':
         # 恢复stdout和stderr
