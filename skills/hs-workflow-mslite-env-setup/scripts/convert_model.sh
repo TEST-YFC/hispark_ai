@@ -36,29 +36,9 @@ support_parallel=false
 CFG_EOF
 fi
 
-# 自动绑定本轮工具包的 converter 动态库。每次工具调用可能是新 shell，因此必须在
-# 启动 converter 的同一进程中执行，不能依赖用户先前手工 export。
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-source "$SCRIPT_DIR/converter_runtime_env.sh"
+# 设置 converter 环境
 export PATH="$MSLITE_PKG/tools/converter/converter:$PATH"
-echo "[convert_model] CONVERTER_RUNTIME_GATE=PASS libraries=$CONVERTER_RUNTIME_LIBRARY_DIRS"
-
-# converter CLI随版本变化：支持加密的构建默认可能开启加密，而2.8等构建又完全没有
-# --encryption参数。必须在与真实转换相同的动态库环境中探测，不能硬编码版本参数。
-CONVERTER="$MSLITE_PKG/tools/converter/converter/converter_lite"
-HELP_LOG=/tmp/mslite_converter_help.log
-if ! "$CONVERTER" --help > "$HELP_LOG" 2>&1; then
-    echo "[convert_model] 错误: 已自动配置本轮工具包动态库，但converter_lite仍无法启动: $HELP_LOG" >&2
-    tail -20 "$HELP_LOG" >&2
-    exit 1
-fi
-ENCRYPTION_ARGS=()
-if grep -Eq '(^|[^[:alnum:]_])--encryption([=[:space:]]|$)' "$HELP_LOG"; then
-    ENCRYPTION_ARGS+=(--encryption=false)
-    echo "[convert_model] converter encryption=supported; using --encryption=false"
-else
-    echo "[convert_model] converter encryption=unsupported; omitted"
-fi
+export LD_LIBRARY_PATH="$MSLITE_PKG/tools/converter/lib:$LD_LIBRARY_PATH"
 
 # 创建输出目录
 mkdir -p "$OUTPUT_DIR"
@@ -69,13 +49,13 @@ mkdir -p "$OUTPUT_DIR"
 CONV_LOG=/tmp/mslite_convert.log
 echo "[convert_model] 执行转换... (日志: $CONV_LOG)"
 set +e
-"$CONVERTER" \
+converter_lite \
     --fmk=ONNX \
     --modelFile="$MODEL_FILE" \
     --outputFile="$OUTPUT_DIR" \
     --configFile="$CONFIG_FILE" \
     --inputDataFormat=NCHW \
-    "${ENCRYPTION_ARGS[@]}" \
+    --encryption=false \
     --outputDataFormat=NCHW > "$CONV_LOG" 2>&1
 CONV_RC=$?
 set -e

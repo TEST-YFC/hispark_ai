@@ -147,13 +147,8 @@ if [ -n "${MSLITE_PKG:-}" ] && [ -d "$MSLITE_PKG" ]; then
     *":$MSLITE_PKG/tools/converter/converter:"*) ;;
     *) export PATH="$MSLITE_PKG/tools/converter/converter:$PATH" ;;
   esac
-  _setup_script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-  if source "$_setup_script_dir/converter_runtime_env.sh"; then
-    _ok "converter_lite 已加入 PATH；动态库已从本轮 MSLITE_PKG 自动配置"
-  else
-    _err "本轮 MSLITE_PKG 缺少 converter 运行库，不能启动 converter_lite"
-  fi
-  unset _setup_script_dir
+  export LD_LIBRARY_PATH="$MSLITE_PKG/tools/converter/lib:$MSLITE_PKG/runtime/lib:${LD_LIBRARY_PATH:-}"
+  _ok "converter_lite 已加入 PATH"
 fi
 
 # ---- 7. 毕昇 riscv32-linux-musl-gcc 软链接（先校验布局再建）------------------
