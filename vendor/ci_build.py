@@ -302,6 +302,14 @@ def process_build_results(result_list, special_targets, result_path='archives', 
                 f.writelines(all_lines)
 
 
+def str2bool(v):
+    """解析布尔值，兼容 --cache / --cache true / --cache=true / --cache false 写法"""
+    if str(v).lower() in ('true', '1', 'yes', 'y'):
+        return True
+    if str(v).lower() in ('false', '0', 'no', 'n'):
+        return False
+    raise argparse.ArgumentTypeError(f"无效的布尔值: '{v}' (可选: true/false/1/0)")
+
 def parse_args():
     """解析命令行参数，未指定的参数回退到环境变量"""
     parser = argparse.ArgumentParser(description='HiSpark.AI CI构建脚本')
@@ -311,8 +319,9 @@ def parse_args():
                         help='构建平台: linux/windows/all，未指定时使用环境变量BUILD_OS(默认all)')
     parser.add_argument('--daily-num', default=None,
                         help='daily构建编号，未指定时使用环境变量DAILY_NUM')
-    parser.add_argument('--cache', action='store_true', default=False,
-                        help='启用编译缓存(为mindspore-lite构建脚本追加-i增量参数)，默认不启用')
+    parser.add_argument('--cache', nargs='?', const='true', default='false',
+                        type=str2bool,
+                        help='启用编译缓存(为mindspore-lite构建脚本追加-i增量参数)，支持--cache/--cache true/--cache=false，默认不启用')
     parser.add_argument('--j', type=int, default=None,
                         help='并行编译任务数，未指定时build.sh默认使用nproc核数')
     return parser.parse_args()
