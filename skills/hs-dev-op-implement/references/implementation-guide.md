@@ -705,8 +705,8 @@ REG_OPERATOR_CODER(kAllTargets, kNumberTypeFloat32,
 
 ### 代码风格
 
-本仓算子代码以代码根 `.clang-format` 和 HiSpark.AI `docs/zh-CN/software/code-style.md` 为准；两者发生
-格式差异时，格式由 `.clang-format` 决定，安全与可维护性规则由 `code-style.md` 决定。完整执行清单见
+本仓算子代码以代码根 `.clang-format` 和本 Skill 的 `references/code-style.md` 为准。两者发生
+格式差异时，格式由 `.clang-format` 决定，安全与可维护性规则由 Skill 内置规范决定。完整执行清单见
 `references/code-quality-gate.md`。不要使用“固定 2 空格、函数 100 行”这类泛化描述：当前项目门禁要求
 函数不超过 50 个非空非注释行、5 个参数和 4 层嵌套，并对修改代码执行仓内 clang-format。
 Python 遵循 PEP 8。

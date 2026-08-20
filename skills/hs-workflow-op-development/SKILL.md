@@ -101,7 +101,7 @@ hs-design-op-manual (integrated-final：更新同一主文档并回填结果)
 
 开始前先自动探测代码存储位置和各阶段实际执行环境；可由当前会话、路径存在性和工具实测
 唯一确定的信息不得再次询问用户。路径只直接证明“文件存在哪里”，不能单独证明“命令在哪里
-执行”：例如`C:\...`和`/mnt/c/...`都表示Windows文件系统上的同一类存储位置，但Linux ELF版
+执行”：例如 Windows 工作区和其 `/mnt/<drive>/...` 映射表示同一类存储位置，但 Linux ELF版
 `converter_lite`仍应在WSL/Linux运行，Windows侧SDK也可能由Windows侧`fbb CLI`驱动构建。必须分别
 记录以下字段：
 
@@ -388,11 +388,11 @@ target）。任一命令不可用、路径身份不符或SDK描述失败时，st
 
 ## stage2：实现源码
 
-调用`hs-dev-op-implement mode=apply`，传递stage1冻结的implementation unit、全部产物哈希、
-`HISPARK_ROOT`以及
-`<HISPARK_ROOT>/docs/zh-CN/software/code-style.md`的绝对路径。apply在写任何①-⑦源码前必须完整
-读取该规范并返回`CODE_STYLE_SOURCE`和`CODE_STYLE_SOURCE_SHA256`；只有规范文件确实不存在时
-才允许显式使用`FROZEN_FALLBACK`，不能因为路径查找失败就静默跳过。
+调用`hs-dev-op-implement mode=apply`，传递stage1冻结的implementation unit、全部产物哈希和
+`HISPARK_ROOT`。`code-style.md`是随 Skill 分发的团队统一编程规范，不是用户需要安装的工具；apply
+在写任何①-⑦源码前必须完整读取 Skill 内置的`references/code-style.md`，并返回该文件展开后的绝对
+路径作为`CODE_STYLE_SOURCE`，以及`CODE_STYLE_SOURCE_SHA256`。不能改用用户本地项目中的同名文件，也不能因用户项目
+缺少该文件而停止。
 apply必须先重新读取`PRE_SOURCE_GATE=PASS`证据；不得重新运行prepare、静默改写合同或自行调用
 文档Skill。只有收到每个implementation unit的`IMPLEMENT_GATE=PASS`才进入stage3。
 
@@ -420,8 +420,8 @@ shell残留：
 
 构建前由 workflow 使用stage2记录的同一`CODE_STYLE_SOURCE`重跑
 `hs-dev-op-implement/references/code-quality-gate.md`，防止实现阶段之后的修改绕过门禁。先读取
-`<opdir>/docs/code-style-audit.md`并核对规范路径、SHA-256、全部规则ID和当前diff；规范文件
-SHA-256发生变化时必须重新完整读取并重做逐规则审计。没有
+`<opdir>/docs/code-style-audit.md`并核对规范路径、SHA-256、全部规则ID和当前diff；Skill 内置规范
+内容发生变化时必须重新完整读取并重做逐规则审计。没有
 `CODE_STYLE_AUDIT=PASS`、`CODE_STYLE_GATE=PASS`和`SECURITY_GATE=PASS`不得启动下面的构建命令。
 
 使用本 workflow 自有的受控构建资源：

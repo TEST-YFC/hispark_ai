@@ -2,11 +2,15 @@
 
 ## 适用范围
 
-本门禁检查本次新增或修改的 C/C++、CMake 和注册接线。规范源是 HiSpark.AI 仓库的
-`docs/zh-CN/software/code-style.md`。首次修改源码前必须完整读取该文件并记录绝对路径和
-SHA-256；不能只读本页摘要代替仓库规范。调用环境确实没有该文件时，才以本页的冻结摘要为
-最低要求。此时必须完整读取`code-style-v5.5-fallback.md`，同时输出
-`CODE_STYLE_SOURCE=FROZEN_FALLBACK`并报告缺失的规范源；不能把本页主题摘要冒充完整规范。
+这里的“代码规范”是用来检查算子源码格式、安全性和可维护性的规则清单，不是编译器、SDK、Python
+包或用户必须提前安装的环境。规范已经随本 Skill 一起提供在
+`references/code-style.md`，使用者不需要另外下载或创建规范文件。
+
+本门禁检查本次新增或修改的 C/C++、CMake 和注册接线。开始修改源码前必须完整读取 Skill 内置的
+`references/code-style.md`，记录该文件的绝对路径和 SHA-256，并以它作为团队统一规范源。
+
+`code-quality-gate.md` 是执行流程和算子专项检查，不是第二份代码规范；它不能替代
+`references/code-style.md`。必须逐规则记录适用性、证据和结果。
 
 门禁执行两次：`hs-dev-op-implement` 交付源码前执行一次，`hs-workflow-op-development` 构建前再执行一次。两次必须使用同一个规范文件身份；SHA-256变化时重新完整读取并重做逐规则审计。
 不要另建独立门禁 skill，避免只靠触发概率决定质量检查是否发生。
@@ -99,8 +103,8 @@ clang-format --dry-run --Werror --style=file <changed C/C++ files>
 规范路径/SHA-256仍与当前规范源一致，并重新检查本轮diff；不能只复用旧的PASS文本。
 
 ```text
-CODE_STYLE_SOURCE=<absolute path|FROZEN_FALLBACK>
-CODE_STYLE_SOURCE_SHA256=<sha256|N/A>
+CODE_STYLE_SOURCE=<本 Skill 安装目录>/references/code-style.md（运行时必须展开为绝对路径）
+CODE_STYLE_SOURCE_SHA256=<sha256>
 CODE_STYLE_AUDIT=<PASS|FAIL>
 CODE_STYLE_GATE=<PASS|FAIL>
 SECURITY_GATE=<PASS|FAIL>

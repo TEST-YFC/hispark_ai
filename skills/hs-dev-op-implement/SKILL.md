@@ -240,19 +240,18 @@ python3 <skill_root>/scripts/gate_artifacts.py \
 能力清单、contract、op_spec或初版文档后续发生变化时，立即停止apply并回到workflow
 stage1：重新执行prepare、`integrated-initial`和pre-source门禁。不能先改源码后补文档。
 
-在本轮首次修改任何①-⑦源码前，完整读取 HiSpark.AI 仓库的
-`docs/zh-CN/software/code-style.md` 和本 Skill 的 `references/code-quality-gate.md`，并记录：
+`code-style.md` 是随本 Skill 分发的团队统一 C/C++、CMake 和注册接线编程规范，不是用户需要提前
+安装的工具或环境。在本轮首次修改任何①-⑦源码前，必须完整读取
+`references/code-style.md` 和 `references/code-quality-gate.md`，并记录：
 
 ```text
-CODE_STYLE_SOURCE=<code-style.md绝对路径|FROZEN_FALLBACK>
-CODE_STYLE_SOURCE_SHA256=<sha256|N/A>
+CODE_STYLE_SOURCE=<本 Skill 安装目录>/references/code-style.md（运行时必须展开为绝对路径）
+CODE_STYLE_SOURCE_SHA256=<sha256>
 ```
 
-仓库文件存在时必须以它为规范源，不能只读摘要或凭记忆编码；文件确实不存在时才允许使用
-`references/code-style-v5.5-fallback.md` 的完整规则清单，并在当前阶段和最终交付中明确报告
-`FROZEN_FALLBACK`，不能静默跳过。格式冲突由代码根 `.clang-format` 决定，安全和可维护性
-规则由 `code-style.md` 决定。
-如果规范文件在实现期间发生变化，必须重新读取并重新执行 step6 审计。
+该规范由 Skill 自带，使用者无需提供或创建任何额外的 `code-style.md`。格式冲突由代码根
+`.clang-format` 决定；安全和可维护性规则由 Skill 内置规范决定。
+如果实际选中的规范源在实现期间发生变化，必须重新读取并重新执行 step6 审计。
 
 随后，每一层动笔前打开 `references/implementation-guide.md` 的对应小节，以仓内同族实现和模板为底稿。INT8 另读 `references/int8-coder-conventions.md`；fusion 另读 `references/optimizer-fusion-template.md`。
 
@@ -444,8 +443,8 @@ IMPLEMENT_GATE=<PASS|FAIL>
 implementation_unit=<name>
 source_entries=<list>
 changed_files=<list>
-CODE_STYLE_SOURCE=<absolute path|FROZEN_FALLBACK>
-CODE_STYLE_SOURCE_SHA256=<sha256|N/A>
+CODE_STYLE_SOURCE=<本 Skill 安装目录>/references/code-style.md（运行时必须展开为绝对路径）
+CODE_STYLE_SOURCE_SHA256=<sha256>
 CODE_STYLE_AUDIT=<PASS|FAIL>
 capability_checklist=<absolute path>
 opdir=<absolute path>
@@ -473,7 +472,7 @@ next_owner=hs-workflow-op-development
 | `references/implementation-guide.md` | step4 七层模板唯一权威 |
 | `references/int8-coder-conventions.md` | INT8 kernel/opcoder |
 | `references/code-quality-gate.md` | step5/step6 代码审查、code style 与安全门禁 |
-| `references/code-style-v5.5-fallback.md` | 仓库`docs/zh-CN/software/code-style.md`确实不存在时使用的完整规则ID冻结清单 |
+| `references/code-style.md` | 随 Skill 分发的 65 个规则ID团队统一规范 |
 | `references/spec-sources.md` | 规格来源和不可达回退 |
 | `references/troubleshooting.md` | workflow 回流失败时 |
 | `references/lessons.md` | 出现已知故障症状或想走捷径时 |

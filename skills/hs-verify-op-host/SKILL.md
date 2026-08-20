@@ -161,7 +161,7 @@ uint8/int8 但 coder 未分支”“永不执行死代码”“量化项落错�
 
 本Host harness及当前`linux-x64` converter必须在Linux/WSL执行，不能直接用Windows Python
 启动。HiSpark.AI代码可以位于Windows磁盘，但传给harness、converter和CMake的路径必须先
-转换成WSL原生形式（例如`C:\work\hispark_ai`对应`/mnt/c/work/hispark_ai`）；代码位于WSL
+转换成WSL原生形式（例如某个 Windows 工作区对应 `/mnt/<drive>/<工作区>`）；代码位于 WSL
 原生目录时直接使用`/home/...`。`MSLITE_PKG`、`--spec`及输出目录必须全部属于同一个
 Linux/WSL路径空间，禁止在一条命令里混用Windows与WSL绝对路径。
 

@@ -279,22 +279,22 @@ def test_operator_workflow_loads_repository_code_style_before_source_changes():
     workflow = read("hs-workflow-op-development/SKILL.md")
     impl = read("hs-dev-op-implement/SKILL.md")
     quality = read("hs-dev-op-implement/references/code-quality-gate.md")
-    code_style = SKILLS_ROOT.parent / "docs/zh-CN/software/code-style.md"
-    fallback = SKILLS_ROOT / "hs-dev-op-implement/references/code-style-v5.5-fallback.md"
+    bundled_style = SKILLS_ROOT / "hs-dev-op-implement/references/code-style.md"
 
-    assert code_style.is_file()
-    assert fallback.is_file()
+    assert bundled_style.is_file()
     apply_stage = impl.split("## step4：", 1)[1].split("## step5：", 1)[0]
     assert "首次修改任何①-⑦源码前" in apply_stage
     assert "完整读取" in apply_stage
-    assert "docs/zh-CN/software/code-style.md" in apply_stage
+    assert "references/code-style.md" in apply_stage
+    assert "展开为绝对路径" in impl
+    assert "使用者无需提供或创建" in apply_stage
     assert apply_stage.index("完整读取") < apply_stage.index("每一层动笔前")
 
     for token in (
         "CODE_STYLE_SOURCE",
         "CODE_STYLE_SOURCE_SHA256",
         "CODE_STYLE_AUDIT",
-        "FROZEN_FALLBACK",
+        "references/code-style.md",
         "逐规则审计",
     ):
         assert token in impl, token
@@ -302,19 +302,19 @@ def test_operator_workflow_loads_repository_code_style_before_source_changes():
 
     stage2 = workflow.split("## stage2：", 1)[1].split("## stage3：", 1)[0]
     stage3 = workflow.split("## stage3：", 1)[1].split("## stage4：", 1)[0]
-    assert "<HISPARK_ROOT>/docs/zh-CN/software/code-style.md" in stage2
-    assert "写任何①-⑦源码前必须完整" in stage2
+    assert "references/code-style.md" in stage2
+    assert "展开后的绝对" in stage2
+    assert "不是用户需要安装的工具" in stage2
+    assert "在写任何①-⑦源码前" in stage2
     assert "同一`CODE_STYLE_SOURCE`" in stage3
     assert "CODE_STYLE_AUDIT=PASS" in stage3
     assert "<opdir>/docs/code-style-audit.md" in impl
     assert "<opdir>/docs/code-style-audit.md" in quality
 
     rule_pattern = re.compile(r"^###\s+([A-Z]+\.\d+)", re.MULTILINE)
-    canonical_rules = rule_pattern.findall(code_style.read_text(encoding="utf-8"))
-    fallback_rules = rule_pattern.findall(fallback.read_text(encoding="utf-8"))
-    assert canonical_rules
-    assert fallback_rules == canonical_rules
-    assert len(set(fallback_rules)) == len(fallback_rules)
+    bundled_rules = rule_pattern.findall(bundled_style.read_text(encoding="utf-8"))
+    assert len(bundled_rules) == 65
+    assert len(set(bundled_rules)) == len(bundled_rules)
 
     quality_gate = stage3.index("构建前由 workflow")
     build_start = stage3.index("nohup bash <hs-workflow-op-development>/scripts/build_mslite.sh")

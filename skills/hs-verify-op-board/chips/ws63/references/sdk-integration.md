@@ -12,15 +12,15 @@ Micro模型、adaptor、Sample、CMake/Kconfig和target接线步骤。
 FIRMWARE_SDK_ROOT=<固件SDK仓库绝对路径>
 ```
 
-例如：
+示例（必须替换为使用者本次明确提供的真实绝对路径）：
 
 ```text
-FIRMWARE_SDK_ROOT=C:\lwl_files\code\fbb_ws63
-FIRMWARE_SDK_SRC=C:\lwl_files\code\fbb_ws63\src
+FIRMWARE_SDK_ROOT=<用户提供的固件SDK仓库绝对路径>
+FIRMWARE_SDK_SRC=<用户提供的固件SDK源码绝对路径>
 ```
 
 不能仅根据当前目录、当前会话之外的记录、`FBB_SDK_DIR`、搜索到的第一个
-`fbb_ws63` 或 `fbb describe` 结果自行选择可写 SDK。环境变量和 fbb 输出只用于
+SDK目录名或 `fbb describe` 结果自行选择可写 SDK。环境变量和 fbb 输出只用于
 核对用户给出的路径，不替代用户授权。
 
 同时读取Host生成的`board_expected_matrix.json`，并为当前矩阵行冻结：
