@@ -2,17 +2,27 @@
 
 ## 适用范围
 
-本门禁检查本次新增或修改的 C/C++、CMake 和注册接线。规范源是 HiSpark.AI 仓库的 `docs/zh-CN/software/code-style.md`；如果调用环境没有该文件，以本页的冻结摘要为最低要求，并报告缺失的规范源。
+这里的“代码规范”是用来检查算子源码格式、安全性和可维护性的规则清单，不是编译器、SDK、Python
+包或用户必须提前安装的环境。规范已经随本 Skill 一起提供在
+`references/code-style.md`，使用者不需要另外下载或创建规范文件。
 
-门禁执行两次：`hs-dev-op-implement` 交付源码前执行一次，`hs-workflow-op-development` 构建前再执行一次。不要另建独立门禁 skill，避免只靠触发概率决定质量检查是否发生。
+本门禁检查本次新增或修改的 C/C++、CMake 和注册接线。开始修改源码前必须完整读取 Skill 内置的
+`references/code-style.md`，记录该文件的绝对路径和 SHA-256，并以它作为团队统一规范源。
+
+`code-quality-gate.md` 是执行流程和算子专项检查，不是第二份代码规范；它不能替代
+`references/code-style.md`。必须逐规则记录适用性、证据和结果。
+
+门禁执行两次：`hs-dev-op-implement` 交付源码前执行一次，`hs-workflow-op-development` 构建前再执行一次。两次必须使用同一个规范文件身份；SHA-256变化时重新完整读取并重做逐规则审计。
+不要另建独立门禁 skill，避免只靠触发概率决定质量检查是否发生。
 
 ## 执行顺序
 
 1. 列出本次修改文件，并把每个文件映射到 capability、注册点或构建接线。
 2. 对修改的 C/C++ 文件使用代码根的 `.clang-format`；先检查 diff，再决定是否 `-i`，避免格式化无关代码。
 3. 运行 `git diff --check` 和 `quick_check.sh`。
-4. 按下表人工审计无法可靠机械判断的规则。
-5. 输出 PASS/FAIL 表；任何高风险项未确认时门禁为 FAIL。
+4. 按下表人工审计无法可靠机械判断的规则；按原规范规则编号记录适用性、证据和结果，不能只写笼统结论。
+5. 将全部规则ID及`applicability/evidence/status`写入`<opdir>/docs/code-style-audit.md`；缺少任一规则ID、适用项缺证据或任一FAIL时门禁为FAIL。
+6. 输出 PASS/FAIL 表；任何高风险项未确认时门禁为 FAIL。
 
 ## 格式与可维护性
 
@@ -20,7 +30,7 @@
 - 新文件包含正确版权头；新增代码不得含 TODO、TBD 或 FIXME。
 - 函数左大括号独占一行；条件和循环左大括号跟随语句；所有 if/for/while/do-while 使用大括号。
 - 一行一条语句，常规行不超过 120 字符；二元操作符、逗号和关键字空格符合规范；不连续堆叠空行。
-- 函数尽量不超过 50 个非空非注释行、5 个参数和 4 层嵌套；超过时必须给出不能拆分的工程理由。
+- 函数不超过 50 个非空非注释行、5 个参数和 4 层嵌套。
 - 不修改输入对象的指针参数使用 const；数组参数同时传入长度；外部接口指针在解引用前判空。
 - 头文件有 include guard，无循环依赖和无用 include；不要在 `extern "C"` 块内 include 头文件。
 - 变量使用前初始化，缩小作用域，不在子作用域复用同名变量；资源释放后句柄立即置为无效值。
@@ -34,7 +44,7 @@
 - 循环有可证明的退出条件，不用浮点数计数，不在循环体修改控制变量。
 - switch 不允许隐式 fall-through；确需下沉时写明确注释并保证 default 分支安全。
 - 字符串空间包含终止符，写入后保证 null 结尾。
-- 处理所有有意义的返回值；禁止在库代码调用 `exit`、`abort`、`atexit`、`pthread_exit`、`kill`、`realloc` 或 `alloca`。
+- 必须处理函数返回值；禁止在库代码调用 `exit`、`abort`、`atexit`、`pthread_exit`、`kill`、`realloc` 或 `alloca`。
 - 非测试代码不使用 `assert()` 代替错误处理。
 
 ## 外部输入与危险 API
@@ -68,10 +78,11 @@
 
 `docs/code-review.md` 除说明文字外必须含一个可解析的 JSON 对象。四个矩阵字段必须是
 非空列表，并使用固定共性字段：`registration_matrix` 使用
-`key,dtype,condition,callee,case_id,status`；`branch_reachability` 使用
-`branch,case_id,status`；`quantizer_ownership` 使用
-`capability,expected_owner,actual_owner,lookup_evidence,model_evidence,status`；
-`folding_and_rewrite_cases` 使用 `mode,case_id,expected_node,evidence,status`。
+`key,dtype,condition,callee,case_id,evidence_location,status`；`branch_reachability` 使用
+`branch,case_id,evidence_location,status`；`quantizer_ownership` 使用
+`capability,expected_owner,actual_owner,lookup_evidence,model_evidence,evidence_location,status`；
+`folding_and_rewrite_cases` 使用 `mode,case_id,expected_node,evidence,evidence_location,status`。
+`evidence_location` 必须指向实际源码、生成 `net*.c` 或转换日志的路径与行号，或给出可复现命令。
 `mode` 必须覆盖 `blocked` 和 `allowed`，或以 `N/A` 加证据说明不适用。门禁因此能机械拦截
 空表、未达分支、量化归属漂移、死代码和把重写结果冒充原算子执行等情况；具体算子名称
 不写入规则。
@@ -88,11 +99,17 @@ clang-format --dry-run --Werror --style=file <changed C/C++ files>
 
 ## 输出格式
 
+逐规则证据固定写入`<opdir>/docs/code-style-audit.md`。构建前复核必须读取这份文件，核对其中的
+规范路径/SHA-256仍与当前规范源一致，并重新检查本轮diff；不能只复用旧的PASS文本。
+
 ```text
+CODE_STYLE_SOURCE=<本 Skill 安装目录>/references/code-style.md（运行时必须展开为绝对路径）
+CODE_STYLE_SOURCE_SHA256=<sha256>
+CODE_STYLE_AUDIT=<PASS|FAIL>
 CODE_STYLE_GATE=<PASS|FAIL>
 SECURITY_GATE=<PASS|FAIL>
 QUICK_CHECK=<PASS|FAIL>
 DIFF_AUDIT=<PASS|FAIL>
 ```
 
-四项均 PASS 才能由实现 skill 输出 `IMPLEMENT_GATE=PASS`。
+`CODE_STYLE_AUDIT`以及后四项均 PASS，才能由实现 skill 输出 `IMPLEMENT_GATE=PASS`。

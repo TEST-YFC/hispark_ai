@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PREPARE = ROOT / "scripts" / "prepare_sample.py"
 WIRING = ROOT / "scripts" / "verify_wiring.py"
 spec = importlib.util.spec_from_file_location("prepare_ws63_sample", PREPARE)
+if spec is None or spec.loader is None:
+    raise ImportError(f"unable to load test target module from absolute path: {PREPARE}")
 prepare = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = prepare
 spec.loader.exec_module(prepare)
@@ -122,6 +124,16 @@ def test_wiring_gate_checks_real_consumers(tmp_path):
         nm_cmd = sdk / "fake_nm.cmd"
         nm_cmd.write_text(f'@"{sys.executable}" "{fake_nm}" %*\n', encoding="utf-8")
         nm = str(nm_cmd.resolve())
+
+    missing_consumer = subprocess.run([
+        sys.executable, str(WIRING), "--sdk-root", str(sdk.resolve()),
+        "--sample-dir", str(sample.resolve()), "--model-lib-dir", str(libs.resolve()),
+        "--adaptor-dir", str(adaptor.resolve()), "--ai-header", str(ai_header.resolve()),
+        "--net-source", str(net_source.resolve()), "--kernel-symbol", "ReduceSumSquare",
+        "--nm", nm,
+    ], text=True, capture_output=True, check=False)
+    assert missing_consumer.returncode != 0
+    assert "--consumer" in missing_consumer.stderr
 
     completed = subprocess.run([
         sys.executable, str(WIRING), "--sdk-root", str(sdk.resolve()),

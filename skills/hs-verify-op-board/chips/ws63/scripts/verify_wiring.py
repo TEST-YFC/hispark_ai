@@ -38,7 +38,9 @@ def main():
     parser.add_argument("--model-lib-dir", required=True)
     parser.add_argument("--adaptor-dir", required=True)
     parser.add_argument("--ai-header", required=True)
-    parser.add_argument("--consumer", action="append", default=[], metavar="FILE::TOKEN")
+    parser.add_argument("--consumer", action="append", required=True,
+                        metavar="FILE::TOKEN",
+                        help="repeat for every CMake/Kconfig/target consumption point")
     parser.add_argument("--net-source", required=True)
     parser.add_argument("--nm", required=True,
                         help="archive-aware nm executable; run this gate in WSL when using /usr/bin/nm")

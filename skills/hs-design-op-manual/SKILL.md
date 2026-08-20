@@ -1,20 +1,25 @@
 ---
 name: hs-design-op-manual
 description: >-
-  Generate, update, or audit the four-chapter design document for a MindSpore Lite Micro operator. Owns operator-manual-facts.json, draft/final Markdown rendering, public-information boundaries, and facts/content/case audits. Use when the user explicitly asks only for an operator specification/design document, names hs-design-op-manual, or hs-workflow-op-development routes a documentation stage here. Generic requests to adapt, add, support, implement, test, build, flash, or board-verify an operator belong to the end-to-end workflow or the corresponding stage-specific skill; this skill never modifies operator source or runs build/test/flash.
+  Generate and incrementally update one human-readable operator development record for a MindSpore Lite Micro operator. The record starts with design facts and is filled with implementation, Host, firmware, flash, and board results at the terminal stage; machine facts and logs remain separate evidence. Use when the user explicitly asks only for an operator specification/design document, names hs-dev-op-manual, or hs-workflow-op-development routes a documentation stage here. Generic requests to adapt, add, support, implement, test, build, flash, or board-verify an operator belong to the end-to-end workflow or the corresponding stage-specific skill; this skill never modifies operator source or runs build/test/flash.
 ---
 
 # 单算子设计文档生成器
 
 ## 概述
 
-为 MindSpore Lite Micro 单算子生成四章节设计文档，内容包括框架语义、Micro 功能设计、关键使用场景和测试设计。独立模式负责查证事实；产物集成模式只把父流程已经冻结的产物整理为面向设计评审和后续维护的公开文档，不重新解释开发结果。
+为 MindSpore Lite Micro 单算子维护一份主文档。主文档保留四个原有设计章节（框架语义、Micro
+功能设计、关键使用场景、测试设计），并在第4章末尾预留固定的验证结果表，流程结束时回填
+Host、固件构建、烧录和板端精度结论。独立模式负责查证事实；产物集成模式只把父流程已经
+冻结的产物整理为面向设计评审和后续维护的公开文档，不重新解释开发结果。
 
 始终遵守三条原则：
 
 1. 只写可公开、已验证的事实，不编造缺失字段，不在最终文档中保留“待确认”。
 2. 明确写出“不支持转换”“不支持该规格”或“不支持该类型”，不得把缺失链路包装成支持。
-3. 一次调用只有一个模式和一个文档发布目标。带 `opdir` 的写入型模式还必须创建或刷新 skill 明确规定的中间产物 `<opdir>/docs/operator-manual-facts.json`；它不算第二个文档发布目标。除该 facts 文件、唯一文档目标和发布门控临时候选外，不生成计划文件或旁路报告。
+3. 一次调用只有一个模式和一个人读文档目标。带 `opdir` 的写入型模式还必须创建或刷新
+   `<opdir>/docs/operator-manual-facts.json`；facts、日志和机器结果是内部证据，不作为第二个人读文档。
+   除 facts、唯一主文档和发布门控临时候选外，不生成旁路说明文档。
 
 ## 六种模式
 
@@ -23,9 +28,9 @@ description: >-
 | `standalone-generate` | 独立生成新文档 | 用户材料、仓内证据、已有公开文档和必要的官方规格查证 | `<code_root>/operator-desc/{op}.md` |
 | `standalone-update` | 独立更新已有文档 | 同上，并读取现有目标文档 | 更新 `<code_root>/operator-desc/{op}.md` |
 | `template-analysis` | 只分析四章节模板 | 本 skill 的模板规则 | 不写文件 |
-| `integrated-initial` | 新算子编码前，父流程已冻结计划产物 | 仅 `<opdir>`冻结产物 | 刷新facts；发布 `<opdir>/docs/operator-manual-draft.md` |
-| `integrated-final` | 新算子终态同步 | 仅最新 `<opdir>` 冻结产物和父流程终态 | 刷新 facts；完成态发布正式文档，阻塞/硬停态只刷新草稿 |
-| `artifact-sync` | 从已有算子开发产物同步文档 | 仅已有 `<opdir>` 产物和最后记录的 summary | A 且事实完整时发布正式文档；否则刷新 facts 并写证据不足草稿；D 不写文件 |
+| `integrated-initial` | 新算子编码前，父流程已冻结计划产物 | 仅 `<opdir>`冻结产物 | 刷新facts；创建 `<opdir>/docs/operator-development-report-{op}.md` 初版模板 |
+| `integrated-final` | 新算子终态同步 | 仅最新 `<opdir>` 冻结产物和父流程终态 | 刷新 facts；原地更新同一主文档并回填验证结果 |
+| `artifact-sync` | 从已有算子开发产物同步文档 | 仅已有 `<opdir>` 产物和最后记录的 summary | 更新唯一主文档并明确证据等级；D 不写文件 |
 
 先确定模式，再执行对应分支。不得把独立模式的路径确认、仓库扫描或外部查询带入产物集成模式。
 
@@ -38,7 +43,16 @@ description: >-
 1. 工作前确认 `mindspore-lite` 代码根、`{op}`、`{Op}` 和框架范围。
 2. 写入前再次确认绝对目标路径 `<code_root>/operator-desc/{op}.md`。
 
-独立模式继续查证框架公开规格和仓内支持链路：parser/source entry 缺失写“不支持转换”；schema/infer/计算规格不覆盖某属性、shape、layout 或方向写“不支持该规格”；coder/目标类型未注册写“不支持该类型”。阶段更新用 Markdown todo 展示当前 step 和已得到的证据，不提前勾选未完成门控。
+独立模式继续查证框架公开规格和仓内支持链路：parser/source entry 缺失写“不支持转换”；schema/infer/计算规格不覆盖某属性、shape、layout 或方向写“不支持该规格”；coder/目标类型未注册写“不支持该类型”。阶段更新用 Markdown todo 展示当前 step 和已得到的证据，不提前勾选未完成门控。建议使用以下通用探查命令，并把完整输出保存到 `<opdir>/docs/logs/`，不得只贴截断片段：
+
+```bash
+rg -n "Onnx.*Parser|Parser.*<Op>|Parse\\(" <code_root>
+rg -n "Populate.*<Op>|<Op>Parameter|InferShape" <code_root>
+rg -n "REG_KERNEL|REG_OPERATOR_CODER|OpCoder|Quantizer" <code_root>
+rg -n "PrimitiveType.*<Op>|<Op>Fusion" <code_root>
+```
+
+将 `<Op>` 替换为本次目标算子；命令只用于 standalone 查证，不能带入产物集成模式。
 
 `template-analysis` 只确认分析范围，不要求保存路径，不写文件。
 
@@ -58,7 +72,16 @@ description: >-
 
 这些父流程提供的路径和目标已经获得授权，不再询问目录或保存路径。仅做只读合法性检查：路径必须为绝对路径，核心产物必须位于给定 `opdir`，输出必须精确落到本模式规定的位置。参数缺失、路径冲突或框架范围冲突时返回父流程修正，不自行猜测。
 
-`integrated-final` 的 `completed` 只能来自父流程已经通过的必需 implementation、MindSpore Lite build 和 Host verify 门控；只有用户要求板测时才包含 board 门控。本 skill 不重跑这些门控，也不从 summary 自行推导新算子的完成态。`integrated-initial`只表示编码前事实和计划用例已经冻结并通过文档审计，绝不表示源码、构建或验证完成。
+`integrated-initial`只能在父流程已经完成`hs-dev-op-implement mode=prepare`并取得
+`OP_PLAN_GATE=PASS`后调用。它不负责生成spec、implementation contract、capability checklist
+或计划版op_spec；全新/空opdir缺少任一核心源时必须失败返回，不能为了“文档先行”而自行扫描
+代码或发明输入。父流程在本skill输出draft后还必须通过`PRE_SOURCE_GATE`，才可调用实现Skill的
+`mode=apply`写源码。
+
+`integrated-final` 必须接收父流程终态和同轮验证摘要；它只整理已有证据，不重跑实现、构建、Host
+或板测。主文档必须同时保留设计内容和验证阶段状态，不能把固件构建写成板测通过；未执行阶段
+必须写 `NOT_RUN` 及原因。只有父流程给出完整终态时才写“完整流程通过”。
+`integrated-initial`只表示编码前事实和计划用例已经冻结并通过文档审计，绝不表示源码、构建或验证完成。
 
 ## 产物集成模式的单一事实源
 
@@ -158,8 +181,8 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py --opdir <absolute_opd
 | 等级 | 条件 | 行为 |
 |---|---|---|
 | A：可直接同步 | 四个核心源完整、当前 capability schema 可读、最后完整 summary 全绿且能力全覆盖 | facts 内容完整且三项同步 PASS 时生成正式文档；否则只生成证据不足草稿 |
-| B：可兼容读取 | 语义和用例核心源完整，但使用兼容 capability schema、缺少非语义元数据或没有可信全绿 summary | 只读兼容，生成 `<opdir>/docs/operator-manual-draft.md`；不得覆盖正式文档 |
-| C：已有验证未通过 | 最新完整 summary 含非零 FAIL/ERR、`HARNESS_EXIT!=0` 或能力未覆盖 | 生成 `<opdir>/docs/operator-manual-draft.md`；不得覆盖正式文档 |
+| B：可兼容读取 | 语义和用例核心源完整，但使用兼容 capability schema、缺少非语义元数据或没有可信全绿 summary | 更新主文档并标注证据不足；不得写成完整通过 |
+| C：已有验证未通过 | 最新完整 summary 含非零 FAIL/ERR、`HARNESS_EXIT!=0` 或能力未覆盖 | 更新主文档并保留 FAIL/NOT_RUN 原因；不得写成支持 |
 | D：事实源不足 | 缺少或无法读取 spec、contract、capability 或 op_spec | 列出缺失/冲突后停止，不写文件 |
 
 兼容 schema 只允许无损读取：
@@ -181,7 +204,15 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py --opdir <absolute_opd
 
 ## 四章节结构与模式分支
 
-最终文档必须有标题、简述和且仅有以下四个一级编号章节。
+产物集成模式必须按
+[`references/operator-development-record-template.md`](references/operator-development-record-template.md)
+维护唯一主文档。该模板把原四章内容保留在第1～4章：初始阶段填写设计、复用、调用链和测试
+计划；终态阶段只在第4章的“结果汇总/证据索引”回填 Host、固件和板端结果。不要另建调用链、
+验证结果或板测说明 Markdown。`operator-manual-facts.json`、`code-review.md`、summary、日志
+和二进制产物仍是机器/审计证据，不属于第二个人读文档。
+
+独立模式文档必须有标题、简述且仅有以下四个一级编号章节；产物集成主文档在标题前保留
+状态表，并在第4章末尾增加固定的验证结果与证据索引小节，不另起第五个一级章节。
 
 ### 独立模式的四章节构建
 
@@ -368,7 +399,8 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py --opdir <absolute_opd
 | step5 | 将候选写入目标同目录的临时文件，对 facts 和临时候选运行完整 audit | facts/content/case 三项均 PASS |
 | step6 | 三项 audit PASS 后才把临时候选原子提升为唯一文档目标；重新读取并打印 `OP_MANUAL_SYNC` | PASS 或带阻塞原因的 FAIL |
 
-现有正式文档和现有草稿在发布门控通过前都不得修改。候选优先保留在内存；运行 audit 时，才在目标同目录创建可精确识别的临时候选，以保证 PASS 后可在同一文件系统原子提升：
+现有主文档在发布门控通过前不得直接修改。候选优先保留在内存；运行 audit 时，才在主文档
+同目录创建可精确识别的临时候选，以保证 PASS 后可在同一文件系统原子替换：
 
 ```bash
 candidate_path="$(mktemp "${target_path}.candidate.XXXXXX")"
@@ -386,26 +418,33 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py \
 
 ## 输出决策
 
+产物集成模式的 `{op}` 使用父流程冻结的小写发布名，因此 BitShift 的唯一主文档名是
+`operator-development-report-bitshift.md`。文件名包含算子名，保证文档复制或脱离 `opdir` 后仍可识别；
+模板源文件 `operator-development-record-template.md` 是跨算子共用资源，不按算子复制或改名。
+
 | 模式/状态 | publication | 唯一目标 |
 |---|---|---|
 | `standalone-generate` / `standalone-update` | `final` | `<code_root>/operator-desc/{op}.md` |
 | `template-analysis` | `none` | `NONE` |
-| `integrated-initial` | `draft` | `<opdir>/docs/operator-manual-draft.md` |
-| `integrated-final terminal_state=completed` | `final` | `<code_root>/operator-desc/{op}.md` |
-| `integrated-final terminal_state=blocked\|hard-stop` | `draft` | `<opdir>/docs/operator-manual-draft.md` |
-| `artifact-sync` A 且 facts 内容完整 | `final` | `<code_root>/operator-desc/{op}.md` |
-| `artifact-sync` A 但 facts 内容不完整 | `evidence-draft` | `<opdir>/docs/operator-manual-draft.md` |
-| `artifact-sync` B/C | `evidence-draft` | `<opdir>/docs/operator-manual-draft.md` |
+| `integrated-initial` | `record` | `<opdir>/docs/operator-development-report-{op}.md` |
+| `integrated-final terminal_state=completed` | `record` | `<opdir>/docs/operator-development-report-{op}.md` |
+| `integrated-final terminal_state=blocked\|hard-stop` | `record` | `<opdir>/docs/operator-development-report-{op}.md` |
+| `artifact-sync` A 且 facts 内容完整 | `record` | `<opdir>/docs/operator-development-report-{op}.md` |
+| `artifact-sync` A 但 facts 内容不完整 | `record` | `<opdir>/docs/operator-development-report-{op}.md` |
+| `artifact-sync` B/C | `record` | `<opdir>/docs/operator-development-report-{op}.md` |
 | `artifact-sync` D | `none` | `NONE` |
 
 一次调用不得同时刷新 draft 和 final，且除 mandatory facts 中间产物外最多提升一个持久文档目标。完成或失败时，最后一行使用：
 
+说明：`record` 是工作流对“唯一主文档”的发布标识；底层 `audit_manual_inputs.py` 仍使用
+`--publication=draft|final` 表示审计严格程度，不能把两个字段混为两个文档。
+
 ```text
-OP_MANUAL_SYNC=PASS mode=<mode> publication=<final|draft|evidence-draft|none> path=<absolute-path|NONE>
+OP_MANUAL_SYNC=PASS mode=<mode> publication=<final|record|none> path=<absolute-path|NONE>
 OP_MANUAL_SYNC=FAIL mode=<mode> publication=none path=NONE
 ```
 
-失败详情在终态行之前简要列出并返回父流程。`integrated-initial`失败会阻塞进入编码；`integrated-final`失败会阻塞完成声明。草稿只能由冻结facts渲染，不能成为另一套手工维护的事实源。
+失败详情在终态行之前简要列出并返回父流程。`integrated-initial`失败会阻塞进入编码；`integrated-final`失败会阻塞完成声明。主文档只能由冻结facts和同轮终态证据渲染，不能成为另一套手工维护的事实源。
 
 ## 自检与最终复核
 
@@ -417,20 +456,20 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none path=NONE
 - [ ] capability 多于 7 项时，第 3 章已归并为 3～7 个读者场景；每个 capability 恰好出现一次，group 用例号是成员 `covered_by` 的准确并集。
 - [ ] 第 4-1 的四个问题和答案来自 `coverage_principles`，使用用户语言解释覆盖范围，没有流程术语堆叠。
 - [ ] 产物集成模式没有仓库重扫、外部查询、build、verify 或 board 重跑。
-- [ ] 现有正式文档没有覆盖冻结事实；final 的第 4 章已经整表重建。
+- [ ] 现有主文档没有覆盖冻结事实；终态的第 4 章已经整表重建并回填结果。
 - [ ] formula/full name/category 未被发明；缺公式时已省略。
 - [ ] 不支持项使用固定措辞，C 级失败 variant/target/path 未写成支持。
 - [ ] 模型 dtype、已覆盖运行通路、value_domain/输入数据特征各自保留且没有混淆；机器验证标识只保留在 facts，公开设计文档已转换为实际运行含义。
 - [ ] 文档标题和正文定位为算子设计文档；全文没有出现内部验证任务名。
 - [ ] 产物集成模式中 op_spec 每个 case 恰好一行，原始 `TC-*` ID 未重排；每个 `covered_by` 都存在。
 - [ ] 全文没有敏感信息、内部实现、私有链接或“待确认”。
-- [ ] facts/content/case 任一 audit 尚未通过时，既有正式文档/草稿仍未被覆盖；失败临时候选会被丢弃。
+- [ ] facts/content/case 任一 audit 尚未通过时，既有主文档仍未被覆盖；失败临时候选会被丢弃。
 
 提升后重新读取目标并确认：
 
 1. 实际只持久写入决策表中的一个文件，或命中允许的零写入分支；没有残留临时候选。
 2. 四章、表头和支持措辞完整，已移除 case 不残留，新增 case 不遗漏。
-3. 带 opdir 的输出得到 `OP_MANUAL_FACTS_SYNC=PASS`、`OP_MANUAL_CONTENT_SYNC=PASS` 和 `OP_MANUAL_CASE_SYNC=PASS`；否则不得发布正式文档或报告同步成功。
+3. 带 opdir 的输出得到 `OP_MANUAL_FACTS_SYNC=PASS`、`OP_MANUAL_CONTENT_SYNC=PASS` 和 `OP_MANUAL_CASE_SYNC=PASS`；否则不得更新主文档或报告同步成功。
 4. terminal_state 和产物等级没有被文档内容反向改写。
 
 ## 变量与参考

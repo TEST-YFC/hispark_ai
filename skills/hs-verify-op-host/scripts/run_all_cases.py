@@ -35,6 +35,7 @@ Hard rules (enforced here, see SKILL.md Red Flags)
 
 import argparse
 import datetime
+import importlib
 import importlib.util
 import json
 import math
@@ -48,7 +49,52 @@ import subprocess
 import sys
 from pathlib import Path
 
-import numpy as np
+
+def _install_python_dependency(mod, pkg=None):
+    """Import a module, installing it into the current venv/user scope when absent."""
+    try:
+        return importlib.import_module(mod)
+    except ModuleNotFoundError as exc:
+        # A package that exists but misses one of its own dependencies is a different
+        # failure; reinstalling the top-level package would hide the useful error.
+        if exc.name != mod.split(".")[0]:
+            raise
+
+    package = pkg or mod
+    base = [sys.executable, "-m", "pip", "install", package,
+            "--disable-pip-version-check"]
+    if sys.prefix == getattr(sys, "base_prefix", sys.prefix):
+        base.append("--user")
+    attempts = (
+        base + ["-i", "https://pypi.tuna.tsinghua.edu.cn/simple"],
+        base,
+    )
+    print(f"DEPENDENCY_REPAIR=START module={mod} package={package} python={sys.executable}")
+    last = None
+    verify_error = None
+    for index, command in enumerate(attempts, start=1):
+        print(f"DEPENDENCY_REPAIR=INSTALL attempt={index} command={shlex.join(command)}")
+        last = subprocess.run(command, check=False)
+        if last.returncode == 0:
+            importlib.invalidate_caches()
+            try:
+                loaded = importlib.import_module(mod)
+            except ImportError as exc:
+                verify_error = exc
+                print(f"DEPENDENCY_REPAIR=VERIFY_FAIL attempt={index} error={exc}")
+                continue
+            else:
+                version = getattr(loaded, "__version__", "unknown")
+                print(f"DEPENDENCY_REPAIR=PASS module={mod} version={version}")
+                return loaded
+    raise RuntimeError(
+        f"DEPENDENCY_REPAIR=FAIL module={mod} package={package} "
+        f"last_rc={last.returncode if last is not None else 'not-run'} "
+        f"verify_error={verify_error or 'none'}"
+    )
+
+
+np = _install_python_dependency("numpy")
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
 _CONVERTER_CAPABILITY_CACHE = {}
@@ -79,21 +125,44 @@ DRIVER = {
 }
 MODEL_EXT = {"onnx": "onnx", "tflite": "tflite"}
 
+BOARD_PATH_MODE = {
+    "riscv_fp32": "fp32",
+    "riscv_int8": "int8",
+}
+
+
+def make_board_matrix_entry(project_dir, operator, framework, case_id,
+                            path_key, status, cosine):
+    """Describe one Host variant that must be replayed on the real board.
+
+    The Host harness owns the case denominator. Emitting the identity while the
+    current run is still in memory prevents a later board run from selecting one
+    convenient representative case and calling that full coverage.
+    """
+    if path_key not in BOARD_PATH_MODE:
+        return None
+    case_dir = Path(project_dir).resolve() / "output" / framework / f"tc{case_id}"
+    return {
+        "operator": operator,
+        "framework": framework,
+        "case_id": str(case_id),
+        "mode": BOARD_PATH_MODE[path_key],
+        "host_path": path_key,
+        "host_status": status,
+        "host_cosine": cosine,
+        "model": str((case_dir / "model" / f"model.{MODEL_EXT[framework]}").resolve()),
+        "input_dir": str((case_dir / "input").resolve()),
+        "gt_dir": str((case_dir / "gt").resolve()),
+    }
+
 
 # --------------------------------------------------------------------------- #
 # Environment / dependencies
 # --------------------------------------------------------------------------- #
 
 def ensure(mod, pkg=None):
-    """Lazily pip-install a dependency into the current interpreter (Tsinghua mirror)."""
-    try:
-        __import__(mod)
-    except ImportError:
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", pkg or mod,
-             "-i", "https://pypi.tuna.tsinghua.edu.cn/simple"],
-            check=True,
-        )
+    """Lazily install a dependency and verify import in this interpreter."""
+    return _install_python_dependency(mod, pkg)
 
 
 def _check_pkg_freshness(pkg: str):
@@ -141,22 +210,100 @@ def resolve_mslite_pkg(start: Path) -> str:
     )
 
 
+def _path_is_within(path: Path, root: Path) -> bool:
+    """Return whether *path* belongs to *root*, including non-existing paths."""
+    try:
+        path.resolve(strict=False).relative_to(root.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def _converter_runtime_env(mslite_pkg, base_env=None):
+    """Build a process-local runtime environment for this package's converter.
+
+    Do not rely on an export from an earlier shell: every harness invocation may run in
+    a fresh process.  Locate libmindspore_converter.so inside the frozen MSLITE_PKG,
+    prepend its real directories, retain unrelated caller paths, and discard obvious
+    converter/runtime library directories from another MindSpore Lite package.
+    """
+    pkg = Path(mslite_pkg).resolve()
+    if not pkg.is_dir():
+        raise RuntimeError(f"CONVERTER_RUNTIME_GATE=FAIL MSLITE_PKG_NOT_FOUND path={pkg}")
+
+    fixed_candidates = [pkg / "tools/converter/lib", pkg / "runtime/lib"]
+    discovered_libraries = sorted(pkg.rglob("libmindspore_converter.so*"))
+    escaped_libraries = [
+        item for item in discovered_libraries
+        if item.exists() and not _path_is_within(item.resolve(), pkg)
+    ]
+    if escaped_libraries:
+        raise RuntimeError(
+            "CONVERTER_RUNTIME_GATE=FAIL LIBRARY_IDENTITY_CONFLICT "
+            f"outside_MSLITE_PKG={escaped_libraries[0].resolve()}"
+        )
+    converter_libraries = [
+        item for item in discovered_libraries if item.is_file() and _path_is_within(item.resolve(), pkg)
+    ]
+    if not converter_libraries:
+        raise RuntimeError(
+            "CONVERTER_RUNTIME_GATE=FAIL "
+            f"libmindspore_converter.so_NOT_FOUND_UNDER_MSLITE_PKG path={pkg}"
+        )
+
+    library_dirs = []
+    for directory in [*fixed_candidates, *(item.parent for item in converter_libraries)]:
+        directory = directory.resolve()
+        if directory.is_dir() and directory not in library_dirs:
+            library_dirs.append(directory)
+
+    env = dict(os.environ if base_env is None else base_env)
+    inherited = []
+    for raw in env.get("LD_LIBRARY_PATH", "").split(os.pathsep):
+        if not raw:
+            continue
+        directory = Path(raw).expanduser()
+        normalized = directory.as_posix().rstrip("/")
+        looks_like_mslite_lib = (
+            normalized.endswith("/tools/converter/lib")
+            or normalized.endswith("/runtime/lib")
+            or (directory / "libmindspore_converter.so").exists()
+        )
+        if looks_like_mslite_lib and not _path_is_within(directory, pkg):
+            continue
+        resolved = str(directory.resolve(strict=False))
+        if resolved not in inherited:
+            inherited.append(resolved)
+
+    entries = [str(path) for path in library_dirs]
+    entries.extend(path for path in inherited if path not in entries)
+    env["LD_LIBRARY_PATH"] = os.pathsep.join(entries)
+    return env, tuple(str(path) for path in library_dirs)
+
+
 # --------------------------------------------------------------------------- #
 # Spec loading
 # --------------------------------------------------------------------------- #
 
-REQUIRED_SPEC_ATTRS = ["OP_NAME", "ONNX_TEST_CASES", "TFLITE_TEST_CASES",
-                       "build_onnx_model", "build_tflite_model", "make_inputs"]
+REQUIRED_SPEC_ATTRS = ["OP_NAME", "ONNX_TEST_CASES", "TFLITE_TEST_CASES", "make_inputs"]
+FRAMEWORK_SPEC_ATTRS = {
+    "onnx": ["build_onnx_model"],
+    "tflite": ["build_tflite_model"],
+}
 
 
-def load_spec(spec_path: Path):
+def load_spec(spec_path: Path, frameworks=None):
     if not spec_path.is_file():
         sys.exit(f"[ERROR] 算子 spec 文件不存在: {spec_path}\n"
                  f"        从 {SCRIPT_DIR / 'operator_spec_template.py'} 拷贝并填好后再运行。")
     mod_spec = importlib.util.spec_from_file_location("op_spec", spec_path)
     mod = importlib.util.module_from_spec(mod_spec)
     mod_spec.loader.exec_module(mod)
-    missing = [a for a in REQUIRED_SPEC_ATTRS if not hasattr(mod, a)]
+    frameworks = tuple(frameworks or FRAMEWORK_SPEC_ATTRS)
+    required = list(REQUIRED_SPEC_ATTRS)
+    for framework in frameworks:
+        required.extend(FRAMEWORK_SPEC_ATTRS[framework])
+    missing = [a for a in required if not hasattr(mod, a)]
     if missing:
         sys.exit(f"[ERROR] op_spec.py 缺少必需定义: {missing}")
     if not hasattr(mod, "PARAM_COLUMNS"):
@@ -194,11 +341,46 @@ def run_reference(framework, model_path, inputs):
     """
     if framework == "onnx":
         import onnxruntime as ort
-        sess = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
-        in_names = [i.name for i in sess.get_inputs()]
-        out_names = [o.name for o in sess.get_outputs()]
-        feed = {name: arr for name, arr in zip(in_names, inputs)}
-        outs = sess.run(None, feed)
+        try:
+            sess = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
+            in_names = [i.name for i in sess.get_inputs()]
+            out_names = [o.name for o in sess.get_outputs()]
+            feed = {name: arr for name, arr in zip(in_names, inputs)}
+            outs = sess.run(None, feed)
+            # Audit exact integer semantics against ONNX's own reference
+            # implementation. Some ORT CPU integer kernels inherit the host
+            # instruction's masked shift-count behaviour, which disagrees with
+            # the ONNX reference for counts at or above the dtype width.
+            try:
+                import onnx
+                from onnx.reference import ReferenceEvaluator
+                model = onnx.load(str(model_path))
+                official_outs = ReferenceEvaluator(model).run(None, feed)
+                integer_disagreement = any(
+                    np.asarray(official).dtype.kind in "iub"
+                    and not np.array_equal(np.asarray(runtime), np.asarray(official))
+                    for runtime, official in zip(outs, official_outs)
+                )
+                if integer_disagreement:
+                    print("[reference] ONNX Runtime integer result disagrees with ONNX ReferenceEvaluator; "
+                          "using the official ONNX reference result")
+                    outs = official_outs
+            except Exception as audit_exc:
+                print(f"[reference] ONNX ReferenceEvaluator audit unavailable; keeping runtime result: {audit_exc}")
+        except Exception as exc:
+            # ORT's CPU provider does not implement every dtype admitted by some
+            # standard ONNX operators (BitShift uint16/uint64 is one example).
+            # Fall back only for that explicit capability gap; malformed models
+            # and all other runtime errors must remain hard failures.
+            if "NOT_IMPLEMENTED" not in str(exc):
+                raise
+            import onnx
+            from onnx.reference import ReferenceEvaluator
+            model = onnx.load(str(model_path))
+            in_names = [value.name for value in model.graph.input]
+            out_names = [value.name for value in model.graph.output]
+            feed = {name: arr for name, arr in zip(in_names, inputs)}
+            outs = ReferenceEvaluator(model).run(None, feed)
         return in_names, out_names, [np.asarray(o) for o in outs]
     else:
         import tensorflow as tf
@@ -511,22 +693,30 @@ def _converter_encryption_capability(mslite_pkg):
     converter = Path(mslite_pkg) / "tools" / "converter" / "converter" / "converter_lite"
     key = str(converter.resolve())
     if key not in _CONVERTER_CAPABILITY_CACHE:
+        env, library_dirs = _converter_runtime_env(mslite_pkg)
         try:
             completed = subprocess.run(
                 [str(converter), "--help"], text=True, capture_output=True,
-                timeout=15, check=False,
+                timeout=15, check=False, env=env,
             )
             help_text = (completed.stdout or "") + "\n" + (completed.stderr or "")
+            if completed.returncode != 0:
+                detail = (completed.stderr or completed.stdout or "no diagnostic").strip().splitlines()
+                tail = detail[-1] if detail else "no diagnostic"
+                raise RuntimeError(
+                    f"CONVERTER_HELP_FAIL path={converter} rc={completed.returncode} detail={tail}"
+                )
             supported = re.search(r"(?<![A-Za-z0-9_])--encryption(?:[=\s]|$)", help_text) is not None
-            detail = f"help_rc={completed.returncode}"
+            detail = (f"help_rc={completed.returncode} runtime_libs="
+                      f"{os.pathsep.join(library_dirs)}")
         except (OSError, subprocess.TimeoutExpired) as exc:
-            # Failure to prove support means omit the optional compatibility flag.
-            supported = False
-            detail = f"help_probe_error={type(exc).__name__}"
+            raise RuntimeError(
+                f"CONVERTER_HELP_FAIL path={converter} error={type(exc).__name__}: {exc}"
+            ) from exc
         _CONVERTER_CAPABILITY_CACHE[key] = (supported, detail)
     supported, detail = _CONVERTER_CAPABILITY_CACHE[key]
     argument = "--encryption=false" if supported else ""
-    state = "supported; using --encryption=false" if supported else "unsupported/unproven; omitted"
+    state = "supported; using --encryption=false" if supported else "unsupported; omitted"
     diagnostic = f"[converter-capability] path={converter} encryption={state} {detail}"
     return argument, diagnostic
 
@@ -543,8 +733,10 @@ def run_driver(framework, path_key, build_dir, log_dir, mslite_pkg, model_file, 
     driver_name, _ = DRIVER[(framework, path_key)]
     content = (SCRIPT_DIR / driver_name).read_text()
     encryption_arg, capability_log = _converter_encryption_capability(mslite_pkg)
+    _, library_dirs = _converter_runtime_env(mslite_pkg)
     repl = {
         "{MSLITE_PKG}": mslite_pkg,
+        "{CONVERTER_LIBRARY_PATH}": os.pathsep.join(library_dirs),
         "{MODEL_FILE}": str(model_file),
         "{CFG_FILE}": str(cfg_file),
         "{INPUT_FILE}": ",".join(str(p) for p in input_files),
@@ -1161,7 +1353,7 @@ def report_capability_coverage(checklist, passed_case_ids):
 def main():
     ap = argparse.ArgumentParser(description="hs-verify-op-host fixed harness")
     ap.add_argument("--spec", default="scripts/op_spec.py",
-                    help="算子 spec 文件路径 (默认 scripts/op_spec.py)")
+                    help="当前算子项目的 spec 文件路径（默认当前项目 scripts/op_spec.py；不是 Skill 包内置文件）")
     ap.add_argument("--framework", choices=["onnx", "tflite", "all"], default="all")
     ap.add_argument("--target", choices=["x86", "riscv", "all"], default="all")
     ap.add_argument("--threshold-fp32", type=float, default=DEFAULT_THRESHOLD_FP32,
@@ -1252,12 +1444,13 @@ def main():
 
     frameworks = FRAMEWORKS[args.framework]
     if "onnx" in frameworks:
+        ensure("onnx")
         ensure("onnxruntime")
     if "tflite" in frameworks:
         ensure("tensorflow")
     ensure("openpyxl")
 
-    spec = load_spec(spec_path)
+    spec = load_spec(spec_path, frameworks)
     # 开跑前对账上一轮 summary：用例集缩水 = 结论分母被偷换，先拦截再谈跑。
     ack_lines = check_case_regression(project_dir / "verify_summary.txt", spec, frameworks)
     # 开跑前对账能力清单：每条承诺的能力须有存在的 covered_by 用例（防清单被悄悄改写/缩减）。
@@ -1278,10 +1471,38 @@ def main():
     print(f"[env] project    = {project_dir}")
     print(f"[run] op={spec.OP_NAME} frameworks={frameworks} paths={active_paths}")
 
+    # Probe once before creating any case output. The probe uses the same runtime library
+    # environment as the real drivers. A failed help command means the converter package
+    # itself is not runnable, so continuing with a guessed optional flag would misclassify
+    # an environment defect as an operator failure.
+    try:
+        _, capability_log = _converter_encryption_capability(mslite_pkg)
+        print(capability_log)
+    except RuntimeError as exc:
+        exit_code = 2
+        gate = ("CONVERTER_RUNTIME_GATE=FAIL" if "CONVERTER_RUNTIME_GATE=FAIL" in str(exc)
+                else "CONVERTER_CAPABILITY_GATE=FAIL")
+        verdict = (f"VERDICT: op={spec.OP_NAME}  0/0 variant-cases PASS, 1 FAIL  "
+                   f"{gate}")
+        report = "\n".join([
+            f"RUN_ID={run_id}",
+            "hs-verify-op-host summary",
+            f"op={spec.OP_NAME}  frameworks={frameworks}  paths={active_paths}",
+            f"MSLITE_PKG={mslite_pkg}",
+            f"converter_lite built at {conv_built}",
+            str(exc),
+            verdict,
+            f"HARNESS_EXIT={exit_code}",
+        ])
+        (project_dir / "verify_summary.txt").write_text(report + "\n")
+        print("\n" + report)
+        sys.exit(exit_code)
+
     # Run every framework, then emit a single machine-checkable verdict. The verdict
     # (and the per-framework Excel) are the ONLY trustworthy result surface: report it
     # verbatim, never from memory. Exit code mirrors it (nonzero == at least one FAIL).
     summary_lines = []
+    board_expected_cases = []
     total = passed = 0
     passed_case_ids = set()   # ids whose case passed ALL active paths in ≥1 framework
     for fw in frameworks:
@@ -1299,6 +1520,12 @@ def main():
                 summary_lines.append(
                     f"{fw:<6} tc{cid:<3} {pk:<11} {st:<4} cos={cos_s}"
                     + (f"  {msg}" if msg else ""))
+                board_entry = make_board_matrix_entry(
+                    project_dir, spec.OP_NAME, fw, cid, pk, st,
+                    None if cos is None else float(cos),
+                )
+                if board_entry is not None:
+                    board_expected_cases.append(board_entry)
             if row_ok:
                 passed_case_ids.add(cid)
 
@@ -1328,8 +1555,22 @@ def main():
     report = "\n".join([f"RUN_ID={run_id}", *header.splitlines(), *summary_lines, *cap_block, "-" * 60, *ack_lines, verdict,
                         f"HARNESS_EXIT={exit_code}"])
     (project_dir / "verify_summary.txt").write_text(report + "\n")
+    board_matrix = {
+        "schema_version": 1,
+        "run_id": run_id,
+        "operator": spec.OP_NAME,
+        "host_summary": str((project_dir / "verify_summary.txt").resolve()),
+        "expected_count": len(board_expected_cases),
+        "cases": board_expected_cases,
+    }
+    board_matrix_path = project_dir / "board_expected_matrix.json"
+    board_matrix_path.write_text(
+        json.dumps(board_matrix, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
     print("\n" + report)
     print(f"[summary] {project_dir / 'verify_summary.txt'}")
+    print(f"[board-matrix] {board_matrix_path} expected={len(board_expected_cases)}")
 
     sys.exit(exit_code)
 

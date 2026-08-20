@@ -12,18 +12,18 @@ Micro模型、adaptor、Sample、CMake/Kconfig和target接线步骤。
 FIRMWARE_SDK_ROOT=<固件SDK仓库绝对路径>
 ```
 
-例如：
+示例（必须替换为使用者本次明确提供的真实绝对路径）：
 
 ```text
-FIRMWARE_SDK_ROOT=C:\lwl_files\code\fbb_ws63
-FIRMWARE_SDK_SRC=C:\lwl_files\code\fbb_ws63\src
+FIRMWARE_SDK_ROOT=<用户提供的固件SDK仓库绝对路径>
+FIRMWARE_SDK_SRC=<用户提供的固件SDK源码绝对路径>
 ```
 
 不能仅根据当前目录、当前会话之外的记录、`FBB_SDK_DIR`、搜索到的第一个
-`fbb_ws63` 或 `fbb describe` 结果自行选择可写 SDK。环境变量和 fbb 输出只用于
+SDK目录名或 `fbb describe` 结果自行选择可写 SDK。环境变量和 fbb 输出只用于
 核对用户给出的路径，不替代用户授权。
 
-同时冻结：
+同时读取Host生成的`board_expected_matrix.json`，并为当前矩阵行冻结：
 
 ```text
 chip=ws63
@@ -35,9 +35,10 @@ model=<绝对路径>
 input_dir=<绝对路径>
 gt_dir=<绝对路径>
 host_summary=<绝对路径>
+board_expected_matrix=<绝对路径>
 ```
 
-若用户只要求 Host 验证，不要求构建、烧录或真板验证，不询问 SDK 路径。
+只有用户明确`BOARD_POLICY=HOST_ONLY`时不询问SDK路径。默认完整workflow会进入全矩阵板测。
 
 ## 2. SDK 身份只读核对
 
@@ -53,9 +54,10 @@ host_summary=<绝对路径>
 
 任一身份检查失败时，输出 `BOARD_SDK_GATE=FAIL` 并停在板端阶段；Host PASS保持有效。
 
-## 3. 选择与 Host 完全相同的代表用例
+## 3. 逐项使用与 Host 完全相同的全部用例
 
-必须从本轮 Host PASS 用例中选择，且以下文件必须来自同一 case：
+`board_expected_matrix.json`是唯一分母。必须按`framework/case_id/mode`固定顺序逐行执行，
+不得选择一个代表case。当前行以下文件必须来自同一Host case：
 
 ```text
 model/model.onnx 或 model/model.tflite
@@ -66,10 +68,18 @@ verify_summary.txt 中该case的PASS记录
 
 禁止跨轮、跨 case 或跨量化模式拼装。记录模型、输入和GT的绝对路径及哈希。
 
+每行独立完成第4节到固件烧录、串口和精度判定，并写`board_result.json`。一行PASS不能
+替代其他行；只有矩阵汇总得到`expected=executed=pass`且`fail=not_run=0`才算完整板测通过。
+其中`executed=pass+fail`，NOT_RUN结果记录只计入`recorded`，不能计入`executed`。
+
 从 Host case 的 `model/` 旁边寻找 `input/`，并在执行前显式核对；不允许找不到输入时
 自动填零。
 
 ## 4. converter_lite 生成 RISC-V Micro C 工程
+
+本节及第5节在Linux/WSL执行，因为当前MSLite包和交叉工具链是Linux x64程序。即使WS63
+SDK将在Windows编译，也不能改用Windows Python直接启动Linux版converter。跨环境时以
+`micro_build_receipt.json`中的模型和静态库SHA-256作为交接身份。
 
 为选定模型调用唯一确定性入口，不得手工重写命令：
 
@@ -85,6 +95,9 @@ python3 <hs-verify-op-board>/chips/ws63/scripts/build_micro.py \
 
 该脚本为选定模型单独运行一次 `converter_lite`。FP32和INT8使用Skill内冻结的各自
 配置；INT8逐模型输入绑定同一case的`calib_0..N`，数量不一致就失败。
+脚本在同一 `LD_LIBRARY_PATH` 下先执行 `converter_lite --help`：仅当当前包明确支持
+`--encryption`时附加`--encryption=false`，2.8等未声明该参数的包保持省略；help本身
+非零、超时或无法启动时输出`MICRO_BUILD_GATE=FAIL`，不继续猜测版本参数。
 
 预期产物至少包含：
 
@@ -117,6 +130,9 @@ python3 <hs-verify-op-board>/chips/ws63/scripts/build_micro.py \
 按照生成工程的CMake构建。脚本保留converter/CMake/build日志，并冻结
 `archives/`与`micro_build_receipt.json`；不得复制陈旧构建目录里的库。
 不得将 Host x86 benchmark 产物当作板端库。
+
+如果固件SDK属于另一环境，把`archives/`复制到该环境的本轮handoff目录并逐文件复核
+receipt哈希；后续`integrate_sdk.py`在固件构建环境中运行，不能复用Micro环境的路径字符串。
 
 必须产生：
 

@@ -4,7 +4,7 @@
 # Placeholders {MSLITE_PKG} {MODEL_FILE} {CFG_FILE} {INPUT_FILE}.
 export GLOG_v=3
 export MSLITE_PKG="{MSLITE_PKG}"
-export LD_LIBRARY_PATH="$MSLITE_PKG/tools/converter/lib:$MSLITE_PKG/runtime/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="{CONVERTER_LIBRARY_PATH}"
 
 rm -rf onnx_x86_micro
 "$MSLITE_PKG/tools/converter/converter/converter_lite" --fmk=ONNX \
