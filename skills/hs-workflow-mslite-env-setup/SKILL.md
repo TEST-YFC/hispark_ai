@@ -79,9 +79,17 @@ bash scripts/convert_model.sh \
 
 该脚本会：
 1. 若 `micro_config.cfg` 不存在则创建
-2. 为 converter 设置 PATH 与 LD_LIBRARY_PATH
-3. 以 NCHW 格式运行 `converter_lite`
-4. 通过 `CONVERT RESULT SUCCESS` 校验输出
+2. 从本轮`MSLITE_PKG`自动定位`libmindspore_converter.so`，过滤其他MSLite包的旧路径，
+   并在启动converter的同一进程中设置PATH与LD_LIBRARY_PATH；不依赖前一个shell的export，
+   不修改`.bashrc`或系统`ldconfig`
+3. 在相同动态库环境中运行`converter_lite --help`；支持`--encryption`时显式传
+   `--encryption=false`，不支持时省略，help失败时按环境问题停止
+4. 以 NCHW 格式运行 `converter_lite`
+5. 通过 `CONVERT RESULT SUCCESS` 校验输出
+
+出现`libmindspore_converter.so: cannot open shared object file`时，脚本会先自动修复当前
+命令的动态库环境并继续。只有本轮工具包内确实找不到该库、包身份冲突或需要重建/重新下载
+工具包时才把探测证据和建议方案交给用户确认；这不是算子实现失败。
 
 ## 第 4 步：构建静态库
 

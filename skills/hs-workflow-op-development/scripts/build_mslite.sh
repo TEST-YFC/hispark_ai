@@ -62,17 +62,39 @@ read_meta() {
 
 fingerprint_repo() {
   local repo="$1" label="$2"
+  # Fingerprinting must inspect the bytes already present in the worktree.  Do
+  # not invoke Git LFS clean filters here: large dirty submodules can otherwise
+  # block before STARTFILE is published and leave no diagnosable build record.
+  local -a git_no_filters=(git -c filter.lfs.process= -c filter.lfs.clean=cat -c filter.lfs.required=false)
   echo "${label}:HEAD=$(git -C "${repo}" rev-parse HEAD 2>/dev/null || echo NO_HEAD)"
+
+  # The nested MindSpore repository is a pinned build dependency.  Its Windows
+  # checkout may appear wholly dirty because of line-ending conversion, making
+  # even a metadata-only diff take many minutes.  The outer repository (where
+  # Lite operator sources live) is still fingerprinted byte-for-byte below;
+  # direct submodules are identified by their immutable commit SHA here.
+  if [[ "${label}" == SUBMODULE:* ]]; then
+    return 0
+  fi
 
   # Raw metadata preserves status, object IDs and mode changes without materializing
   # a potentially enormous binary patch for line-ending-dirty repositories.
-  git -C "${repo}" diff --no-ext-diff --raw --no-abbrev -z HEAD -- 2>/dev/null
+  "${git_no_filters[@]}" -C "${repo}" diff --ignore-submodules=dirty --no-ext-diff --no-textconv --raw --no-abbrev -z HEAD -- 2>/dev/null
   echo "${label}:TRACKED_CONTENT"
-  git -C "${repo}" diff --no-ext-diff --name-only -z HEAD -- 2>/dev/null |
+  "${git_no_filters[@]}" -C "${repo}" diff --ignore-submodules=dirty --no-ext-diff --no-textconv --name-only -z HEAD -- 2>/dev/null |
     while IFS= read -r -d '' rel; do
       [ -f "${repo}/${rel}" ] || [ -L "${repo}/${rel}" ] || continue
       printf '%s\0' "${repo}/${rel}"
-    done | xargs -0 -r sha256sum -- 2>/dev/null
+    done | if [[ "${label}" == SUBMODULE:* ]]; then
+      # Windows checkouts can report an entire nested repository dirty only
+      # because of line-ending conversion.  Hashing every byte makes startup
+      # take many minutes.  Size + nanosecond mtime still invalidates an active
+      # build when any such worktree file is edited, while the parent gitlink
+      # and raw diff above preserve repository identity.
+      xargs -0 -r stat -c 'TRACKED:%s:%Y:%y:%n' -- 2>/dev/null
+    else
+      xargs -0 -r sha256sum -- 2>/dev/null
+    fi
 
   echo "${label}:UNTRACKED_NAMES"
   git -C "${repo}" ls-files --others --exclude-standard -z 2>/dev/null
@@ -475,7 +497,7 @@ fi
 # 据 git 改动自动发现待断言符号，无需调用方传参；发现不到注册全局（纯复用/纯 kernel/coder 改动）则跳过。
 if command -v nm >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   _SYMS=$(mktemp); _HAY=$(mktemp); _SOS=$(mktemp)
-  git status --porcelain 2>/dev/null | cut -c4- | grep -E '\.cc$' 2>/dev/null | while read -r _f; do
+  git status --porcelain --ignore-submodules=dirty 2>/dev/null | cut -c4- | grep -E '\.cc$' 2>/dev/null | while read -r _f; do
     [ -f "${_f}" ] || continue
     grep -hoE '[A-Za-z_][A-Za-z0-9_]*NodeRegister[[:space:]]+g_[A-Za-z0-9_]+' "${_f}" 2>/dev/null \
       | grep -oE 'g_[A-Za-z0-9_]+'

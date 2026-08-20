@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import shlex
 import shutil
 import sys
 
@@ -33,6 +34,19 @@ def digest(path: Path) -> str:
 
 def powershell_literal(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
+
+
+def validate_target(value: str) -> str:
+    """Allow SDK target identifiers, not shell language.
+
+    Target names come from ``fbb describe`` and are identifiers.  Keeping the
+    accepted alphabet generic preserves support for future chips/SDKs while
+    preventing generated wrapper scripts from carrying shell metacharacters.
+    """
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+", value):
+        raise argparse.ArgumentTypeError(
+            "target must contain only letters, digits, '.', '_' or '-'")
+    return value
 
 
 def without_managed_blocks(data: bytes) -> bytes:
@@ -106,7 +120,7 @@ def main() -> int:
     parser.add_argument("--operator", required=True)
     parser.add_argument("--case", required=True)
     parser.add_argument("--mode", required=True, choices=("fp32", "int8"))
-    parser.add_argument("--target", required=True)
+    parser.add_argument("--target", required=True, type=validate_target)
     parser.add_argument("--replace-adaptor", action="store_true")
     parser.add_argument("--receipt", required=True)
     args = parser.parse_args()
@@ -202,7 +216,7 @@ if {target_literal} in target:
         "\n".join(f"$env:{key}={powershell_literal(value)}" for key, value in environment.items()) + "\n",
         encoding="utf-8")
     (receipt.parent / "ws63_board_env.sh").write_text(
-        "\n".join(f"export {key}={json.dumps(value)}" for key, value in environment.items()) + "\n",
+        "\n".join(f"export {key}={shlex.quote(value)}" for key, value in environment.items()) + "\n",
         encoding="utf-8")
     (receipt.parent / "invoke_hs_dev_build.ps1").write_text(
         ". $PSScriptRoot\\ws63_board_env.ps1\n"
@@ -210,7 +224,7 @@ if {target_literal} in target:
         "throw 'WS63 board environment was not loaded' }\n"
         "Write-Output \"AI_CUSTOM_SAMPLE_DIR=$env:AI_CUSTOM_SAMPLE_DIR\"\n"
         "Write-Output \"AI_MCU_MODEL_VARIANT=$env:AI_MCU_MODEL_VARIANT\"\n"
-        f"fbb build {args.target} --clean\n"
+        f"fbb build {powershell_literal(args.target)} --clean\n"
         "exit $LASTEXITCODE\n",
         encoding="utf-8")
     (receipt.parent / "invoke_hs_dev_build.sh").write_text(
@@ -219,7 +233,7 @@ if {target_literal} in target:
         ': "${AI_MCU_MODEL_VARIANT:?missing AI_MCU_MODEL_VARIANT}"\n'
         'printf "AI_CUSTOM_SAMPLE_DIR=%s\\n" "$AI_CUSTOM_SAMPLE_DIR"\n'
         'printf "AI_MCU_MODEL_VARIANT=%s\\n" "$AI_MCU_MODEL_VARIANT"\n'
-        f"fbb build {args.target} --clean\n",
+        f"fbb build {shlex.quote(args.target)} --clean\n",
         encoding="utf-8")
     print(f"SDK_INTEGRATION_GATE=PASS variant={variant} receipt={receipt}")
     return 0

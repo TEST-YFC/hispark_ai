@@ -1,12 +1,26 @@
 ---
 name: hs-dev-op-implement
 description: >-
-  Implement or repair MindSpore Lite Micro operator source code for HiSpark.AI, including source-entry analysis, PrimitiveType reuse decisions, parser/populate/infer/kernel/opcoder/quantizer changes, INT8 paths, and implementation quality gates. Use this stage-specific skill only when the user explicitly names hs-dev-op-implement, explicitly requests source-only work with no testing/build/documentation, or an operator workflow routes an implementation defect back here. Generic requests such as “适配一个算子”, “新增算子”, “支持算子”, “port an operator”, or requests that also include testing, documentation, build, flash, or board verification belong to hs-workflow-op-development instead.
+  Prepare or apply MindSpore Lite Micro operator source changes for HiSpark.AI, including source-entry analysis, PrimitiveType reuse decisions, frozen implementation contracts, parser/populate/infer/kernel/opcoder/quantizer changes, INT8 paths, and implementation quality gates. The top-level workflow calls this skill first with mode=prepare (analysis and contracts only, no source writes), then with mode=apply only after the initial manual draft passes its pre-source gate. Use this stage-specific skill directly only when the user explicitly names hs-dev-op-implement or explicitly requests source-only work with no testing/build/final documentation. Generic requests such as “适配一个算子”, “新增算子”, “支持算子”, “port an operator”, or requests that also include testing, documentation, build, flash, or board verification belong to hs-workflow-op-development instead.
 ---
 
 # MindSpore Lite 算子实现
 
-本 skill 只负责两件事：分析算子实现缺口，以及生成或修复 MindSpore Lite 算子源码。它不生成正式设计文档，不拥有测试用例，不构建 WS63 固件，不烧录开发板，也不调用其他 skill。完整适配由 `hs-workflow-op-development` 编排。
+本 skill 只负责两件事：准备算子实现合同，以及在前置文档通过后生成或修复 MindSpore Lite
+算子源码。它不生成正式设计文档，不拥有 Host 用例的执行和判定，不构建 WS63 固件，
+不烧录开发板，也不调用其他 skill。完整适配由 `hs-workflow-op-development` 编排。
+
+## 调用模式
+
+| 模式 | 执行范围 | 允许修改算子源码 | 终态 |
+|---|---|---|---|
+| `mode=prepare` | step0-step3：扫描、复用裁决、合同、能力清单和计划版`op_spec.py` | **禁止** | `OP_PLAN_GATE=PASS`并返回顶层workflow |
+| `mode=apply` | 先验证`PRE_SOURCE_GATE=PASS`，再执行step4-step6 | 允许 | `IMPLEMENT_GATE=PASS`或结构化FAIL |
+| `mode=all` | 仅用于显式单独调用：先prepare并暂停；由调用者取得初版文档和`PRE_SOURCE_GATE`后，再恢复apply | prepare阶段禁止，apply阶段允许 | 两段终态均有证据 |
+
+顶层workflow必须分两次调用`prepare`和`apply`，中间由workflow调用
+`hs-design-op-manual mode=integrated-initial`。本skill不得自行调用文档Skill。`apply`收到的合同、
+能力清单、计划用例或初版文档哈希变化时，返回prepare重新冻结，不能一边改源码一边补文档。
 
 算子最多涉及七类代码能力，但不是每个算子都要新建七层：
 
@@ -26,7 +40,7 @@ skill 内截断流程。
 
 | 本 skill 负责 | 本 skill 不负责 | 交给谁 |
 |---|---|---|
-| 查证 source entry、扫描七层链路 | 编写或运行精度用例 | `hs-verify-op-host` |
+| 查证 source entry、扫描七层链路，并按能力合同生成编码前计划版`op_spec.py` | 执行精度用例、数值判定和Host产物 | `hs-verify-op-host` |
 | source grouping、复用/新建裁决 | 生成算子设计文档 | `hs-design-op-manual` |
 | 编写和修复算子源码 | 构建 WS63 固件 | `hs-dev-build`，由 workflow 调用 |
 | 实现阶段 code style 与安全门禁 | 烧录固件 | `hs-dev-flash`，由 workflow 调用 |
@@ -36,7 +50,7 @@ skill 内截断流程。
 
 ## 用户可见进度
 
-仅分析模式执行 step0-step3；实现模式执行 step0-step6。阶段完成前先展示门控证据，再勾选 todo。
+`prepare`执行step0-step3，`apply`执行step4-step6。阶段完成前先展示门控证据，再勾选todo。
 
 ```markdown
 待办[<implementation_unit>]:
@@ -69,9 +83,11 @@ skill 内截断流程。
 │   ├── link-analysis.md
 │   ├── existing-capability-review.md
 │   ├── implementation-contract.md
+│   ├── source-freeze.json           # prepare开始前的源码状态receipt
+│   ├── code-style-audit.md          # 规范身份与逐规则审计证据
 │   ├── operator-manual-facts.json  # 编码前由文档skill冻结
-│   ├── operator-manual-draft.md    # 编码前审计草稿
-│   ├── reference-impl.md          # 计算路径变化时
+│   ├── operator-development-report-{op}.md # 唯一人读主文档；先填设计，终态回填验证
+│   ├── reference-impl.md          # 实际路径为 <opdir>/docs/reference-impl.md；运行时产物，不是 Skill 包内文件
 │   └── builtin-probe.md           # 同族多 builtin 时
 ├── scripts/
 │   ├── capability_checklist.json
@@ -80,10 +96,12 @@ skill 内截断流程。
     └── scan_op_<Op>.log
 ```
 
-`op_spec.py`的语义和执行属于Host验证skill，但编码前必须按能力清单生成计划版并通过
+上述目录树描述的是 `<opdir>` 的运行时交付目录，不是本 Skill 包的固定资源清单；其中 `docs/`
+和 `<opdir>/scripts/capability_checklist.json` 等文件由当前算子流程生成。`op_spec.py` 的语义和执行属于 Host 验证 skill，但编码前必须按能力清单生成计划版并通过
 机械校验；本skill必须触发并核对该交接产物，不能等源码写完后才设计
-用例。算子手册facts/Markdown仍由文档skill生成，但编码前必须调用
-`integrated-initial`冻结facts和草稿。构建包、固件和烧录结果属于workflow及对应leaf。
+用例。算子手册facts/Markdown仍由文档skill生成；本skill的prepare只输出文档输入，
+由workflow调用`integrated-initial`冻结facts和草稿。本skill的apply只核对这些输入已经通过
+`PRE_SOURCE_GATE`，不得越权调用文档skill。构建包、固件和烧录结果属于workflow及对应leaf。
 
 ## 安全红线
 
@@ -104,14 +122,32 @@ skill 内截断流程。
 | step0 | 冻结范围 | 列出 framework × operator source entry；解析语义名；确定 `<opdir>` | 范围声明 |
 | step1 | 查证事实 | 每个 source entry 运行并完整阅读 `scan_op.sh`；归档完整日志 | FOUND/NOT_FOUND/UNREACHABLE 与七层扫描证据 |
 | step2 | 冻结实现决策 | source grouping；decision2 复用/新建；decision3 层集开关 | `docs/decision.md` 与逐层做/跳表 |
-| step3 | 冻结能力合同 | 生成 spec、链路分析和能力清单；review 所有已有/复用能力；必要时做 builtin 探针 | spec、link analysis、existing capability review、capability checklist |
-| step4 | 实现源码 | 冻结 implementation contract；必要时对比参考实现；按七层模板最小修改 | 源码 diff 与能力落点 |
+| step3 | 冻结编码前全部输入 | 生成spec、链路分析、能力清单和implementation contract；review已有/复用能力；生成计划版`op_spec.py`并校验 | `OP_PLAN_GATE=PASS`，随后交给workflow生成初版文档 |
+| step4 | 实现源码 | 先通过`PRE_SOURCE_GATE`，必要时对比参考实现，再按七层模板最小修改 | 源码diff与能力落点 |
 | step5 | 编码后交叉审查 | 审核注册键、分支可达性、量化归属、折叠/重写和死代码 | `docs/code-review.md` |
 | step6 | 实现质量门禁 | 运行快速预检、code style、安全和 diff 审计 | `IMPLEMENT_GATE=PASS` 或结构化 FAIL |
 
 ## step0：冻结范围
 
 推荐输入是“只实现 ONNX 的 X”或“用 hs-dev-op-implement 分析 X”。不要在扫描前断言某框架不存在该算子。多个入口先分组再实现；多个 implementation unit 分别维护工作区和 todo。
+
+确定`<opdir>`和`<code_root>`后、执行任何扫描或源码动作前运行：
+
+```bash
+OP_PLAN_RUN_ID="op-plan-<本轮唯一ID>"
+python3 <skill_root>/scripts/gate_artifacts.py \
+  --opdir <opdir> --op <Op> --stage source-freeze --code-root <code_root> \
+  --plan-run-id "$OP_PLAN_RUN_ID" --framework <framework>
+```
+
+只有`SOURCE_FREEZE_GATE=PASS`才进入step1。receipt允许源树开始时已经dirty；它冻结的是本轮
+prepare开始时的真实状态，而不是强迫清理用户改动。prepare和pre-source会复算同一指纹，
+从而区分“原本已有改动”和“文档生成前偷跑的源码改动”。
+
+`source-freeze.json`绑定本轮`OP_PLAN_RUN_ID`、算子、框架范围和code root；同一轮禁止覆盖。
+只有上一轮stage1已经结构化终止、workflow明确宣布开始新规划轮次时，才可换新ID并显式传
+`--rotate-source-freeze`，脚本会先把旧receipt归档到`docs/source-freeze-history/`。不得通过
+重新freeze来掩盖本轮prepare期间的源码变化。每个framework都要在首次freeze时列入scope。
 
 ## step1：扫描规格和现状
 
@@ -149,59 +185,76 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 
 同族多 builtin 场景把实际“输入形态 → builtin”解包证据写入 `builtin-probe.md`。缺实际命令输出时不能用“无归一化”代替证据。
 
-所有产物和 existing capability review 落盘后，按冻结的每个 framework 运行机械门禁：
+在prepare阶段继续冻结`implementation-contract.md`，至少包含source entries、primitive、
+输入/可选输入、属性、layout、dtype、输出、验证方式和暂不支持范围。计算路径新增、修改、
+启用或接管时，同时生成`<opdir>/docs/reference-impl.md`，记录上游实现与仓内相似实现的算法、
+边界和采纳理由；该文件是算子项目运行时产物，不是Skill包内置模板。
+
+仍在prepare阶段、尚未修改任何①-⑦源码时，使用
+`hs-verify-op-host/scripts/operator_spec_template.py`作为唯一模板，把能力清单逐项落实到
+`<opdir>/scripts/op_spec.py`。每条`covered_by`必须指向计划版中的真实case ID，非平凡能力
+保留可机械核对的`match`，然后运行：
+
+```bash
+python3 <hs-verify-op-host>/scripts/validate_op_spec.py <opdir>
+```
+
+能力清单是单向真值：修正或补充op_spec，禁止为迁就现有case反向删除、改弱能力行。只有
+`OP_SPEC_GATE=PASS`才能执行prepare终态门禁。
+
+所有prepare产物落盘后，按冻结的每个framework运行机械门禁：
 
 ```bash
 python3 <skill_root>/scripts/gate_artifacts.py \
-  --opdir <opdir> --op <Op> --stage step3 --framework <framework>
+  --opdir <opdir> --op <Op> --stage prepare --code-root <code_root> \
+  --plan-run-id "$OP_PLAN_RUN_ID" --framework <framework>
 ```
 
-只有每个 framework 都输出 `ARTIFACT_GATE=PASS` 才能进入 step4。门禁失败时补产物，不用对话里的表格代替文件。
+只有每个framework都输出`OP_PLAN_GATE=PASS`，且prepare开始前后由workflow记录的算子源码
+指纹一致，才能把规划产物交给workflow。`mode=prepare`必须在这里停止；不能进入step4，不能
+调用文档Skill，也不能生成任何算子源码。门禁失败时补规划产物，不用对话里的表格代替文件。
 
 ## step4：编写或修复源码
 
-先冻结 `implementation-contract.md`，至少包含 source entries、primitive、输入/可选输入、属性、layout、dtype、输出、验证方式和暂不支持范围。计算路径新增、修改、启用或接管时，再生成 `reference-impl.md`，记录上游实现与仓内相似实现的算法、边界和采纳理由。
+本步骤只允许`mode=apply`进入。workflow必须已经调用
+`hs-design-op-manual mode=integrated-initial`，生成并审计：
 
-写任何 ①-⑦ 源码前，运行 pre-code 门禁：
+```text
+<opdir>/docs/operator-manual-facts.json
+<opdir>/docs/operator-development-report-{op}.md
+```
+
+写任何①-⑦源码前，运行pre-source门禁：
 
 ```bash
 python3 <skill_root>/scripts/gate_artifacts.py \
-  --opdir <opdir> --op <Op> --stage pre-code --framework <framework>
+  --opdir <opdir> --op <Op> --stage pre-source --code-root <code_root> \
+  --plan-run-id "$OP_PLAN_RUN_ID" --framework <framework>
 ```
 
-只有每个 framework 都输出 `ARTIFACT_GATE=PASS` 才能动源码。能力清单或 contract 后续变化时，先重跑本门禁再继续。
+只有每个framework都输出`PRE_SOURCE_GATE=PASS`才允许动源码。该门禁会机械复算
+`source-freeze.json`中的Git可见源码指纹，检查计划版op_spec、初版facts/draft及facts记录的
+四个主源哈希，并重新运行文档Skill的facts/content/case三项audit；仅在对话中声称
+“文档已生成”不算证据。
 
-在任何①-⑦源码动笔前，继续完成两个不可删减的编码前门禁：
+能力清单、contract、op_spec或初版文档后续发生变化时，立即停止apply并回到workflow
+stage1：重新执行prepare、`integrated-initial`和pre-source门禁。不能先改源码后补文档。
 
-1. 使用 `hs-verify-op-host/scripts/operator_spec_template.py`作为唯一模板，把step3能力
-   清单逐项落实到 `<opdir>/scripts/op_spec.py`。每条 `covered_by`必须指向计划版中的
-   真实case ID，非平凡能力保留可机械核对的 `match`。随后运行：
+在本轮首次修改任何①-⑦源码前，完整读取 HiSpark.AI 仓库的
+`docs/zh-CN/software/code-style.md` 和本 Skill 的 `references/code-quality-gate.md`，并记录：
 
-   ```bash
-   python3 <hs-verify-op-host>/scripts/validate_op_spec.py <opdir>
-   ```
+```text
+CODE_STYLE_SOURCE=<code-style.md绝对路径|FROZEN_FALLBACK>
+CODE_STYLE_SOURCE_SHA256=<sha256|N/A>
+```
 
-   只有 `OP_SPEC_GATE=PASS`才能继续。能力清单是单向真值：修正或补充op_spec，禁止
-   为迁就现有case反向删除、改弱能力行。
+仓库文件存在时必须以它为规范源，不能只读摘要或凭记忆编码；文件确实不存在时才允许使用
+`references/code-style-v5.5-fallback.md` 的完整规则清单，并在当前阶段和最终交付中明确报告
+`FROZEN_FALLBACK`，不能静默跳过。格式冲突由代码根 `.clang-format` 决定，安全和可维护性
+规则由 `code-style.md` 决定。
+如果规范文件在实现期间发生变化，必须重新读取并重新执行 step6 审计。
 
-2. 调用 `hs-design-op-manual mode=integrated-initial`，传入冻结的绝对 `code_root`、
-   `opdir`、算子名、implementation unit和framework scope。它必须生成/刷新：
-
-   ```text
-   <opdir>/docs/operator-manual-facts.json
-   <opdir>/docs/operator-manual-draft.md
-   ```
-
-   并完成facts/content/case三项audit。只有收到：
-
-   ```text
-   OP_MANUAL_SYNC=PASS mode=integrated-initial publication=draft
-   ```
-
-   且两份文件存在，才允许编码。草稿不是完成态，但能防止实现、测试和公开规格在
-   编码过程中各自发明一套事实。
-
-每一层动笔前打开 `references/implementation-guide.md` 的对应小节，以仓内同族实现和模板为底稿。INT8 另读 `references/int8-coder-conventions.md`；fusion 另读 `references/optimizer-fusion-template.md`。
+随后，每一层动笔前打开 `references/implementation-guide.md` 的对应小节，以仓内同族实现和模板为底稿。INT8 另读 `references/int8-coder-conventions.md`；fusion 另读 `references/optimizer-fusion-template.md`。
 
 写Parser前必须把规格中的属性、输入顺序和可选输入逐项审计并展示，不能只写“Parser
 已实现”：
@@ -217,7 +270,7 @@ python3 <skill_root>/scripts/gate_artifacts.py \
 项目策略是：默认值与语义按最新opset实现，不临时发明opset分支；扫描发现
 版本差异时Parser加入 `Project policy: parse per opset <N> semantics regardless of model
 opset.` 注释，语义差异另写事实注释。属性审计必须落到 `decision.md`或
-`implementation-contract.md`，并由 `gate_artifacts.py --stage pre-code`机械验收。
+`implementation-contract.md`，并由`gate_artifacts.py --stage pre-source`机械验收。
 
 组合算子还必须完成构造型fusion审计；任何算子都要完成消除/重写型pass审计。命中
 消除型pass时，必须记录触发/存活条件，并在能力清单设计“一条pass不触发且真到Kernel”
@@ -225,9 +278,12 @@ opset.` 注释，语义差异另写事实注释。属性审计必须落到 `deci
 
 实现中持续回填能力落点。复用分支只补缺失或有缺陷的部分，不重建已经证明等价且可达的层；但验证反馈定位到存量代码时，该缺陷仍属于本 implementation unit。
 
-新增代码完成后，再对“新增/修改代码 + 已复用代码的接口边界”做一次交叉 review：逐条沿 capability 从 parser 输入走到生成代码调用，确认修改侧与复用侧的字段、dtype、shape、默认属性和量化参数没有断层。把新增发现更新到 `existing-capability-review.md`，重跑 pre-code artifact gate 后再进入 step5。
+新增代码完成后，再对“新增/修改代码 + 已复用代码的接口边界”做一次交叉review：逐条沿
+capability从parser输入走到生成代码调用，确认修改侧与复用侧的字段、dtype、shape、默认属性
+和量化参数没有断层。把新增发现更新到`existing-capability-review.md`；如果发现改变了冻结语义、
+能力或计划用例，必须回到stage1重新生成初版文档，不能在apply阶段重跑pre-source后继续。
 
-### 编码后交叉代码审查（强制）
+## step5：编码后交叉代码审查（强制）
 
 这不是“看一眼 diff”的可选步骤，而是 `IMPLEMENT_GATE` 的组成部分。审查人或 agent 必须
 从注册表、派发键、分支条件和生成调用四个方向独立核对，不能只依据编译成功或单个 PASS 用例：
@@ -260,19 +316,22 @@ opset.` 注释，语义差异另写事实注释。属性审计必须落到 `deci
 对象（或整个文件为 JSON），顶层至少有 `reviewed_files`、`registration_matrix`、
 `branch_reachability`、`quantizer_ownership`、`folding_and_rewrite_cases`、`findings` 和
 `disposition`。四个矩阵必须是非空对象列表：注册矩阵逐项记录
-`key/dtype/condition/callee/case_id/status`；分支矩阵记录 `branch/case_id/status`；量化归属记录
-`capability/expected_owner/actual_owner/lookup_evidence/model_evidence/status`；折叠矩阵记录
-`mode(blocked|allowed|N/A)/case_id/expected_node/evidence/status`。每个注册 dtype 和分支都必须
+`key/dtype/condition/callee/case_id/evidence_location/status`；分支矩阵记录 `branch/case_id/evidence_location/status`；量化归属记录
+`capability/expected_owner/actual_owner/lookup_evidence/model_evidence/evidence_location/status`；折叠矩阵记录
+`mode(blocked|allowed|N/A)/case_id/expected_node/evidence/evidence_location/status`。每个注册 dtype 和分支都必须
 指向真实 case 或明确的 N/A 证据；`UNREACHABLE`、`DEAD_CODE`、`FIX_REQUIRED`、`FAIL` 均不得
 留在最终审查中。折叠/重写的 blocked case 必须证明目标 Kernel/OpCoder 真执行，allowed case
 必须证明重写后的整图语义正确，不能把后者冒充目标算子覆盖。缺少该文件、JSON 结构不完整、
-身份/分支/折叠证据无法追踪时，`IMPLEMENT_GATE` 必须为 FAIL。
+身份/分支/折叠证据无法追踪时，`IMPLEMENT_GATE` 必须为 FAIL。证据字段必须给出
+实际源码、生成 `net*.c`、转换日志的路径与行号或可复现命令；只写“已检查”“应当可达”
+等无定位说明不算证据。对于允许重写的 case，必须同时记录目标节点被替换后的节点身份和
+整图输出证据；对于 blocked case，必须记录生成代码中目标 Kernel/OpCoder 符号的命中位置。
 
 若本轮新增了 `.c/.cc`源文件而非只修改已有文件，进入构建前必须触发对应CMake重新
 configure：先确认该目录的 `CMakeLists.txt`通过GLOB或显式列表消费新文件，再由workflow
 构建前 `touch`该 `CMakeLists.txt`。否则增量构建可能不收新对象，却链接旧库产生假结论。
 
-## step5：实现质量门禁
+## step6：实现质量门禁
 
 完整执行 `references/code-quality-gate.md`。门禁同时放在本专项 Skill 和顶层 workflow：这里在交付实现前执行，workflow 在构建前复核，避免本 Skill 单独调用时漏检，也避免跨阶段修改绕过门禁。编码后交叉审查必须先通过，才可执行本 step6。
 
@@ -283,7 +342,13 @@ bash <skill_root>/scripts/quick_check.sh <code_root>
 git -C <code_root> diff --check
 ```
 
-再对本次修改的 C/C++ 文件运行仓内 `.clang-format` 检查、逐条审计 `code-style.md` 的适用规则以及安全红线。任何 FAIL 都回 step4；不要用格式化掩盖语义改动。
+再对本次修改的 C/C++ 文件运行仓内 `.clang-format` 检查、逐条审计本轮
+`CODE_STYLE_SOURCE` 中的适用规则以及安全红线。审计结果必须按规范规则编号（例如
+`CMT.04`、`FUD.05`、`INT.06`、`FUU.15`）给出适用性、证据和 PASS/FAIL，不能只写
+“已符合代码规范”。结果固定写入`<opdir>/docs/code-style-audit.md`，文件头记录
+`CODE_STYLE_SOURCE`和`CODE_STYLE_SOURCE_SHA256`，表格逐行记录
+`rule_id/applicability/evidence/status`。任何FAIL或缺失规则行都回step4；不要用格式化掩盖
+语义改动。
 
 只有以下条件同时满足才输出：
 
@@ -297,6 +362,8 @@ IMPLEMENT_GATE=PASS unit=<implementation_unit>
 - 本次源码 diff 的每个文件都能映射到某条能力或必要注册点；
 - `quick_check.sh` 没有真实 FAIL，rank advisory 已逐项处置；
 - code style 与安全检查没有未解决项；
+- `CODE_STYLE_SOURCE`和SHA-256已记录，逐规则审计为`CODE_STYLE_AUDIT=PASS`；
+- `<opdir>/docs/code-style-audit.md`覆盖规范源中的全部规则ID，适用项均有证据且无FAIL；
 - 没有构建、host、文档、flash 或 board 的虚假完成声明。
 
 在输出 `IMPLEMENT_GATE=PASS`前逐项执行以下结案检查；任一项不适用要写N/A及证据，
@@ -347,6 +414,11 @@ workflow回流实现缺陷时，必须持续执行以下根因修复循环：
 重跑质量门禁、workflow stage3重建、stage4同case及回归矩阵
 ```
 
+每次循环必须保存本轮 `RUN_ID`、首个真实 `stderr` 和归属阶段；创建新的 `RUN_ID`
+后才允许重跑，禁止用历史日志或旧产物替代当前结论。每个根因最多重试 **2 次**；第二次仍失败时
+必须输出 `FAILED` 和两轮证据并暂停，等待用户明确选择继续攻坚或列为覆盖缺口，不能继续盲试。
+实现、模型/spec、工具链和固件接线必须分别回流到对应 owner，不能用删除能力或放宽测试掩盖失败。
+
 FP32数值错误不能靠更换输入、删除case、放宽余弦或归咎环境处理；先用小Tensor逐元素
 对比参考公式和Kernel中间值。INT8错误先核对scale/zero-point、累加位宽、乘法顺序、
 饱和、per-tensor/per-channel和生成代码是否确实调用INT8 Kernel。
@@ -372,6 +444,9 @@ IMPLEMENT_GATE=<PASS|FAIL>
 implementation_unit=<name>
 source_entries=<list>
 changed_files=<list>
+CODE_STYLE_SOURCE=<absolute path|FROZEN_FALLBACK>
+CODE_STYLE_SOURCE_SHA256=<sha256|N/A>
+CODE_STYLE_AUDIT=<PASS|FAIL>
 capability_checklist=<absolute path>
 opdir=<absolute path>
 next_owner=hs-workflow-op-development
@@ -388,16 +463,17 @@ next_owner=hs-workflow-op-development
 | 资源 | 何时读取 |
 |---|---|
 | `scripts/scan_op.sh` | step1 规格与七层扫描 |
-| `scripts/gate_artifacts.py` | step3/step4/pre-verify 检查实现、代码审查和验证前产物完整性 |
+| `scripts/gate_artifacts.py` | 记录编码前源码指纹，并在prepare/pre-source/pre-verify检查规划、初版文档、代码审查和验证前产物完整性 |
 | `scripts/quick_check.sh` | step6 快速编译与结构预检 |
-| `../hs-verify-op-host/scripts/operator_spec_template.py` | step4编码前计划版op_spec唯一模板 |
-| `../hs-verify-op-host/scripts/validate_op_spec.py` | step4编码前能力清单与计划case机械校验 |
+| `../hs-verify-op-host/scripts/operator_spec_template.py` | step3 prepare阶段计划版op_spec唯一模板（由workflow保证该跨Skill资源可用） |
+| `../hs-verify-op-host/scripts/validate_op_spec.py` | step3 prepare阶段能力清单与计划case机械校验（由workflow保证该跨Skill资源可用） |
 | `scripts/fetch_ref_impl.py` | 计算路径变化时获取上游参考 |
 | `references/worked-example.md` | step2 前理解复用/新建范例 |
 | `references/decision2-reuse-decision.md` | 复用裁决和 builtin 探针 |
 | `references/implementation-guide.md` | step4 七层模板唯一权威 |
 | `references/int8-coder-conventions.md` | INT8 kernel/opcoder |
 | `references/code-quality-gate.md` | step5/step6 代码审查、code style 与安全门禁 |
+| `references/code-style-v5.5-fallback.md` | 仓库`docs/zh-CN/software/code-style.md`确实不存在时使用的完整规则ID冻结清单 |
 | `references/spec-sources.md` | 规格来源和不可达回退 |
 | `references/troubleshooting.md` | workflow 回流失败时 |
 | `references/lessons.md` | 出现已知故障症状或想走捷径时 |

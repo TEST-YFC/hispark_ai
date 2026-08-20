@@ -26,7 +26,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 
 ```markdown
 - [ ] step0 准备工具链与项目目录
-- [ ] step1 对账/编写 `<proj>/scripts/op_spec.py`
+- [ ] step1 standalone编写 / workflow只读对账 `<proj>/scripts/op_spec.py`
 - [ ] step2 运行固定 harness
 - [ ] step3 读取 `VERDICT` / `HARNESS_EXIT` / Excel / `verify_summary.txt`
 - [ ] step4 排查失败或签收结论
@@ -36,7 +36,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 
 ```markdown
 - [x] step0 准备工具链与项目目录
-- [x] step1 对账/编写 `<proj>/scripts/op_spec.py`
+- [x] step1 standalone编写 / workflow只读对账 `<proj>/scripts/op_spec.py`
 - [ ] step2 运行固定 harness - 正在等 `wait_verify.sh` 返回 VERDICT
 - [ ] step3 读取 `VERDICT` / `HARNESS_EXIT` / Excel / `verify_summary.txt`
 - [ ] step4 排查失败或签收结论
@@ -47,7 +47,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 | 阶段 | 做什么 | 成功证据 |
 |---|---|---|
 | step0 准备工具链与项目目录 | 确认 `MSLITE_PKG` 指向已解压构建产物,算子项目位于 `$MSLITE_OP_OUTPUT/<op>` | `converter_lite` 可执行,`op_spec.py` 不在 MindSpore Lite 源码/构建树内 |
-| step1 对账/编写 spec | 查证框架存在性与属性,按能力清单和规格写 `<proj>/scripts/op_spec.py`；workflow 模式运行 pre-verify 两道机械门禁 | `OP_NAME`、两套 `*_TEST_CASES`、builder、`make_inputs()` 齐全且门禁 PASS |
+| step1 准备 spec | standalone任务按规格编写`<proj>/scripts/op_spec.py`；完整workflow只读对账stage1冻结文件并运行pre-verify两道机械门禁 | `OP_NAME`、两套`*_TEST_CASES`、builder、`make_inputs()`齐全且门禁PASS |
 | step2 运行 harness | 用 `run_all_cases.py --spec <abs path>` 执行 | 日志出现 `VERDICT` 和紧随其后的 `HARNESS_EXIT=N` |
 | step3 读取结果 | 只读取 harness 产物,不要自行判定 | `verify_summary.txt`、每框架 Excel、`output/<framework>/tc*/output/<path>/stderr.log` |
 | step4 排查或签收 | 非零退出按失败类型排查;全绿才签收 | 向用户照抄 VERDICT/退出码,列出 FAIL 证据或 PASS 报告 |
@@ -59,7 +59,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 
 | 内部步骤 | harness 做什么 |
 |---|---|
-| step1 | 构建模型、生成确定性输入、用 onnxruntime / tf.lite 计算参考输出 |
+| step1 | 构建模型、生成确定性输入、用 onnxruntime（CPU provider 明确 `NOT_IMPLEMENTED` 时回退 ONNX 官方 `ReferenceEvaluator`）/ tf.lite 计算参考输出 |
 | step2 | 调 `converter_lite` 生成 micro C 工程 |
 | step3 | `cmake` + `make` benchmark |
 | step4 | 写入输入 `.bin` |
@@ -67,7 +67,8 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 
 ### workflow 模式的 pre-verify 门禁
 
-当 `<proj>` 来自 `hs-dev-op-implement`，写完 `op_spec.py` 后、启动 harness 前必须执行：
+当`<proj>`来自完整算子workflow时，读取stage1已冻结的`op_spec.py`并与capability checklist
+只读对账；启动harness前必须执行：
 
 ```bash
 python3 <hs-dev-op-implement skill root>/scripts/gate_artifacts.py \
@@ -76,6 +77,15 @@ python3 <hs-verify-op-host skill root>/scripts/validate_op_spec.py <absolute pro
 ```
 
 每个激活 framework 都要得到 `ARTIFACT_GATE=PASS`，且 validator 退出码为 0。前者确认实现合同、已有能力 review、能力清单和测试 spec 没有断链；后者在长转换前拦截动态输入数量、initializer 声明、capability case ID 及 ONNX `auto_pad/pads` 冲突。独立 Host 任务没有实现工作区时不伪造这些产物，但仍执行 harness 内建的 spec、目标算子身份和能力覆盖门禁。
+
+harness 只要求所选 framework 的模型 builder：`--framework onnx` 必须定义
+`build_onnx_model`，但不得强制不存在的 TFLite 路径提供 `build_tflite_model`；TFLite 同理。
+`--framework all` 才同时要求两套 builder。公共的算子名、两套 case 容器和 `make_inputs()`
+仍是固定 spec 契约，范围外框架的 case 容器应为空。
+
+完整workflow的Host阶段不得直接新增、删除或改写case。若对账发现模型构造、输入/GT、case或
+覆盖映射必须变化，返回顶层workflow的stage1，重新prepare、生成初版文档、通过pre-source并
+重跑apply/build；不能在Host阶段改完`op_spec.py`后继续使用旧facts哈希。
 
 `ARTIFACT_GATE=PASS` 还要求实现工作区存在编码后 `docs/code-review.md`。该审查必须覆盖注册
 键与 dtype 分支可达性、量化器列表归属、常量折叠/节点重写双路径和生成代码调用；没有审查
@@ -97,7 +107,9 @@ uint8/int8 但 coder 未分支”“永不执行死代码”“量化项落错�
 - **余弦相似度一律由 harness 在 benchmark 跑完后用 `cosine_similarity()` 在 Python 侧计算**,x86 与 riscv
   **同一函数、同一判据**。benchmark 只负责**打印输出张量**(`PrintTensorHandle`),**绝不由 benchmark 决定
   PASS/FAIL**(不传 calib 文件、不依赖其内置 `CompareOutputs`)。参考输出由 harness 用 onnxruntime /
-  `tf.lite.Interpreter` 现算,spec 不提供 ground truth;禁止手填任何余弦数字或"预期张量"。
+  `tf.lite.Interpreter` 现算；仅当 ONNX Runtime 明确返回 `NOT_IMPLEMENTED` 时，harness 可对同一模型和输入使用 ONNX
+  官方 `ReferenceEvaluator`，其他异常仍硬失败；ORT 成功的原生整数输出还要与官方 evaluator 做精确一致性审计，
+  两者冲突时采用官方 ONNX 结果并打印留痕。spec 不提供 ground truth;禁止手填任何余弦数字或"预期张量"。
 - **绝不把 `NaN`/`Inf` 余弦映射成通过值。** `cosine_similarity()` 对一切输入都有定义、永不返回 NaN:
   两边全零→`1.0`(都没产出=相符)、**恰好一边全零→`0.0`(真实失配=FAIL)**。任何 `nan→1.0` 之类的旁路
   都是在掩盖失败,一律禁止。NaN 进入结论 = 余弦没真算出来 = 要修的 bug,不是可以编造的 PASS。
@@ -115,7 +127,10 @@ uint8/int8 但 coder 未分支”“永不执行死代码”“量化项落错�
   `mindspore` 子模块被构建脚本 `--remote` 推进到别的 commit(converter 行为整体漂移)。处置:回
   hs-workflow-op-development stage3 核对**构建新鲜度**与**子模块 SHA 未漂移**（`build_mslite.sh` 的 `[SUBMOD-LOCK]` 守卫），
   **不要逐用例去改算子代码,更不要 `git checkout` 子模块/`git stash` 反复试**——那只会越改越乱。
-- **工具链缺失就停下如实报告,不伪造 PASS / 不模拟运行。**
+- **轻量Python运行包缺失时先自动修复，不得直接停下。** 使用当前Host任务的同一Python解释器，
+  在虚拟环境或用户范围安装并验证后继续；ONNX必须同时具备`onnx`和`onnxruntime`。只有管理员
+  权限、系统级修改、卸载/降级冲突或大型工具链等超出自动修复边界时才询问用户。真正的编译
+  工具链缺失且无法安全自动补齐时如实报告，不伪造PASS、不模拟运行。
 - **harness 内部 step1→step5 强制串行。** 某步失败即该用例 FAIL,不跳步、不臆断通过。
 - **输入必须确定性(禁随机)**,否则结果不可复现。
 - **INT8 真实性由 harness 机械断言,不靠"flat 1.0"目测。** "量化未生效、算子回退 fp32"的判据**不是余弦值**——离散输出算子(hardmax/argmax/select 等,输出 one-hot/索引)即便量化真生效,int8 与 fp32 结果也恒等、余弦本就 `1.000000`,拿 flat 1.0 当 FAIL 信号会把这类合法 PASS 误杀。真正的判据是**生成的 MCU 代码里有没有真的调用该算子的 int8 kernel**:harness 在每条 `riscv_int8` 路径跑完后 grep 生成的 `net*.c`,命中 int8 kernel 符号才算真,缺席判 `INT8_NOT_GENUINE` FAIL(量化旁路 → 发了 fp32 opcoder)。符号默认 `f"{OP_NAME}Int8"`(nnacl 惯例);激活子类型等 int8 符号异名的算子,在 `op_spec.py` 声明 `INT8_KERNEL_SYMBOL`(如 HardSwish→`HSwishInt8`)。**一个算子若按输入形态发射多个 int8 计算函数(如等长核 + 广播核),声明为列表** `INT8_KERNEL_SYMBOL=["BroadcastWhereInt8", "WhereWithTripleInputsInt8"]`——某用例只要命中列表中**任一**符号即算真(闸门只判"是否回退 fp32";发对了哪个 int8 核由余弦负责)。漏列某变体会让发射该变体的用例被误判 `INT8_NOT_GENUINE`。**仅**量化 INT8 豁免算子(原生整型/索引/非 float 输出)可设 `INT8_KERNEL_SYMBOL=""` 关闭该检查,绝不用它掩盖真实回退。**PASS 行备注会区分 `int8_genuine=yes` 与 `int8_exempt=yes`**：前者证明生成代码确实调用 int8 kernel；后者只说明本算子没有 fp32→int8 量化 kernel 需要证明。
@@ -144,6 +159,12 @@ uint8/int8 但 coder 未分支”“永不执行死代码”“量化项落错�
 需要一套**已构建**的 MindSpore Lite 工具链(含 `converter_lite` 与 benchmark 源码)。用环境变量
 `MSLITE_PKG` 指向它;harness 也会从当前目录向上自动定位作为兜底:
 
+本Host harness及当前`linux-x64` converter必须在Linux/WSL执行，不能直接用Windows Python
+启动。HiSpark.AI代码可以位于Windows磁盘，但传给harness、converter和CMake的路径必须先
+转换成WSL原生形式（例如`C:\work\hispark_ai`对应`/mnt/c/work/hispark_ai`）；代码位于WSL
+原生目录时直接使用`/home/...`。`MSLITE_PKG`、`--spec`及输出目录必须全部属于同一个
+Linux/WSL路径空间，禁止在一条命令里混用Windows与WSL绝对路径。
+
 ```bash
 export MSLITE_PKG=<mindspore-lite 构建产物根目录>
 test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" && echo OK || echo "toolchain NOT built"
@@ -157,7 +178,14 @@ test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" && echo OK || ech
 
 未构建时**停止并告知用户先构建工具链**,不要继续、不要伪造结果。
 
-## Bundled Harness(就地运行,不要改、不要拷)
+## 资源边界与 Bundled Harness（就地运行，不要改、不要拷）
+
+Skill 包内固定资源包括 `scripts/run_all_cases.py`、`scripts/*.sh`、`scripts/*.cfg`、
+`scripts/operator_spec_template.py`、`scripts/validate_op_spec.py`、`scripts/wait_verify.sh`、
+`scripts/judge.sh` 和 `tests/`。当前算子项目的运行时产物包括 `<opdir>/scripts/op_spec.py`、
+`<opdir>/scripts/capability_checklist.json`、`<opdir>/docs/*.md`、`<opdir>/output/`、
+`verify_summary.txt` 以及 `/tmp/op_verify_<RUN_ID>.log` 和对应 `.pid`；这些文件不属于 Skill 包。
+静态资源检查不得要求 `skills/hs-verify-op-host/scripts/op_spec.py` 存在。
 
 | 文件 | 作用 |
 |---|---|
@@ -168,7 +196,7 @@ test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" && echo OK || ech
 | `scripts/onnx_x86.sh` / `tflite_x86.sh` | x86:转换(NCHW/NHWC)+ 编译 + benchmark **仅打印输出张量**(不传 calib、不做内置比对) |
 | `scripts/onnx_riscv.sh` / `tflite_riscv.sh` | riscv:转换 + `sed` 把工具链改写为 x86 host 静态库 + 编译运行(无需真板) + benchmark 仅打印输出张量 |
 | `scripts/micro_x86.cfg` / `micro_riscv.cfg` / `micro_riscv_quant.cfg` | 三条路径的 cfg 模板(quant 的 `{CALIBRATE_PATH}` 由 harness 运行时按"每输入一个 `tensor:dir`"填,支持多输入) |
-| `scripts/operator_spec_template.py` | **你要拷贝并填写的唯一模板** |
+| `scripts/operator_spec_template.py` | **复制到当前算子项目并填写的唯一模板**；复制后的 `<opdir>/scripts/op_spec.py` 是项目运行时文件 |
 | `tests/test_harness_core.py` | **harness 自检**(防伪结论的不变量保护网):按真实签名对 `cosine_similarity`(全零/一边零/永不 NaN 三个语义)、三道闸门(`assert_int8_genuine` / `check_case_regression` / 能力清单 `validate_checklist_refs`+`report_capability_coverage`)、`parse_benchmark_outputs`、`_err_msg`、`make_cfg` 做单元断言。不依赖 MSLite/硬件,秒级跑完。**任何对 harness 的维护性改动后必须先跑它**(`python3 -m pytest tests/ -v`),绿了才动真验证——它守的正是"改 harness 时别把防红变绿的能力悄悄改没了" |
 
 ## 唯一要写的文件:`op_spec.py`
@@ -225,7 +253,7 @@ spec **只描述"算什么",不碰"结果对不对"**。
      - TFLite:`curl -sL https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/lite/builtin_ops.h | grep -nE 'kTfLiteBuiltin<OpName>\s*='` —— 命中(含 builtin 编号)=有、空=无。
       **只为"有"的框架写 `*_TEST_CASES`;`build_*_model` 里 `helper.make_node` / TFLite op 用的名字必须是查证命中的确切框架名。** 某框架"无" → 该框架 `*_TEST_CASES = []`,对应 `build_*_model` **保留为占位**(函数体直接 `raise NotImplementedError("<框架> has no <Op>")`——harness 校验符号存在,删函数会报错);**绝不改用"等价算子"顶替来让模型建得起来**(那测的是别的算子,结论无效)。
    - **目标算子身份是前置硬门禁**：ONNX 用例声明 `ONNX_TARGET_OP_TYPE`，TFLite 用例声明 `TFLITE_TARGET_BUILTIN`。harness 在参考运行和 converter 之前逐 case 解包源模型；如果 Fill 等节点被模型 API 常量折叠、lower 或规范化为 BroadcastTo 等别的节点，立即 `OP_MISMATCH`，先修 builder/shape/动态输入设计，不进入精度比较。不要把替代节点的 PASS 当成目标算子 PASS。
-   - **converter 参数按当前包探测**：harness 对 `$MSLITE_PKG/tools/converter/converter/converter_lite --help` 只探测一次并缓存。只有 help 明确声明 `--encryption` 时才传 `--encryption=false`；不支持或无法探测时默认省略，不得让版本专属参数阻塞 converter 启动。每条 driver 日志记录 converter 绝对路径、help 返回码和最终选择，所有驱动不得再硬编码版本专属参数。若探测命令本身失败，先按工具包/环境问题分诊，不把该失败归到算子。
+   - **converter运行环境和参数按当前包探测**：harness 不依赖用户在前一个shell中的`export`。它先在本轮`MSLITE_PKG`内定位`libmindspore_converter.so`，把真实目录置于当前子进程`LD_LIBRARY_PATH`最前，过滤明显属于其他MSLite包的旧目录，再以相同环境运行真实转换。随后对 `$MSLITE_PKG/tools/converter/converter/converter_lite --help` 只探测一次并缓存。只有 help 明确声明 `--encryption` 时才传 `--encryption=false`；help 成功但不支持时省略。自动配置成功就继续，不向用户转交手工设置；包内缺库时输出`CONVERTER_RUNTIME_GATE=FAIL`，help非零、超时或无法启动时输出 `CONVERTER_CAPABILITY_GATE=FAIL` 并停止，不得猜参数或把环境失败归到算子。每条 driver 日志记录 converter 绝对路径、动态库目录、help 返回码和最终选择，所有驱动不得再硬编码版本专属参数。
    - **模型输入契约**：`make_inputs()` 返回的数组数必须等于模型动态输入数。ONNX 权重/zero-point 等若同时作为 graph input 与 initializer 存在,必须在 `INITIALIZER_INPUTS` 显式列名；否则 harness 会在 reference 前拒跑。不要依赖 Python `zip(input_names, inputs)` 静默截断,那会让测试少喂输入却看似通过。
    - **原生整型/索引算子**：可声明 `INT8_KERNEL_SYMBOL=""` 表示量化 INT8 genuine 检查不适用,但仍要按规格覆盖每个原生 dtype（如 int8 与 uint8 分开用例）,并在能力清单用 `match` 锁定 dtype。
    - **属性按规格枚举**:ONNX `https://onnx.com.cn/onnx/operators/onnx__<OpName>.html`;TFLite `https://tensorflow.google.cn/mlir/tfl_ops`、`.../api_docs/python/tf`、`.../lite/performance/quantization_spec`(属性/量化/布局与 ONNX 可能不同,不要照搬;WebFetch 不可达回退 `curl -sL <url> | head -300`)。参考输出由 harness 用真实 runtime 现算,故属性**取值**的正确性自校验——你的风险是**漏掉属性组合**和**用了不存在的属性名**,不是属性数学算错。列全属性,每个有意义组合各一条用例。
@@ -298,7 +326,10 @@ test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" \
 
 - `--framework {onnx,tflite,all}`(默认 all):每个框架用自己的 `*_TEST_CASES` 跑一轮、单独出一份 Excel。
 - `--target {x86,riscv,all}`(默认 all):每框架内选目标路径,决定表里出现哪些余弦列。
-- harness 按所选框架惰性安装依赖(onnxruntime / tensorflow / openpyxl,清华源);任一框架/路径组合都能在全新 `output/` 上独立运行。
+- harness按所选框架惰性安装依赖：ONNX路径安装`onnx`和`onnxruntime`，TFLite路径安装
+  `tensorflow`，报告安装`openpyxl`，基础数值处理安装`numpy`。优先清华源、失败后尝试默认源；
+  安装到当前虚拟环境或当前用户范围，并在同一解释器中重新import验证。Agent看到缺包日志后
+  必须等待自动修复结果并继续，不能把第一次`ModuleNotFoundError`直接当成最终结论。
 
 ### 长任务执行与崩溃检测(harness 单轮 10+ 分钟)
 
@@ -331,6 +362,9 @@ bash "$SKILL/scripts/wait_verify.sh" "/tmp/op_verify_${RUN_ID}.log" 540 \
 - **报告**(每框架一份):`<op>_<framework>_test_results.xlsx`(写在你运行 harness 的项目目录下)。
   一行一个用例;列 = 用例编号 / 描述 / `PARAM_COLUMNS` / 各 active 路径余弦 / 结果 / 备注。
   所有已运行路径达各自阈值才整行 PASS(绿),否则 FAIL(红);末尾汇总行给总计/通过/失败与判据。
+- **板端期望分母**:`board_expected_matrix.json`。harness从本轮实际执行的
+  `riscv_fp32/riscv_int8`行自动生成，每行冻结`framework/case_id/mode/model/input_dir/gt_dir`
+  和Host状态。完整workflow必须使用`--target all`；Board不得手工重写该文件或只挑代表case。
 - **现场**(`output/<framework>/tc<id>/`，按类型分类，类型下再分三路径):
   ```
   tc<id>/
@@ -352,6 +386,25 @@ bash "$SKILL/scripts/wait_verify.sh" "/tmp/op_verify_${RUN_ID}.log" 540 \
 判定:x86/riscv fp32 余弦 ≥ 0.999;riscv INT8 ≥ 0.99(量化有损,故更宽)。
 
 ## 失败排查(按优先级)
+
+### converter CLI 预检与可复现回退
+
+如果固定驱动无法启动，优先直接重跑下面的harness入口。它会在启动converter的同一进程中
+自动定位和配置本轮`MSLITE_PKG`的动态库；以下`--help`仅用于读取已生成日志后的诊断，不要求
+用户永久设置环境变量：
+
+```bash
+CONVERTER="$MSLITE_PKG/tools/converter/converter/converter_lite"
+test -x "$CONVERTER" || { echo "CONVERTER_MISSING=$CONVERTER"; exit 1; }
+python3 "$SKILL/scripts/run_all_cases.py" --run-id "$RUN_ID" \
+  --spec "$PROJ/scripts/op_spec.py" --framework onnx --target x86
+```
+
+若包内缺少`libmindspore_converter.so`，harness会明确报告工具包不完整；只有这种需要重建/
+重新下载工具包或发现多包身份冲突的情形才请求用户确认。`--help` 失败归因于工具包/环境并
+停止当前验证；单个模型转换失败则保留该路径的
+`stderr.log`，回流模型/spec 或算子实现 owner，不能手工修改通用 harness 绕过错误。
+该回退仍使用 `run_all_cases.py` 的固定驱动、余弦和门禁，不得自行替换 converter 参数或 GT。
 
 - **某路径 `ERR` / 没解析到余弦** → 转换或编译失败。看该路径 `stderr.log`;`[ERR]` 行指明在 converter/cmake/make 哪步挂。
   `converter_lite` 报错常是该算子未注册/不支持,或某属性组合无法处理——这是**需要上报的结论**(实现算子支持是另一项独立工作)。

@@ -47,7 +47,7 @@ if [ ${#FILES[@]} -eq 0 ]; then
   # git --porcelain 输出的路径相对仓库顶层（与 cwd 无关），统一拼成绝对路径
   TOP="$(git rev-parse --show-toplevel 2>/dev/null || true)"
   while IFS= read -r f; do FILES+=("${TOP:+${TOP}/}${f}"); done < <(
-    git status --porcelain 2>/dev/null | awk '{print $NF}' | grep -E '\.(c|cc)$' || true)
+    git status --porcelain --ignore-submodules=dirty 2>/dev/null | awk '{print $NF}' | grep -E '\.(c|cc)$' || true)
 fi
 # ---- 链接性 lint：nnacl_c 函数声明头必须带 extern "C" 守卫 ----
 # -fsyntax-only 抓不到链接性错误：nnacl_c 的 .c 按 C 编译，C++ 侧（LiteKernel/coder/serializer）
@@ -61,7 +61,7 @@ for a in "$@"; do case "$a" in *.h) HDRS+=("$a");; esac; done
 if [ ${#HDRS[@]} -eq 0 ]; then
   TOP2="$(git rev-parse --show-toplevel 2>/dev/null || true)"
   while IFS= read -r f; do HDRS+=("${TOP2:+${TOP2}/}${f}"); done < <(
-    git status --porcelain 2>/dev/null | awk '{print $NF}' | grep -E '\.h$' || true)
+    git status --porcelain --ignore-submodules=dirty 2>/dev/null | awk '{print $NF}' | grep -E '\.h$' || true)
 fi
 for h in "${HDRS[@]}"; do
   [ -f "${h}" ] || continue

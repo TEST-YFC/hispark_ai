@@ -24,9 +24,23 @@ RUN_ID="${4:-}"
 case "${MAX}" in (*[!0-9]*|"") echo "[!] max_secs 须为秒数" >&2; exit 1;; esac
 
 waited=0
-if [ -n "${RUN_ID}" ] && ! grep -q "^RUN_ID=${RUN_ID}$" "${LOG}" 2>/dev/null; then
-  echo "RUN_ID_MISMATCH：日志不属于本轮任务：${RUN_ID}" >&2
-  exit 1
+if [ -n "${RUN_ID}" ]; then
+  # nohup may create the log before run_all_cases.py writes its RUN_ID line.
+  # Give the live process a short startup window, but never accept a stale log.
+  startup_waited=0
+  while ! grep -q "^RUN_ID=${RUN_ID}$" "${LOG}" 2>/dev/null; do
+    if [ -n "${PID}" ] && ! kill -0 "${PID}" 2>/dev/null; then
+      echo "RUN_ID_MISMATCH：进程已退出且日志未写入本轮 RUN_ID：${RUN_ID}" >&2
+      tail -40 "${LOG}" 2>/dev/null
+      exit 1
+    fi
+    if [ "${startup_waited}" -ge 15 ]; then
+      echo "RUN_ID_MISMATCH：日志在启动宽限内未写入本轮 RUN_ID：${RUN_ID}" >&2
+      exit 1
+    fi
+    sleep 1
+    startup_waited=$((startup_waited + 1))
+  done
 fi
 while :; do
   if grep -q "^VERDICT:" "${LOG}" 2>/dev/null; then

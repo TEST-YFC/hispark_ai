@@ -50,6 +50,113 @@ def _load_harness():
 h = _load_harness()
 
 
+def test_onnx_reference_falls_back_only_for_ort_not_implemented(monkeypatch):
+    class FailingSession:
+        def __init__(self, *_args, **_kwargs):
+            raise RuntimeError("NOT_IMPLEMENTED: unsupported dtype")
+
+    model = types.SimpleNamespace(
+        graph=types.SimpleNamespace(
+            input=[types.SimpleNamespace(name="X")],
+            output=[types.SimpleNamespace(name="Z")],
+        )
+    )
+    evaluator = types.SimpleNamespace(run=lambda *_args: [np.asarray([7], dtype=np.uint16)])
+    fake_onnx = types.ModuleType("onnx")
+    fake_onnx.load = lambda _path: model
+    fake_reference = types.ModuleType("onnx.reference")
+    fake_reference.ReferenceEvaluator = lambda _model: evaluator
+    monkeypatch.setitem(sys.modules, "onnxruntime", types.SimpleNamespace(InferenceSession=FailingSession))
+    monkeypatch.setitem(sys.modules, "onnx", fake_onnx)
+    monkeypatch.setitem(sys.modules, "onnx.reference", fake_reference)
+
+    in_names, out_names, outputs = h.run_reference("onnx", Path("model.onnx"), [np.asarray([1])])
+
+    assert in_names == ["X"]
+    assert out_names == ["Z"]
+    np.testing.assert_array_equal(outputs[0], np.asarray([7], dtype=np.uint16))
+
+
+def test_onnx_reference_does_not_mask_other_ort_errors(monkeypatch):
+    class FailingSession:
+        def __init__(self, *_args, **_kwargs):
+            raise RuntimeError("INVALID_ARGUMENT: malformed model")
+
+    monkeypatch.setitem(sys.modules, "onnxruntime", types.SimpleNamespace(InferenceSession=FailingSession))
+    with pytest.raises(RuntimeError, match="INVALID_ARGUMENT"):
+        h.run_reference("onnx", Path("model.onnx"), [np.asarray([1])])
+
+
+def test_onnx_reference_uses_official_integer_result_on_runtime_disagreement(monkeypatch):
+    class Session:
+        def get_inputs(self):
+            return [types.SimpleNamespace(name="X")]
+
+        def get_outputs(self):
+            return [types.SimpleNamespace(name="Z")]
+
+        def run(self, *_args):
+            return [np.asarray([13], dtype=np.uint32)]
+
+    model = types.SimpleNamespace(
+        graph=types.SimpleNamespace(
+            input=[types.SimpleNamespace(name="X")],
+            output=[types.SimpleNamespace(name="Z")],
+        )
+    )
+    fake_onnx = types.ModuleType("onnx")
+    fake_onnx.load = lambda _path: model
+    fake_reference = types.ModuleType("onnx.reference")
+    fake_reference.ReferenceEvaluator = lambda _model: types.SimpleNamespace(
+        run=lambda *_args: [np.asarray([0], dtype=np.uint32)]
+    )
+    monkeypatch.setitem(sys.modules, "onnxruntime", types.SimpleNamespace(InferenceSession=lambda *_a, **_k: Session()))
+    monkeypatch.setitem(sys.modules, "onnx", fake_onnx)
+    monkeypatch.setitem(sys.modules, "onnx.reference", fake_reference)
+
+    _, _, outputs = h.run_reference("onnx", Path("model.onnx"), [np.asarray([1])])
+
+    np.testing.assert_array_equal(outputs[0], np.asarray([0], dtype=np.uint32))
+
+
+def test_dependency_repair_installs_missing_module_and_reimports(monkeypatch):
+    installed = {"value": False}
+    commands = []
+    fake_module = types.SimpleNamespace(__version__="1.2.3")
+
+    def fake_import(name):
+        if name == "demo_dep" and not installed["value"]:
+            raise ModuleNotFoundError("No module named demo_dep", name="demo_dep")
+        return fake_module
+
+    def fake_run(command, check=False):
+        commands.append(command)
+        installed["value"] = True
+        return types.SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(h.importlib, "import_module", fake_import)
+    monkeypatch.setattr(h.subprocess, "run", fake_run)
+    result = h._install_python_dependency("demo_dep")
+
+    assert result is fake_module
+    assert commands
+    assert commands[0][:4] == [h.sys.executable, "-m", "pip", "install"]
+
+
+def test_dependency_repair_does_not_reinstall_for_transitive_import_error(monkeypatch):
+    def fake_import(_name):
+        raise ModuleNotFoundError("No module named native_runtime", name="native_runtime")
+
+    monkeypatch.setattr(h.importlib, "import_module", fake_import)
+    monkeypatch.setattr(
+        h.subprocess,
+        "run",
+        lambda *_args, **_kwargs: pytest.fail("pip must not run for a transitive import error"),
+    )
+    with pytest.raises(ModuleNotFoundError, match="native_runtime"):
+        h._install_python_dependency("demo_dep")
+
+
 def _fake_spec(op_name="Hardmax", onnx=None, tflite=None, **extra):
     """A minimal stand-in for an op_spec module (only the attrs the gates read)."""
     ns = types.SimpleNamespace(
@@ -77,10 +184,18 @@ def test_converter_encryption_capability_uses_flag_only_when_help_declares_it(tm
     converter = pkg / "tools" / "converter" / "converter" / "converter_lite"
     converter.parent.mkdir(parents=True)
     converter.write_text("")
+    library = pkg / "tools" / "converter" / "lib" / "libmindspore_converter.so"
+    library.parent.mkdir(parents=True)
+    library.write_text("")
+    (pkg / "runtime" / "lib").mkdir(parents=True)
     calls = []
 
     def fake_run(*args, **kwargs):
         calls.append(args[0])
+        assert kwargs["env"]["LD_LIBRARY_PATH"].startswith(
+            str(pkg / "tools" / "converter" / "lib")
+        )
+        assert str(pkg / "runtime" / "lib") in kwargs["env"]["LD_LIBRARY_PATH"]
         return types.SimpleNamespace(stdout="options: --encryption=<bool>", stderr="", returncode=0)
 
     h._CONVERTER_CAPABILITY_CACHE.clear()
@@ -99,6 +214,9 @@ def test_converter_encryption_capability_omits_unknown_flag_for_28_style_help(tm
     converter = pkg / "tools" / "converter" / "converter" / "converter_lite"
     converter.parent.mkdir(parents=True)
     converter.write_text("")
+    library = pkg / "tools" / "converter" / "lib" / "libmindspore_converter.so"
+    library.parent.mkdir(parents=True)
+    library.write_text("")
 
     h._CONVERTER_CAPABILITY_CACHE.clear()
     monkeypatch.setattr(
@@ -110,7 +228,59 @@ def test_converter_encryption_capability_omits_unknown_flag_for_28_style_help(tm
 
     argument, diagnostic = h._converter_encryption_capability(str(pkg))
     assert argument == ""
-    assert "unsupported/unproven; omitted" in diagnostic
+    assert "unsupported; omitted" in diagnostic
+
+
+def test_converter_encryption_capability_rejects_failed_help_probe(tmp_path, monkeypatch):
+    pkg = tmp_path / "pkg"
+    converter = pkg / "tools" / "converter" / "converter" / "converter_lite"
+    converter.parent.mkdir(parents=True)
+    converter.write_text("")
+    library = pkg / "tools" / "converter" / "lib" / "libmindspore_converter.so"
+    library.parent.mkdir(parents=True)
+    library.write_text("")
+
+    h._CONVERTER_CAPABILITY_CACHE.clear()
+    monkeypatch.setattr(
+        h.subprocess, "run",
+        lambda *args, **kwargs: types.SimpleNamespace(
+            stdout="", stderr="missing shared library", returncode=127
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match=r"CONVERTER_HELP_FAIL.*rc=127.*missing shared library"):
+        h._converter_encryption_capability(str(pkg))
+
+
+def test_converter_runtime_env_prepends_current_package_and_filters_old_package(tmp_path):
+    pkg = tmp_path / "current/pkg"
+    current = pkg / "tools/converter/lib"
+    current.mkdir(parents=True)
+    (current / "libmindspore_converter.so").write_text("")
+    runtime = pkg / "runtime/lib"
+    runtime.mkdir(parents=True)
+    old = tmp_path / "old/pkg/tools/converter/lib"
+    old.mkdir(parents=True)
+    (old / "libmindspore_converter.so").write_text("")
+    unrelated = tmp_path / "custom/lib"
+    unrelated.mkdir(parents=True)
+
+    env, directories = h._converter_runtime_env(
+        str(pkg), {"LD_LIBRARY_PATH": os.pathsep.join((str(old), str(unrelated)))}
+    )
+    entries = env["LD_LIBRARY_PATH"].split(os.pathsep)
+
+    assert entries[0] == str(current.resolve())
+    assert str(runtime.resolve()) in directories
+    assert str(old.resolve()) not in entries
+    assert str(unrelated.resolve()) in entries
+
+
+def test_converter_runtime_env_reports_missing_library_as_environment_gate(tmp_path):
+    pkg = tmp_path / "pkg"
+    pkg.mkdir()
+    with pytest.raises(RuntimeError, match="CONVERTER_RUNTIME_GATE=FAIL.*NOT_FOUND"):
+        h._converter_runtime_env(str(pkg), {})
 
 
 def test_onnx_target_identity_accepts_exact_operator(tmp_path, monkeypatch):
@@ -661,6 +831,8 @@ def test_run_driver_generates_rerunnable_wrapper_that_refreshes_judgement(tmp_pa
     (script_dir / "micro_x86.cfg").write_text("")
     monkeypatch.setattr(h, "SCRIPT_DIR", script_dir)
     monkeypatch.setitem(h.DRIVER, ("onnx", "x86_fp32"), ("dummy_driver.sh", "micro_x86.cfg"))
+    monkeypatch.setattr(h, "_converter_encryption_capability", lambda _pkg: ("", "mock capability"))
+    monkeypatch.setattr(h, "_converter_runtime_env", lambda _pkg: ({}, ()))
 
     case = tmp_path / "tc1"
     gt_dir = case / "gt"
@@ -724,3 +896,36 @@ def test_assert_model_input_contract_rejects_missing_dynamic_input(tmp_path):
         h.assert_model_input_contract(
             "onnx", tc, spec, [ValueInfo("x"), ValueInfo("w")], [np.zeros((1,), np.int8)], set()
         )
+
+
+def test_board_matrix_entry_is_emitted_only_for_riscv_variants(tmp_path):
+    assert h.make_board_matrix_entry(
+        tmp_path, "Add", "onnx", "broadcast", "x86_fp32", "PASS", 1.0
+    ) is None
+
+    entry = h.make_board_matrix_entry(
+        tmp_path, "Add", "onnx", "broadcast", "riscv_int8", "PASS", 0.998
+    )
+    assert entry["framework"] == "onnx"
+    assert entry["case_id"] == "broadcast"
+    assert entry["mode"] == "int8"
+    assert entry["host_path"] == "riscv_int8"
+    assert entry["host_status"] == "PASS"
+    assert entry["model"].endswith("output\\onnx\\tcbroadcast\\model\\model.onnx") \
+        or entry["model"].endswith("output/onnx/tcbroadcast/model/model.onnx")
+
+
+def test_load_spec_requires_only_selected_framework_builder(tmp_path):
+    spec_path = tmp_path / "op_spec.py"
+    spec_path.write_text(
+        "OP_NAME = 'OnlyOnnx'\n"
+        "ONNX_TEST_CASES = []\n"
+        "TFLITE_TEST_CASES = []\n"
+        "def build_onnx_model(*args): pass\n"
+        "def make_inputs(*args): return []\n"
+    )
+
+    spec = h.load_spec(spec_path, ["onnx"])
+    assert spec.OP_NAME == "OnlyOnnx"
+    with pytest.raises(SystemExit, match="build_tflite_model"):
+        h.load_spec(spec_path, ["onnx", "tflite"])

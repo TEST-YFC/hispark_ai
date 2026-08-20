@@ -48,5 +48,5 @@ monitor=<absolute path>
 gt_dir=<absolute path>
 mode=<fp32|int8>
 first_failure=<raw evidence>
-owner=<workflow-stage5|hs-dev-flash|hs-dev-op-implement|hs-verify-op-board>
+owner=<workflow-stage6|hs-dev-flash|hs-dev-op-implement|hs-verify-op-board>
 ```

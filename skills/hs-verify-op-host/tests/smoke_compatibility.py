@@ -20,6 +20,9 @@ def main():
         converter = package / "tools" / "converter" / "converter" / "converter_lite"
         converter.parent.mkdir(parents=True)
         converter.touch()
+        library = package / "tools" / "converter" / "lib" / "libmindspore_converter.so"
+        library.parent.mkdir(parents=True)
+        library.touch()
 
         harness._CONVERTER_CAPABILITY_CACHE.clear()
         supported_help = types.SimpleNamespace(
