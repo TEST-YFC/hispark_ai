@@ -35,11 +35,11 @@ CONTRACT_KEYS = (
     "unsupported_or_deferred",
 )
 MANUAL_CASE_SECTION = re.compile(
-    r"^###\s+4(?:[-.]2)\b[^\n]*\n(?P<body>.*?)(?=^#{1,3}\s|\Z)",
+    r"^###\s+(?:4(?:[-.]2)|1\.2)\b[^\n]*\n(?P<body>.*?)(?=^#{1,3}\s|\Z)",
     re.MULTILINE | re.DOTALL,
 )
 MANUAL_SCENARIO_SECTION = re.compile(
-    r"^##\s+3\.\s+关键场景分析\s*\n(?P<body>.*?)(?=^##\s+4\.|\Z)",
+    r"^##\s+3\.\s+[^\n]*\n(?P<body>.*?)(?=^##\s+4\.|\Z)",
     re.MULTILINE | re.DOTALL,
 )
 MANUAL_CASE_ROW = re.compile(r"^\s*\|\s*(TC-\d{3,})\s*\|", re.MULTILINE)
@@ -58,6 +58,11 @@ MANUAL_SCENARIO_HEADERS = (
     "什么时候会遇到",
     "已覆盖行为与限制",
     "对应用例",
+)
+DESIGN_SCENARIO_HEADERS = (
+    "使用场景",
+    "什么时候会遇到",
+    "软件行为与限制",
 )
 COVERAGE_PRINCIPLE_QUESTIONS = (
     "输入是否覆盖常见规模？",
@@ -304,13 +309,13 @@ def parse_manual_case_id_sequence(path: Path | str) -> tuple[str, ...]:
     text = Path(path).read_text(encoding="utf-8")
     sections = list(MANUAL_CASE_SECTION.finditer(text))
     if len(sections) > 1:
-        raise ValueError("manual must contain exactly one Chapter 4-2 section")
+        raise ValueError("verify document must contain exactly one case-table section")
     if not sections:
         return ()
     table_blocks = _markdown_table_blocks(sections[0].group("body"))
     if len(table_blocks) != 1 or not _is_valid_markdown_table(table_blocks[0]):
         raise ValueError(
-            "Chapter 4-2 must contain exactly one valid Markdown table"
+            "verify case-table section must contain exactly one valid Markdown table"
         )
     table_body = "\n".join(table_blocks[0][2:])
     return tuple(
@@ -327,17 +332,17 @@ def parse_manual_case_table(path: Path | str) -> dict[str, tuple[str, ...]]:
     text = Path(path).read_text(encoding="utf-8")
     sections = list(MANUAL_CASE_SECTION.finditer(text))
     if len(sections) != 1:
-        raise ValueError("manual must contain exactly one Chapter 4-2 section")
+        raise ValueError("verify document must contain exactly one case-table section")
     table_blocks = _markdown_table_blocks(sections[0].group("body"))
     if len(table_blocks) != 1 or not _is_valid_markdown_table(table_blocks[0]):
         raise ValueError(
-            "Chapter 4-2 must contain exactly one valid Markdown table"
+            "verify case-table section must contain exactly one valid Markdown table"
         )
 
     header = _markdown_cells(table_blocks[0][0])
     if header != MANUAL_CASE_HEADERS:
         raise ValueError(
-            "Chapter 4-2 table headers do not match the publication schema"
+            "verify case table headers do not match the publication schema"
         )
 
     result: dict[str, tuple[str, ...]] = {}
@@ -370,6 +375,27 @@ def parse_manual_scenario_table(
     return tuple(
         _markdown_cells(line) for line in table_blocks[0][2:]
     )
+
+
+def parse_design_scenario_table(path: Path | str) -> tuple[tuple[str, ...], ...]:
+    """Parse the design-only scenario table (no test-case column)."""
+    text = Path(path).read_text(encoding="utf-8")
+    sections = list(MANUAL_SCENARIO_SECTION.finditer(text))
+    if len(sections) != 1:
+        raise ValueError("design must contain exactly one Chapter 3 section")
+    table_blocks = _markdown_table_blocks(sections[0].group("body"))
+    matching = [
+        block for block in table_blocks
+        if _is_valid_markdown_table(block)
+        and _markdown_cells(block[0]) == DESIGN_SCENARIO_HEADERS
+    ]
+    if len(matching) != 1:
+        raise ValueError("design Chapter 3 must contain exactly one scenario table")
+    table_blocks = matching
+    header = _markdown_cells(table_blocks[0][0])
+    if header != DESIGN_SCENARIO_HEADERS:
+        raise ValueError("design scenario table headers do not match the publication schema")
+    return tuple(_markdown_cells(line) for line in table_blocks[0][2:])
 
 
 def parse_case_verification_paths(
@@ -795,7 +821,7 @@ def _validate_facts(
     return facts, issues
 
 
-def compare_manual_content(
+def _legacy_compare_manual_content(
     opdir: Path | str,
     facts_path: Path | str,
     manual: Path | str,
@@ -910,10 +936,105 @@ def compare_manual_content(
     return ContentDiff(mismatches=frozenset(mismatches))
 
 
+def compare_design_content(
+    opdir: Path | str,
+    facts_path: Path | str,
+    design: Path | str,
+) -> ContentDiff:
+    del opdir
+    facts = _load_facts(facts_path)
+    text = Path(design).read_text(encoding="utf-8")
+    mismatches: set[str] = set()
+    expected_title = f"# {facts.get('operator', '')} 算子设计文档"
+    if (text.splitlines()[0].strip() if text else "") != expected_title:
+        mismatches.add("design_document_title")
+    if "## 3. MindSpore Lite Micro 软件设计" not in text:
+        mismatches.add("design_software_design_section")
+    if "## 4. 测试设计" in text or "## 4. 运行验证结果" in text:
+        mismatches.add("design_contains_verification")
+    for index, chapter_fact in enumerate(facts.get("chapter_facts", [])):
+        if isinstance(chapter_fact, dict) and isinstance(chapter_fact.get("manual_text"), str):
+            if chapter_fact["manual_text"] not in text:
+                mismatches.add(f"chapter_facts:{index}")
+    scenario_groups = facts.get("scenario_groups", [])
+    if scenario_groups:
+        scenario_rows = parse_design_scenario_table(design)
+        if len(scenario_rows) != len(scenario_groups):
+            mismatches.add("scenario_groups:count")
+        for index, group in enumerate(scenario_groups):
+            if not isinstance(group, dict):
+                continue
+            expected_row = (
+                str(group.get("title", "")),
+                str(group.get("when", "")),
+                str(group.get("behavior", "")),
+            )
+            if index >= len(scenario_rows) or scenario_rows[index] != expected_row:
+                mismatches.add(f"scenario_groups:{index}")
+    return ContentDiff(mismatches=frozenset(mismatches))
+
+
+def compare_manual_content(
+    opdir: Path | str,
+    facts_path: Path | str,
+    verify: Path | str,
+) -> ContentDiff:
+    del opdir
+    facts = _load_facts(facts_path)
+    verify_path = Path(verify)
+    text = verify_path.read_text(encoding="utf-8")
+    cases = parse_manual_case_table(verify_path)
+    mismatches: set[str] = set()
+    expected_title = f"# {facts.get('operator', '')} 算子验证文档"
+    if (text.splitlines()[0].strip() if text else "") != expected_title:
+        mismatches.add("verify_document_title")
+    if "## 1. 测试设计" not in text:
+        mismatches.add("verify_test_design_section")
+    if "## 2. 运行验证结果" not in text:
+        mismatches.add("verify_runtime_result_section")
+    if "## 3. 证据索引" not in text:
+        mismatches.add("verify_evidence_index_section")
+    for path_name in INTERNAL_VERIFICATION_PATH_NAMES:
+        if path_name in text:
+            mismatches.add("internal_verification_path_names")
+    fact_cases = facts.get("cases", [])
+    for fact_case in fact_cases:
+        case_id = _normalize_case_id(fact_case.get("id"))
+        row = cases.get(case_id)
+        if row is None:
+            continue
+        expected = {
+            "framework_source_entry": str(fact_case.get("framework_source_entry", "")),
+            "model_dtype": str(fact_case.get("model_dtype", "")),
+            "verification_paths": _public_verification_coverage(fact_case),
+            "input_shape": json.dumps(fact_case.get("input_shape"), ensure_ascii=False),
+            "value_domain": str(fact_case.get("value_domain", "")),
+            "attributes": _canonical_attributes(fact_case.get("attributes")),
+            "expected_outputs": str(fact_case.get("expected_outputs_text", "")),
+        }
+        actual = {
+            "framework_source_entry": row[1], "model_dtype": row[2],
+            "verification_paths": row[3], "input_shape": row[4],
+            "value_domain": row[5], "attributes": row[6],
+            "expected_outputs": row[7],
+        }
+        for field, expected_value in expected.items():
+            if actual[field] != expected_value:
+                mismatches.add(f"{case_id}:{field}")
+    for index, principle in enumerate(facts.get("coverage_principles", [])):
+        if not isinstance(principle, dict):
+            continue
+        if principle.get("question") not in text or principle.get("answer") not in text:
+            mismatches.add(f"coverage_principles:{index}")
+    return ContentDiff(mismatches=frozenset(mismatches))
+
+
 def audit_facts(
     opdir: Path | str,
     facts_path: Path | str,
     *,
+    design: Path | str | None = None,
+    verify: Path | str | None = None,
     manual: Path | str | None = None,
     publication: str,
 ) -> FactsAudit:
@@ -923,24 +1044,30 @@ def audit_facts(
         publication=publication,
     )
     facts_sync = not issue_set
+    if manual is not None and verify is None:
+        verify = manual
     content_sync: bool | None = None
     content_mismatches: frozenset[str] = frozenset()
-    if manual is not None:
+    if design is not None or verify is not None:
         try:
-            content = compare_manual_content(opdir, facts_path, manual)
+            if design is None or verify is None:
+                raise ValueError("both design and verify documents are required")
+            design_content = compare_design_content(opdir, facts_path, design)
+            verify_content = compare_manual_content(opdir, facts_path, verify)
+            combined = set(design_content.mismatches) | set(verify_content.mismatches)
+            content_mismatches = frozenset(combined)
+            content_sync = not combined
+            if combined:
+                issue_set.add("content")
+            if publication == "final":
+                for document in (design, verify):
+                    document_text = Path(document).read_text(encoding="utf-8")
+                    if any(placeholder in document_text for placeholder in FINAL_PLACEHOLDERS):
+                        issue_set.add("final-placeholder")
+                        content_sync = False
         except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
             issue_set.add("manual-content")
             content_sync = False
-        else:
-            content_mismatches = content.mismatches
-            content_sync = not content_mismatches
-            if content_mismatches:
-                issue_set.add("content")
-        if publication == "final":
-            manual_text = Path(manual).read_text(encoding="utf-8")
-            if any(placeholder in manual_text for placeholder in FINAL_PLACEHOLDERS):
-                issue_set.add("final-placeholder")
-                content_sync = False
 
     publishable = bool(
         facts_sync
@@ -1203,6 +1330,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--opdir", required=True, type=Path)
     parser.add_argument("--facts", type=Path)
+    parser.add_argument("--design", type=Path)
+    parser.add_argument("--verify", type=Path)
+    # Deprecated compatibility alias for the verification path; new callers must provide both documents.
     parser.add_argument("--manual", type=Path)
     parser.add_argument(
         "--publication",
@@ -1224,6 +1354,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             facts_audit = audit_facts(
                 args.opdir,
                 args.facts,
+                design=args.design,
+                verify=args.verify,
                 manual=args.manual,
                 publication=args.publication,
             )
@@ -1269,11 +1401,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                     + ",".join(sorted(facts_audit.issues))
                 )
 
-    if args.manual is None:
+    verify_path = args.verify or args.manual
+    if verify_path is None:
         print("OP_MANUAL_CASE_SYNC=SKIP")
     else:
         try:
-            diff = compare_manual_cases(args.opdir, args.manual)
+            diff = compare_manual_cases(args.opdir, verify_path)
         except (OSError, UnicodeError, SyntaxError, ValueError):
             sync_failed = True
             print("OP_MANUAL_CASE_SYNC=FAIL")

@@ -86,7 +86,8 @@ skill 内截断流程。
 │   ├── source-freeze.json           # prepare开始前的源码状态receipt
 │   ├── code-style-audit.md          # 规范身份与逐规则审计证据
 │   ├── operator-manual-facts.json  # 编码前由文档skill冻结
-│   ├── operator-development-report-{op}.md # 唯一人读主文档；先填设计，终态回填验证
+│   ├── {op}-operator-design-doc.md # 设计文档；只记录规格和软件设计
+│   ├── {op}-operator-verify-doc.md # 验证文档；记录测试设计和运行结果
 │   ├── reference-impl.md          # 实际路径为 <opdir>/docs/reference-impl.md；运行时产物，不是 Skill 包内文件
 │   └── builtin-probe.md           # 同族多 builtin 时
 ├── scripts/
@@ -179,6 +180,13 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 - `code_findings`：边界检查、rank、内存、返回值、code style、安全红线和已知缺陷模式；
 - `disposition`：每层只能是 `REUSE_REVIEWED`、`FIX_REQUIRED` 或 `N/A`，并映射 capability ID。
 
+复用审查还必须单独核对**规格覆盖矩阵**：把 contract/checklist 中的每个输入形态组合
+（dynamic、initializer、optional）、广播形态、索引/边界语义、折叠/重写路径和支持的
+dtype 逐项映射到独立 case，以及生成模型中的真实节点/输入。不能用一个“代表用例”、
+只填写 builder 参数或“以后补测试”推断其它形态；缺少映射就记为 `FIX_REQUIRED`。
+若某形态不适用，必须写出 N/A 和可定位证据。数据生成器也必须能表达规格允许的标量、
+单元素和边界值，不能隐含最小元素数。
+
 任何已有层存在 `FIX_REQUIRED` 都进入 step4 修复范围。禁止因为“这不是本次新增代码”而延期；Host 测试前才首次阅读存量实现，说明 step3 review 没完成。
 
 能力清单从 `hs-verify-op-host/scripts/capability_checklist.template.json` 复制结构，但内容由本 skill 根据规格与实现裁决填写。每条能力保留稳定 ID、可读描述和可机械匹配的 `match`；本 skill 不填写虚假的 PASS，也不为现有测试反向弱化能力。
@@ -221,7 +229,8 @@ python3 <skill_root>/scripts/gate_artifacts.py \
 
 ```text
 <opdir>/docs/operator-manual-facts.json
-<opdir>/docs/operator-development-report-{op}.md
+<opdir>/docs/{op}-operator-design-doc.md
+<opdir>/docs/{op}-operator-verify-doc.md
 ```
 
 写任何①-⑦源码前，运行pre-source门禁：
@@ -310,14 +319,22 @@ capability从parser输入走到生成代码调用，确认修改侧与复用侧�
    switch 覆盖和隐式 fall-through 的等价检查）并结合静态搜索；所有错误返回、边界守卫和
    `Collect()` 依赖必须可追踪。修复编译错误时禁止删除能力分支；若确需删除，必须同步更新
    decision、contract、capability checklist 和测试覆盖。
+6. **规格覆盖与测试数据**：逐条对照 contract/checklist 的输入形态、广播、索引/边界、
+   折叠/重写和 dtype 行，确认每行都指向独立且可运行的 case；确认 `make_inputs()` 或等价
+   生成器按模型输入顺序返回全部输入，并能表达规格允许的标量、单元素、负值和边界数据。
+   只看到 builder 参数、同形 case 或“以后补测试”的说明，均视为覆盖缺失并置
+   `FIX_REQUIRED`。
 
 审查结果写入 `<opdir>/docs/code-review.md`。除说明文字外，文件必须包含一个 fenced JSON
 对象（或整个文件为 JSON），顶层至少有 `reviewed_files`、`registration_matrix`、
-`branch_reachability`、`quantizer_ownership`、`folding_and_rewrite_cases`、`findings` 和
-`disposition`。四个矩阵必须是非空对象列表：注册矩阵逐项记录
+`branch_reachability`、`quantizer_ownership`、`folding_and_rewrite_cases`、
+`semantic_coverage`、`findings` 和 `disposition`。五个矩阵必须是非空对象列表：注册矩阵逐项记录
 `key/dtype/condition/callee/case_id/evidence_location/status`；分支矩阵记录 `branch/case_id/evidence_location/status`；量化归属记录
 `capability/expected_owner/actual_owner/lookup_evidence/model_evidence/evidence_location/status`；折叠矩阵记录
-`mode(blocked|allowed|N/A)/case_id/expected_node/evidence/evidence_location/status`。每个注册 dtype 和分支都必须
+`mode(blocked|allowed|N/A)/case_id/expected_node/evidence/evidence_location/status`；
+`semantic_coverage` 使用 `scenario/case_id/expected_behavior/evidence_location/status`，
+逐项列出 dynamic/initializer/optional、广播、索引/边界、折叠/重写和 dtype 场景（不适用时
+用 N/A 加证据）。每个注册 dtype 和分支都必须
 指向真实 case 或明确的 N/A 证据；`UNREACHABLE`、`DEAD_CODE`、`FIX_REQUIRED`、`FAIL` 均不得
 留在最终审查中。折叠/重写的 blocked case 必须证明目标 Kernel/OpCoder 真执行，allowed case
 必须证明重写后的整图语义正确，不能把后者冒充目标算子覆盖。缺少该文件、JSON 结构不完整、

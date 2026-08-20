@@ -72,18 +72,24 @@
 - 量化器的专用列表、通用白名单和 lookup 路径，确认算子没有被放入错误的通用入口；
 - 常量折叠、节点消除、重写和 fusion 的触发/不触发两类模型，区分“原算子 Kernel 执行”与“折叠结果正确”；
 - 新增/复用代码之间的字段、shape、dtype、qparam 和生成调用接口。
+- 规格覆盖矩阵：输入的 dynamic/initializer/optional 组合、广播形态、索引/边界语义、
+  折叠/重写路径和支持的 dtype 是否逐项对应独立 case；测试数据生成器是否能表达规格允许的
+  标量、单元素、负值和边界值。只列出 builder 参数而没有实际 case、模型节点和运行证据，
+  视为 `FIX_REQUIRED`。
 
 编译通过不能替代这项审查。任一注册键、分支、量化归属或折叠语义没有证据，或存在
 未处置的 `FIX_REQUIRED`，门禁必须 FAIL。
 
-`docs/code-review.md` 除说明文字外必须含一个可解析的 JSON 对象。四个矩阵字段必须是
+`docs/code-review.md` 除说明文字外必须含一个可解析的 JSON 对象。五个矩阵字段必须是
 非空列表，并使用固定共性字段：`registration_matrix` 使用
 `key,dtype,condition,callee,case_id,evidence_location,status`；`branch_reachability` 使用
 `branch,case_id,evidence_location,status`；`quantizer_ownership` 使用
 `capability,expected_owner,actual_owner,lookup_evidence,model_evidence,evidence_location,status`；
 `folding_and_rewrite_cases` 使用 `mode,case_id,expected_node,evidence,evidence_location,status`。
 `evidence_location` 必须指向实际源码、生成 `net*.c` 或转换日志的路径与行号，或给出可复现命令。
-`mode` 必须覆盖 `blocked` 和 `allowed`，或以 `N/A` 加证据说明不适用。门禁因此能机械拦截
+`mode` 必须覆盖 `blocked` 和 `allowed`，或以 `N/A` 加证据说明不适用；
+`semantic_coverage` 使用 `scenario,case_id,expected_behavior,evidence_location,status`，
+逐项记录输入形态、广播、索引/边界、折叠/重写和 dtype 场景（不适用时用 N/A 加证据）。门禁因此能机械拦截
 空表、未达分支、量化归属漂移、死代码和把重写结果冒充原算子执行等情况；具体算子名称
 不写入规则。
 

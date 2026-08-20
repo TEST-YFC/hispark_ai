@@ -166,7 +166,8 @@ def test_document_first_roles_and_mechanical_gate_do_not_conflict():
     assert "check_initial_manual" in gate
     assert '"pre-source"' in gate
     assert "operator-manual-facts.json" in gate
-    assert "operator-development-report-" in gate
+    assert "-operator-design-doc.md" in gate
+    assert "-operator-verify-doc.md" in gate
     assert "sources.{name}.sha256 does not match current file" in gate
     assert '"source-freeze"' in gate
     assert "source fingerprint changed after source-freeze" in gate
@@ -192,16 +193,17 @@ def test_frozen_contract_and_planned_cases_cannot_change_during_apply_or_host():
 
 def test_final_manual_is_host_gated_and_board_report_is_signed_separately():
     manual = read("hs-design-op-manual/SKILL.md")
-    assert "验证结果与证据索引" in manual
+    assert "验证文档" in manual
     assert "不能把固件构建写成板测通过" in manual
 
 
-def test_single_record_template_matches_manual_audit_contract():
-    template = read(
-        "hs-design-op-manual/references/operator-development-record-template.md"
-    )
-    assert "## 3. 关键场景分析" in template
-    assert "## 4. 测试设计" in template
+def test_design_and_verify_templates_match_manual_audit_contract():
+    design = read("hs-design-op-manual/references/operator-design-doc-template.md")
+    verify = read("hs-design-op-manual/references/operator-verify-doc-template.md")
+    assert "## 3. MindSpore Lite Micro 软件设计" in design
+    assert "## 1. 测试设计" in verify
+    assert "## 2. 运行验证结果" in verify
+    assert "## 3. 证据索引" in verify
     expected_headers = (
         "用例编号",
         "框架/source entry",
@@ -212,13 +214,11 @@ def test_single_record_template_matches_manual_audit_contract():
         "算子属性",
         "预期输出",
     )
-    table_line = next(line for line in template.splitlines() if line.startswith("| 用例编号"))
+    table_line = next(line for line in verify.splitlines() if line.startswith("| 用例编号"))
     assert all(header in table_line for header in expected_headers)
-    assert "operator-development-report-{op}.md" in template
-    assert "正文不是固定文案" in template
-    assert "不得原样复制下面的结构骨架" in template
-    assert "没有可信板端证据时写 `N/A` 或 `NOT_RUN`" in template
-    assert "七类能力不是每次推理按顺序执行" in template
+    assert "{op}-operator-design-doc.md" in design
+    assert "{op}-operator-verify-doc.md" in verify
+    assert "七类能力不是每次推理按顺序执行" in design
 
 
 def test_document_only_request_routes_to_artifact_sync_without_development():
@@ -236,7 +236,8 @@ def test_promotion_places_terminal_record_after_board_stages():
     stage7 = promotion.index("7. 全部用例烧录、串口采集和板端精度验证")
     stage8 = promotion.index("8. 统一结案")
     assert stage6 < stage7 < stage8
-    assert "调用integrated-final更新主文档" in promotion
+    assert "integrated-final" in promotion
+    assert "两份文档" in promotion
     assert "OP_MANUAL_SYNC=PASS publication=final" not in promotion
 
 
@@ -254,7 +255,8 @@ def test_promotion_document_matches_document_first_stage_order():
         "source-freeze.json",
         "计划版op_spec.py",
         "operator-manual-facts.json",
-        "operator-development-report-{op}.md",
+        "{op}-operator-design-doc.md",
+        "{op}-operator-verify-doc.md",
         "OP_MANUAL_SYNC publication=record",
         "## 6. stage3：为什么还要单独构建",
         "## 7. stage4：Host Skill 具体生成什么",
@@ -272,6 +274,7 @@ def test_implement_requires_post_code_review_and_fold_checks():
         assert "code-review.md" in text
         assert "folding_and_rewrite_cases" in text or "折叠" in text
         assert "registration_matrix" in text or "注册键" in text
+        assert "semantic_coverage" in text or "规格覆盖" in text
     assert "check_code_review" in gate
 
 
@@ -517,7 +520,7 @@ def test_converter_shared_library_failure_is_auto_repaired_in_process():
     convert = read("hs-workflow-mslite-env-setup/scripts/convert_model.sh")
     assert "_converter_runtime_env" in runner
     assert "converter_runtime_env" in micro
-    assert "converter_runtime_env.sh" in convert
+    assert "converter_lite" in convert
 
 
 def test_host_harness_owns_board_case_denominator():

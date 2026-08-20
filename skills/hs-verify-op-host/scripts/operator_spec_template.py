@@ -156,6 +156,18 @@ def build_tflite_model(tc, model_path):
         f.write(conv.convert())
 
 
+def make_values(shape, lo=-6.0, hi=6.0, dtype=np.float32):
+    """Create deterministic values for any legal shape, including one element.
+
+    Do not use a generator that assumes at least two elements: Fill-like value
+    inputs and scalar broadcast cases legitimately have shape ``[1]`` or ``[]``.
+    """
+    n = int(np.prod(shape)) if len(shape) else 1
+    if n == 1:
+        return np.asarray([(lo + hi) / 2.0], dtype=dtype).reshape(shape)
+    return np.linspace(lo, hi, n, dtype=dtype).reshape(shape)
+
+
 def make_distinct_axis_inputs(shape, axis, lo=-127.0, hi=127.0):
     """沿目标轴等距铺开取值（间距远大于 INT8 量化桶宽），其余维广播复制。
 
@@ -202,26 +214,25 @@ def make_inputs(tc, framework):
       hs_linear         [3.1, 6.0]    x>3: linear passthrough
     """
     shape = tc["params"]["shape"]
-    n = int(np.prod(shape))
     d = tc["params"].get("value_domain", "mixed")
 
     if d == "zeros":
         arr = np.zeros(shape, dtype=np.float32)
     elif d == "positive":
-        arr = np.linspace(0.1, 6.0, n, dtype=np.float32).reshape(shape)
+        arr = make_values(shape, 0.1, 6.0)
     elif d == "negative":
-        arr = np.linspace(-6.0, -0.1, n, dtype=np.float32).reshape(shape)
+        arr = make_values(shape, -6.0, -0.1)
     elif d == "near_zero":
-        arr = np.linspace(-1e-6, 1e-6, n, dtype=np.float32).reshape(shape)
+        arr = make_values(shape, -1e-6, 1e-6)
     # --- operator-specific: HardSwish regions ---
     elif d == "hs_saturate_neg":
-        arr = np.linspace(-6.0, -3.1, n, dtype=np.float32).reshape(shape)
+        arr = make_values(shape, -6.0, -3.1)
     elif d == "hs_nonlinear":
-        arr = np.linspace(-3.0, 3.0, n, dtype=np.float32).reshape(shape)
+        arr = make_values(shape, -3.0, 3.0)
     elif d == "hs_linear":
-        arr = np.linspace(3.1, 6.0, n, dtype=np.float32).reshape(shape)
+        arr = make_values(shape, 3.1, 6.0)
     else:  # "mixed" (baseline)
-        arr = np.linspace(-6.0, 6.0, n, dtype=np.float32).reshape(shape)
+        arr = make_values(shape, -6.0, 6.0)
     return [arr]
 
 

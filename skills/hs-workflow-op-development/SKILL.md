@@ -31,7 +31,7 @@ hs-dev-build → hs-verify-op-board(step4验收固件)
          ↓ FLASH_HANDOFF
 hs-dev-flash/串口采集 → hs-verify-op-board(step5-6精度签收)
          ↓ 完整流程终态/Host-only终态
-hs-design-op-manual (integrated-final：更新同一主文档并回填结果)
+hs-design-op-manual (integrated-final：分别更新设计文档和验证文档并回填结果)
          ↓ OP_MANUAL_SYNC publication=record
 ```
 
@@ -274,10 +274,10 @@ ONNX Host路径开始前必须同时验证`onnx`（建模/读图）和`onnxrunti
    `OP_SPEC_GATE=PASS`和每个framework的`OP_PLAN_GATE=PASS`才继续。
 2. 顶层workflow调用`hs-design-op-manual mode=integrated-initial`。文档Skill只消费第1步
    已冻结的四个主源，不负责扫描或生成实现合同，输出
-   `operator-manual-facts.json`和唯一主文档`operator-development-report-{op}.md`。只有
+   `operator-manual-facts.json`、`{op}-operator-design-doc.md`和`{op}-operator-verify-doc.md`。只有
    `OP_MANUAL_SYNC=PASS mode=integrated-initial publication=record`才继续。
 3. 对每个framework运行带`--code-root`的`gate_artifacts.py --stage pre-source`，机械复核
-   `source-freeze.json`中的源码指纹、计划版`op_spec.py`、facts、主文档以及facts记录的
+   `source-freeze.json`中的源码指纹、计划版`op_spec.py`、facts、两份文档以及facts记录的
    `spec/implementation-contract/capability-checklist/op_spec`哈希，并重新执行facts/content/case
    三项文档audit。
    只有全部输出`PRE_SOURCE_GATE=PASS`才能进入stage2。
@@ -451,7 +451,7 @@ workflow 必须把 `OP_BUILD_RUN_ID` 写入本轮状态并在后续每次 `--wai
 运行环境问题，不是算子失败。所有调用converter的阶段必须先执行同一顺序：以本轮冻结的
 `MSLITE_PKG`为唯一身份，定位包内真实动态库目录，过滤`LD_LIBRARY_PATH`中明显属于其他
 MSLite包的目录，在**同一子进程**中注入后运行`converter_lite --help`自检；自检通过就直接
-继续原阶段，不能让用户手工`export`后重试，也不能默认修改`.bashrc`、`ldconfig`等全局设置。
+继续原阶段，不能让用户手工`export`后重试；不修改`.bashrc`、`ldconfig`等全局设置，也不能默认修改其他全局环境。
 只有本轮包内完全没有该库、converter和库来自不同工具包、需要重新构建/下载包或需要系统级
 修改时，才展示已探测路径、建议方案和影响并请求用户确认。环境身份发生变化后创建新`RUN_ID`，
 不得读取旧失败记录冒充本轮结果。
@@ -479,15 +479,21 @@ harness前，检查它已对每个framework执行`gate_artifacts.py --stage pre-
 
 不要把所有 FAIL 都扔给验证 skill，也不要让 implement 修改固定测试执行器来凑绿。只有 VERDICT 全绿、`HARNESS_EXIT=0` 且 capability 覆盖 N=M，才得到 `HOST_VERIFY_GATE=PASS`。
 
-## stage5：主文档终态回填（在stage6-stage7之后执行）
+进入 Host 前还必须完成一次规格覆盖对账：`code-review.md` 的 `semantic_coverage` 矩阵要逐项核对 dynamic/initializer/optional
+输入组合、广播形态、索引/边界语义、折叠/重写路径和支持 dtype 与独立 case 的映射；单元素或
+标量输入若在规格中合法，必须确认数据生成器确实能生成。缺少映射、只有代表 case 或生成器
+无法表达最小合法输入时，`pre-verify` 直接 FAIL 并回流设计/实现阶段，不得把“代码编译通过”
+或部分 Host PASS 当作覆盖完成。
+
+## stage5：两份文档终态回填（在stage6-stage7之后执行）
 
 Host、固件构建和板端阶段都完成或明确终止后，调用
 `hs-design-op-manual mode=integrated-final terminal_state=completed|blocked|hard-stop`，由文档
-skill 从同一轮冻结事实和验证摘要更新唯一的
-`<opdir>/docs/operator-development-report-{op}.md`。第1～4章设计内容保持一致，只回填第0章状态、
-第4章结果汇总和证据索引；不得另写调用链、Host结果或板测说明 Markdown。
+skill 从同一轮冻结事实和验证摘要分别更新
+`<opdir>/docs/{op}-operator-design-doc.md`与`<opdir>/docs/{op}-operator-verify-doc.md`。
+设计文档只保留规格和软件设计；验证文档回填测试设计、阶段结果和证据索引；不得另写调用链、Host结果或板测说明 Markdown。
 
-文档失败回流文档 skill 或缺失事实的原 owner；主文档只有 facts/content/case audit 均通过才可
+文档失败回流文档 skill 或缺失事实的原 owner；两份文档只有 facts/content/case audit 均通过才可
 输出 `OP_MANUAL_SYNC=PASS publication=record`。此门禁在完整workflow终态时签收，不能在Host
 通过但板端尚未执行时提前写成完整流程通过。
 
@@ -615,7 +621,7 @@ Host 交付完成必须满足：
   `folding_and_rewrite_cases` 均有证据，不能存在未处置的 `FIX_REQUIRED`；
 - 新鲜 `MSLITE_PKG` 构建成功；
 - `HOST_VERIFY_GATE=PASS`；
-- 主文档设计章节和测试计划已保留；终态文档同步在所有请求范围内的阶段结束后执行。
+- 设计文档的规格/软件设计已保留；验证文档的测试计划和阶段结果在所有请求范围内的阶段结束后同步。
 
 默认完整workflow的板测完成另需：
 
@@ -623,7 +629,7 @@ Host 交付完成必须满足：
 - `hs-dev-flash`/CLI JSON `success=true`；
 - `BOARD_MATRIX_GATE=PASS`，且`board_expected_matrix.json`中的全部case/mode均有逐行证据；
 - `ACCURACY_VERDICT=PASS`。
-- `OP_MANUAL_SYNC=PASS publication=record`，且主文档中的结果汇总与矩阵报告一致。
+- `OP_MANUAL_SYNC=PASS publication=record`，且验证文档中的结果汇总与矩阵报告一致、设计文档未混入验证结果。
 
 默认完整流程的用户可见首行只能是以下三种之一：
 
@@ -681,7 +687,7 @@ Host全量验证                 PASS|FAIL     passed/expected               ...
 “固件构建矩阵24/24 PASS”和“真实板测0/24 NOT_RUN”必须作为两行展示，不能合并成“WS63验证
 通过”。如果板端未执行，即使Host和24份固件全部成功，整体仍是`OP_WORKFLOW=INCOMPLETE`。
 
-报告同时给出源码diff、`MSLITE_PKG`、Host summary/Excel、唯一主文档、
+报告同时给出源码diff、`MSLITE_PKG`、Host summary/Excel、设计文档、验证文档、
 `board_expected_matrix.json`、逐case的fwpkg/烧录JSON/monitor/accuracy日志、
 `board_case_results.json`和`board_verify_summary.txt`绝对路径。面向用户的结案消息必须逐行列出
 `framework/case_id/mode/status`，不能只写“板测完成”或只展示一个成功case。

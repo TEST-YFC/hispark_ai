@@ -286,6 +286,16 @@ spec **只描述"算什么",不碰"结果对不对"**。
 > 假 FAIL。"小量级"用例取 `1e-3` 量级即可达到测试目的(远小于默认 `±6` 的 baseline、足以考验量化
 > scale 分配),不要再往下压。
 
+### 输入形态覆盖与测试数据生成门禁
+
+在启动 harness 前，先把规格中所有输入形态组合逐项列成 case 矩阵：dynamic、initializer、
+optional 缺省/显式、广播形态、索引/边界语义、折叠 blocked/allowed，以及每个支持的 dtype
+都必须有独立 case 或有证据的 N/A。一个代表 case、只填写 builder 参数、或只覆盖同形输入
+不能推断其它形态已经覆盖。若规格允许标量或单元素输入，`make_inputs()`/`gen_dataset.py`
+必须能生成 `[1]` 或标量数组；不得隐含“至少两个元素”。索引类用例必须按来源规范决定
+负索引和越界的预期行为，不能静默把它们删除、截断或取模。代码 review 与
+`capability_checklist.json` 的每一行都要能回指到这些 case，缺少映射时 Host 门禁失败。
+
 ### 量化校准与推理输入的数据一致性（INT8 精度关键）
 
 harness 对 `riscv_int8` 路径的校准数据和推理输入使用**同一份 `make_inputs()` 产物**：
