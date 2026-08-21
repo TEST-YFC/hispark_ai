@@ -7274,6 +7274,10 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 
 -   **[Celu](#ZH-CN_TOPIC_0000002026072803)**  
 
+-   **[Hardmax](#ZH-CN_TOPIC_0000002026082101)**  
+
+-   **[Where](#ZH-CN_TOPIC_0000002026082102)**  
+
 ### Conv<a name="ZH-CN_TOPIC_0000002326152940" id="ZH-CN_TOPIC_0000002326152940"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -13714,6 +13718,138 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </table>
 
 
+
+### Hardmax<a name="ZH-CN_TOPIC_0000002026082101" id="ZH-CN_TOPIC_0000002026082101"></a>
+
+**功能描述<a name="section2026082101a"></a>**
+
+沿指定维度选取第一个最大值所在位置，输出与输入同形状的one-hot张量：第一个最大值位置为1，其余位置为0。
+
+**参数说明<a name="section2026082101b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：** 
+>Hardmax算子不支持量化。
+
+**表 1**  Hardmax参数概览
+
+<a name="table2026082101a"></a>
+<table><thead align="left"><tr id="row2026082101h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p202608210121"><a name="p202608210121"></a><a name="p202608210121"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p202608210122"><a name="p202608210122"></a><a name="p202608210122"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p202608210123"><a name="p202608210123"></a><a name="p202608210123"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p202608210124"><a name="p202608210124"></a><a name="p202608210124"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p202608210125"><a name="p202608210125"></a><a name="p202608210125"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082101r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082101r1a"><a name="p2026082101r1a"></a><a name="p2026082101r1a"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082101r1b"><a name="p2026082101r1b"></a><a name="p2026082101r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082101r1c"><a name="p2026082101r1c"></a><a name="p2026082101r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082101r1d"><a name="p2026082101r1d"></a><a name="p2026082101r1d"></a>输入张量，维度不限制。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082101r1e"><a name="p2026082101r1e"></a><a name="p2026082101r1e"></a>-</p>
+</td>
+</tr>
+<tr id="row2026082101r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082101r2a"><a name="p2026082101r2a"></a><a name="p2026082101r2a"></a>axis</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082101r2b"><a name="p2026082101r2b"></a><a name="p2026082101r2b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082101r2c"><a name="p2026082101r2c"></a><a name="p2026082101r2c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082101r2d"><a name="p2026082101r2d"></a><a name="p2026082101r2d"></a>指定选取最大值的维度（默认-1，即最后一维）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082101r2e"><a name="p2026082101r2e"></a><a name="p2026082101r2e"></a>规格约束：-r<=axis<=r-1，r为输入张量的秩。默认为-1</p>
+</td>
+</tr>
+<tr id="row2026082101r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082101r3a"><a name="p2026082101r3a"></a><a name="p2026082101r3a"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082101r3b"><a name="p2026082101r3b"></a><a name="p2026082101r3b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082101r3c"><a name="p2026082101r3c"></a><a name="p2026082101r3c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082101r3d"><a name="p2026082101r3d"></a><a name="p2026082101r3d"></a>输出张量，与输入同形状：沿axis的第一个最大值位置为1，其余为0。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082101r3e"><a name="p2026082101r3e"></a><a name="p2026082101r3e"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Where<a name="ZH-CN_TOPIC_0000002026082102" id="ZH-CN_TOPIC_0000002026082102"></a>
+
+**功能描述<a name="section2026082102a"></a>**
+
+根据条件张量从两个输入张量中逐元素选择输出：条件为true时取X中对应元素，否则取Y中对应元素；condition、X、Y支持广播。
+
+**参数说明<a name="section2026082102b"></a>**
+
+**表 1**  Where参数概览
+
+<a name="table2026082102a"></a>
+<table><thead align="left"><tr id="row2026082102h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p202608210221"><a name="p202608210221"></a><a name="p202608210221"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p202608210222"><a name="p202608210222"></a><a name="p202608210222"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p202608210223"><a name="p202608210223"></a><a name="p202608210223"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p202608210224"><a name="p202608210224"></a><a name="p202608210224"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p202608210225"><a name="p202608210225"></a><a name="p202608210225"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082102r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082102r1a"><a name="p2026082102r1a"></a><a name="p2026082102r1a"></a>condition</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082102r1b"><a name="p2026082102r1b"></a><a name="p2026082102r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082102r1c"><a name="p2026082102r1c"></a><a name="p2026082102r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082102r1d"><a name="p2026082102r1d"></a><a name="p2026082102r1d"></a>条件张量，维度不限制。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082102r1e"><a name="p2026082102r1e"></a><a name="p2026082102r1e"></a>规格约束：数据类型为bool</p>
+</td>
+</tr>
+<tr id="row2026082102r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082102r2a"><a name="p2026082102r2a"></a><a name="p2026082102r2a"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082102r2b"><a name="p2026082102r2b"></a><a name="p2026082102r2b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082102r2c"><a name="p2026082102r2c"></a><a name="p2026082102r2c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082102r2d"><a name="p2026082102r2d"></a><a name="p2026082102r2d"></a>条件为true时选择的输入张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082102r2e"><a name="p2026082102r2e"></a><a name="p2026082102r2e"></a>-</p>
+</td>
+</tr>
+<tr id="row2026082102r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082102r3a"><a name="p2026082102r3a"></a><a name="p2026082102r3a"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082102r3b"><a name="p2026082102r3b"></a><a name="p2026082102r3b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082102r3c"><a name="p2026082102r3c"></a><a name="p2026082102r3c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082102r3d"><a name="p2026082102r3d"></a><a name="p2026082102r3d"></a>条件为false时选择的输入张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082102r3e"><a name="p2026082102r3e"></a><a name="p2026082102r3e"></a>-</p>
+</td>
+</tr>
+<tr id="row2026082102r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082102r4a"><a name="p2026082102r4a"></a><a name="p2026082102r4a"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082102r4b"><a name="p2026082102r4b"></a><a name="p2026082102r4b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082102r4c"><a name="p2026082102r4c"></a><a name="p2026082102r4c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082102r4d"><a name="p2026082102r4d"></a><a name="p2026082102r4d"></a>输出张量，形状为三输入按广播规则对齐后的形状。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082102r4e"><a name="p2026082102r4e"></a><a name="p2026082102r4e"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
 
 # 专题<a name="ZH-CN_TOPIC_0000002562713759" id="ZH-CN_TOPIC_0000002562713759"></a>
 
