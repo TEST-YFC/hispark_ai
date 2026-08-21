@@ -50,8 +50,5 @@
 
 ## 3. 证据索引
 
-- `docs/operator-manual-facts.json`
-- `scripts/op_spec.py`
-- `verify_summary.txt`
-- 固件构建报告和 `.fwpkg`
-- 烧录 JSON、串口日志和板端逐用例结果
+{只列本次模式下真实存在且已经读取的规格、用例、summary、固件、烧录、串口和板测证据；
+每项写仓库或算子工作目录相对路径，不存在的文件不得列入。}

@@ -221,6 +221,54 @@ def test_design_and_verify_templates_match_manual_audit_contract():
     assert "七类能力不是每次推理按顺序执行" in design
 
 
+def test_operator_documents_have_one_owner_directory_and_no_third_document():
+    manual = read("hs-design-op-manual/SKILL.md")
+    workflow = read("hs-workflow-op-development/SKILL.md")
+    audit = read("hs-design-op-manual/scripts/audit_manual_inputs.py")
+    design_template = read(
+        "hs-design-op-manual/references/operator-design-doc-template.md"
+    )
+    verify_template = read(
+        "hs-design-op-manual/references/operator-verify-doc-template.md"
+    )
+    for name in (
+        "<opdir>/docs/{op}-operator-design-doc.md",
+        "<opdir>/docs/{op}-operator-verify-doc.md",
+    ):
+        assert name in manual
+        assert name in workflow
+    standalone = manual.split("### 独立模式", 1)[1].split("### 产物集成模式", 1)[0]
+    assert "<opdir>/docs/" in standalone
+    assert "成对生成" in manual
+    assert "不生成第三份" in manual
+    output_table = manual.split("## 输出决策", 1)[1].split("## 自检与最终复核", 1)[0]
+    assert "<code_root>/" not in output_table
+    audit_arguments = set(
+        re.findall(r'parser\.add_argument\(\s*"([^"]+)"', audit)
+    )
+    assert audit_arguments == {
+        "--opdir",
+        "--facts",
+        "--design",
+        "--verify",
+        "--publication",
+    }
+    assert "4(?:[-.]2)" not in audit
+    for template in (design_template, verify_template):
+        numbered_chapters = re.findall(r"^##\s+\d+\.\s+", template, re.MULTILINE)
+        assert len(numbered_chapters) == 3
+    for integration_only_artifact in (
+        "operator-manual-facts.json",
+        "scripts/op_spec.py",
+        "verify_summary.txt",
+    ):
+        assert integration_only_artifact not in verify_template
+    assert "只列本次模式下真实存在" in verify_template
+    assert "带备份回滚的成对发布" in manual
+    assert "不得声称两个替换天然构成一个原子事务" in manual
+    assert "两份目标版本一致" in manual
+
+
 def test_document_only_request_routes_to_artifact_sync_without_development():
     workflow = read("hs-workflow-op-development/SKILL.md")
     assert "用本 workflow 新生成 X 文档" in workflow
