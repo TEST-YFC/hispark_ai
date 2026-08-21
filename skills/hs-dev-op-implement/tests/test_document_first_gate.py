@@ -48,8 +48,11 @@ def make_initial_manual_fixture(tmp_path: Path, *, mode="integrated-initial") ->
     (docs / "operator-manual-facts.json").write_text(
         json.dumps(facts, indent=2) + "\n", encoding="utf-8"
     )
-    (docs / "operator-development-report-reducesumsquare.md").write_text(
-        "# ReduceSumSquare initial operator manual\n", encoding="utf-8"
+    (docs / "reducesumsquare-operator-design-doc.md").write_text(
+        "# ReduceSumSquare 算子设计文档\n", encoding="utf-8"
+    )
+    (docs / "reducesumsquare-operator-verify-doc.md").write_text(
+        "# ReduceSumSquare 算子验证文档\n", encoding="utf-8"
     )
     return opdir
 
@@ -90,10 +93,19 @@ def test_initial_manual_gate_accepts_current_prepare_sources(tmp_path, monkeypat
 def test_initial_manual_gate_rejects_missing_draft(tmp_path, monkeypatch):
     install_manual_audit(monkeypatch, tmp_path)
     opdir = make_initial_manual_fixture(tmp_path)
-    (opdir / "docs/operator-development-report-reducesumsquare.md").unlink()
+    (opdir / "docs/reducesumsquare-operator-design-doc.md").unlink()
     errors = []
     gate.check_initial_manual(opdir, "ReduceSumSquare", errors)
-    assert any("operator-development-report-reducesumsquare.md" in error for error in errors)
+    assert any("reducesumsquare-operator-design-doc.md" in error for error in errors)
+
+
+def test_initial_manual_gate_rejects_missing_verify_document(tmp_path, monkeypatch):
+    install_manual_audit(monkeypatch, tmp_path)
+    opdir = make_initial_manual_fixture(tmp_path)
+    (opdir / "docs/reducesumsquare-operator-verify-doc.md").unlink()
+    errors = []
+    gate.check_initial_manual(opdir, "ReduceSumSquare", errors)
+    assert any("reducesumsquare-operator-verify-doc.md" in error for error in errors)
 
 
 def test_initial_manual_gate_rejects_source_changed_after_draft(tmp_path, monkeypatch):

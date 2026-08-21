@@ -53,6 +53,7 @@ REQUIRED_CODE_REVIEW_KEYS = [
     "branch_reachability",
     "quantizer_ownership",
     "folding_and_rewrite_cases",
+    "semantic_coverage",
     "findings",
     "disposition",
 ]
@@ -66,6 +67,9 @@ REVIEW_LIST_RULES = {
     ],
     "folding_and_rewrite_cases": [
         "mode", "case_id", "expected_node", "evidence", "evidence_location", "status",
+    ],
+    "semantic_coverage": [
+        "scenario", "case_id", "expected_behavior", "evidence_location", "status",
     ],
 }
 
@@ -377,7 +381,7 @@ def check_source_freeze(opdir, code_root, op, frameworks, plan_run_id, errors):
         )
 
 
-def run_manual_audit(opdir, facts_path, draft_path, errors):
+def run_manual_audit(opdir, facts_path, design_path, verify_path, errors):
     if not MANUAL_AUDIT_SCRIPT.is_file():
         errors.append(f"missing manual audit script: {MANUAL_AUDIT_SCRIPT}")
         return
@@ -389,8 +393,10 @@ def run_manual_audit(opdir, facts_path, draft_path, errors):
             str(opdir),
             "--facts",
             str(facts_path),
-            "--manual",
-            str(draft_path),
+            "--design",
+            str(design_path),
+            "--verify",
+            str(verify_path),
             "--publication",
             "draft",
         ],
@@ -419,11 +425,15 @@ def check_initial_manual(opdir, op, errors):
     """Prove that integrated-initial consumed the current frozen planning inputs."""
     docs = opdir / "docs"
     facts_path = docs / "operator-manual-facts.json"
-    draft_path = docs / f"operator-development-report-{op.lower()}.md"
+    design_path = docs / f"{op.lower()}-operator-design-doc.md"
+    verify_path = docs / f"{op.lower()}-operator-verify-doc.md"
     facts_text = read_text(facts_path, errors)
-    draft_text = read_text(draft_path, errors)
-    if draft_text and op.lower() not in draft_text.lower():
-        errors.append(f"{draft_path} does not mention required token: {op}")
+    design_text = read_text(design_path, errors)
+    verify_text = read_text(verify_path, errors)
+    if design_text and op.lower() not in design_text.lower():
+        errors.append(f"{design_path} does not mention required token: {op}")
+    if verify_text and op.lower() not in verify_text.lower():
+        errors.append(f"{verify_path} does not mention required token: {op}")
     if not facts_text:
         return
     try:
@@ -469,8 +479,8 @@ def check_initial_manual(opdir, op, errors):
             continue
         if entry.get("sha256") != file_sha256(source):
             errors.append(f"{facts_path} sources.{name}.sha256 does not match current file")
-    if facts_path.is_file() and draft_path.is_file():
-        run_manual_audit(opdir, facts_path, draft_path, errors)
+    if facts_path.is_file() and design_path.is_file() and verify_path.is_file():
+        run_manual_audit(opdir, facts_path, design_path, verify_path, errors)
 
 
 def check_code_review(path, op, frameworks, errors):
