@@ -17,9 +17,8 @@ description: >-
 3. 一次调用只有一个模式和一组固定的设计/验证文档目标。所有写入型模式都必须使用算子工作目录
    `<opdir>`。产物集成模式创建或刷新 `<opdir>/docs/operator-manual-facts.json`；facts、日志和
    机器结果是内部证据，不替代两份主文档。
-   人读文档固定且仅有 `<opdir>/docs/{op}-operator-design-doc.md` 与
-   `<opdir>/docs/{op}-operator-verify-doc.md` 两份；除 facts 和发布门控临时候选外，不生成第三份
-   人读文档或旁路说明文档。
+   人读文档输出为 `<opdir>/docs/{op}-operator-design-doc.md` 与
+   `<opdir>/docs/{op}-operator-verify-doc.md`。
 
 ## 六种模式
 
@@ -446,7 +445,7 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NO
 
 候选提升前逐项检查：
 
-- [ ] 模式、授权和设计/验证输出与决策表一致；只生成规定的两份人读文档。
+- [ ] 模式、授权和设计/验证输出路径与决策表一致。
 - [ ] 产物集成模式已从本次最新原始源刷新 `operator-manual-facts.json`；source path/hash、quote、case 顺序和 provenance 均正确。
 - [ ] 设计文档和验证文档各只有规定的三个一级编号章节；独立模式使用已查证事实构建，产物集成模式每章来自规定主源。
 - [ ] capability 多于 7 项时，第 3 章已归并为 3～7 个读者场景；每个 capability 恰好出现一次，group 用例号是成员 `covered_by` 的准确并集。
@@ -464,7 +463,7 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NO
 
 提升后重新读取目标并确认：
 
-1. 写入模式实际只持久写入决策表中的两份人读文档，零写入模式没有文档；没有第三份人读文档或残留临时候选。
+1. 写入模式的设计文档和验证文档均已写入决策表指定路径；零写入模式没有文档，且没有残留临时候选。
 2. 两份文档各自的三个一级编号章节、表头和支持措辞完整，已移除 case 不残留，新增 case 不遗漏。
 3. 产物集成模式的输出得到 `OP_MANUAL_FACTS_SYNC=PASS`、`OP_MANUAL_CONTENT_SYNC=PASS` 和 `OP_MANUAL_CASE_SYNC=PASS`；否则不得更新任一文档或报告同步成功。
 4. terminal_state 和产物等级没有被文档内容反向改写。

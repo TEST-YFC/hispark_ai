@@ -221,7 +221,7 @@ def test_design_and_verify_templates_match_manual_audit_contract():
     assert "七类能力不是每次推理按顺序执行" in design
 
 
-def test_operator_documents_have_one_owner_directory_and_no_third_document():
+def test_operator_documents_have_one_owner_directory_and_fixed_pair():
     manual = read("hs-design-op-manual/SKILL.md")
     workflow = read("hs-workflow-op-development/SKILL.md")
     audit = read("hs-design-op-manual/scripts/audit_manual_inputs.py")
@@ -240,9 +240,12 @@ def test_operator_documents_have_one_owner_directory_and_no_third_document():
     standalone = manual.split("### 独立模式", 1)[1].split("### 产物集成模式", 1)[0]
     assert "<opdir>/docs/" in standalone
     assert "成对生成" in manual
-    assert "不生成第三份" in manual
     output_table = manual.split("## 输出决策", 1)[1].split("## 自检与最终复核", 1)[0]
     assert "<code_root>/" not in output_table
+    document_kinds = set(
+        re.findall(r"\{op\}-operator-(design|verify)-doc\.md", manual)
+    )
+    assert document_kinds == {"design", "verify"}
     audit_arguments = set(
         re.findall(r'parser\.add_argument\(\s*"([^"]+)"', audit)
     )
