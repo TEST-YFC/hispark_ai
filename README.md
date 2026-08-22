@@ -161,7 +161,7 @@ NPU 侧异构计算架构，提供 ATC 模型编译、AMCT 模型压缩、ACL �
 | 2    | [Gru-S音频固定词识别](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/gru/README.md)        |
 
 ## HiSpark Studio AI for VS Code
-对应组件说明中的 ⑥，是 HiSpark.AI 提供的 IDE 插件。它提供 GUI 操作界面，对于不习惯命令行操作的用户，能进一步提升 AI 应用开发的易用性。
+对应组件说明中的 ⑥，是 HiSpark.AI 提供的 IDE 插件。它提供等同于前述流程视图中编译、模型量化转换、烧录等命令行操作的GUI界面，对于不习惯使用命令行的用户，能进一步提升 AI 应用开发的易用性。
 
 详细使用说明见文档《[HiSpark Studio AI for VS Code使用指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark%20Studio%20AI%20for%20VS%20Code%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/index.html)》。
 
