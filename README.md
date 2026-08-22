@@ -152,8 +152,7 @@ NPU 侧异构计算架构，提供 ATC 模型编译、AMCT 模型压缩、ACL �
 
   ```
 
-快速入门请参考 [Samples 快速入门指南](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/README.md)（NPU 平台部分）与文档《[HiSpark.AI 快速入门指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark.AI%20%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/index.html)》；详细操作请参考文档《[HiSpark Studio AI for VS Code使用指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark%20Studio%20AI%20for%20VS%20Code%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/index.html)》。
-
+快速入门请参考 [Samples 快速入门指南](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/README.md)（NPU 平台部分）与文档《[HiSpark.AI 快速入门指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark.AI%20%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/index.html)》。
 应用开发请参考API文档《[HiSpark.AI API开发指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark.AI%20API%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97/index.html)》和以下samples:
 
 | 序号 | 应用                                                                                                          |
@@ -161,8 +160,13 @@ NPU 侧异构计算架构，提供 ATC 模型编译、AMCT 模型压缩、ACL �
 | 1    | [LeNet-5手写数字图像识别](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/lenet5/README.md) |
 | 2    | [Gru-S音频固定词识别](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/gru/README.md)        |
 
-## fbb-modelzoo
-fbb-modelzoo 是 HiSpark.AI 的开源模型库，内置丰富的预训练模型与基于 HiSpark 各平台的部署示例，可用于快速构建 AI 应用。
+## HiSpark Studio AI for VS Code
+对应组件说明中的 ⑥，是 HiSpark.AI 提供的 IDE 插件。它提供 GUI 操作界面，对于不习惯命令行操作的用户，能进一步提升 AI 应用开发的易用性。
+
+详细使用说明见文档《[HiSpark Studio AI for VS Code使用指南](https://docs.hisilicon.com/repos/hispark_ai/zh-CN/master/software/HiSpark%20Studio%20AI%20for%20VS%20Code%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/index.html)》。
+
+## modelzoo
+modelzoo 是 HiSpark.AI 的开源模型库，内置丰富的预训练模型与基于 HiSpark 各平台的部署示例，可用于快速构建 AI 应用。
 
 更多模型与部署示例，请前往 [fbb-modelzoo 仓库](https://gitcode.com/HiSpark/fbb-modelzoo-dev) 获取。
 
