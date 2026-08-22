@@ -5,9 +5,9 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 
 ## HiSpark.AI 解决方案组件说明
 
-整体架构自顶向下分为组件层、统一 API 适配层、运行时与异构硬件平台四层，右侧为 HiSpark Studio AI for VS Code 集成开发工具。
+整体架构如下图所示：
 
-<p align="center"><img src="docs/architecture.png" alt="HiSpark.AI 组件架构" width="70%" /></p>
+<p align="center"><img src="docs/architecture.png" alt="HiSpark.AI 组件架构" width="80%" /></p>
 
 图中各组件的说明与获取方式见下表。
 
