@@ -1,14 +1,12 @@
 # HiSpark.AI 开源项目
 
-## 项目介绍 && 资源
+## 项目介绍与整体架构
 HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可结合已在 [HiSpark 社区](https://gitcode.com/HiSpark) 开源的海思 SDK（如 [WS63](https://gitcode.com/HiSpark/fbb_ws63)、[HiDiTing](https://gitcode.com/HiSpark/hs-fbb)）进行 AI 应用开发。
-
-## HiSpark.AI 解决方案组件说明
-
-整体架构如下图所示：
+解决方案整体架构如下图所示：
 
 <p align="center"><img src="docs/architecture.png" alt="HiSpark.AI 组件架构" width="70%" /></p>
 
+### 组件说明
 图中各组件的说明与获取方式见下表。
 
 | 序号  | 组件                            | 说明                                                                   | 形态      | 获取方式                                                                                       |
@@ -20,9 +18,10 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 | ⑤   | modelzoo                      | 生态组件，汇聚多类别的AI模型样例与AI应用开发参考方案。                                        | 源码      | [fbb-modelzoo](https://gitcode.com/HiSpark/fbb-modelzoo-dev) 仓库                            |
 | ⑥   | HiSpark Studio AI for VS Code | IDE 插件，提升 AI 应用开发易用性                                                 | 安装包     | [VS Code 插件市场](https://marketplace.visualstudio.com/items?itemName=HiSpark.hisparkai)      |
 
-## HiSpark.AI目录介绍
 
-> 作为整体解决方案的导航，本仓库只放置其中部分组件的源码（见下表）；其余组件不在此仓，获取方式见上文「HiSpark.AI 解决方案组件说明」表。
+### 目录介绍
+
+> 作为整体解决方案的导航，本仓库只放置其中部分组件的源码（见下表）；其余组件不在此仓，获取方式见上文「组件说明」表。
 
 | 目录     | 二级目录           | 介绍                                                                       |
 | ------ | -------------- | ------------------------------------------------------------------------ |
