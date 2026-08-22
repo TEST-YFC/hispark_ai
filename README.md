@@ -7,7 +7,7 @@ HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、�
 
 整体架构如下图所示：
 
-<p align="center"><img src="docs/architecture.png" alt="HiSpark.AI 组件架构" width="80%" /></p>
+<p align="center"><img src="docs/architecture.png" alt="HiSpark.AI 组件架构" width="70%" /></p>
 
 图中各组件的说明与获取方式见下表。
 
