@@ -7,16 +7,16 @@
         <mxCell id="modelzoo" value="modelzoo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#1a73e8;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
           <mxGeometry x="20" y="20" width="310" height="96" as="geometry"/>
         </mxCell>
-        <mxCell id="sample" value="sample" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#1a73e8;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
+        <mxCell id="sample" value="Samples" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#1a73e8;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
           <mxGeometry x="345" y="20" width="315" height="96" as="geometry"/>
         </mxCell>
-        <mxCell id="adaptor" value="统一API&amp;适配层(adaptor)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#f9ab00;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
+        <mxCell id="adaptor" value="统一 API &amp; 适配层（adaptor）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef7e0;strokeColor=#f9ab00;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
           <mxGeometry x="20" y="131" width="640" height="96" as="geometry"/>
         </mxCell>
-        <mxCell id="mindspore-lite" value="mindspore-lite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#34a853;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
+        <mxCell id="mindspore-lite" value="MindSpore-Lite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#34a853;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
           <mxGeometry x="20" y="242" width="310" height="96" as="geometry"/>
         </mxCell>
-        <mxCell id="cann" value="cann" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#34a853;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
+        <mxCell id="cann" value="CANN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ea;strokeColor=#34a853;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
           <mxGeometry x="345" y="242" width="315" height="96" as="geometry"/>
         </mxCell>
         <mxCell id="riscv" value="risc-v" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8fd;strokeColor=#9334e6;strokeWidth=2;fontColor=#202124;fontSize=22;fontStyle=1;verticalAlign=middle;" parent="1" vertex="1">
