@@ -345,7 +345,10 @@ def create_cascademodel_onnx_model(output_path):
         [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 136])],
         initializer=initializer_list
     )
+    # opset用21而非22: CI环境ORT的MatmulInteger未注册到opset 22
+    # (报No Op registered for MatmulInteger with domain_version of 22),
+    # 其余算子最高要求opset 18/21, 降一档即可全部兼容
     model = create_low_ir_version_model(
         graph, producer_name='cascade-ops-generator',
-        output_path=output_path)
+        output_path=output_path, opset_version=21)
     logging.info(f"cascade ops model saved: {output_path}")
