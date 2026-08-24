@@ -1627,6 +1627,10 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
 -   **[Unique](#ZH-CN_TOPIC_0000002026082107)**  
 
+-   **[GatherNd](#ZH-CN_TOPIC_0000002026082401)**
+
+-   **[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)**  
+
 ### Conv2D<a name="ZH-CN_TOPIC_0000002326184638" id="ZH-CN_TOPIC_0000002326184638"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -7262,6 +7266,119 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
+### GatherNd<a name="ZH-CN_TOPIC_0000002026082401" id="ZH-CN_TOPIC_0000002026082401"></a>
+
+**功能描述<a name="section2026082401a"></a>**
+
+根据`indices`中的多维坐标，从`params`中收集元素或切片。设索引深度为`D=indices.shape[-1]`，输出shape为`indices.shape[:-1]+params.shape[D:]`，输出数据类型与`params`一致。
+
+**参数说明<a name="section2026082401b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>GatherNd无属性。`indices`仅用于定位数据，不参与量化；float32模型可通过全量化生成int8数据通路。
+
+**表 1**  GatherNd参数概览
+
+<a name="table2026082401a"></a>
+<table><thead align="left"><tr id="row2026082401h"><th class="cellrowborder" valign="top" width="17.51%" id="mcps2026082401.1"><p id="p20260824011"><a name="p20260824011"></a><a name="p20260824011"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.67%" id="mcps2026082401.2"><p id="p20260824012"><a name="p20260824012"></a><a name="p20260824012"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.65%" id="mcps2026082401.3"><p id="p20260824013"><a name="p20260824013"></a><a name="p20260824013"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.17%" id="mcps2026082401.4"><p id="p20260824014"><a name="p20260824014"></a><a name="p20260824014"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26%" id="mcps2026082401.5"><p id="p20260824015"><a name="p20260824015"></a><a name="p20260824015"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082401r1"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps2026082401.1 "><p id="p2026082401r1a"><a name="p2026082401r1a"></a><a name="p2026082401r1a"></a>params</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.67%" headers="mcps2026082401.2 "><p id="p2026082401r1b"><a name="p2026082401r1b"></a><a name="p2026082401r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.65%" headers="mcps2026082401.3 "><p id="p2026082401r1c"><a name="p2026082401r1c"></a><a name="p2026082401r1c"></a>tensor (float32/int32/bool)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.17%" headers="mcps2026082401.4 "><p id="p2026082401r1d"><a name="p2026082401r1d"></a><a name="p2026082401r1d"></a>被收集元素或切片的数据张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r1e"><a name="p2026082401r1e"></a><a name="p2026082401r1e"></a>float32模型支持非量化和全量化int8通路。</p>
+</td>
+</tr>
+<tr id="row2026082401r2"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps2026082401.1 "><p id="p2026082401r2a"><a name="p2026082401r2a"></a><a name="p2026082401r2a"></a>indices</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.67%" headers="mcps2026082401.2 "><p id="p2026082401r2b"><a name="p2026082401r2b"></a><a name="p2026082401r2b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.65%" headers="mcps2026082401.3 "><p id="p2026082401r2c"><a name="p2026082401r2c"></a><a name="p2026082401r2c"></a>tensor (int32/int64)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.17%" headers="mcps2026082401.4 "><p id="p2026082401r2d"><a name="p2026082401r2d"></a><a name="p2026082401r2d"></a>多维索引张量，最后一维保存索引元组。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r2e"><a name="p2026082401r2e"></a><a name="p2026082401r2e"></a>rank(indices)必须大于等于1；D必须小于等于rank(params)；坐标值必须大于等于0且小于params对应维度大小。</p>
+</td>
+</tr>
+<tr id="row2026082401r3"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps2026082401.1 "><p id="p2026082401r3a"><a name="p2026082401r3a"></a><a name="p2026082401r3a"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.67%" headers="mcps2026082401.2 "><p id="p2026082401r3b"><a name="p2026082401r3b"></a><a name="p2026082401r3b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.65%" headers="mcps2026082401.3 "><p id="p2026082401r3c"><a name="p2026082401r3c"></a><a name="p2026082401r3c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.17%" headers="mcps2026082401.4 "><p id="p2026082401r3d"><a name="p2026082401r3d"></a><a name="p2026082401r3d"></a>按索引元组收集得到的元素或切片，数据类型与params一致。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r3e"><a name="p2026082401r3e"></a><a name="p2026082401r3e"></a>shape为indices.shape[:-1]+params.shape[D:]；输出元素数、步长和偏移量必须在有符号32位整数范围内。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### LogSoftmax<a name="ZH-CN_TOPIC_0000002026082404" id="ZH-CN_TOPIC_0000002026082404"></a>
+
+**功能描述<a name="section2026082404a"></a>**
+
+对输入张量最后一维的元素计算对数归一化概率。对于最后一维中的每个元素，计算公式为：Y<sub>i</sub>=X<sub>i</sub>-log\(Σ<sub>j</sub>exp\(X<sub>j</sub>\)\)。输出张量的形状和格式与输入相同。
+
+**参数说明<a name="section2026082404b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>受TFLite算子规格限制，LogSoftmax仅支持在最后一维上进行计算。
+
+**表 1**  LogSoftmax参数概览
+
+<a name="table2026082404a"></a>
+<table><thead align="left"><tr id="row2026082404h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps2026082404.1"><p id="p202608240421"><a name="p202608240421"></a><a name="p202608240421"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps2026082404.2"><p id="p202608240422"><a name="p202608240422"></a><a name="p202608240422"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="mcps2026082404.3"><p id="p202608240423"><a name="p202608240423"></a><a name="p202608240423"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps2026082404.4"><p id="p202608240424"><a name="p202608240424"></a><a name="p202608240424"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps2026082404.5"><p id="p202608240425"><a name="p202608240425"></a><a name="p202608240425"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082404r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082404.1 "><p id="p2026082404r1a"><a name="p2026082404r1a"></a><a name="p2026082404r1a"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082404.2 "><p id="p2026082404r1b"><a name="p2026082404r1b"></a><a name="p2026082404r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082404.3 "><p id="p2026082404r1c"><a name="p2026082404r1c"></a><a name="p2026082404r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082404.4 "><p id="p2026082404r1d"><a name="p2026082404r1d"></a><a name="p2026082404r1d"></a>输入张量，维度为1D～5D；沿最后一维进行计算。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082404.5 "><p id="p2026082404r1e"><a name="p2026082404r1e"></a><a name="p2026082404r1e"></a>模型数据类型为float32；支持FP32和全量化INT8转换。</p>
+</td>
+</tr>
+<tr id="row2026082404r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082404.1 "><p id="p2026082404r2a"><a name="p2026082404r2a"></a><a name="p2026082404r2a"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082404.2 "><p id="p2026082404r2b"><a name="p2026082404r2b"></a><a name="p2026082404r2b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082404.3 "><p id="p2026082404r2c"><a name="p2026082404r2c"></a><a name="p2026082404r2c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082404.4 "><p id="p2026082404r2d"><a name="p2026082404r2d"></a><a name="p2026082404r2d"></a>输出张量，形状和格式与输入相同。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082404.5 "><p id="p2026082404r2e"><a name="p2026082404r2e"></a><a name="p2026082404r2e"></a>模型输出数据类型与输入一致。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
 ## ONNX算子规格参考<a name="ZH-CN_TOPIC_0000002320738138" id="ZH-CN_TOPIC_0000002320738138"></a>
 
 -   **[Conv](#ZH-CN_TOPIC_0000002326152940)**  
@@ -7451,6 +7568,11 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 -   **[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)**  
 
 -   **[Unique](#ZH-CN_TOPIC_0000002026082108)**  
+-   **[Softsign](#ZH-CN_TOPIC_0000002026082402)**  
+
+-   **[Softplus](#ZH-CN_TOPIC_0000002026082403)**  
+
+-   **[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)**  
 
 ### Conv<a name="ZH-CN_TOPIC_0000002326152940" id="ZH-CN_TOPIC_0000002326152940"></a>
 
@@ -14410,6 +14532,161 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082108r7d"><a name="p2026082108r7d"></a><a name="p2026082108r7d"></a>指定唯一结果的输出顺序。</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082108r7e"><a name="p2026082108r7e"></a><a name="p2026082108r7e"></a>配置范围：0、1；默认1。1表示按字典序升序输出，0表示保持首次出现顺序</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Softsign<a name="ZH-CN_TOPIC_0000002026082402" id="ZH-CN_TOPIC_0000002026082402"></a>
+
+**功能描述<a name="section2026082402a"></a>**
+
+对输入张量逐元素执行Softsign激活函数运算。公式为：Y=X/\(1+|X|\)。输出与输入形状相同，输出值范围为\(-1, 1\)。
+
+**参数说明<a name="section2026082402b"></a>**
+
+**表 1**  Softsign参数概览
+
+<a name="table2026082402a"></a>
+<table><thead align="left"><tr id="row2026082402h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps1.2.6.1.1"><p id="p202608240221"><a name="p202608240221"></a><a name="p202608240221"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps1.2.6.1.2"><p id="p202608240222"><a name="p202608240222"></a><a name="p202608240222"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps1.2.6.1.3"><p id="p202608240223"><a name="p202608240223"></a><a name="p202608240223"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps1.2.6.1.4"><p id="p202608240224"><a name="p202608240224"></a><a name="p202608240224"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps1.2.6.1.5"><p id="p202608240225"><a name="p202608240225"></a><a name="p202608240225"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082402r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082402r1a"><a name="p2026082402r1a"></a><a name="p2026082402r1a"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082402r1b"><a name="p2026082402r1b"></a><a name="p2026082402r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082402r1c"><a name="p2026082402r1c"></a><a name="p2026082402r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082402r1d"><a name="p2026082402r1d"></a><a name="p2026082402r1d"></a>输入张量，维度不限制。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082402r1e"><a name="p2026082402r1e"></a><a name="p2026082402r1e"></a>模型数据类型为float32；支持FP32和全量化INT8转换。</p>
+</td>
+</tr>
+<tr id="row2026082402r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p2026082402r2a"><a name="p2026082402r2a"></a><a name="p2026082402r2a"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps1.2.6.1.2 "><p id="p2026082402r2b"><a name="p2026082402r2b"></a><a name="p2026082402r2b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p2026082402r2c"><a name="p2026082402r2c"></a><a name="p2026082402r2c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p2026082402r2d"><a name="p2026082402r2d"></a><a name="p2026082402r2d"></a>输出张量，与输入形状相同。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p2026082402r2e"><a name="p2026082402r2e"></a><a name="p2026082402r2e"></a>输出数据类型与输入一致。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Softplus<a name="ZH-CN_TOPIC_0000002026082403" id="ZH-CN_TOPIC_0000002026082403"></a>
+
+**功能描述<a name="section2026082403a"></a>**
+
+对输入张量逐元素执行Softplus激活函数运算。公式为：Y=ln\(exp\(X\)+1\)。输出与输入形状相同。
+
+**参数说明<a name="section2026082403b"></a>**
+
+**表 1**  Softplus参数概览
+
+<a name="table2026082403a"></a>
+<table><thead align="left"><tr id="row2026082403h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps2026082403.1"><p id="p202608240321"><a name="p202608240321"></a><a name="p202608240321"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps2026082403.2"><p id="p202608240322"><a name="p202608240322"></a><a name="p202608240322"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.489999999999998%" id="mcps2026082403.3"><p id="p202608240323"><a name="p202608240323"></a><a name="p202608240323"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps2026082403.4"><p id="p202608240324"><a name="p202608240324"></a><a name="p202608240324"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps2026082403.5"><p id="p202608240325"><a name="p202608240325"></a><a name="p202608240325"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082403r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082403.1 "><p id="p2026082403r1a"><a name="p2026082403r1a"></a><a name="p2026082403r1a"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082403.2 "><p id="p2026082403r1b"><a name="p2026082403r1b"></a><a name="p2026082403r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps2026082403.3 "><p id="p2026082403r1c"><a name="p2026082403r1c"></a><a name="p2026082403r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082403.4 "><p id="p2026082403r1d"><a name="p2026082403r1d"></a><a name="p2026082403r1d"></a>输入张量，维度不限制。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082403.5 "><p id="p2026082403r1e"><a name="p2026082403r1e"></a><a name="p2026082403r1e"></a>模型数据类型为float32；支持FP32和全量化INT8转换。</p>
+</td>
+</tr>
+<tr id="row2026082403r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082403.1 "><p id="p2026082403r2a"><a name="p2026082403r2a"></a><a name="p2026082403r2a"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082403.2 "><p id="p2026082403r2b"><a name="p2026082403r2b"></a><a name="p2026082403r2b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps2026082403.3 "><p id="p2026082403r2c"><a name="p2026082403r2c"></a><a name="p2026082403r2c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082403.4 "><p id="p2026082403r2d"><a name="p2026082403r2d"></a><a name="p2026082403r2d"></a>输出张量，与输入形状相同，每个元素为对应输入元素的Softplus计算结果。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082403.5 "><p id="p2026082403r2e"><a name="p2026082403r2e"></a><a name="p2026082403r2e"></a>输出数据类型与输入一致。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### LogSoftmax<a name="ZH-CN_TOPIC_0000002026082405" id="ZH-CN_TOPIC_0000002026082405"></a>
+
+**功能描述<a name="section2026082405a"></a>**
+
+沿axis指定的维度计算输入张量的对数归一化概率。对于该维度中的每个元素，计算公式为：Y<sub>i</sub>=X<sub>i</sub>-log\(Σ<sub>j</sub>exp\(X<sub>j</sub>\)\)。输出张量的形状和格式与输入相同。
+
+**参数说明<a name="section2026082405b"></a>**
+
+**表 1**  LogSoftmax参数概览
+
+<a name="table2026082405a"></a>
+<table><thead align="left"><tr id="row2026082405h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps2026082405.1"><p id="p202608240521"><a name="p202608240521"></a><a name="p202608240521"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps2026082405.2"><p id="p202608240522"><a name="p202608240522"></a><a name="p202608240522"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="mcps2026082405.3"><p id="p202608240523"><a name="p202608240523"></a><a name="p202608240523"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps2026082405.4"><p id="p202608240524"><a name="p202608240524"></a><a name="p202608240524"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps2026082405.5"><p id="p202608240525"><a name="p202608240525"></a><a name="p202608240525"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082405r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082405.1 "><p id="p2026082405r1a"><a name="p2026082405r1a"></a><a name="p2026082405r1a"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082405.2 "><p id="p2026082405r1b"><a name="p2026082405r1b"></a><a name="p2026082405r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082405.3 "><p id="p2026082405r1c"><a name="p2026082405r1c"></a><a name="p2026082405r1c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082405.4 "><p id="p2026082405r1d"><a name="p2026082405r1d"></a><a name="p2026082405r1d"></a>输入张量，维度为1D～5D。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082405.5 "><p id="p2026082405r1e"><a name="p2026082405r1e"></a><a name="p2026082405r1e"></a>模型数据类型为float32；支持FP32和全量化INT8转换。</p>
+</td>
+</tr>
+<tr id="row2026082405r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082405.1 "><p id="p2026082405r2a"><a name="p2026082405r2a"></a><a name="p2026082405r2a"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082405.2 "><p id="p2026082405r2b"><a name="p2026082405r2b"></a><a name="p2026082405r2b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082405.3 "><p id="p2026082405r2c"><a name="p2026082405r2c"></a><a name="p2026082405r2c"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082405.4 "><p id="p2026082405r2d"><a name="p2026082405r2d"></a><a name="p2026082405r2d"></a>输出张量，形状和格式与输入相同。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082405.5 "><p id="p2026082405r2e"><a name="p2026082405r2e"></a><a name="p2026082405r2e"></a>模型输出数据类型与输入一致。</p>
+</td>
+</tr>
+<tr id="row2026082405r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082405.1 "><p id="p2026082405r3a"><a name="p2026082405r3a"></a><a name="p2026082405r3a"></a>axis</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082405.2 "><p id="p2026082405r3b"><a name="p2026082405r3b"></a><a name="p2026082405r3b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082405.3 "><p id="p2026082405r3c"><a name="p2026082405r3c"></a><a name="p2026082405r3c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082405.4 "><p id="p2026082405r3d"><a name="p2026082405r3d"></a><a name="p2026082405r3d"></a>LogSoftmax的计算轴；负值从最后一维反向计数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082405.5 "><p id="p2026082405r3e"><a name="p2026082405r3e"></a><a name="p2026082405r3e"></a>默认值为-1；-rank(input)&lt;=axis&lt;rank(input)，rank为输入张量的秩。</p>
 </td>
 </tr>
 </tbody>
