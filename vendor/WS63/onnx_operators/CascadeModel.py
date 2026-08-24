@@ -347,5 +347,5 @@ def create_cascademodel_onnx_model(output_path):
     )
     model = create_low_ir_version_model(
         graph, producer_name='cascade-ops-generator',
-        output_path=output_path, opset_version=18)
+        output_path=output_path, opset_version=20)
     logging.info(f"cascade ops model saved: {output_path}")
