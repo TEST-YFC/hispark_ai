@@ -459,6 +459,12 @@ with open(sys.argv[1]) as f:
         local model_dir="$MODEL_PATH/$model"
         if [ -d "$model_dir" ]; then
             echo "Found model: $model"
+            # gen_dataset生成的.onnx为ORT兼容副本; 转换前若存在原生算子
+            # 副本(native/子目录)则替换回来, 保证converter_lite转换原生算子
+            if [ -f "$model_dir/native/${model}_native.onnx" ]; then
+                cp -f "$model_dir/native/${model}_native.onnx" "$MODEL_PATH/$model/$model.onnx"
+                echo "Use native-op model for conversion: $model"
+            fi
             if [[ "$model" == *"_tf"* ]]; then
                 process_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1 || true
                 process_quantized_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_tflite_quant_WS63_${model}.log" 2>&1 || true
@@ -491,6 +497,13 @@ main_build() {
             if ! [[ "$model" =~ ^(NeuralNetwork|MathModel|CascadeModel)(_tf)?$ ]]; then
                 echo "Skipping model: $model (not in allowed list)"
                 continue
+            fi
+            # gen_dataset生成的.onnx为ORT兼容副本(含CI镜像ORT未注册算子的
+            # 恒等替换); 转换前若存在原生算子副本(native/子目录)则替换回来,
+            # 保证converter_lite与micro编译的是原生算子
+            if [ -f "$model_dir/native/${model}_native.onnx" ]; then
+                cp -f "$model_dir/native/${model}_native.onnx" "$MODEL_PATH/$model/$model.onnx"
+                echo "Use native-op model for conversion: $model"
             fi
             if [[ "$model" == *"_tf"* ]]; then
                 process_tflite "$model" "" "" "" | tee "${RESULT_PATH}/build-ws63-ai-liteos_default_WS63_${model}.log" 2>&1

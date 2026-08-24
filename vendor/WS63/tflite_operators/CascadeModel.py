@@ -56,17 +56,15 @@ class _cascadeoperatormodel(tf.Module):
         mn2d = tf.reshape(mn, [2, 2], name="mn_2d")
         tv, ti = tf.math.top_k(mn2d, k=2, name="top_k")
         rv = tf.reverse(mn, axis=[1], name="reverse_v2")
-        # Shape取动态维度供Fill使用, 保证SHAPE算子不被常量折叠
-        sh = tf.shape(mn, name="shape")
-        fl = tf.fill(sh[1:3], 0.25, name="fill")
         # Pack按行堆叠 / Unpack按行拆解
         r0 = tf.reshape(rv[:, 0, :], [2], name="pack_in0")
         r1 = tf.reshape(rv[:, 1, :], [2], name="pack_in1")
         pk = tf.stack([r0, r1], axis=0, name="pack")
         u0, u1 = tf.unstack(pk, num=2, axis=0, name="unpack")
-        # Select: 条件与两路输入同形 / SelectV2: 条件广播
+        # Select: 同形三输入(TF2中tf.where三参恒为SelectV2, Select v1需raw_ops)
+        # SelectV2: 条件广播
         sel_cond = tf.greater(u0, u1, name="select_cond")
-        sel = tf.where(sel_cond, u0, u1, name="select")
+        sel = tf.raw_ops.Select(condition=sel_cond, t=u0, e=u1, name="select")
         v2_cond = tf.greater(u0, 0.0, name="selectv2_cond")
         selv2 = tf.where(v2_cond, rv, tf.negative(rv, name="neg_y"),
                          name="select_v2")
@@ -79,6 +77,11 @@ class _cascadeoperatormodel(tf.Module):
         u_val, _ = tf.unique(u_in, name="unique")
         usum = tf.reduce_sum(tf.cast(u_val, tf.float32, name="unique_val_f"),
                              keepdims=True, name="unique_sum")
+        # Shape取Unique输出(其长度编译期未知, 静态输入的Shape会在转换时被
+        # 常量折叠而丢失算子); Fill以该动态维度填充后求和收敛回静态形状
+        sh = tf.shape(u_val, name="shape")
+        fl = tf.fill(sh, 0.25, name="fill")
+        fsum = tf.reduce_sum(fl, name="fill_sum")
         # GatherNd: 常量索引取对角元素
         rv2d = tf.reshape(rv, [2, 2], name="rv_2d")
         gn = tf.gather_nd(rv2d, [[0, 0], [1, 1]], name="gather_nd")
@@ -94,14 +97,14 @@ class _cascadeoperatormodel(tf.Module):
             tf.reshape(tf.cast(ti, tf.float32, name="topk_indices_f"),
                        [1, 4], name="topk_indices_row"),
             tf.reshape(rv, [1, 4], name="reverse_row"),
-            tf.reshape(fl, [1, 4], name="fill_row"),
+            tf.reshape(fsum, [1, 1], name="fill_row"),
             tf.reshape(pk, [1, 4], name="pack_row"),
             tf.reshape(sel, [1, 2], name="select_row"),
             tf.reshape(selv2, [1, 4], name="selectv2_row"),
             tf.reshape(oh, [1, 8], name="onehot_row"),
             tf.reshape(usum, [1, 1], name="unique_row"),
             tf.reshape(gn, [1, 2], name="gathernd_row"),
-            tf.reshape(sh_f, [1, 3], name="shape_row"),
+            tf.reshape(sh_f, [1, 1], name="shape_row"),
         ]
         return rows
 

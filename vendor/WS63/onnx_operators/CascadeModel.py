@@ -12,8 +12,14 @@
 # limitations under the License.
 # 级联算子覆盖用例: Gelu HardSigmoid Celu Erf Trilu ReduceL1 ReduceL2 Shape
 # TopK Neg Pow Mod MatmulInteger Max Min Sum OneHot Unique QLinearConv
-# ConvInteger Where ReduceProd LogSoftmax Hardmax Softplus Softsign ThresholdedRelu
+# ConvInteger Where ReduceProd LogSoftmax Hardmax Softplus Softsign
+# ThresholdedRelu
+# MatmulInteger说明: CI镜像ORT未注册该算子kernel, 主输出.onnx中该节点被
+# 替换为恒等浮点子图供gen_dataset生成参考值; 真实算子存于native/子目录的
+# *_native.onnx(避免被gen_dataset的*.onnx glob扫到), 由ai_daily.sh在
+# converter_lite转换前替换回来(见_make_matmul_integer_nodes)
 import logging
+import os
 from onnx import helper, TensorProto
 import numpy as np
 from . import create_low_ir_version_model
@@ -184,7 +190,7 @@ def _make_unique_nodes(initializer_list):
 
 
 def _make_quant_integer_nodes(initializer_list):
-    """整数/量化卷积类: QLinearConv ConvInteger MatmulInteger"""
+    """整数/量化卷积类: QLinearConv ConvInteger"""
     nchw_shape = helper.make_tensor(
         'nchw_shape', TensorProto.INT64, [4], [1, 1, 4, 4])
     initializer_list.append(nchw_shape)
@@ -242,33 +248,66 @@ def _make_quant_integer_nodes(initializer_list):
     ciconv_cast_node = helper.make_node(
         'Cast', inputs=['ciconv_y_i32'], outputs=['ciconv_y_f'],
         to=TensorProto.FLOAT)
+    nodes = [
+        nchw_reshape_node, relu_node, quant_x_cast_node,
+        qlinearconv_node, qconv_cast_node,
+        convinteger_node, ciconv_cast_node,
+    ]
+    return nodes
+
+
+def _make_matmul_integer_nodes(initializer_list):
+    """原生MatmulInteger: gelu_out整形[4,4]转int8后与int8常量做整数矩阵乘
+
+    CI镜像ORT未注册该算子kernel(13/20/21/22实测均报No Op registered),
+    因此主输出CascadeModel.onnx中该节点会被替换为恒等的Cast->MatMul->Cast
+    子图(int8点积在float32中精确可表示), 供gen_dataset用ORT生成参考值;
+    含原生算子的CascadeModel_native.onnx(存于native/子目录)由ai_daily.sh
+    在converter_lite转换前替换回来, converter/micro测试的即原生MatmulInteger。
+    """
     matint_a_shape = helper.make_tensor(
         'matint_a_shape', TensorProto.INT64, [2], [4, 4])
-    initializer_list.append(matint_a_shape)
-    matint_reshape_node = helper.make_node(
-        'Reshape', inputs=['gelu_out', 'matint_a_shape'],
-        outputs=['matint_a_2d'])
-    matint_a_cast_node = helper.make_node(
-        'Cast', inputs=['matint_a_2d'], outputs=['matint_a_i8'],
-        to=TensorProto.INT8)
     matint_b = helper.make_tensor(
         'matint_b', TensorProto.INT8, [4, 4],
         [1, -1, 2, -2, -1, 2, -2, 1, 2, -2, 1, -1, -2, 1, -1, 2])
-    initializer_list.append(matint_b)
+    initializer_list.extend([matint_a_shape, matint_b])
+    matint_reshape_node = helper.make_node(
+        'Reshape', inputs=['gelu_out', 'matint_a_shape'],
+        outputs=['matint_a_2d'])
+    # gelu_out有界(|值|<=26), 截断到int8后|点积和|<=16*26*2=832, 精确可表示
+    matint_a_cast_node = helper.make_node(
+        'Cast', inputs=['matint_a_2d'], outputs=['matint_a_i8'],
+        to=TensorProto.INT8)
     matmulinteger_node = helper.make_node(
         'MatmulInteger', inputs=['matint_a_i8', 'matint_b'],
         outputs=['matint_y_i32'])
     matint_cast_node = helper.make_node(
         'Cast', inputs=['matint_y_i32'], outputs=['matint_y_f'],
         to=TensorProto.FLOAT)
-    nodes = [
-        nchw_reshape_node, relu_node, quant_x_cast_node,
-        qlinearconv_node, qconv_cast_node,
-        convinteger_node, ciconv_cast_node,
-        matint_reshape_node, matint_a_cast_node,
-        matmulinteger_node, matint_cast_node,
-    ]
-    return nodes
+    return [matint_reshape_node, matint_a_cast_node,
+            matmulinteger_node, matint_cast_node]
+
+
+def _to_ort_safe_nodes(all_nodes):
+    """将节点序列中的MatmulInteger替换为数值恒等的Cast->MatMul->Cast子图,
+    生成ORT兼容副本(仅gen_dataset参考值生成使用, 原生副本不受影响)"""
+    new_nodes = []
+    for node in all_nodes:
+        if node.op_type == 'MatmulInteger' and len(node.input) == 2:
+            a, b, y = node.input[0], node.input[1], node.output[0]
+            b_f, a_f, prod_f = b + '_mi_bf', a + '_mi_af', y + '_mi_pf'
+            new_nodes.append(helper.make_node(
+                'Cast', inputs=[b], outputs=[b_f], to=TensorProto.FLOAT))
+            new_nodes.append(helper.make_node(
+                'Cast', inputs=[a], outputs=[a_f], to=TensorProto.FLOAT))
+            new_nodes.append(helper.make_node(
+                'MatMul', inputs=[a_f, b_f], outputs=[prod_f]))
+            new_nodes.append(helper.make_node(
+                'Cast', inputs=[prod_f], outputs=[y],
+                to=TensorProto.INT32))
+        else:
+            new_nodes.append(node)
+    return new_nodes
 
 
 def _append_row_reshape(nodes, initializer_list, src_name, row_name, width):
@@ -297,6 +336,7 @@ def create_cascademodel_onnx_model(output_path):
     nodes_onehot = _make_onehot_nodes(initializer_list)
     nodes_unique = _make_unique_nodes(initializer_list)
     nodes_quant = _make_quant_integer_nodes(initializer_list)
+    nodes_matint = _make_matmul_integer_nodes(initializer_list)
     # TopK索引转float后拼接
     topk_indices_cast_node = helper.make_node(
         'Cast', inputs=['topk_indices'], outputs=['topk_indices_f'],
@@ -335,7 +375,7 @@ def create_cascademodel_onnx_model(output_path):
         'Concat', inputs=concat_inputs, outputs=['Z'], axis=1)
     all_nodes = (
         nodes_chain + nodes_elementwise + nodes_reduce + nodes_search +
-        nodes_onehot + nodes_unique + nodes_quant +
+        nodes_onehot + nodes_unique + nodes_quant + nodes_matint +
         row_nodes + [concat_final_node]
     )
     graph = helper.make_graph(
@@ -345,7 +385,28 @@ def create_cascademodel_onnx_model(output_path):
         [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 136])],
         initializer=initializer_list
     )
-    model = create_low_ir_version_model(
+    # 原生副本: 含真实MatmulInteger, 存于子目录native/避免被gen_dataset
+    # 的*.onnx glob扫到(其ORT无法加载该算子); ai_daily.sh在converter_lite
+    # 转换前将其替换为$model.onnx, converter/micro测试的即原生算子
+    native_dir = os.path.join(os.path.dirname(output_path), 'native')
+    os.makedirs(native_dir, exist_ok=True)
+    native_path = os.path.join(
+        native_dir,
+        os.path.basename(output_path).replace('.onnx', '_native.onnx'))
+    create_low_ir_version_model(
         graph, producer_name='cascade-ops-generator',
+        output_path=native_path, opset_version=20)
+    # 主文件: MatmulInteger替换为恒等浮点子图, CI镜像ORT可加载,
+    # gen_dataset用它生成参考输出(数值与原生算子逐位一致)
+    safe_graph = helper.make_graph(
+        _to_ort_safe_nodes(all_nodes),
+        'cascade_ops_graph',
+        [input_x, input_y],
+        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 136])],
+        initializer=initializer_list
+    )
+    model = create_low_ir_version_model(
+        safe_graph, producer_name='cascade-ops-generator',
         output_path=output_path, opset_version=20)
-    logging.info(f"cascade ops model saved: {output_path}")
+    logging.info(
+        f"cascade ops model saved: {output_path} (native twin: {native_path})")
