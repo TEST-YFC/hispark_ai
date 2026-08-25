@@ -314,6 +314,41 @@ def _onnx_infer(ort_session, input_data_dict):
     outputs = ort_session.run(None, input_data_dict)
     return outputs
 
+def _make_matmulinteger_ort_compatible(model):
+    """将ORT未注册执行的MatmulInteger节点替换为等效浮点子图(仅用于参考输出生成)。
+
+    背景: CI镜像的ORT未注册MatmulInteger的高opset kernel(20/21/22均报
+    No Op registered), 而Gelu要求opset>=20, 单个opset无法同时满足两者。
+    int8 x int8点积的精确整数结果(|和|<=800)在float32中可精确表示,
+    因此Cast->MatMul->Cast与MatmulInteger数值完全一致。
+    注意: 仅改写内存中的副本并保存到*_converted.onnx临时文件,
+    原始.onnx不改动, converter_lite仍转换含真实MatmulInteger的模型。
+    仅处理无zero_point/无bias输入(A,B两输入)的节点, 其余情形保持原样,
+    让ORT继续报错以暴露问题, 避免生成错误的参考值。"""
+    changed = False
+    new_nodes = []
+    for node in model.graph.node:
+        if node.op_type == 'MatmulInteger' and len(node.input) == 2:
+            a, b, y = node.input[0], node.input[1], node.output[0]
+            a_f, b_f, y_f = a + '_mi_af', b + '_mi_bf', y + '_mi_yf'
+            new_nodes.append(onnx.helper.make_node(
+                'Cast', [a], [a_f], to=onnx.TensorProto.FLOAT))
+            new_nodes.append(onnx.helper.make_node(
+                'Cast', [b], [b_f], to=onnx.TensorProto.FLOAT))
+            new_nodes.append(onnx.helper.make_node(
+                'MatMul', [a_f, b_f], [y_f]))
+            new_nodes.append(onnx.helper.make_node(
+                'Cast', [y_f], [y], to=onnx.TensorProto.INT32))
+            changed = True
+        else:
+            new_nodes.append(node)
+    if changed:
+        print("检测到ORT不支持的MatmulInteger, "
+              "已在临时副本中替换为等效浮点子图(Cast->MatMul->Cast)")
+        del model.graph.node[:]
+        model.graph.node.extend(new_nodes)
+    return model
+
 def load_onnx_model(onnx_file_path):
     try:
         # Attempt to load the ONNX model directly
@@ -324,6 +359,8 @@ def load_onnx_model(onnx_file_path):
         print("尝试转换 ONNX 模型版本...")
         # Load the original model
         model = onnx.load(onnx_file_path)
+        # 若含ORT未注册的MatmulInteger, 在临时副本中替换为等效浮点子图
+        model = _make_matmulinteger_ort_compatible(model)
         # Check and adjust the IR version (if it is too high)
         if model.ir_version > 11:
             print(f"原始模型 IR 版本: {model.ir_version}, 降级到 11")

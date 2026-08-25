@@ -14,12 +14,11 @@
 # TopK Neg Pow Mod MatmulInteger Max Min Sum OneHot Unique QLinearConv
 # ConvInteger Where ReduceProd LogSoftmax Hardmax Softplus Softsign
 # ThresholdedRelu
-# MatmulInteger说明: CI镜像ORT未注册该算子kernel, 主输出.onnx中该节点被
-# 替换为恒等浮点子图供gen_dataset生成参考值; 真实算子存于native/子目录的
-# *_native.onnx(避免被gen_dataset的*.onnx glob扫到), 由ai_daily.sh在
-# converter_lite转换前替换回来(见_make_matmul_integer_nodes)
+# MatmulInteger说明: CI镜像ORT未注册该算子kernel, gen_dataset加载时会在
+# *_converted.onnx临时副本中将该节点替换为恒等浮点子图以生成参考值, 原始
+# .onnx不动, converter_lite转换的仍是原生算子
+# (见gen_dataset的_make_matmulinteger_ort_compatible)
 import logging
-import os
 from onnx import helper, TensorProto
 import numpy as np
 from . import create_low_ir_version_model
@@ -260,10 +259,9 @@ def _make_matmul_integer_nodes(initializer_list):
     """原生MatmulInteger: gelu_out整形[4,4]转int8后与int8常量做整数矩阵乘
 
     CI镜像ORT未注册该算子kernel(13/20/21/22实测均报No Op registered),
-    因此主输出CascadeModel.onnx中该节点会被替换为恒等的Cast->MatMul->Cast
-    子图(int8点积在float32中精确可表示), 供gen_dataset用ORT生成参考值;
-    含原生算子的CascadeModel_native.onnx(存于native/子目录)由ai_daily.sh
-    在converter_lite转换前替换回来, converter/micro测试的即原生MatmulInteger。
+    gen_dataset加载时会在*_converted.onnx临时副本中将该节点替换为恒等的
+    Cast->MatMul->Cast子图(int8点积在float32中精确可表示)以生成参考值;
+    原始.onnx保持原生算子, converter/micro测试的即原生MatmulInteger。
     """
     matint_a_shape = helper.make_tensor(
         'matint_a_shape', TensorProto.INT64, [2], [4, 4])
@@ -286,28 +284,6 @@ def _make_matmul_integer_nodes(initializer_list):
         to=TensorProto.FLOAT)
     return [matint_reshape_node, matint_a_cast_node,
             matmulinteger_node, matint_cast_node]
-
-
-def _to_ort_safe_nodes(all_nodes):
-    """将节点序列中的MatmulInteger替换为数值恒等的Cast->MatMul->Cast子图,
-    生成ORT兼容副本(仅gen_dataset参考值生成使用, 原生副本不受影响)"""
-    new_nodes = []
-    for node in all_nodes:
-        if node.op_type == 'MatmulInteger' and len(node.input) == 2:
-            a, b, y = node.input[0], node.input[1], node.output[0]
-            b_f, a_f, prod_f = b + '_mi_bf', a + '_mi_af', y + '_mi_pf'
-            new_nodes.append(helper.make_node(
-                'Cast', inputs=[b], outputs=[b_f], to=TensorProto.FLOAT))
-            new_nodes.append(helper.make_node(
-                'Cast', inputs=[a], outputs=[a_f], to=TensorProto.FLOAT))
-            new_nodes.append(helper.make_node(
-                'MatMul', inputs=[a_f, b_f], outputs=[prod_f]))
-            new_nodes.append(helper.make_node(
-                'Cast', inputs=[prod_f], outputs=[y],
-                to=TensorProto.INT32))
-        else:
-            new_nodes.append(node)
-    return new_nodes
 
 
 def _append_row_reshape(nodes, initializer_list, src_name, row_name, width):
@@ -385,28 +361,9 @@ def create_cascademodel_onnx_model(output_path):
         [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 136])],
         initializer=initializer_list
     )
-    # 原生副本: 含真实MatmulInteger, 存于子目录native/避免被gen_dataset
-    # 的*.onnx glob扫到(其ORT无法加载该算子); ai_daily.sh在converter_lite
-    # 转换前将其替换为$model.onnx, converter/micro测试的即原生算子
-    native_dir = os.path.join(os.path.dirname(output_path), 'native')
-    os.makedirs(native_dir, exist_ok=True)
-    native_path = os.path.join(
-        native_dir,
-        os.path.basename(output_path).replace('.onnx', '_native.onnx'))
+    # 模型直接含原生MatmulInteger; gen_dataset的ORT加载失败时会在
+    # *_converted.onnx临时副本中做恒等替换生成参考值, 本文件保持原样
     create_low_ir_version_model(
         graph, producer_name='cascade-ops-generator',
-        output_path=native_path, opset_version=20)
-    # 主文件: MatmulInteger替换为恒等浮点子图, CI镜像ORT可加载,
-    # gen_dataset用它生成参考输出(数值与原生算子逐位一致)
-    safe_graph = helper.make_graph(
-        _to_ort_safe_nodes(all_nodes),
-        'cascade_ops_graph',
-        [input_x, input_y],
-        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 136])],
-        initializer=initializer_list
-    )
-    model = create_low_ir_version_model(
-        safe_graph, producer_name='cascade-ops-generator',
         output_path=output_path, opset_version=20)
-    logging.info(
-        f"cascade ops model saved: {output_path} (native twin: {native_path})")
+    logging.info(f"cascade ops model saved: {output_path}")
