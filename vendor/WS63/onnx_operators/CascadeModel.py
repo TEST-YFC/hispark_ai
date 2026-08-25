@@ -116,7 +116,8 @@ def _make_shape_topk_trilu_nodes(initializer_list):
     reshape_2d_node = helper.make_node(
         'Reshape', inputs=['where_out', 'cascade_2d_shape'],
         outputs=['where_2d'])
-    topk_k = helper.make_tensor('topk_k', TensorProto.INT64, [], [2])
+    # TopK的K必须是一维且恰好1个元素, 标量会触发ORT ShapeInferenceError
+    topk_k = helper.make_tensor('topk_k', TensorProto.INT64, [1], [2])
     initializer_list.append(topk_k)
     topk_node = helper.make_node(
         'TopK', inputs=['where_2d', 'topk_k'],
