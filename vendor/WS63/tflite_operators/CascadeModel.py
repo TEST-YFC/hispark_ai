@@ -63,8 +63,9 @@ class _cascadeoperatormodel(tf.Module):
         u0, u1 = tf.unstack(pk, num=2, axis=0, name="unpack")
         # Select: 同形三输入(TF2中tf.where三参恒为SelectV2, Select v1需raw_ops)
         # SelectV2: 条件广播
+        # raw_ops.Select用位置传参: 不同TF版本绑定层生成的形参名存在差异
         sel_cond = tf.greater(u0, u1, name="select_cond")
-        sel = tf.raw_ops.Select(condition=sel_cond, t=u0, e=u1, name="select")
+        sel = tf.raw_ops.Select(sel_cond, u0, u1, name="select")
         v2_cond = tf.greater(u0, 0.0, name="selectv2_cond")
         selv2 = tf.where(v2_cond, rv, tf.negative(rv, name="neg_y"),
                          name="select_v2")
@@ -77,8 +78,6 @@ class _cascadeoperatormodel(tf.Module):
         u_val, _ = tf.unique(u_in, name="unique")
         usum = tf.reduce_sum(tf.cast(u_val, tf.float32, name="unique_val_f"),
                              keepdims=True, name="unique_sum")
-        # Shape取Unique输出(其长度编译期未知, 静态输入的Shape会在转换时被
-        # 常量折叠而丢失算子); Fill以该动态维度填充后求和收敛回静态形状
         sh = tf.shape(u_val, name="shape")
         fl = tf.fill(sh, 0.25, name="fill")
         fsum = tf.reduce_sum(fl, name="fill_sum")
