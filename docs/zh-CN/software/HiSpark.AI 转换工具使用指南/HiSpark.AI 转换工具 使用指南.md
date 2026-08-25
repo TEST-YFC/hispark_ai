@@ -69,6 +69,7 @@
 
 | 文档版本 | 发布日期 | 修改说明 |
 | :--- | :--- | :--- |
+| 07 | 2026-08-24 | 新增Onnx/TFLite算子规格：<br>新增“[Max](#ZH-CN_TOPIC_0000003060115802)、[Max](#ZH-CN_TOPIC_0000003060115702)、[Min](#ZH-CN_TOPIC_0000003070115802)、[Min](#ZH-CN_TOPIC_0000003070115702)、[Sum](#ZH-CN_TOPIC_0000003080115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115702)”。<br>新增“[OneHot](#ZH-CN_TOPIC_0000002026082105)、[OneHot](#ZH-CN_TOPIC_0000002026082104)、[Unique](#ZH-CN_TOPIC_0000002026082108)、[Unique](#ZH-CN_TOPIC_0000002026082107)、[Where](#ZH-CN_TOPIC_0000002026082102)、[ConvInteger](#ZH-CN_TOPIC_0000002026082103)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)、[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)、[Hardmax](#ZH-CN_TOPIC_0000002026082101)、[Softsign](#ZH-CN_TOPIC_0000002026082402)、[Softplus](#ZH-CN_TOPIC_0000002026082403)、[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)”。 |
 | 06 | 2026-07-30 | 新增Onnx/TFLite算子规格：<br>新增“[Erf](#ZH-CN_TOPIC_0000002026072801)、[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)、[Celu](#ZH-CN_TOPIC_0000002026072803)”。<br>新增"[Shape](#ZH-CN_TOPIC_0000003030115802)、[Shape](#ZH-CN_TOPIC_0000003030115702)"。<br>新增"[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)"。<br>新增"[TopK](#ZH-CN_TOPIC_0000003050115802)、[TopK](#ZH-CN_TOPIC_0000003050115702)"。<br>新增"[Gelu](#ZH-CN_TOPIC_0000002661401191)、[Gelu](#ZH-CN_TOPIC_0000002661401194)、[Trilu](#ZH-CN_TOPIC_0000002661401195)、[Pack](#ZH-CN_TOPIC_0000002661401192)、[Unpack](#ZH-CN_TOPIC_0000002661401193)"。<br>新增"[Fill](#ZH-CN_TOPIC_0000002800000001)、[Neg](#ZH-CN_TOPIC_0000002900000001)、[Pow](#ZH-CN_TOPIC_0000002476598365)、[Neg](#ZH-CN_TOPIC_0000002900000002)、[Pow](#ZH-CN_TOPIC_0000002476598371)"。<br>新增"[Select](#ZH-CN_TOPIC_0000002600000001)、[SelectV2](#ZH-CN_TOPIC_0000002600000002)、[ReverseV2](#ZH-CN_TOPIC_0000002600000003)、[Mod](#ZH-CN_TOPIC_0000002600000004)、[ReduceL1](#ZH-CN_TOPIC_0000002600000005)、[ReduceL2](#ZH-CN_TOPIC_0000002600000006)"。<br>新增训练特性：<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新QAS INT8量化训练配置、FP32训练配置。<br>在“[参数说明](#ZH-CN_TOPIC_0000002319906348)”中更新训练参数，新增MSE loss和Adam优化器参数。<br>新增QAS INT8和FP32训练支持规格。 |
 | 05 | 2026-07-03 | 更新“[设置环境变量](#ZH-CN_TOPIC_0000002353775693)、[限制与约束](#ZH-CN_TOPIC_0000002319976756)”。<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新[5](#设置Micro配置项)。<br>新增“[ARM平台编译部署](#ZH-CN_TOPIC_0000002590121500)”小节。<br>在“[输入选项](#ZH-CN_TOPIC_0000002353985081)”中更新[表1](#table3808173922715)。<br>更新“[算子规格参考](#ZH-CN_TOPIC_0000002354161329)”。<br>新增“[专题](#ZH-CN_TOPIC_0000002562713759)”章节。 |
 | 04 | 2026-06-01 | 新增Onnx/TFLite算子规格：<br>更新“[PRelu](#ZH-CN_TOPIC_0000002568693026)、[PRelu](#ZH-CN_TOPIC_0000002568693026)、[CumSum](#ZH-CN_TOPIC_0000002599292569)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187919)、[CumSum](#ZH-CN_TOPIC_0000002568533372)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187805)、[Einsum](#ZH-CN_TOPIC_0000002599307751)”。<br>更新“[Relu6](#ZH-CN_TOPIC_0000002574010852)、[LeakyRelu](#ZH-CN_TOPIC_0000002604689955)、[HardSwish](#ZH-CN_TOPIC_0000002574309498)、[LeakyRelu](#ZH-CN_TOPIC_0000002574170496)、[HardSwish](#ZH-CN_TOPIC_0000002574469146)、[Swish](#ZH-CN_TOPIC_0000002605108551)”。<br>更新“[LogicalAnd](#ZH-CN_TOPIC_0000002574976868)、[Equal](#ZH-CN_TOPIC_0000002605336325)、[GreaterEqual](#ZH-CN_TOPIC_0000002574817236)、[Greater](#ZH-CN_TOPIC_0000002605456261)、[LessEqual](#ZH-CN_TOPIC_0000002574976872)、[Less](#ZH-CN_TOPIC_0000002605336331)、[NotEqual](#ZH-CN_TOPIC_0000002574817240)、[LogicalNot](#ZH-CN_TOPIC_0000002605456267)、[LogicalOr](#ZH-CN_TOPIC_0000002574976878)、[And](#ZH-CN_TOPIC_0000002574578826) 、[GreaterOrEqual](#ZH-CN_TOPIC_0000002605377849)、[Greater](#ZH-CN_TOPIC_0000002574738452)、[LessOrEqual](#ZH-CN_TOPIC_0000002574578828)、[Less](#ZH-CN_TOPIC_0000002605257909)、[Not](#ZH-CN_TOPIC_0000002605377851)、[Or](#ZH-CN_TOPIC_0000002574738488)、[Xor](#ZH-CN_TOPIC_0000002574578874)”。<br>更新“[Dropout](#ZH-CN_TOPIC_0000002659215655) [Identity](#ZH-CN_TOPIC_0000002628696446) [GatherElements](#ZH-CN_TOPIC_0000002659095703) [ReduceLogSum](#ZH-CN_TOPIC_0000002628856352) [ReduceLogSumExp](#ZH-CN_TOPIC_0000002659215657) [Expand](#ZH-CN_TOPIC_0000002628696448) [Elu](#ZH-CN_TOPIC_0000002660394575) [Elu](#ZH-CN_TOPIC_0000002660274969)”。<br>更新“[DepthToSpace](#ZH-CN_TOPIC_0000002629955352) [SpaceToDepth](#ZH-CN_TOPIC_0000002660274511) [GRU](#ZH-CN_TOPIC_0000002631448488) [DepthToSpace](#ZH-CN_TOPIC_0000002660395017) [SpaceToDepth](#ZH-CN_TOPIC_0000002630115702)”。 |
@@ -1630,6 +1631,12 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 -   **[GatherNd](#ZH-CN_TOPIC_0000002026082401)**
 
 -   **[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)**  
+
+-   **[Max](#ZH-CN_TOPIC_0000003060115702)**  
+
+-   **[Min](#ZH-CN_TOPIC_0000003070115702)**  
+
+-   **[ReduceProd](#ZH-CN_TOPIC_0000003090115702)**  
 
 ### Conv2D<a name="ZH-CN_TOPIC_0000002326184638" id="ZH-CN_TOPIC_0000002326184638"></a>
 
@@ -7104,6 +7111,194 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
+### Max<a name="ZH-CN_TOPIC_0000003060115702" id="ZH-CN_TOPIC_0000003060115702"></a>
+
+**功能描述<a name="section3100000011"></a>**
+
+对两个输入张量执行逐元素取最大值运算。
+
+**参数说明<a name="section3100000012"></a>**
+
+**表 1**  Max参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>input1</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量 1，维度为 2D/3D/4D，ND/NWC/NHWC 数据排布。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>固定为二元输入，支持广播</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>input2</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输入张量 2，维度为 2D/3D/4D。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>与 input1 遵循 NumPy 广播规则</p>
+</td>
+</tr>
+<tr id="row141801355145019"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p191801255115014"><a name="p191801255115014"></a><a name="p191801255115014"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p5501258232"><a name="p5501258232"></a><a name="p5501258232"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p526953345212"><a name="p526953345212"></a><a name="p526953345212"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p1985391215558"><a name="p1985391215558"></a><a name="p1985391215558"></a>输出张量，维度为广播后的形状。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p12336815165520"><a name="p12336815165520"></a><a name="p12336815165520"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Min<a name="ZH-CN_TOPIC_0000003070115702" id="ZH-CN_TOPIC_0000003070115702"></a>
+
+**功能描述<a name="section3100000021"></a>**
+
+对两个输入张量执行逐元素取最小值运算。
+
+**参数说明<a name="section3100000022"></a>**
+
+**表 1**  Min参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>input1</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量 1，维度为 2D/3D/4D，ND/NWC/NHWC 数据排布。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>固定为二元输入，支持广播</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>input2</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输入张量 2，维度为 2D/3D/4D。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>与 input1 遵循 NumPy 广播规则</p>
+</td>
+</tr>
+<tr id="row141801355145019"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p191801255115014"><a name="p191801255115014"></a><a name="p191801255115014"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p5501258232"><a name="p5501258232"></a><a name="p5501258232"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p526953345212"><a name="p526953345212"></a><a name="p526953345212"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p1985391215558"><a name="p1985391215558"></a><a name="p1985391215558"></a>输出张量，维度为广播后的形状。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p12336815165520"><a name="p12336815165520"></a><a name="p12336815165520"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### ReduceProd<a name="ZH-CN_TOPIC_0000003090115702" id="ZH-CN_TOPIC_0000003090115702"></a>
+
+**功能描述<a name="section3100000031"></a>**
+
+沿指定轴计算输入张量所有元素的乘积。
+
+**参数说明<a name="section3100000032"></a>**
+
+**表 1**  ReduceProd参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入数据张量，维度为 2D/3D/4D，ND/NWC/NHWC 数据排布。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>-</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>axes</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>1D 张量，指定归约轴列表。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>固定属性（由模型确定）</p>
+</td>
+</tr>
+<tr id="row141801355145019"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p191801255115014"><a name="p191801255115014"></a><a name="p191801255115014"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p5501258232"><a name="p5501258232"></a><a name="p5501258232"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p526953345212"><a name="p526953345212"></a><a name="p526953345212"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p1985391215558"><a name="p1985391215558"></a><a name="p1985391215558"></a>归约后的输出张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p12336815165520"><a name="p12336815165520"></a><a name="p12336815165520"></a>shape 取决于 axes 和 keep_dims</p>
+</td>
+</tr>
+<tr id="row33451752161111"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p7218175312547"><a name="p7218175312547"></a><a name="p7218175312547"></a>keep_dims</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p14218953115410"><a name="p14218953115410"></a><a name="p14218953115410"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p458301411104"><a name="p458301411104"></a><a name="p458301411104"></a>bool</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p12181953195416"><a name="p12181953195416"></a><a name="p12181953195416"></a>是否保持归约轴维度，默认值 false。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p1221875316545"><a name="p1221875316545"></a><a name="p1221875316545"></a>true：保持维度；false：消除维度</p>
+</td>
+</tr>
+</tbody>
+</table>
+
 ### OneHot<a name="ZH-CN_TOPIC_0000002026082104" id="ZH-CN_TOPIC_0000002026082104"></a>
 
 **功能描述<a name="section2026082104a"></a>**
@@ -7556,6 +7751,14 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 -   **[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)**  
 
 -   **[Celu](#ZH-CN_TOPIC_0000002026072803)**  
+
+-   **[Max](#ZH-CN_TOPIC_0000003060115802)**  
+
+-   **[Min](#ZH-CN_TOPIC_0000003070115802)**  
+
+-   **[Sum](#ZH-CN_TOPIC_0000003080115802)**  
+
+-   **[ReduceProd](#ZH-CN_TOPIC_0000003090115802)**  
 
 -   **[Hardmax](#ZH-CN_TOPIC_0000002026082101)**  
 
@@ -14014,6 +14217,231 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </table>
 
 
+
+### Max<a name="ZH-CN_TOPIC_0000003060115802" id="ZH-CN_TOPIC_0000003060115802"></a>
+
+**功能描述<a name="section3100000041"></a>**
+
+对输入的多个张量在对应位置取最大值。
+
+**参数说明<a name="section3100000042"></a>**
+
+**表 1**  Max参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>data_0</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量列表（≥1），维度为 2D/3D/4D，ND/NCW/NCHW 数据排布。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>输入张量数量可变（1 至 N），维度可不一致，遵循多方向广播规则对齐</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>max</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输出张量，维度为广播后的最大维度。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Min<a name="ZH-CN_TOPIC_0000003070115802" id="ZH-CN_TOPIC_0000003070115802"></a>
+
+**功能描述<a name="section3100000051"></a>**
+
+对输入的多个张量在对应位置取最小值。
+
+**参数说明<a name="section3100000052"></a>**
+
+**表 1**  Min参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>data_0</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量列表（≥1），维度为 2D/3D/4D，ND/NCW/NCHW 数据排布。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>输入张量数量可变（1 至 N），维度可不一致，遵循多方向广播规则对齐</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>min</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输出张量，维度为广播后的最大维度。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Sum<a name="ZH-CN_TOPIC_0000003080115802" id="ZH-CN_TOPIC_0000003080115802"></a>
+
+**功能描述<a name="section3100000061"></a>**
+
+对输入的多个张量在对应位置逐元素求和。
+
+**参数说明<a name="section3100000062"></a>**
+
+**表 1**  Sum参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>data_0</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量列表（≥1），维度为 2D/3D/4D，ND/NCW/NCHW 数据排布。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>输入张量数量可变（1 至 N），维度可不一致，遵循多方向广播规则对齐；仅支持浮点类型</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>sum</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输出张量，维度为广播后的最大维度。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### ReduceProd<a name="ZH-CN_TOPIC_0000003090115802" id="ZH-CN_TOPIC_0000003090115802"></a>
+
+**功能描述<a name="section3100000071"></a>**
+
+沿指定轴计算输入张量所有元素的乘积。
+
+**参数说明<a name="section3100000072"></a>**
+
+**表 1**  ReduceProd参数概览
+
+<a name="table4179355155016"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row760104045214"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p109681815191812"><a name="p109681815191812"></a><a name="p109681815191812"></a>data</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入数据张量，维度为 2D/3D/4D，ND/NCW/NCHW 数据排布。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>-</p>
+</td>
+</tr>
+<tr id="row14341183720526"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p23411437115215"><a name="p23411437115215"></a><a name="p23411437115215"></a>axes</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p13341143735216"><a name="p13341143735216"></a><a name="p13341143735216"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p19341103720521"><a name="p19341103720521"></a><a name="p19341103720521"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>1D 张量，指定归约轴列表，范围 [-r, r-1]（r = rank(data)）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>不提供或为空时，由 noop_with_empty_axes 控制行为</p>
+</td>
+</tr>
+<tr id="row141801355145019"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p191801255115014"><a name="p191801255115014"></a><a name="p191801255115014"></a>reduced</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p5501258232"><a name="p5501258232"></a><a name="p5501258232"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p526953345212"><a name="p526953345212"></a><a name="p526953345212"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p1985391215558"><a name="p1985391215558"></a><a name="p1985391215558"></a>归约后的输出张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p12336815165520"><a name="p12336815165520"></a><a name="p12336815165520"></a>shape 取决于 axes、keepdims 和 noop_with_empty_axes</p>
+</td>
+</tr>
+<tr id="row33451752161111"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p7218175312547"><a name="p7218175312547"></a><a name="p7218175312547"></a>keepdims</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p14218953115410"><a name="p14218953115410"></a><a name="p14218953115410"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p458301411104"><a name="p458301411104"></a><a name="p458301411104"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p12181953195416"><a name="p12181953195416"></a><a name="p12181953195416"></a>是否保持归约轴维度（大小为 1），默认值 1（true）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p1221875316545"><a name="p1221875316545"></a><a name="p1221875316545"></a>0：消除维度；1：保持维度</p>
+</td>
+</tr>
+<tr id="row116605973217"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p7167959113216"><a name="p7167959113216"></a><a name="p7167959113216"></a>noop_with_empty_axes</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p73022429331"><a name="p73022429331"></a><a name="p73022429331"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p51671259193214"><a name="p51671259193214"></a><a name="p51671259193214"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p19167115913211"><a name="p19167115913211"></a><a name="p19167115913211"></a>空 axes 时的行为控制，默认值 0。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p516765919329"><a name="p516765919329"></a><a name="p516765919329"></a>0：归约所有轴；1：不归约（恒等输出）</p>
+</td>
+</tr>
+</tbody>
+</table>
 
 ### Hardmax<a name="ZH-CN_TOPIC_0000002026082101" id="ZH-CN_TOPIC_0000002026082101"></a>
 
