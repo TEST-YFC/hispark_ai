@@ -63,9 +63,10 @@ class _cascadeoperatormodel(tf.Module):
         u0, u1 = tf.unstack(pk, num=2, axis=0, name="unpack")
         # Select: 同形三输入(TF2中tf.where三参恒为SelectV2, Select v1需raw_ops)
         # SelectV2: 条件广播
-        # raw_ops.Select用位置传参: 不同TF版本绑定层生成的形参名存在差异
+        # raw_ops.Select仅接受关键字传参且形参名随TF版本变化: CI镜像为
+        # condition/x/y(老版本为condition/t/e), 绑定层名不影响图节点op类型
         sel_cond = tf.greater(u0, u1, name="select_cond")
-        sel = tf.raw_ops.Select(sel_cond, u0, u1, name="select")
+        sel = tf.raw_ops.Select(condition=sel_cond, x=u0, y=u1, name="select")
         v2_cond = tf.greater(u0, 0.0, name="selectv2_cond")
         selv2 = tf.where(v2_cond, rv, tf.negative(rv, name="neg_y"),
                          name="select_v2")
