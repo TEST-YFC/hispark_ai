@@ -328,7 +328,7 @@ def _make_matmulinteger_ort_compatible(model):
     changed = False
     new_nodes = []
     for node in model.graph.node:
-        if node.op_type == 'MatmulInteger' and len(node.input) == 2:
+        if node.op_type == 'MatMulInteger' and len(node.input) == 2:
             a, b, y = node.input[0], node.input[1], node.output[0]
             a_f, b_f, y_f = a + '_mi_af', b + '_mi_bf', y + '_mi_yf'
             new_nodes.append(onnx.helper.make_node(

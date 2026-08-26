@@ -253,7 +253,7 @@ def _make_matmul_integer_nodes(initializer_list):
         'Cast', inputs=['matint_b_2d'], outputs=['matint_b_i8'],
         to=TensorProto.INT8)
     matmulinteger_node = helper.make_node(
-        'MatmulInteger', inputs=['matint_a_i8', 'matint_b_i8'],
+        'MatMulInteger', inputs=['matint_a_i8', 'matint_b_i8'],
         outputs=['matint_y_i32'])
     matint_cast_node = helper.make_node(
         'Cast', inputs=['matint_y_i32'], outputs=['matint_y_f'],
