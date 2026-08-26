@@ -11,9 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # 级联算子覆盖用例: Gelu HardSigmoid Celu Erf Trilu ReduceL1 ReduceL2 Shape
-# TopK Neg Pow Mod MatmulInteger Max Min Sum OneHot Unique QLinearConv
-# ConvInteger Where ReduceProd LogSoftmax Hardmax Softplus Softsign
-# ThresholdedRelu
+# TopK Neg Pow Mod MatmulInteger Max Min Sum OneHot Unique ConvInteger Where
+# ReduceProd LogSoftmax Hardmax Softplus Softsign ThresholdedRelu
 # MatmulInteger说明: CI镜像ORT未注册该算子kernel, gen_dataset加载时会在
 # *_converted.onnx临时副本中将该节点替换为恒等浮点子图以生成参考值, 原始
 # .onnx不动, converter_lite转换的仍是原生算子
@@ -190,7 +189,7 @@ def _make_unique_nodes(initializer_list):
 
 
 def _make_quant_integer_nodes(initializer_list):
-    """整数/量化卷积类: QLinearConv ConvInteger"""
+    """整数卷积: ConvInteger(uint8输入int32累加输出)"""
     nchw_shape = helper.make_tensor(
         'nchw_shape', TensorProto.INT64, [4], [1, 1, 4, 4])
     initializer_list.append(nchw_shape)
@@ -206,33 +205,6 @@ def _make_quant_integer_nodes(initializer_list):
     quant_x_cast_node = helper.make_node(
         'Cast', inputs=['quant_branch_in'], outputs=['quant_x_u8'],
         to=TensorProto.UINT8)
-    quant_x_scale = helper.make_tensor(
-        'quant_x_scale', TensorProto.FLOAT, [], [0.02])
-    quant_x_zp = helper.make_tensor(
-        'quant_x_zp', TensorProto.UINT8, [], [0])
-    qconv_w = helper.make_tensor(
-        'qconv_w', TensorProto.UINT8, [1, 1, 3, 3],
-        [1, 2, 1, 2, 1, 2, 1, 2, 1])
-    qconv_w_scale = helper.make_tensor(
-        'qconv_w_scale', TensorProto.FLOAT, [], [0.02])
-    qconv_w_zp = helper.make_tensor(
-        'qconv_w_zp', TensorProto.UINT8, [], [0])
-    qconv_y_scale = helper.make_tensor(
-        'qconv_y_scale', TensorProto.FLOAT, [], [0.1])
-    qconv_y_zp = helper.make_tensor(
-        'qconv_y_zp', TensorProto.UINT8, [], [0])
-    initializer_list.extend([
-        quant_x_scale, quant_x_zp, qconv_w, qconv_w_scale, qconv_w_zp,
-        qconv_y_scale, qconv_y_zp])
-    qlinearconv_node = helper.make_node(
-        'QLinearConv',
-        inputs=['quant_x_u8', 'quant_x_scale', 'quant_x_zp',
-                'qconv_w', 'qconv_w_scale', 'qconv_w_zp',
-                'qconv_y_scale', 'qconv_y_zp'],
-        outputs=['qconv_y_u8'])
-    qconv_cast_node = helper.make_node(
-        'Cast', inputs=['qconv_y_u8'], outputs=['qconv_y_f'],
-        to=TensorProto.FLOAT)
     ciconv_w = helper.make_tensor(
         'ciconv_w', TensorProto.UINT8, [1, 1, 3, 3],
         [2, 1, 2, 1, 3, 1, 2, 1, 2])
@@ -250,7 +222,6 @@ def _make_quant_integer_nodes(initializer_list):
         to=TensorProto.FLOAT)
     nodes = [
         nchw_reshape_node, relu_node, quant_x_cast_node,
-        qlinearconv_node, qconv_cast_node,
         convinteger_node, ciconv_cast_node,
     ]
     return nodes
@@ -342,8 +313,6 @@ def create_cascademodel_onnx_model(output_path):
                             'onehot_out', 'onehot_row', 32),
         'unique_row',
         _append_row_reshape(row_nodes, initializer_list,
-                            'qconv_y_f', 'qconv_row', 4),
-        _append_row_reshape(row_nodes, initializer_list,
                             'ciconv_y_f', 'ciconv_row', 4),
         _append_row_reshape(row_nodes, initializer_list,
                             'matint_y_f', 'matint_row', 16),
@@ -359,7 +328,7 @@ def create_cascademodel_onnx_model(output_path):
         all_nodes,
         'cascade_ops_graph',
         [input_x, input_y],
-        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 136])],
+        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 132])],
         initializer=initializer_list
     )
     # 模型直接含原生MatmulInteger; gen_dataset的ORT加载失败时会在
