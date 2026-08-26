@@ -228,33 +228,38 @@ def _make_quant_integer_nodes(initializer_list):
 
 
 def _make_matmul_integer_nodes(initializer_list):
-    """原生MatmulInteger: gelu_out整形[4,4]转int8后与int8常量做整数矩阵乘
+    """原生MatmulInteger(纯两输入A/B形式, 省略可选zero_point):
+    模型输入X/Y各自整形[4,4]转int8后做整数矩阵乘, 输出int32
 
     CI镜像ORT未注册该算子kernel(13/20/21/22实测均报No Op registered),
     gen_dataset加载时会在*_converted.onnx临时副本中将该节点替换为恒等的
     Cast->MatMul->Cast子图(int8点积在float32中精确可表示)以生成参考值;
     原始.onnx保持原生算子, converter/micro测试的即原生MatmulInteger。
     """
-    matint_a_shape = helper.make_tensor(
-        'matint_a_shape', TensorProto.INT64, [2], [4, 4])
-    matint_b = helper.make_tensor(
-        'matint_b', TensorProto.INT8, [4, 4],
-        [1, -1, 2, -2, -1, 2, -2, 1, 2, -2, 1, -1, -2, 1, -1, 2])
-    initializer_list.extend([matint_a_shape, matint_b])
-    matint_reshape_node = helper.make_node(
-        'Reshape', inputs=['gelu_out', 'matint_a_shape'],
+    matint_2d_shape = helper.make_tensor(
+        'matint_2d_shape', TensorProto.INT64, [2], [4, 4])
+    initializer_list.append(matint_2d_shape)
+    matint_a_reshape_node = helper.make_node(
+        'Reshape', inputs=['X', 'matint_2d_shape'],
         outputs=['matint_a_2d'])
-    # gelu_out有界(|值|<=26), 截断到int8后|点积和|<=16*26*2=832, 精确可表示
+    matint_b_reshape_node = helper.make_node(
+        'Reshape', inputs=['Y', 'matint_2d_shape'],
+        outputs=['matint_b_2d'])
+    # CI随机输入[-5,5], 转int8不饱和, |点积和|<=16*5*5=400, 精确可表示
     matint_a_cast_node = helper.make_node(
         'Cast', inputs=['matint_a_2d'], outputs=['matint_a_i8'],
         to=TensorProto.INT8)
+    matint_b_cast_node = helper.make_node(
+        'Cast', inputs=['matint_b_2d'], outputs=['matint_b_i8'],
+        to=TensorProto.INT8)
     matmulinteger_node = helper.make_node(
-        'MatmulInteger', inputs=['matint_a_i8', 'matint_b'],
+        'MatmulInteger', inputs=['matint_a_i8', 'matint_b_i8'],
         outputs=['matint_y_i32'])
     matint_cast_node = helper.make_node(
         'Cast', inputs=['matint_y_i32'], outputs=['matint_y_f'],
         to=TensorProto.FLOAT)
-    return [matint_reshape_node, matint_a_cast_node,
+    return [matint_a_reshape_node, matint_b_reshape_node,
+            matint_a_cast_node, matint_b_cast_node,
             matmulinteger_node, matint_cast_node]
 
 
