@@ -73,15 +73,21 @@ class _cascadeoperatormodel(tf.Module):
         # OneHot: TopK索引值域0..1, depth=2
         ti_flat = tf.reshape(ti, [4], name="topk_indices_flat")
         oh = tf.one_hot(ti_flat, 2, name="one_hot")
-        # Unique: 输出长度动态, 求和收敛为静态形状
+        # Unique: 输出长度动态(tflite中shape signature为[-1]), 动态张量直接
+        # 进Concat会使converter_lite量化段infershape失败(InferShape failed,
+        # Default/Concat-op0, ret=-500), 先用常量边界slice取首元素收敛为静态[1]
         g_flat = tf.reshape(g, [4], name="gelu_flat")
         u_in = tf.cast(tf.round(g_flat), tf.int32, name="unique_in")
         u_val, _ = tf.unique(u_in, name="unique")
-        usum = tf.reduce_sum(tf.cast(u_val, tf.float32, name="unique_val_f"),
+        u_first = tf.slice(u_val, [0], [1], name="unique_first")
+        usum = tf.reduce_sum(tf.cast(u_first, tf.float32, name="unique_val_f"),
                              keepdims=True, name="unique_sum")
+        # Shape/Fill: fill的dims取unique的动态长度时, 输出signature为[-1]且
+        # fill_sum在tflite中无静态形状, 同样以slice收敛动态维度后再求和
         sh = tf.shape(u_val, name="shape")
         fl = tf.fill(sh, 0.25, name="fill")
-        fsum = tf.reduce_sum(fl, name="fill_sum")
+        fl_first = tf.slice(fl, [0], [1], name="fill_first")
+        fsum = tf.reduce_sum(fl_first, name="fill_sum")
         # GatherNd: 常量索引取对角元素
         rv2d = tf.reshape(rv, [2, 2], name="rv_2d")
         gn = tf.gather_nd(rv2d, [[0, 0], [1, 1]], name="gather_nd")
