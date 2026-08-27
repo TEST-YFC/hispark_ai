@@ -307,43 +307,60 @@ def create_cascademodel_onnx_model(output_path):
         'Cast', inputs=['topk_indices'], outputs=['topk_indices_f'],
         to=TensorProto.FLOAT)
     row_nodes = [topk_indices_cast_node]
-    concat_inputs = [
-        _append_row_reshape(row_nodes, initializer_list,
-                            'where_out', 'where_row', 16),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'mod_out', 'mod_row', 16),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'reducel1_out', 'reducel1_row', 4),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'reducel2_out', 'reducel2_row', 4),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'reduceprod_out', 'reduceprod_row', 4),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'topk_values', 'topk_values_row', 8),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'topk_indices_f', 'topk_indices_row', 8),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'trilu_out', 'trilu_row', 16),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'where_shape_f', 'shape_row', 3),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'onehot_out', 'onehot_row', 32),
-        'unique_row',
-        _append_row_reshape(row_nodes, initializer_list,
-                            'ciconv_y_f', 'ciconv_row', 4),
-        _append_row_reshape(row_nodes, initializer_list,
-                            'matint_y_f', 'matint_row', 16),
-    ]
+    _append_row_reshape(row_nodes, initializer_list,
+                        'where_out', 'where_row', 16)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'mod_out', 'mod_row', 16)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'reducel1_out', 'reducel1_row', 4)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'reducel2_out', 'reducel2_row', 4)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'reduceprod_out', 'reduceprod_row', 4)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'topk_values', 'topk_values_row', 8)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'topk_indices_f', 'topk_indices_row', 8)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'trilu_out', 'trilu_row', 16)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'where_shape_f', 'shape_row', 3)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'onehot_out', 'onehot_row', 32)
+    # unique_row由_make_unique_nodes直接产出([1,1])
+    _append_row_reshape(row_nodes, initializer_list,
+                        'ciconv_y_f', 'ciconv_row', 4)
+    _append_row_reshape(row_nodes, initializer_list,
+                        'matint_y_f', 'matint_row', 16)
+    # 分段拼接(定位用): 转换失败时日志按文件顺序命名Concat-op0/1/2/3,
+    # 哪个opN失败即指认对应分组 —— op0=TopK组, op1=Trilu/Shape组,
+    # op2=OneHot/Unique组, op3=主流水+整数算子组(多组失败会报多个N)
+    concat_topk_node = helper.make_node(
+        'Concat', inputs=['topk_values_row', 'topk_indices_row'],
+        outputs=['concat_topk'], axis=1)
+    concat_search_node = helper.make_node(
+        'Concat', inputs=['trilu_row', 'shape_row'],
+        outputs=['concat_search'], axis=1)
+    concat_hot_unique_node = helper.make_node(
+        'Concat', inputs=['onehot_row', 'unique_row'],
+        outputs=['concat_hot_unique'], axis=1)
     concat_final_node = helper.make_node(
-        'Concat', inputs=concat_inputs, outputs=['Z'], axis=1)
+        'Concat',
+        inputs=['where_row', 'mod_row', 'reducel1_row', 'reducel2_row',
+                'reduceprod_row', 'concat_topk', 'concat_search',
+                'concat_hot_unique', 'ciconv_row', 'matint_row'],
+        outputs=['Z'], axis=1)
     all_nodes = (
         nodes_chain + nodes_elementwise + nodes_reduce + nodes_search +
         nodes_onehot + nodes_unique + nodes_quant + nodes_matint +
-        row_nodes + [concat_final_node]
+        row_nodes + [concat_topk_node, concat_search_node,
+                     concat_hot_unique_node, concat_final_node]
     )
     graph = helper.make_graph(
         all_nodes,
-        'cascade_ops_graph',
+        # 图名带版本号: CI上可用 onnx.load(...)后打印graph.name 验证转换的
+        # 是否为最新生成(旧模型名无_v4后缀), 排除"改了py但转的还是旧onnx"
+        'cascade_ops_graph_v4',
         [input_x, input_y],
         [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 132])],
         initializer=initializer_list
