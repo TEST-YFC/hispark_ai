@@ -10,15 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 级联算子覆盖用例: Gelu HardSigmoid Celu Erf Trilu ReduceL1 ReduceL2 Shape
-# TopK Neg Pow Mod MatmulInteger Max Min Sum OneHot Unique ConvInteger Where
-# ReduceProd LogSoftmax Hardmax Softplus Softsign ThresholdedRelu
-# 双输出模型: Z[1,131]为主输出(第0个), unique_vals(变长)为第1个输出;
-# Unique变长输出按micro coder要求必须终端输出, 不能作为中间张量消费
-# MatmulInteger说明: CI镜像ORT未注册该算子kernel, gen_dataset加载时会在
-# *_converted.onnx临时副本中将该节点替换为恒等浮点子图以生成参考值, 原始
-# .onnx不动, converter_lite转换的仍是原生算子
-# (见gen_dataset的_make_matmulinteger_ort_compatible)
 import logging
 from onnx import helper, TensorProto
 import numpy as np
@@ -159,11 +150,6 @@ def _make_onehot_nodes(initializer_list):
 
 
 def _make_unique_nodes(initializer_list):
-    """Unique: 输出长度动态。micro coder(unique_onnx_base_coder)要求
-    UniqueOnnx变长输出只允许终端输出("only support a terminal
-    QuantDTypeCast consumer"), 任何中间消费(如Gather)都会在codegen阶段
-    报错; v2~v6的常量索引Gather收敛方案能通过infershape但被codegen拒绝,
-    故unique_vals直接作为图的第二个输出, 不再汇入Z"""
     cascade_flat_shape = helper.make_tensor(
         'cascade_flat_shape', TensorProto.INT64, [1], [16])
     initializer_list.append(cascade_flat_shape)
@@ -218,14 +204,6 @@ def _make_quant_integer_nodes(initializer_list):
 
 
 def _make_matmul_integer_nodes(initializer_list):
-    """原生MatmulInteger(纯两输入A/B形式, 省略可选zero_point):
-    模型输入X/Y各自整形[4,4]转int8后做整数矩阵乘, 输出int32
-
-    CI镜像ORT未注册该算子kernel(13/20/21/22实测均报No Op registered),
-    gen_dataset加载时会在*_converted.onnx临时副本中将该节点替换为恒等的
-    Cast->MatMul->Cast子图(int8点积在float32中精确可表示)以生成参考值;
-    原始.onnx保持原生算子, converter/micro测试的即原生MatmulInteger。
-    """
     matint_2d_shape = helper.make_tensor(
         'matint_2d_shape', TensorProto.INT64, [2], [4, 4])
     initializer_list.append(matint_2d_shape)
@@ -280,11 +258,6 @@ def create_cascademodel_onnx_model(output_path):
     nodes_unique = _make_unique_nodes(initializer_list)
     nodes_quant = _make_quant_integer_nodes(initializer_list)
     nodes_matint = _make_matmul_integer_nodes(initializer_list)
-    # TopK索引转float后拼接。v5实测Cast直接以TopK输出为输入时该路径的
-    # 形状推断在converter量化段丢失(topk_indices->Cast->Reshape所在的
-    # Concat-op3失败), 而同为TopK输出的values行及其余对照行均通过;
-    # v6改为经已验证正常的Reshape张量topk_indices_flat(喂OneHot的分支,
-    # v4/v5两轮均通过)后再Cast
     topk_indices_cast_node = helper.make_node(
         'Cast', inputs=['topk_indices_flat'], outputs=['topk_indices_f'],
         to=TensorProto.FLOAT)
@@ -313,10 +286,6 @@ def create_cascademodel_onnx_model(output_path):
                         'ciconv_y_f', 'ciconv_row', 4)
     _append_row_reshape(row_nodes, initializer_list,
                         'matint_y_f', 'matint_row', 16)
-    # v6定位完成后恢复单段拼接: TopK行的Cast已改经topk_indices_flat转接
-    # (v6实测全部Concat推断通过, 顺利进入codegen阶段); unique行因micro
-    # coder变长输出限制改为独立图输出, 不再汇入Z
-    # 列宽 = 16+16+4+4+4+8+8+16+3+32+4+16 = 131
     concat_final_node = helper.make_node(
         'Concat',
         inputs=['where_row', 'mod_row', 'reducel1_row', 'reducel2_row',
@@ -331,22 +300,13 @@ def create_cascademodel_onnx_model(output_path):
     )
     graph = helper.make_graph(
         all_nodes,
-        # 图名带版本号: CI上可用 onnx.load(...)后打印graph.name 验证转换的
-        # 是否为最新生成(旧模型名无_v7后缀), 排除"改了py但转的还是旧onnx"
         'cascade_ops_graph_v7',
         [input_x, input_y],
-        # Z必须为第0个输出: ai_daily的build_save取output_0.npy,
-        # 精度比对按输出顺序与output_{k}.npy一一对应;
-        # unique_vals(变长)按micro coder要求作终端输出, 以符号维声明动态长度
         [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 131]),
          helper.make_tensor_value_info('unique_vals', TensorProto.FLOAT,
                                        ['num_unique'])],
         initializer=initializer_list
     )
-    # 模型直接含原生MatmulInteger; gen_dataset的ORT加载失败时会在
-    # *_converted.onnx临时副本中做恒等替换生成参考值, 本文件保持原样。
-    # (v5曾尝试随文件下发中间value_info静态shape, 实测converter不读取,
-    # 已连同__init__.py的infer_value_info参数一并回退)
     create_low_ir_version_model(
         graph, producer_name='cascade-ops-generator',
         output_path=output_path, opset_version=20)
