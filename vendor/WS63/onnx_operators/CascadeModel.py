@@ -231,8 +231,29 @@ def _make_matmul_integer_nodes(initializer_list):
             matmulinteger_node, matint_cast_node]
 
 
+_ROW_SPECS = (
+    ('where_out', 'where_row', 16),
+    ('mod_out', 'mod_row', 16),
+    ('reducel1_out', 'reducel1_row', 4),
+    ('reducel2_out', 'reducel2_row', 4),
+    ('reduceprod_out', 'reduceprod_row', 4),
+    ('topk_values', 'topk_values_row', 8),
+    ('topk_indices_f', 'topk_indices_row', 8),
+    ('trilu_out', 'trilu_row', 16),
+    ('where_shape_f', 'shape_row', 3),
+    ('onehot_out', 'onehot_row', 32),
+    ('ciconv_y_f', 'ciconv_row', 4),
+    ('matint_y_f', 'matint_row', 16),
+)
+
+
 def _append_row_reshape(nodes, initializer_list, src_name, row_name, width):
-    """将任意静态形状张量整形为[1, width]行向量便于拼接"""
+    """将静态形状张量整形为[1, width]行向量, 返回行张量名"""
+    if not isinstance(width, int) or isinstance(width, bool) or width <= 0:
+        raise ValueError(f"非法行宽度: {row_name}={width!r}, 须为正整数")
+    if not src_name or not row_name:
+        raise ValueError(
+            f"非法张量名: src={src_name!r}, row={row_name!r}")
     row_shape = helper.make_tensor(
         f'{row_name}_shape', TensorProto.INT64, [2], [1, width])
     initializer_list.append(row_shape)
@@ -242,14 +263,29 @@ def _append_row_reshape(nodes, initializer_list, src_name, row_name, width):
     return row_name
 
 
-def create_cascademodel_onnx_model(output_path):
-    logging.info(f"creating cascade ops model: {output_path}")
+def _make_row_nodes(initializer_list):
+    """TopK索引转float, 各分支输出整形为行向量
+    返回(行节点列表, 行张量名列表, 总宽度)"""
+    topk_indices_cast_node = helper.make_node(
+        'Cast', inputs=['topk_indices_flat'], outputs=['topk_indices_f'],
+        to=TensorProto.FLOAT)
+    row_nodes = [topk_indices_cast_node]
+    row_names = []
+    total_width = 0
+    for src_name, row_name, width in _ROW_SPECS:
+        row_names.append(_append_row_reshape(
+            row_nodes, initializer_list, src_name, row_name, width))
+        total_width += width
+    return row_nodes, row_names, total_width
+
+
+def _make_cascade_graph(initializer_list):
+    """组装计算图: 输入X/Y, 输出Z与unique_vals(变长, 终端输出)"""
     input_shape = [1, 4, 4]
     input_x = helper.make_tensor_value_info(
         'X', TensorProto.FLOAT, input_shape)
     input_y = helper.make_tensor_value_info(
         'Y', TensorProto.FLOAT, input_shape)
-    initializer_list = []
     nodes_chain = _make_activation_chain_nodes(initializer_list)
     nodes_elementwise = _make_elementwise_where_nodes(initializer_list)
     nodes_reduce = _make_reduction_nodes(initializer_list)
@@ -258,56 +294,35 @@ def create_cascademodel_onnx_model(output_path):
     nodes_unique = _make_unique_nodes(initializer_list)
     nodes_quant = _make_quant_integer_nodes(initializer_list)
     nodes_matint = _make_matmul_integer_nodes(initializer_list)
-    topk_indices_cast_node = helper.make_node(
-        'Cast', inputs=['topk_indices_flat'], outputs=['topk_indices_f'],
-        to=TensorProto.FLOAT)
-    row_nodes = [topk_indices_cast_node]
-    _append_row_reshape(row_nodes, initializer_list,
-                        'where_out', 'where_row', 16)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'mod_out', 'mod_row', 16)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'reducel1_out', 'reducel1_row', 4)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'reducel2_out', 'reducel2_row', 4)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'reduceprod_out', 'reduceprod_row', 4)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'topk_values', 'topk_values_row', 8)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'topk_indices_f', 'topk_indices_row', 8)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'trilu_out', 'trilu_row', 16)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'where_shape_f', 'shape_row', 3)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'onehot_out', 'onehot_row', 32)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'ciconv_y_f', 'ciconv_row', 4)
-    _append_row_reshape(row_nodes, initializer_list,
-                        'matint_y_f', 'matint_row', 16)
+    row_nodes, row_names, total_width = _make_row_nodes(initializer_list)
     concat_final_node = helper.make_node(
-        'Concat',
-        inputs=['where_row', 'mod_row', 'reducel1_row', 'reducel2_row',
-                'reduceprod_row', 'topk_values_row', 'topk_indices_row',
-                'trilu_row', 'shape_row', 'onehot_row', 'ciconv_row',
-                'matint_row'],
-        outputs=['Z'], axis=1)
+        'Concat', inputs=row_names, outputs=['Z'], axis=1)
     all_nodes = (
         nodes_chain + nodes_elementwise + nodes_reduce + nodes_search +
         nodes_onehot + nodes_unique + nodes_quant + nodes_matint +
         row_nodes + [concat_final_node]
     )
-    graph = helper.make_graph(
+    return helper.make_graph(
         all_nodes,
         'cascade_ops_graph_v7',
         [input_x, input_y],
-        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 131]),
+        [helper.make_tensor_value_info('Z', TensorProto.FLOAT,
+                                       [1, total_width]),
          helper.make_tensor_value_info('unique_vals', TensorProto.FLOAT,
                                        ['num_unique'])],
         initializer=initializer_list
     )
-    create_low_ir_version_model(
-        graph, producer_name='cascade-ops-generator',
-        output_path=output_path, opset_version=20)
+
+
+def create_cascademodel_onnx_model(output_path):
+    logging.info(f"creating cascade ops model: {output_path}")
+    initializer_list = []
+    try:
+        graph = _make_cascade_graph(initializer_list)
+        create_low_ir_version_model(
+            graph, producer_name='cascade-ops-generator',
+            output_path=output_path, opset_version=20)
+    except (ValueError, OSError) as e:
+        logging.error(f"cascade ops model creation failed: {e}")
+        raise
     logging.info(f"cascade ops model saved: {output_path}")
