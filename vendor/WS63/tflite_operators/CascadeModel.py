@@ -12,6 +12,8 @@
 # limitations under the License.
 # 级联算子覆盖用例: Gelu Pack Unpack Fill SelectV2 Select Shape TopK Neg
 # Pow ReverseV2 Maximum Minimum OneHot Unique ReduceProd LogSoftmax GatherNd
+# 双输出模型: merged为主输出(第0个), unique的u_val(变长)为第1个输出;
+# Unique变长输出按micro coder要求必须终端输出, 不能作为中间张量消费
 import logging
 import tensorflow as tf
 import numpy as np
@@ -32,9 +34,11 @@ class _cascadeoperatormodel(tf.Module):
     ])
     def __call__(self, x):
         main = self._run_math_chain(x)
-        rows = self._run_search_and_struct_nodes(main)
+        rows, u_val = self._run_search_and_struct_nodes(main)
         merged = tf.concat(rows, axis=1, name="merged_output")
-        return merged
+        # Unique变长输出按micro coder要求作为终端输出, 与merged同为模型输出
+        # (merged为第0个, ai_daily的build_save与精度比对均按输出顺序对应)
+        return merged, u_val
 
     def _run_math_chain(self, x):
         """数学/激活级联: Neg Pow Gelu LogSoftmax Maximum Minimum ReduceProd"""
@@ -73,18 +77,17 @@ class _cascadeoperatormodel(tf.Module):
         # OneHot: TopK索引值域0..1, depth=2
         ti_flat = tf.reshape(ti, [4], name="topk_indices_flat")
         oh = tf.one_hot(ti_flat, 2, name="one_hot")
-        # Unique: 输出长度动态(tflite中shape signature为[-1]), 动态张量直接
-        # 进Concat会使converter_lite量化段infershape失败(InferShape failed,
-        # Default/Concat-op0, ret=-500), 先用常量边界slice取首元素收敛为静态[1]
+        # Unique: 输出长度动态(tflite中shape signature为[-1]); micro coder
+        # 与ONNX侧UniqueOnnx同限(变长输出仅允许终端输出), slice/reduce等
+        # 中间消费会被codegen拒绝, 故u_val直接作为模型第二个输出,
+        # 不再汇入merged
         g_flat = tf.reshape(g, [4], name="gelu_flat")
         u_in = tf.cast(tf.round(g_flat), tf.int32, name="unique_in")
         u_val, _ = tf.unique(u_in, name="unique")
-        u_first = tf.slice(u_val, [0], [1], name="unique_first")
-        usum = tf.reduce_sum(tf.cast(u_first, tf.float32, name="unique_val_f"),
-                             keepdims=True, name="unique_sum")
-        # Shape/Fill: fill的dims取unique的动态长度时, 输出signature为[-1]且
-        # fill_sum在tflite中无静态形状, 同样以slice收敛动态维度后再求和
-        sh = tf.shape(u_val, name="shape")
+        # Shape/Fill: fill的dims改用静态张量g_flat的形状(覆盖Shape/Fill
+        # 算子即可); 若dims取unique的动态长度, fill输出signature为[-1],
+        # 变长中间张量同样会触碰micro coder的终端输出限制
+        sh = tf.shape(g_flat, name="shape")
         fl = tf.fill(sh, 0.25, name="fill")
         fl_first = tf.slice(fl, [0], [1], name="fill_first")
         # keepdims=True保持rank-1的[1]输出, 避免标量(rank-0)在reshape/
@@ -114,11 +117,10 @@ class _cascadeoperatormodel(tf.Module):
             tf.reshape(sel, [1, 2], name="select_row"),
             tf.reshape(selv2, [1, 4], name="selectv2_row"),
             tf.reshape(oh, [1, 8], name="onehot_row"),
-            tf.reshape(usum, [1, 1], name="unique_row"),
             tf.reshape(gn, [1, 2], name="gathernd_row"),
             tf.reshape(sh_f, [1, 1], name="shape_row"),
         ]
-        return rows
+        return rows, u_val
 
 
 def create_cascademodel_tflite_model(output_path):

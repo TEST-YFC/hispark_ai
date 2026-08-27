@@ -13,6 +13,8 @@
 # 级联算子覆盖用例: Gelu HardSigmoid Celu Erf Trilu ReduceL1 ReduceL2 Shape
 # TopK Neg Pow Mod MatmulInteger Max Min Sum OneHot Unique ConvInteger Where
 # ReduceProd LogSoftmax Hardmax Softplus Softsign ThresholdedRelu
+# 双输出模型: Z[1,131]为主输出(第0个), unique_vals(变长)为第1个输出;
+# Unique变长输出按micro coder要求必须终端输出, 不能作为中间张量消费
 # MatmulInteger说明: CI镜像ORT未注册该算子kernel, gen_dataset加载时会在
 # *_converted.onnx临时副本中将该节点替换为恒等浮点子图以生成参考值, 原始
 # .onnx不动, converter_lite转换的仍是原生算子
@@ -157,9 +159,11 @@ def _make_onehot_nodes(initializer_list):
 
 
 def _make_unique_nodes(initializer_list):
-    """Unique: 输出长度动态, 常量索引Gather先收敛为静态[1]再reduce,
-    避免动态形状传播进Concat(converter_lite量化段infershape会失败:
-    InferShape failed, Default/Concat-op0, ret=-500)"""
+    """Unique: 输出长度动态。micro coder(unique_onnx_base_coder)要求
+    UniqueOnnx变长输出只允许终端输出("only support a terminal
+    QuantDTypeCast consumer"), 任何中间消费(如Gather)都会在codegen阶段
+    报错; v2~v6的常量索引Gather收敛方案能通过infershape但被codegen拒绝,
+    故unique_vals直接作为图的第二个输出, 不再汇入Z"""
     cascade_flat_shape = helper.make_tensor(
         'cascade_flat_shape', TensorProto.INT64, [1], [16])
     initializer_list.append(cascade_flat_shape)
@@ -171,33 +175,7 @@ def _make_unique_nodes(initializer_list):
     unique_node = helper.make_node(
         'Unique', inputs=['where_rounded'], outputs=['unique_vals'],
         sorted=1)
-    # Gather输出形状只由indices形状决定, 与unique_vals的动态长度无关
-    unique_gather_idx = helper.make_tensor(
-        'unique_gather_idx', TensorProto.INT64, [1], [0])
-    initializer_list.append(unique_gather_idx)
-    unique_gather_node = helper.make_node(
-        'Gather', inputs=['unique_vals', 'unique_gather_idx'],
-        outputs=['unique_first'])
-    unique_reduce_axes = helper.make_tensor(
-        'unique_reduce_axes', TensorProto.INT64, [1], [0])
-    initializer_list.append(unique_reduce_axes)
-    # keepdims=1保持rank-1的[1]输出: NNACL中标量(rank-0)与形状未知存在
-    # 歧义, 标量经Reshape/Concat的推断路径在各版本实现不一致
-    unique_sum_node = helper.make_node(
-        'ReduceSum', inputs=['unique_first', 'unique_reduce_axes'],
-        outputs=['unique_sum'], keepdims=1)
-    unique_row_shape = helper.make_tensor(
-        'unique_row_shape', TensorProto.INT64, [2], [1, 1])
-    initializer_list.append(unique_row_shape)
-    unique_reshape_node = helper.make_node(
-        'Reshape', inputs=['unique_sum', 'unique_row_shape'],
-        outputs=['unique_row'])
-    nodes = [
-        unique_in_reshape, unique_round_node, unique_node,
-        unique_gather_node,
-        unique_sum_node, unique_reshape_node,
-    ]
-    return nodes
+    return [unique_in_reshape, unique_round_node, unique_node]
 
 
 def _make_quant_integer_nodes(initializer_list):
@@ -331,50 +309,38 @@ def create_cascademodel_onnx_model(output_path):
                         'where_shape_f', 'shape_row', 3)
     _append_row_reshape(row_nodes, initializer_list,
                         'onehot_out', 'onehot_row', 32)
-    # unique_row由_make_unique_nodes直接产出([1,1])
     _append_row_reshape(row_nodes, initializer_list,
                         'ciconv_y_f', 'ciconv_row', 4)
     _append_row_reshape(row_nodes, initializer_list,
                         'matint_y_f', 'matint_row', 16)
-    # 分段拼接(定位用)。v5实测: op0(topk_values行+reducel1行)通过,
-    # op3(topk_indices行+reducel2行)失败 ⇒ 嫌疑锁定Cast直接消费TopK输出
-    # (v6已改为经topk_indices_flat转接); 但reducel2行当时与indices行同组,
-    # 尚未单独排除, 故v6把shape_row(已两轮通过)调入op3作纯对照,
-    # reducel2行调入op1与trilu_row(已两轮通过)同组:
-    # op0/op1/op3全过=修复生效; op1败=reducel2行; op3败=转接仍不够
-    # (需仿照unique分支加常量索引Gather收敛); op4败=下游连带
-    concat_topk_node = helper.make_node(
-        'Concat', inputs=['topk_values_row', 'reducel1_row'],
-        outputs=['concat_topk'], axis=1)
-    concat_search_node = helper.make_node(
-        'Concat', inputs=['trilu_row', 'reducel2_row'],
-        outputs=['concat_search'], axis=1)
-    concat_hot_unique_node = helper.make_node(
-        'Concat', inputs=['onehot_row', 'unique_row'],
-        outputs=['concat_hot_unique'], axis=1)
-    concat_topk_idx_node = helper.make_node(
-        'Concat', inputs=['topk_indices_row', 'shape_row'],
-        outputs=['concat_topk_idx'], axis=1)
+    # v6定位完成后恢复单段拼接: TopK行的Cast已改经topk_indices_flat转接
+    # (v6实测全部Concat推断通过, 顺利进入codegen阶段); unique行因micro
+    # coder变长输出限制改为独立图输出, 不再汇入Z
+    # 列宽 = 16+16+4+4+4+8+8+16+3+32+4+16 = 131
     concat_final_node = helper.make_node(
         'Concat',
-        inputs=['where_row', 'mod_row', 'reduceprod_row', 'concat_topk',
-                'concat_search', 'concat_hot_unique', 'concat_topk_idx',
-                'ciconv_row', 'matint_row'],
+        inputs=['where_row', 'mod_row', 'reducel1_row', 'reducel2_row',
+                'reduceprod_row', 'topk_values_row', 'topk_indices_row',
+                'trilu_row', 'shape_row', 'onehot_row', 'ciconv_row',
+                'matint_row'],
         outputs=['Z'], axis=1)
     all_nodes = (
         nodes_chain + nodes_elementwise + nodes_reduce + nodes_search +
         nodes_onehot + nodes_unique + nodes_quant + nodes_matint +
-        row_nodes + [concat_topk_node, concat_search_node,
-                     concat_hot_unique_node, concat_topk_idx_node,
-                     concat_final_node]
+        row_nodes + [concat_final_node]
     )
     graph = helper.make_graph(
         all_nodes,
         # 图名带版本号: CI上可用 onnx.load(...)后打印graph.name 验证转换的
-        # 是否为最新生成(旧模型名无_v6后缀), 排除"改了py但转的还是旧onnx"
-        'cascade_ops_graph_v6',
+        # 是否为最新生成(旧模型名无_v7后缀), 排除"改了py但转的还是旧onnx"
+        'cascade_ops_graph_v7',
         [input_x, input_y],
-        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 132])],
+        # Z必须为第0个输出: ai_daily的build_save取output_0.npy,
+        # 精度比对按输出顺序与output_{k}.npy一一对应;
+        # unique_vals(变长)按micro coder要求作终端输出, 以符号维声明动态长度
+        [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 131]),
+         helper.make_tensor_value_info('unique_vals', TensorProto.FLOAT,
+                                       ['num_unique'])],
         initializer=initializer_list
     )
     # 模型直接含原生MatmulInteger; gen_dataset的ORT加载失败时会在
