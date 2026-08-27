@@ -87,7 +87,9 @@ class _cascadeoperatormodel(tf.Module):
         sh = tf.shape(u_val, name="shape")
         fl = tf.fill(sh, 0.25, name="fill")
         fl_first = tf.slice(fl, [0], [1], name="fill_first")
-        fsum = tf.reduce_sum(fl_first, name="fill_sum")
+        # keepdims=True保持rank-1的[1]输出, 避免标量(rank-0)在reshape/
+        # concat推断中与"形状未知"混淆
+        fsum = tf.reduce_sum(fl_first, keepdims=True, name="fill_sum")
         # GatherNd: 常量索引取对角元素
         rv2d = tf.reshape(rv, [2, 2], name="rv_2d")
         gn = tf.gather_nd(rv2d, [[0, 0], [1, 1]], name="gather_nd")

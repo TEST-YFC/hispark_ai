@@ -181,9 +181,11 @@ def _make_unique_nodes(initializer_list):
     unique_reduce_axes = helper.make_tensor(
         'unique_reduce_axes', TensorProto.INT64, [1], [0])
     initializer_list.append(unique_reduce_axes)
+    # keepdims=1保持rank-1的[1]输出: NNACL中标量(rank-0)与形状未知存在
+    # 歧义, 标量经Reshape/Concat的推断路径在各版本实现不一致
     unique_sum_node = helper.make_node(
         'ReduceSum', inputs=['unique_first', 'unique_reduce_axes'],
-        outputs=['unique_sum'], keepdims=0)
+        outputs=['unique_sum'], keepdims=1)
     unique_row_shape = helper.make_tensor(
         'unique_row_shape', TensorProto.INT64, [2], [1, 1])
     initializer_list.append(unique_row_shape)
