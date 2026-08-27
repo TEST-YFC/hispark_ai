@@ -332,11 +332,13 @@ def create_cascademodel_onnx_model(output_path):
                         'ciconv_y_f', 'ciconv_row', 4)
     _append_row_reshape(row_nodes, initializer_list,
                         'matint_y_f', 'matint_row', 16)
-    # 分段拼接(定位用): 转换失败时日志按文件顺序命名Concat-op0/1/2/3,
-    # 哪个opN失败即指认对应分组 —— op0=TopK组, op1=Trilu/Shape组,
-    # op2=OneHot/Unique组, op3=主流水+整数算子组(多组失败会报多个N)
+    # 分段拼接(定位用): v4实测Concat-op0(TopK组)失败而op1(Trilu/Shape)/
+    # op2(OneHot/Unique)通过, op3仅因op0输出形状未知被连带拖垮。v5把TopK
+    # 两个输出分拆并各配一个已验证正常的控制行(reduce行):
+    # op0失败=values侧, op3失败=indices侧, 两者都失败=TopK算子本身,
+    # 都不失败=修复生效(value_info已提供静态shape); op1/op2为对照组
     concat_topk_node = helper.make_node(
-        'Concat', inputs=['topk_values_row', 'topk_indices_row'],
+        'Concat', inputs=['topk_values_row', 'reducel1_row'],
         outputs=['concat_topk'], axis=1)
     concat_search_node = helper.make_node(
         'Concat', inputs=['trilu_row', 'shape_row'],
@@ -344,30 +346,36 @@ def create_cascademodel_onnx_model(output_path):
     concat_hot_unique_node = helper.make_node(
         'Concat', inputs=['onehot_row', 'unique_row'],
         outputs=['concat_hot_unique'], axis=1)
+    concat_topk_idx_node = helper.make_node(
+        'Concat', inputs=['topk_indices_row', 'reducel2_row'],
+        outputs=['concat_topk_idx'], axis=1)
     concat_final_node = helper.make_node(
         'Concat',
-        inputs=['where_row', 'mod_row', 'reducel1_row', 'reducel2_row',
-                'reduceprod_row', 'concat_topk', 'concat_search',
-                'concat_hot_unique', 'ciconv_row', 'matint_row'],
+        inputs=['where_row', 'mod_row', 'reduceprod_row', 'concat_topk',
+                'concat_search', 'concat_hot_unique', 'concat_topk_idx',
+                'ciconv_row', 'matint_row'],
         outputs=['Z'], axis=1)
     all_nodes = (
         nodes_chain + nodes_elementwise + nodes_reduce + nodes_search +
         nodes_onehot + nodes_unique + nodes_quant + nodes_matint +
         row_nodes + [concat_topk_node, concat_search_node,
-                     concat_hot_unique_node, concat_final_node]
+                     concat_hot_unique_node, concat_topk_idx_node,
+                     concat_final_node]
     )
     graph = helper.make_graph(
         all_nodes,
         # 图名带版本号: CI上可用 onnx.load(...)后打印graph.name 验证转换的
-        # 是否为最新生成(旧模型名无_v4后缀), 排除"改了py但转的还是旧onnx"
-        'cascade_ops_graph_v4',
+        # 是否为最新生成(旧模型名无_v5后缀), 排除"改了py但转的还是旧onnx"
+        'cascade_ops_graph_v5',
         [input_x, input_y],
         [helper.make_tensor_value_info('Z', TensorProto.FLOAT, [1, 132])],
         initializer=initializer_list
     )
     # 模型直接含原生MatmulInteger; gen_dataset的ORT加载失败时会在
-    # *_converted.onnx临时副本中做恒等替换生成参考值, 本文件保持原样
+    # *_converted.onnx临时副本中做恒等替换生成参考值, 本文件保持原样。
+    # infer_value_info=True: 中间张量静态shape随文件下发, converter无需
+    # 依赖自身对TopK等算子的形状重推断(v4定位: TopK行致Concat推断失败)
     create_low_ir_version_model(
         graph, producer_name='cascade-ops-generator',
-        output_path=output_path, opset_version=20)
+        output_path=output_path, opset_version=20, infer_value_info=True)
     logging.info(f"cascade ops model saved: {output_path}")
