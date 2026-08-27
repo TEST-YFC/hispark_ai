@@ -100,9 +100,13 @@ class _cascadeoperatormodel(tf.Module):
             tf.reshape(m["mx"], [1, 4], name="maximum_row"),
             tf.reshape(mn, [1, 4], name="minimum_row"),
             tf.reshape(m["rp"], [1, 2], name="reduceprod_row"),
-            tf.reshape(tf.cast(tv, tf.float32, name="topk_values_f"),
-                       [1, 4], name="topk_values_row"),
-            tf.reshape(tf.cast(ti, tf.float32, name="topk_indices_f"),
+            # ONNX侧v5实测: Cast直接消费TopK输出会使converter量化段对该
+            # 路径的形状推断丢失(所在Concat报InferShape failed), 先Reshape
+            # 成静态形状再Cast(与OneHot消费TopK索引的已验证路径一致)
+            tf.reshape(tf.cast(tf.reshape(tv, [4], name="topk_values_flat"),
+                       tf.float32, name="topk_values_f"), [1, 4],
+                       name="topk_values_row"),
+            tf.reshape(tf.cast(ti_flat, tf.float32, name="topk_indices_f"),
                        [1, 4], name="topk_indices_row"),
             tf.reshape(rv, [1, 4], name="reverse_row"),
             tf.reshape(fsum, [1, 1], name="fill_row"),
