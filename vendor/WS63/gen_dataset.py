@@ -315,16 +315,6 @@ def _onnx_infer(ort_session, input_data_dict):
     return outputs
 
 def _make_matmulinteger_ort_compatible(model):
-    """将ORT未注册执行的MatmulInteger节点替换为等效浮点子图(仅用于参考输出生成)。
-
-    背景: CI镜像的ORT未注册MatmulInteger的高opset kernel(20/21/22均报
-    No Op registered), 而Gelu要求opset>=20, 单个opset无法同时满足两者。
-    int8 x int8点积的精确整数结果(|和|<=800)在float32中可精确表示,
-    因此Cast->MatMul->Cast与MatmulInteger数值完全一致。
-    注意: 仅改写内存中的副本并保存到*_converted.onnx临时文件,
-    原始.onnx不改动, converter_lite仍转换含真实MatmulInteger的模型。
-    仅处理无zero_point/无bias输入(A,B两输入)的节点, 其余情形保持原样,
-    让ORT继续报错以暴露问题, 避免生成错误的参考值。"""
     changed = False
     new_nodes = []
     for node in model.graph.node:
