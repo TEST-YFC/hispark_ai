@@ -157,7 +157,9 @@ def _make_onehot_nodes(initializer_list):
 
 
 def _make_unique_nodes(initializer_list):
-    """Unique: 输出长度动态, 用ReduceSum收敛为静态标量避免动态形状传播"""
+    """Unique: 输出长度动态, 常量索引Gather先收敛为静态[1]再reduce,
+    避免动态形状传播进Concat(converter_lite量化段infershape会失败:
+    InferShape failed, Default/Concat-op0, ret=-500)"""
     cascade_flat_shape = helper.make_tensor(
         'cascade_flat_shape', TensorProto.INT64, [1], [16])
     initializer_list.append(cascade_flat_shape)
@@ -169,11 +171,18 @@ def _make_unique_nodes(initializer_list):
     unique_node = helper.make_node(
         'Unique', inputs=['where_rounded'], outputs=['unique_vals'],
         sorted=1)
+    # Gather输出形状只由indices形状决定, 与unique_vals的动态长度无关
+    unique_gather_idx = helper.make_tensor(
+        'unique_gather_idx', TensorProto.INT64, [1], [0])
+    initializer_list.append(unique_gather_idx)
+    unique_gather_node = helper.make_node(
+        'Gather', inputs=['unique_vals', 'unique_gather_idx'],
+        outputs=['unique_first'])
     unique_reduce_axes = helper.make_tensor(
         'unique_reduce_axes', TensorProto.INT64, [1], [0])
     initializer_list.append(unique_reduce_axes)
     unique_sum_node = helper.make_node(
-        'ReduceSum', inputs=['unique_vals', 'unique_reduce_axes'],
+        'ReduceSum', inputs=['unique_first', 'unique_reduce_axes'],
         outputs=['unique_sum'], keepdims=0)
     unique_row_shape = helper.make_tensor(
         'unique_row_shape', TensorProto.INT64, [2], [1, 1])
@@ -183,6 +192,7 @@ def _make_unique_nodes(initializer_list):
         outputs=['unique_row'])
     nodes = [
         unique_in_reshape, unique_round_node, unique_node,
+        unique_gather_node,
         unique_sum_node, unique_reshape_node,
     ]
     return nodes
