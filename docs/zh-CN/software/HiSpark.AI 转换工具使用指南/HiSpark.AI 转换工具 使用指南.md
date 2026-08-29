@@ -7585,7 +7585,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 **参数说明<a name="section2026082901b"></a>**
 
 >![](public_sys-resources/icon-note.gif) **说明：**
->支持SAME和VALID两种padding、步长1～2、2D空间卷积核（KH×KW，各维尺寸大于等于1，支持非方形核）以及带偏置的四输入形态；支持FP32和全量化INT8转换，权重按输出通道逐通道量化，int8模式下batch固定为1。TFLite规格本身不提供dilation、group和output_padding属性，需要这些功能时应改用ONNX格式。紧随其后的Mul（常量）会在转换期被吸收并改写权重；Relu不做融合，作为独立节点保留。
+>支持SAME和VALID两种padding、大于等于1的任意步长、2D空间卷积核（KH×KW，各维尺寸大于等于1，支持非方形核）以及带偏置的四输入形态；支持FP32和全量化INT8转换，权重按输出通道逐通道量化，int8模式下batch固定为1。TFLite规格本身不提供dilation、group和output_padding属性，需要这些功能时应改用ONNX格式。紧随其后的Mul（常量）会在转换期被吸收并改写权重；Relu不做融合，作为独立节点保留。
 
 **表 1**  TransposeConv参数概览
 
@@ -7676,7 +7676,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r7d"><a name="p2026082901r7d"></a><a name="p2026082901r7d"></a>高、宽方向的空间步长。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r7e"><a name="p2026082901r7e"></a><a name="p2026082901r7e"></a>规格约束：每个大于等于1；已验证步长1～2；必需属性</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r7e"><a name="p2026082901r7e"></a><a name="p2026082901r7e"></a>规格约束：每个大于等于1；必需属性</p>
 </td>
 </tr>
 <tr id="row2026082901r8"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r8a"><a name="p2026082901r8a"></a><a name="p2026082901r8a"></a>fused_activation_function</p>
@@ -15252,7 +15252,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 **参数说明<a name="section2026082902b"></a>**
 
 >![](public_sys-resources/icon-note.gif) **说明：**
->支持group=1的标准反卷积，包括任意对称或非对称pads、步长1～2、膨胀1～2、auto_pad（SAME/VALID/PAD）、output_padding以及可选偏置；支持FP32和全量化INT8转换，权重按输出通道逐通道量化。不支持output_shape属性（解析阶段直接报错）、group大于1（含深度反卷积）、int8模式下batch大于1以及非4D输入。
+>支持group=1的标准反卷积，包括任意对称或非对称pads、步长 ≥ 1、膨胀 ≥ 1、auto_pad、output_padding以及可选偏置；支持FP32和全量化INT8转换，权重按输出通道逐通道量化。不支持output_shape属性、group大于1、int8模式下batch大于1以及非4D输入。
 
 **表 1**  ConvTranspose参数概览
 
@@ -15332,7 +15332,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r6d"><a name="p2026082902r6d"></a><a name="p2026082902r6d"></a>卷积核在各空间轴上的扩张系数。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r6e"><a name="p2026082902r6e"></a><a name="p2026082902r6e"></a>规格约束：包含2个元素，已验证1～2；默认[1, 1]</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r6e"><a name="p2026082902r6e"></a><a name="p2026082902r6e"></a>规格约束：包含2个元素，每个元素大于等于1；默认[1, 1]</p>
 </td>
 </tr>
 <tr id="row2026082902r7"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r7a"><a name="p2026082902r7a"></a><a name="p2026082902r7a"></a>group</p>
@@ -15398,7 +15398,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r12d"><a name="p2026082902r12d"></a><a name="p2026082902r12d"></a>卷积核在各空间轴上的移动步长。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r12e"><a name="p2026082902r12e"></a><a name="p2026082902r12e"></a>规格约束：包含2个元素，已验证1～2；默认[1, 1]</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r12e"><a name="p2026082902r12e"></a><a name="p2026082902r12e"></a>规格约束：包含2个元素，每个元素大于等于1；默认[1, 1]</p>
 </td>
 </tr>
 </tbody>
