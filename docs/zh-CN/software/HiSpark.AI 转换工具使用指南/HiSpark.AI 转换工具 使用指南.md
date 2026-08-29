@@ -7585,7 +7585,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 **参数说明<a name="section2026082901b"></a>**
 
 >![](public_sys-resources/icon-note.gif) **说明：**
->支持SAME和VALID两种padding、步长1～2、卷积核2×2与3×3以及带偏置的四输入形态；支持FP32和全量化INT8转换，权重按输出通道逐通道量化，int8模式下batch固定为1。TFLite规格本身不提供dilation、group和output_padding属性，需要这些功能时应改用ONNX格式。紧随其后的Mul（常量）会在转换期被吸收并改写权重；Relu不做融合，作为独立节点保留。
+>支持SAME和VALID两种padding、步长1～2、2D空间卷积核（KH×KW，各维尺寸大于等于1，支持非方形核）以及带偏置的四输入形态；支持FP32和全量化INT8转换，权重按输出通道逐通道量化，int8模式下batch固定为1。TFLite规格本身不提供dilation、group和output_padding属性，需要这些功能时应改用ONNX格式。紧随其后的Mul（常量）会在转换期被吸收并改写权重；Relu不做融合，作为独立节点保留。
 
 **表 1**  TransposeConv参数概览
 
