@@ -7643,7 +7643,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r4d"><a name="p2026082901r4d"></a><a name="p2026082901r4d"></a>可选偏置输入，默认无。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r4e"><a name="p2026082901r4e"></a><a name="p2026082901r4e"></a>规格约束：形状为\(OC,\)，存在时节点为四输入</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r4e"><a name="p2026082901r4e"></a><a name="p2026082901r4e"></a>规格约束：形状为[OC]，存在时节点为四输入</p>
 </td>
 </tr>
 <tr id="row2026082901r5"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r5a"><a name="p2026082901r5a"></a><a name="p2026082901r5a"></a>output</p>
@@ -7654,7 +7654,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r5d"><a name="p2026082901r5d"></a><a name="p2026082901r5d"></a>转置卷积输出张量。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r5e"><a name="p2026082901r5e"></a><a name="p2026082901r5e"></a>规格约束：形状为\(N, oH, oW, OC\)，NHWC排布，oH/oW按功能描述中的公式计算；支持FP32和全量化INT8转换</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r5e"><a name="p2026082901r5e"></a><a name="p2026082901r5e"></a>规格约束：形状为[N, oH, oW, OC]，NHWC排布，oH/oW按功能描述中的公式计算；支持FP32和全量化INT8转换</p>
 </td>
 </tr>
 <tr id="row2026082901r6"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r6a"><a name="p2026082901r6a"></a><a name="p2026082901r6a"></a>padding</p>
@@ -15299,7 +15299,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r3d"><a name="p2026082902r3d"></a><a name="p2026082902r3d"></a>可选偏置输入，默认无。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r3e"><a name="p2026082902r3e"></a><a name="p2026082902r3e"></a>规格约束：形状为\(C_out,\)，存在时节点为三输入</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r3e"><a name="p2026082902r3e"></a><a name="p2026082902r3e"></a>规格约束：形状为[C_out]，存在时节点为三输入</p>
 </td>
 </tr>
 <tr id="row2026082902r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r4a"><a name="p2026082902r4a"></a><a name="p2026082902r4a"></a>Y</p>
@@ -15310,7 +15310,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r4d"><a name="p2026082902r4d"></a><a name="p2026082902r4d"></a>转置卷积输出张量。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r4e"><a name="p2026082902r4e"></a><a name="p2026082902r4e"></a>规格约束：形状为\(N, C_out, oH, oW\)，oH/oW按功能描述中的公式计算；支持FP32和全量化INT8转换</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r4e"><a name="p2026082902r4e"></a><a name="p2026082902r4e"></a>规格约束：形状为[N, C_out, oH, oW]，oH/oW按功能描述中的公式计算；支持FP32和全量化INT8转换</p>
 </td>
 </tr>
 <tr id="row2026082902r5"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r5a"><a name="p2026082902r5a"></a><a name="p2026082902r5a"></a>auto_pad</p>
