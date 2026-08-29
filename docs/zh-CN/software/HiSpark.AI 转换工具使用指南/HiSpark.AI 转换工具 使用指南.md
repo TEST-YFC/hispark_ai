@@ -7588,6 +7588,8 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 
 -   **[Relu](#ZH-CN_TOPIC_0000002326152944)**  
 
+-   **[Tan](#ZH-CN_TOPIC_0000003100115802)**
+
 -   **[Tanh](#ZH-CN_TOPIC_0000002474764481)**  
 
 -   **[Sigmoid](#ZH-CN_TOPIC_0000002441564330)**  
@@ -8361,6 +8363,72 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 |---|---|---|
 | QAS INT8 | 支持 | Activation训练反向仅支持ReLU，输入和输出均为INT8且必须携带量化参数 |
 | FP32 | 支持 | Activation训练反向仅支持ReLU |
+
+### Tan<a name="ZH-CN_TOPIC_0000003100115802" id="ZH-CN_TOPIC_0000003100115802"></a>
+
+**功能描述<a name="section3100115801"></a>**
+
+对输入张量中的每个元素计算正切函数。输入数据按弧度解释，输出张量的Shape与输入张量相同。
+
+正切函数公式为：`tan(x) = sin(x) / cos(x)`，其中 `cos(x)` 不等于 0。
+
+正切函数的极点位于 `x = π/2 + kπ`（`k` 为整数）。在极点处正切函数没有有限值，接近极点时输出变化剧烈，数值误差会被显著放大。
+
+**参数说明<a name="section3100115802"></a>**
+
+**表 1**  Tan参数概览
+
+<a name="table3100115802"></a>
+<table><thead align="left"><tr id="row3100115802"><th class="cellrowborder" valign="top" width="17.68%" id="tan.mcps.1"><p>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="tan.mcps.2"><p>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="tan.mcps.3"><p>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="tan.mcps.4"><p>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="tan.mcps.5"><p>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="tan.input"><td class="cellrowborder" valign="top" headers="tan.mcps.1"><p>x</p>
+</td>
+<td class="cellrowborder" valign="top" headers="tan.mcps.2"><p>input</p>
+</td>
+<td class="cellrowborder" valign="top" headers="tan.mcps.3"><p>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="tan.mcps.4"><p>输入张量，维度不限制，输入值按弧度解释。</p>
+</td>
+<td class="cellrowborder" valign="top" headers="tan.mcps.5"><p>FP32；全量化推理时为INT8，并且必须携带量化参数。</p>
+</td>
+</tr>
+<tr id="tan.output"><td class="cellrowborder" valign="top" headers="tan.mcps.1"><p>y</p>
+</td>
+<td class="cellrowborder" valign="top" headers="tan.mcps.2"><p>output</p>
+</td>
+<td class="cellrowborder" valign="top" headers="tan.mcps.3"><p>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="tan.mcps.4"><p>输出张量，Shape与输入相同，逐元素保存正切计算结果。</p>
+</td>
+<td class="cellrowborder" valign="top" headers="tan.mcps.5"><p>FP32输出为FP32；全量化推理时为INT8，重新量化后可能饱和到[-128, 127]。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+**推理支持规格**
+
+| 推理模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| FP32 | 支持 | 单输入、单输出，逐元素计算，输入和输出Shape一致；输入按弧度解释。 |
+| 全量化 INT8 | 支持 | 输入范围应受控并远离所有极点，极点附近不保证高精度。 |
+
+**限制说明**
+
+- Tan不包含可配置属性，仅支持单输入和单输出。
+- 当前实现不支持FP16、FP64和BF16数据类型。
+- 极点位置为`π/2 + kπ`。由于`tan'(x) = 1 / cos²(x)`，输入越接近极点，微小的输入误差越可能造成很大的输出误差。
+- 在全量化INT8路径中，输入量化误差可能将值推向或跨过极点，输出重新量化还可能发生饱和。因此，要求极点附近精度或输入范围未知时，建议使用FP32；INT8仅适合明确远离极点的受控输入范围。
 
 ### Tanh<a name="ZH-CN_TOPIC_0000002474764481" id="ZH-CN_TOPIC_0000002474764481"></a>
 
