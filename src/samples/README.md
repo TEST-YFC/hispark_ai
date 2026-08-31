@@ -347,7 +347,7 @@ atc --model=xxx.onnx --framework=5 --output=xxx --input_fp16_nodes="xxx" --outpu
 - mode 选择 30：`xxx.exeom`
 - mode 选择 0：`xxx.om`
 
-### 3322 SDK 编译
+### HiDiTing SDK 编译
 
 配置对应环境变量，在具体 Sample（如 gru）下运行 build_npu.sh 脚本，即可完成编译：
 
@@ -375,7 +375,7 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 1156
 
 编译成功后可执行文件 gru1156 会生成在 `${sample_path}/src/build` 路径下，so 文件 libai_adaptor_tiny.so 在 `${ADAPTOR_PATH}/adaptor/npu/build` 路径下。
 
-### 3322 烧录调试
+### HiDiTing 烧录调试
 
 使用 BurnTool 工具进行 `3322-ai-liteos-sample.fwpkg` 的烧录；使用 Debugkits 工具将模型和输入数据上传到单板；使用 sscom 工具发送 `AT^SAMPLE` 运行，会看到串口打印的运行成功信息，如 Gru 下：
 

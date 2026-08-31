@@ -210,7 +210,7 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 3322
 5. 获取编译成功的fwpkg文件，在{SAMPLE_PATH}/oh/gru/output路径下
 
 **烧录指南**
-1. 使用burntool工具将fwpkg镜像烧录到3322单板
+1. 使用burntool工具将fwpkg镜像烧录到HiDiTing单板
 
 **文件上传指南**
 1. 使用Debugkits工具将输入数据上传到板端如下路径/user/sample_mfcc.bin
