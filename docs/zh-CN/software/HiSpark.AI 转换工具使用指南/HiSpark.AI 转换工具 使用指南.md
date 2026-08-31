@@ -69,7 +69,7 @@
 
 | 文档版本 | 发布日期 | 修改说明 |
 | :--- | :--- | :--- |
-| 07 | 2026-08-24 | 新增Onnx/TFLite算子规格：<br>新增“[Max](#ZH-CN_TOPIC_0000003060115802)、[Max](#ZH-CN_TOPIC_0000003060115702)、[Min](#ZH-CN_TOPIC_0000003070115802)、[Min](#ZH-CN_TOPIC_0000003070115702)、[Sum](#ZH-CN_TOPIC_0000003080115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115702)”。<br>新增“[OneHot](#ZH-CN_TOPIC_0000002026082105)、[OneHot](#ZH-CN_TOPIC_0000002026082104)、[Unique](#ZH-CN_TOPIC_0000002026082108)、[Unique](#ZH-CN_TOPIC_0000002026082107)、[Where](#ZH-CN_TOPIC_0000002026082102)、[ConvInteger](#ZH-CN_TOPIC_0000002026082103)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)、[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)、[Hardmax](#ZH-CN_TOPIC_0000002026082101)、[Softsign](#ZH-CN_TOPIC_0000002026082402)、[Softplus](#ZH-CN_TOPIC_0000002026082403)、[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)”。 |
+| 07 | 2026-08-24 | 新增Onnx/TFLite算子规格：<br>新增“[Max](#ZH-CN_TOPIC_0000003060115802)、[Maximum](#ZH-CN_TOPIC_0000003060115702)、[Min](#ZH-CN_TOPIC_0000003070115802)、[Minimum](#ZH-CN_TOPIC_0000003070115702)、[Sum](#ZH-CN_TOPIC_0000003080115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115702)”。<br>新增“[OneHot](#ZH-CN_TOPIC_0000002026082105)、[OneHot](#ZH-CN_TOPIC_0000002026082104)、[Unique](#ZH-CN_TOPIC_0000002026082108)、[Unique](#ZH-CN_TOPIC_0000002026082107)、[Where](#ZH-CN_TOPIC_0000002026082102)、[ConvInteger](#ZH-CN_TOPIC_0000002026082103)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)、[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)、[Hardmax](#ZH-CN_TOPIC_0000002026082101)、[Softsign](#ZH-CN_TOPIC_0000002026082402)、[Softplus](#ZH-CN_TOPIC_0000002026082403)、[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)”。 |
 | 06 | 2026-07-30 | 新增Onnx/TFLite算子规格：<br>新增“[Erf](#ZH-CN_TOPIC_0000002026072801)、[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)、[Celu](#ZH-CN_TOPIC_0000002026072803)”。<br>新增"[Shape](#ZH-CN_TOPIC_0000003030115802)、[Shape](#ZH-CN_TOPIC_0000003030115702)"。<br>新增"[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)"。<br>新增"[TopK](#ZH-CN_TOPIC_0000003050115802)、[TopK](#ZH-CN_TOPIC_0000003050115702)"。<br>新增"[Gelu](#ZH-CN_TOPIC_0000002661401191)、[Gelu](#ZH-CN_TOPIC_0000002661401194)、[Trilu](#ZH-CN_TOPIC_0000002661401195)、[Pack](#ZH-CN_TOPIC_0000002661401192)、[Unpack](#ZH-CN_TOPIC_0000002661401193)"。<br>新增"[Fill](#ZH-CN_TOPIC_0000002800000001)、[Neg](#ZH-CN_TOPIC_0000002900000001)、[Pow](#ZH-CN_TOPIC_0000002476598365)、[Neg](#ZH-CN_TOPIC_0000002900000002)、[Pow](#ZH-CN_TOPIC_0000002476598371)"。<br>新增"[Select](#ZH-CN_TOPIC_0000002600000001)、[SelectV2](#ZH-CN_TOPIC_0000002600000002)、[ReverseV2](#ZH-CN_TOPIC_0000002600000003)、[Mod](#ZH-CN_TOPIC_0000002600000004)、[ReduceL1](#ZH-CN_TOPIC_0000002600000005)、[ReduceL2](#ZH-CN_TOPIC_0000002600000006)"。<br>新增训练特性：<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新QAS INT8量化训练配置、FP32训练配置。<br>在“[参数说明](#ZH-CN_TOPIC_0000002319906348)”中更新训练参数，新增MSE loss和Adam优化器参数。<br>新增QAS INT8和FP32训练支持规格。 |
 | 05 | 2026-07-03 | 更新“[设置环境变量](#ZH-CN_TOPIC_0000002353775693)、[限制与约束](#ZH-CN_TOPIC_0000002319976756)”。<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新[5](#设置Micro配置项)。<br>新增“[ARM平台编译部署](#ZH-CN_TOPIC_0000002590121500)”小节。<br>在“[输入选项](#ZH-CN_TOPIC_0000002353985081)”中更新[表1](#table3808173922715)。<br>更新“[算子规格参考](#ZH-CN_TOPIC_0000002354161329)”。<br>新增“[专题](#ZH-CN_TOPIC_0000002562713759)”章节。 |
 | 04 | 2026-06-01 | 新增Onnx/TFLite算子规格：<br>更新“[PRelu](#ZH-CN_TOPIC_0000002568693026)、[PRelu](#ZH-CN_TOPIC_0000002568693026)、[CumSum](#ZH-CN_TOPIC_0000002599292569)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187919)、[CumSum](#ZH-CN_TOPIC_0000002568533372)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187805)、[Einsum](#ZH-CN_TOPIC_0000002599307751)”。<br>更新“[Relu6](#ZH-CN_TOPIC_0000002574010852)、[LeakyRelu](#ZH-CN_TOPIC_0000002604689955)、[HardSwish](#ZH-CN_TOPIC_0000002574309498)、[LeakyRelu](#ZH-CN_TOPIC_0000002574170496)、[HardSwish](#ZH-CN_TOPIC_0000002574469146)、[Swish](#ZH-CN_TOPIC_0000002605108551)”。<br>更新“[LogicalAnd](#ZH-CN_TOPIC_0000002574976868)、[Equal](#ZH-CN_TOPIC_0000002605336325)、[GreaterEqual](#ZH-CN_TOPIC_0000002574817236)、[Greater](#ZH-CN_TOPIC_0000002605456261)、[LessEqual](#ZH-CN_TOPIC_0000002574976872)、[Less](#ZH-CN_TOPIC_0000002605336331)、[NotEqual](#ZH-CN_TOPIC_0000002574817240)、[LogicalNot](#ZH-CN_TOPIC_0000002605456267)、[LogicalOr](#ZH-CN_TOPIC_0000002574976878)、[And](#ZH-CN_TOPIC_0000002574578826) 、[GreaterOrEqual](#ZH-CN_TOPIC_0000002605377849)、[Greater](#ZH-CN_TOPIC_0000002574738452)、[LessOrEqual](#ZH-CN_TOPIC_0000002574578828)、[Less](#ZH-CN_TOPIC_0000002605257909)、[Not](#ZH-CN_TOPIC_0000002605377851)、[Or](#ZH-CN_TOPIC_0000002574738488)、[Xor](#ZH-CN_TOPIC_0000002574578874)”。<br>更新“[Dropout](#ZH-CN_TOPIC_0000002659215655) [Identity](#ZH-CN_TOPIC_0000002628696446) [GatherElements](#ZH-CN_TOPIC_0000002659095703) [ReduceLogSum](#ZH-CN_TOPIC_0000002628856352) [ReduceLogSumExp](#ZH-CN_TOPIC_0000002659215657) [Expand](#ZH-CN_TOPIC_0000002628696448) [Elu](#ZH-CN_TOPIC_0000002660394575) [Elu](#ZH-CN_TOPIC_0000002660274969)”。<br>更新“[DepthToSpace](#ZH-CN_TOPIC_0000002629955352) [SpaceToDepth](#ZH-CN_TOPIC_0000002660274511) [GRU](#ZH-CN_TOPIC_0000002631448488) [DepthToSpace](#ZH-CN_TOPIC_0000002660395017) [SpaceToDepth](#ZH-CN_TOPIC_0000002630115702)”。 |
@@ -765,7 +765,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p13469155112711"><a name="p13469155112711"></a><a name="p13469155112711"></a>-</p>
 </td>
 </tr>
-<tr id="row1746919511879"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p5469951574"><a name="p5469951574"></a><a name="p5469951574"></a>--fmk=<FMK></p>
+<tr id="row1746919511879"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p5469951574"><a name="p5469951574"></a><a name="p5469951574"></a>--fmk<FMK></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p546913511973"><a name="p546913511973"></a><a name="p546913511973"></a>是</p>
 </td>
@@ -776,7 +776,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p1046918514716"><a name="p1046918514716"></a><a name="p1046918514716"></a>-</p>
 </td>
 </tr>
-<tr id="row1946911511176"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p44691051370"><a name="p44691051370"></a><a name="p44691051370"></a>--modelFile=<MODELFILE></p>
+<tr id="row1946911511176"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p44691051370"><a name="p44691051370"></a><a name="p44691051370"></a>--modelFile<MODELFILE></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p846935120717"><a name="p846935120717"></a><a name="p846935120717"></a>是</p>
 </td>
@@ -787,7 +787,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p14691451772"><a name="p14691451772"></a><a name="p14691451772"></a>-</p>
 </td>
 </tr>
-<tr id="row204696511578"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p9469135112711"><a name="p9469135112711"></a><a name="p9469135112711"></a>--outputFile=<OUTPUTFILE></p>
+<tr id="row204696511578"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p9469135112711"><a name="p9469135112711"></a><a name="p9469135112711"></a>--outputFile<OUTPUTFILE></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p84691551272"><a name="p84691551272"></a><a name="p84691551272"></a>是</p>
 </td>
@@ -798,7 +798,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p164696511777"><a name="p164696511777"></a><a name="p164696511777"></a>-</p>
 </td>
 </tr>
-<tr id="row7469751173"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p1646914511473"><a name="p1646914511473"></a><a name="p1646914511473"></a>--configFile=<CONFIGFILE></p>
+<tr id="row7469751173"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p1646914511473"><a name="p1646914511473"></a><a name="p1646914511473"></a>--configFile<CONFIGFILE></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p15470135114711"><a name="p15470135114711"></a><a name="p15470135114711"></a>是</p>
 </td>
@@ -809,7 +809,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p15470951875"><a name="p15470951875"></a><a name="p15470951875"></a>-</p>
 </td>
 </tr>
-<tr id="row44706511273"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p94709511173"><a name="p94709511173"></a><a name="p94709511173"></a>--encryption=<ENCRYPTION></p>
+<tr id="row44706511273"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p94709511173"><a name="p94709511173"></a><a name="p94709511173"></a>--encryption<ENCRYPTION></p>
 </td>
 <td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p1470185115717"><a name="p1470185115717"></a><a name="p1470185115717"></a>是</p>
 </td>
@@ -1632,9 +1632,9 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
 -   **[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)**  
 
--   **[Max](#ZH-CN_TOPIC_0000003060115702)**  
+-   **[Maximum](#ZH-CN_TOPIC_0000003060115702)**  
 
--   **[Min](#ZH-CN_TOPIC_0000003070115702)**  
+-   **[Minimum](#ZH-CN_TOPIC_0000003070115702)**  
 
 -   **[ReduceProd](#ZH-CN_TOPIC_0000003090115702)**  
 
@@ -4643,7 +4643,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="11.95%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="35.67%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="35.67%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="23.71%" headers="mcps1.2.6.1.5 "><p id="p1037517584314"><a name="p1037517584314"></a><a name="p1037517584314"></a>-</p>
 </td>
@@ -4665,7 +4665,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="11.95%" headers="mcps1.2.6.1.3 "><p id="p46372511497"><a name="p46372511497"></a><a name="p46372511497"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="35.67%" headers="mcps1.2.6.1.4 "><p id="p186376512499"><a name="p186376512499"></a><a name="p186376512499"></a>输出张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="35.67%" headers="mcps1.2.6.1.4 "><p id="p186376512499"><a name="p186376512499"></a><a name="p186376512499"></a>输出张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="23.71%" headers="mcps1.2.6.1.5 "><p id="p106371554916"><a name="p106371554916"></a><a name="p106371554916"></a>-</p>
 </td>
@@ -4712,7 +4712,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="11.940000000000001%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="32.05%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="32.05%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="27.33%" headers="mcps1.2.6.1.5 "><p id="p1037517584314"><a name="p1037517584314"></a><a name="p1037517584314"></a>-</p>
 </td>
@@ -4785,7 +4785,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="11.940000000000001%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="32.43%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="32.43%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.950000000000003%" headers="mcps1.2.6.1.5 "><p id="p1037517584314"><a name="p1037517584314"></a><a name="p1037517584314"></a>-</p>
 </td>
@@ -5506,7 +5506,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="12.370000000000001%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="32.940000000000005%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="32.940000000000005%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>数据类型仅支持float32、uint8、int8、int32</p>
 </td>
@@ -5694,7 +5694,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="13.889999999999999%" headers="mcps1.2.6.1.3 "><p id="p67768585268"><a name="p67768585268"></a><a name="p67768585268"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCL/NCHW。</p>
+<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="24.610000000000003%" headers="mcps1.2.6.1.5 "><p id="p035182116187"><a name="p035182116187"></a><a name="p035182116187"></a>-</p>
 </td>
@@ -6470,7 +6470,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_fill_value_desc"><a name="p_fill_value_desc"></a><a name="p_fill_value_desc"></a>填充值，标量（0-D 张量），数据类型决定输出张量的数据类型。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_fill_value_limit"><a name="p_fill_value_limit"></a><a name="p_fill_value_limit"></a>规格约束：fp16 不支持该类型</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_fill_value_limit"><a name="p_fill_value_limit"></a><a name="p_fill_value_limit"></a>规格约束：不支持fp16类型</p>
 </td>
 </tr>
 <tr id="row_fill_output"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_fill_output_p"><a name="p_fill_output_p"></a><a name="p_fill_output_p"></a>output</p>
@@ -6565,7 +6565,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_neg_tflite_in_desc"><a name="p_neg_tflite_in_desc"></a><a name="p_neg_tflite_in_desc"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NWC/NHWC。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_neg_tflite_in_limit"><a name="p_neg_tflite_in_limit"></a><a name="p_neg_tflite_in_limit"></a>规格约束：fp16 不支持该类型；int8 需全量化 cfg</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_neg_tflite_in_limit"><a name="p_neg_tflite_in_limit"></a><a name="p_neg_tflite_in_limit"></a>规格约束：不支持fp16类型；int8 需全量化 cfg</p>
 </td>
 </tr>
 <tr id="row_neg_tflite_out"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_neg_tflite_out_p"><a name="p_neg_tflite_out_p"></a><a name="p_neg_tflite_out_p"></a>y</p>
@@ -6618,7 +6618,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_pow_tflite_base_desc"><a name="p_pow_tflite_base_desc"></a><a name="p_pow_tflite_base_desc"></a>底数张量，维度为 1D/2D/3D/4D，格式分别为 ND、NWC、NHWC。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_base_limit"><a name="p_pow_tflite_base_limit"></a><a name="p_pow_tflite_base_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；fp16 不支持该类型；INT8 不支持 X&lt;0 的输入</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_base_limit"><a name="p_pow_tflite_base_limit"></a><a name="p_pow_tflite_base_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；不支持fp16 类型；INT8 不支持 X&lt;0 的输入</p>
 </td>
 </tr>
 <tr id="row_pow_tflite_exp"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_pow_tflite_exp_name"><a name="p_pow_tflite_exp_name"></a><a name="p_pow_tflite_exp_name"></a>exponent</p>
@@ -6629,7 +6629,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_pow_tflite_exp_desc"><a name="p_pow_tflite_exp_desc"></a><a name="p_pow_tflite_exp_desc"></a>指数张量，维度为 1D/2D/3D/4D，与 base 广播兼容。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_exp_limit"><a name="p_pow_tflite_exp_limit"></a><a name="p_pow_tflite_exp_limit"></a>规格约束：最大维度 4D；fp16 不支持该类型</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_exp_limit"><a name="p_pow_tflite_exp_limit"></a><a name="p_pow_tflite_exp_limit"></a>规格约束：最大维度 4D；不支持fp16 类型</p>
 </td>
 </tr>
 <tr id="row_pow_tflite_out"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_pow_tflite_out_name"><a name="p_pow_tflite_out_name"></a><a name="p_pow_tflite_out_name"></a>result</p>
@@ -6640,7 +6640,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_pow_tflite_out_desc"><a name="p_pow_tflite_out_desc"></a><a name="p_pow_tflite_out_desc"></a>输出张量，维度为 base 与 exponent 的广播结果，格式分别为 ND、NWC、NHWC。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_out_limit"><a name="p_pow_tflite_out_limit"></a><a name="p_pow_tflite_out_limit"></a>规格约束：最大维度 4D；fp16 不支持该类型</p></td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_pow_tflite_out_limit"><a name="p_pow_tflite_out_limit"></a><a name="p_pow_tflite_out_limit"></a>规格约束：最大维度 4D；不支持fp16 类型</p></td>
 </tr>
 </tbody>
 </table>
@@ -7113,7 +7113,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### Max<a name="ZH-CN_TOPIC_0000003060115702" id="ZH-CN_TOPIC_0000003060115702"></a>
+### Maximum<a name="ZH-CN_TOPIC_0000003060115702" id="ZH-CN_TOPIC_0000003060115702"></a>
 
 **功能描述<a name="section3100000011"></a>**
 
@@ -7121,7 +7121,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 
 **参数说明<a name="section3100000012"></a>**
 
-**表 1**  Max参数概览
+**表 1**  Maximum参数概览
 
 <a name="table4179355155016"></a>
 <table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
@@ -7172,7 +7172,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### Min<a name="ZH-CN_TOPIC_0000003070115702" id="ZH-CN_TOPIC_0000003070115702"></a>
+### Minimum<a name="ZH-CN_TOPIC_0000003070115702" id="ZH-CN_TOPIC_0000003070115702"></a>
 
 **功能描述<a name="section3100000021"></a>**
 
@@ -7180,7 +7180,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 
 **参数说明<a name="section3100000022"></a>**
 
-**表 1**  Min参数概览
+**表 1**  Minimum参数概览
 
 <a name="table4179355155016"></a>
 <table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
@@ -7401,6 +7401,9 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 
 **参数说明<a name="section2026082107b"></a>**
 
+>![](public_sys-resources/icon-note.gif) **说明：** 
+>Unique算子支持float32/int8，不支持量化。
+
 **表 1**  Unique参数概览
 
 <a name="table2026082107a"></a>
@@ -7467,12 +7470,12 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 
 **功能描述<a name="section2026082401a"></a>**
 
-根据`indices`中的多维坐标，从`params`中收集元素或切片。设索引深度为`D=indices.shape[-1]`，输出shape为`indices.shape[:-1]+params.shape[D:]`，输出数据类型与`params`一致。
+根据 indices 中的多维坐标，从 params 中收集元素或切片。设索引深度为 D=indices.shape[-1] ，输出shape为 indices.shape[:-1]+params.shape[D:] ，输出数据类型与 params 一致。
 
 **参数说明<a name="section2026082401b"></a>**
 
 >![](public_sys-resources/icon-note.gif) **说明：**
->GatherNd无属性。`indices`仅用于定位数据，不参与量化；float32模型可通过全量化生成int8数据通路。
+>GatherNd无属性。indices 仅用于定位数据，不参与量化；float32模型可通过全量化生成int8数据通路。
 
 **表 1**  GatherNd参数概览
 
@@ -8461,7 +8464,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="13.889999999999999%" headers="mcps1.2.6.1.3 "><p id="p67768585268"><a name="p67768585268"></a><a name="p67768585268"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCL/NCHW。</p>
+<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="24.610000000000003%" headers="mcps1.2.6.1.5 "><p id="p035182116187"><a name="p035182116187"></a><a name="p035182116187"></a>-</p>
 </td>
@@ -8493,9 +8496,9 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 对输入张量中的每个元素计算正切函数。输入数据按弧度解释，输出张量的Shape与输入张量相同。
 
-正切函数公式为：`tan(x) = sin(x) / cos(x)`，其中 `cos(x)` 不等于 0。
+正切函数公式为：tan(x) = sin(x) / cos(x)，其中 cos(x) 不等于 0。
 
-正切函数的极点位于 `x = π/2 + kπ`（`k` 为整数）。在极点处正切函数没有有限值，接近极点时输出变化剧烈，数值误差会被显著放大。
+正切函数的极点位于 x = π/2 + kπ（k 为整数）。在极点处正切函数没有有限值，接近极点时输出变化剧烈，数值误差会被显著放大。
 
 **参数说明<a name="section3100115802"></a>**
 
@@ -8550,7 +8553,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 - Tan不包含可配置属性，仅支持单输入和单输出。
 - 当前实现不支持FP16、FP64和BF16数据类型。
-- 极点位置为`π/2 + kπ`。由于`tan'(x) = 1 / cos²(x)`，输入越接近极点，微小的输入误差越可能造成很大的输出误差。
+- 极点位置为 π/2 + kπ 。由于 tan'(x) = 1 / cos²(x) ，输入越接近极点，微小的输入误差越可能造成很大的输出误差。
 - 在全量化INT8路径中，输入量化误差可能将值推向或跨过极点，输出重新量化还可能发生饱和。因此，要求极点附近精度或输入范围未知时，建议使用FP32；INT8仅适合明确远离极点的受控输入范围。
 
 ### Tanh<a name="ZH-CN_TOPIC_0000002474764481" id="ZH-CN_TOPIC_0000002474764481"></a>
@@ -11136,7 +11139,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="12.379999999999999%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="32.93%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="32.93%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p1037517584314"><a name="p1037517584314"></a><a name="p1037517584314"></a>-</p>
 </td>
@@ -11220,7 +11223,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="12.379999999999999%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="32.93%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="32.93%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p1037517584314"><a name="p1037517584314"></a><a name="p1037517584314"></a>-</p>
 </td>
@@ -12015,7 +12018,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="12.379999999999999%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="32.93%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="32.93%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>数据类型仅支持float32、uint8、int8、int32</p>
 </td>
@@ -12239,7 +12242,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="12.370000000000001%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="32.940000000000005%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="32.940000000000005%" headers="mcps1.2.6.1.4 "><p id="p1950510178445"><a name="p1950510178445"></a><a name="p1950510178445"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="28.46%" headers="mcps1.2.6.1.5 "><p id="p6968615171817"><a name="p6968615171817"></a><a name="p6968615171817"></a>数据类型仅支持float32、uint8、int8、int32</p>
 </td>
@@ -12382,7 +12385,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="13.889999999999999%" headers="mcps1.2.6.1.3 "><p id="p67768585268"><a name="p67768585268"></a><a name="p67768585268"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCL/NCHW。</p>
+<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="24.610000000000003%" headers="mcps1.2.6.1.5 "><p id="p035182116187"><a name="p035182116187"></a><a name="p035182116187"></a>-</p>
 </td>
@@ -12441,7 +12444,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="13.889999999999999%" headers="mcps1.2.6.1.3 "><p id="p67768585268"><a name="p67768585268"></a><a name="p67768585268"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCL/NCHW。</p>
+<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="24.610000000000003%" headers="mcps1.2.6.1.5 "><p id="p035182116187"><a name="p035182116187"></a><a name="p035182116187"></a>-</p>
 </td>
@@ -12489,7 +12492,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="13.889999999999999%" headers="mcps1.2.6.1.3 "><p id="p67768585268"><a name="p67768585268"></a><a name="p67768585268"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCL/NCHW。</p>
+<td class="cellrowborder" valign="top" width="30.320000000000004%" headers="mcps1.2.6.1.4 "><p id="p11673723615"><a name="p11673723615"></a><a name="p11673723615"></a>输入张量，维度为2D/3D/4D，格式分别为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="24.610000000000003%" headers="mcps1.2.6.1.5 "><p id="p035182116187"><a name="p035182116187"></a><a name="p035182116187"></a>-</p>
 </td>
@@ -12927,7 +12930,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p45333231656"><a name="p45333231656"></a><a name="p45333231656"></a>tensor(bool)</p>
 </td>
-<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p253318238515"><a name="p253318238515"></a><a name="p253318238515"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p253318238515"><a name="p253318238515"></a><a name="p253318238515"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p145328231557"><a name="p145328231557"></a><a name="p145328231557"></a>-</p>
 </td>
@@ -12938,7 +12941,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </td>
 <td class="cellrowborder" valign="top" width="13.489999999999998%" headers="mcps1.2.6.1.3 "><p id="p1346416128194"><a name="p1346416128194"></a><a name="p1346416128194"></a>tensor(bool)</p>
 </td>
-<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p453052318510"><a name="p453052318510"></a><a name="p453052318510"></a>输出张量，维度为2D/3D/4D，格式为ND/NCW/NHWC。</p>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p453052318510"><a name="p453052318510"></a><a name="p453052318510"></a>输出张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p145302023959"><a name="p145302023959"></a><a name="p145302023959"></a>-</p>
 </td>
@@ -14048,7 +14051,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 
 **功能描述<a name="section3040115702a"></a>**
 
-对两个量化后的整数矩阵进行乘积运算，计算 `Y = (A - a_zero_point) * (B - b_zero_point)`。
+对两个量化后的整数矩阵进行乘积运算，计算 Y = (A - a_zero_point) * (B - b_zero_point)。
 
 **参数说明<a name="section3040115702b"></a>**
 
@@ -14436,7 +14439,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
 </td>
-<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>varList(tensor)</p>
 </td>
 <td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量列表（≥1），维度为 2D/3D/4D，ND/NCW/NCHW 数据排布。</p>
 </td>
@@ -14484,7 +14487,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p15968615161817"><a name="p15968615161817"></a><a name="p15968615161817"></a>input</p>
 </td>
-<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>varList(tensor)</p>
 </td>
 <td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量列表（≥1），维度为 2D/3D/4D，ND/NCW/NCHW 数据排布。</p>
 </td>
@@ -14770,7 +14773,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 
 **功能描述<a name="section2026082103a"></a>**
 
-对量化后的整数输入张量和卷积核执行卷积运算，计算 `Y = (X - x_zero_point) * (W - w_zero_point)`，输出int32类型的整数累加结果。
+对量化后的整数输入张量和卷积核执行卷积运算，计算 Y = (X - x_zero_point) * (W - w_zero_point)，输出int32类型的整数累加结果。
 
 **参数说明<a name="section2026082103b"></a>**
 
@@ -15060,6 +15063,9 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 对输入张量进行去重。省略axis时按行主序展平输入并比较标量元素；配置axis时沿指定轴比较完整子张量。
 
 **参数说明<a name="section2026082108b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：** 
+>Unique算子支持float32/int8，不支持量化。
 
 **表 1**  Unique参数概览
 
@@ -15699,9 +15705,9 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="13.49%" headers="mcps1.2.6.1.3 "><p id="p_neg_onnx_in_dt"><a name="p_neg_onnx_in_dt"></a><a name="p_neg_onnx_in_dt"></a>tensor(fp32)</p>
 </td>
-<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_neg_onnx_in_desc"><a name="p_neg_onnx_in_desc"></a><a name="p_neg_onnx_in_desc"></a>输入张量，维度为2D/3D/4D，格式为ND/NCHW。</p>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p_neg_onnx_in_desc"><a name="p_neg_onnx_in_desc"></a><a name="p_neg_onnx_in_desc"></a>输入张量，维度为2D/3D/4D，格式为ND/NCW/NCHW。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_neg_onnx_in_limit"><a name="p_neg_onnx_in_limit"></a><a name="p_neg_onnx_in_limit"></a>规格约束：fp16/int32 不支持该类型（Micro coder 未注册）；不支持 rank>4</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p_neg_onnx_in_limit"><a name="p_neg_onnx_in_limit"></a><a name="p_neg_onnx_in_limit"></a>规格约束：不支持fp16/int32类型（Micro coder 未注册）；不支持 rank>4</p>
 </td>
 </tr>
 <tr id="row_neg_onnx_out"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p_neg_onnx_out_p"><a name="p_neg_onnx_out_p"></a><a name="p_neg_onnx_out_p"></a>Y</p>
@@ -15754,7 +15760,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="29.73%" headers="mcps1.2.6.1.4 "><p id="p_pow_onnx_x_desc"><a name="p_pow_onnx_x_desc"></a><a name="p_pow_onnx_x_desc"></a>底数张量，维度为 1D/2D/3D/4D，格式为 ND/NCW/NCHW。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_x_limit"><a name="p_pow_onnx_x_limit"></a><a name="p_pow_onnx_x_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；fp16/fp64/int32/int64 不支持该类型；INT8 不支持 X&lt;0 的输入</p>
+<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_x_limit"><a name="p_pow_onnx_x_limit"></a><a name="p_pow_onnx_x_limit"></a>规格约束：最大维度 4D；支持 NumPy 广播；不支持fp16/fp64/int32/int64类型；INT8 不支持 X&lt;0 的输入</p>
 </td>
 </tr>
 <tr id="row_pow_onnx_y"><td class="cellrowborder" valign="top" width="17.07%" headers="mcps1.2.6.1.1 "><p id="p_pow_onnx_y_name"><a name="p_pow_onnx_y_name"></a><a name="p_pow_onnx_y_name"></a>Y</p>
@@ -15765,7 +15771,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="29.73%" headers="mcps1.2.6.1.4 "><p id="p_pow_onnx_y_desc"><a name="p_pow_onnx_y_desc"></a><a name="p_pow_onnx_y_desc"></a>指数张量，维度为 1D/2D/3D/4D，与 X 广播兼容。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_y_limit"><a name="p_pow_onnx_y_limit"></a><a name="p_pow_onnx_y_limit"></a>规格约束：最大维度 4D；fp16/fp64/int32/int64 不支持该类型</p>
+<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_y_limit"><a name="p_pow_onnx_y_limit"></a><a name="p_pow_onnx_y_limit"></a>规格约束：最大维度 4D；不支持fp16/fp64/int32/int64类型</p>
 </td>
 </tr>
 <tr id="row_pow_onnx_z"><td class="cellrowborder" valign="top" width="17.07%" headers="mcps1.2.6.1.1 "><p id="p_pow_onnx_z_name"><a name="p_pow_onnx_z_name"></a><a name="p_pow_onnx_z_name"></a>Z</p>
@@ -15776,11 +15782,16 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="29.73%" headers="mcps1.2.6.1.4 "><p id="p_pow_onnx_z_desc"><a name="p_pow_onnx_z_desc"></a><a name="p_pow_onnx_z_desc"></a>输出张量，维度为 X 与 Y 的广播结果，格式为 ND/NCW/NCHW。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_z_limit"><a name="p_pow_onnx_z_limit"></a><a name="p_pow_onnx_z_limit"></a>规格约束：最大维度 4D；fp16/fp64/int32/int64 不支持该类型</p>
+<td class="cellrowborder" valign="top" width="23.76%" headers="mcps1.2.6.1.5 "><p id="p_pow_onnx_z_limit"><a name="p_pow_onnx_z_limit"></a><a name="p_pow_onnx_z_limit"></a>规格约束：最大维度 4D；不支持fp16/fp64/int32/int64类型</p>
 </td>
 </tr>
 </tbody>
 </table>
+
+
+# 专题<a name="ZH-CN_TOPIC_0000002562713759" id="ZH-CN_TOPIC_0000002562713759"></a>
+
+-   **[高效算子支持](#ZH-CN_TOPIC_0000002531793838)**  
 
 ## 高效算子支持<a name="ZH-CN_TOPIC_0000002531793838" id="ZH-CN_TOPIC_0000002531793838"></a>
 
