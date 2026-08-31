@@ -158,7 +158,7 @@ NPU 侧异构计算架构，提供 ATC 模型编译、AMCT 模型压缩、ACL �
             │
             ▼
         [HiDiTing烧录] 
-            │ (BurnTool)
+            │
             ▼
         [上传模型 & 运行推理] (Debugkits + AT^SAMPLE)
 
