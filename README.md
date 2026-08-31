@@ -1,7 +1,7 @@
 # HiSpark.AI 开源项目
 
 ## 项目介绍与整体架构
-HiSpark.AI 是海思嵌入式 AI 应用开发解决方案，功能覆盖模型压缩、转换、端侧推理与训练，并提供统一 AI 开发接口、IDE 插件等开发工具，以及modelzoo模型方案库等生态资源，可结合已在 [HiSpark 社区](https://gitcode.com/HiSpark) 开源的海思 SDK（如 [WS63](https://gitcode.com/HiSpark/fbb_ws63)、[HiDiTing](https://gitcode.com/HiSpark/hs-fbb)）进行 AI 应用开发。
+HiSpark.AI 是海思嵌入式 AI 应用开发解决方案，功能覆盖模型压缩、转换、端侧推理与训练，并提供统一 AI 开发接口、IDE 插件工具，以及modelzoo模型方案库等生态资源，可结合已在 [HiSpark 社区](https://gitcode.com/HiSpark) 开源的海思 SDK（如 [WS63](https://gitcode.com/HiSpark/fbb_ws63)、[HiDiTing](https://gitcode.com/HiSpark/hs-fbb)）进行 AI 应用开发。
 解决方案整体架构如下图所示：
 
 <p align="center"><img src="docs/architecture.png" alt="HiSpark.AI 组件架构" width="70%" /></p>
@@ -20,14 +20,14 @@ HiSpark.AI 是海思嵌入式 AI 应用开发解决方案，功能覆盖模型�
 
 > 作为整体解决方案的导航，本仓库只放置其中部分组件的源码（见下表）；其余组件不在此仓，获取方式见上表。
 
-| 目录     | 二级目录           | 介绍                                                                       |
-| ------ | -------------- | ------------------------------------------------------------------------ |
-| docs   |                | 帮助客户快速熟悉HiSpark.AI解决方案，存放各组件的使用指南。                                       |
-| skills |                | 存放项目专用 AI Agent Skills，当前覆盖CPU算子开发及 MindSpore Lite 开发环境搭建。               |
-| src    | adaptor        | 统一AI接口与平台适配层源码                                                           |
-| src    | samples        | 基于统一 AI 接口（ai.h）的应用示例（Samples），覆盖 CPU / NPU 平台及模型压缩、端侧训练等场景              |
-| src    | mindspore-lite | 基于RISC-V平台的AI框架，支持推理与端侧训练，用于自动生成AI推理模块代码并提供对应的RISC-V算子库（通过 submodule 引入） |
-| vendor |                | 开发者测试相关代码                                                                |
+| 目录     | 二级目录           | 介绍                                                                                              |
+| ------ | -------------- | ----------------------------------------------------------------------------------------------- |
+| docs   |                | 帮助客户快速熟悉HiSpark.AI解决方案，存放各组件的使用指南。                                                              |
+| skills |                | 存放项目专用 AI Coding Skills，当前覆盖CPU算子开发及 MindSpore Lite 开发环境搭建。若您在模型转化过程中遇到算子不支持问题，可通过该skills快速补齐算子 |
+| src    | adaptor        | 统一AI接口与平台适配层源码                                                                                  |
+| src    | samples        | 基于统一 AI 接口（ai.h）的应用示例（Samples），覆盖 CPU / NPU 平台及模型压缩、端侧训练等场景                                     |
+| src    | mindspore-lite | 基于RISC-V平台的AI框架，支持推理与端侧训练，用于自动生成AI推理模块代码并提供对应的RISC-V算子库（通过 submodule 引入）                        |
+| vendor |                | 开发者测试相关代码                                                                                       |
 
 ## 统一 API 与适配层
 

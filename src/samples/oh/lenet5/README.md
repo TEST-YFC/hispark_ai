@@ -4,9 +4,9 @@
 LeNet-5手写数字识别Sample基于Yann LeCun团队开源的MNIST数据集以及开源LeNet-5模型，为海思智能终端芯片提供适配的量化，模型转换以及端侧部署的Sample。客户可以基于此Sample为范式迁移部署相应的手写数字识别模型。
 
 支持的芯片列表如下：
-- **Hi3863**: 基于MSLite-Micro平台进行模型部署，依靠RISC-V CPU核进行AI推理。
-- **Hi3322**: 基于CANN平台进行模型部署，依靠Nano NPU核进行AI推理。
-- **Hi1156**: 基于CANN平台进行模型部署，依靠Tiny NPU核进行AI推理。
+- **WS63**: 基于 MindSpore Lite 工具链（CPU 平台）部署，依靠 RISC-V CPU 核进行 AI 推理。
+- **HiDiTing**: 基于 CANN 工具链（NPU 平台）部署，依靠 Nano NPU 核进行 AI 推理。
+- **Hi1156**: 基于 CANN 工具链（NPU 平台）部署，依靠 Tiny NPU 核进行 AI 推理。
 
 
 ## 数据处理 & 量化指南
@@ -34,7 +34,7 @@ Tips:
 ### 模型量化
 
 - **RISC-V平台量化指南**
-1. 准备MindSpore资源包
+1. 准备 MindSpore Lite 资源包
 2. 准备micro_quant.cfg文件，其中{train_data/bin}替换为实际的绝对路径：
 3. calibrate_size参数值需与{train_data/bin}中的bin文件数量一致
 ```
@@ -146,7 +146,7 @@ atc --model=./model/mnist-12.onnx --framework=5 --output=./output/mnist --input_
 - ./output/mnist.om
 
 ## RISC-V平台编译指南
-1. 获取Hi3863 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
+1. 获取WS63 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
     路径如下表示解压成功，且目录正确：
     {SDK_PATH}
         |---- application
@@ -163,7 +163,7 @@ atc --model=./model/mnist-12.onnx --framework=5 --output=./output/mnist --input_
         |---- include
 3. 获取此HiSpark.AI Samples包
 4. 根据业务修改Sample包，根据下方新版本Sample的说明
-5. 将HiSpark.AI MSLite Micro工具链编译出的libmicro_runtime.a libnet.a复制到SDK的路径下
+5. 将HiSpark.AI MindSpore Lite工具链编译出的libmicro_runtime.a libnet.a复制到SDK的路径下
         即${SDK_PATH}/middleware/utils/ai_mcu/lib目录下，若目录不存在则需要创建此目录
 6. 在命令行输入：
 ```
@@ -173,8 +173,12 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 ```
 7. 获取编译成功的fwpkg文件，在${SDK_PATH}/output/ws63/fwpkg/ws63-liteos-app/ws63-liteos-app_all.fwpkg路径下
 
+**烧录调试**
+1. 使用[BurnTool工具](https://developers.hisilicon.com/cn/developerTool)将编译生成的fwpkg镜像烧录到WS63单板
+2. 烧录成功运行后，会看到串口打印的推理结果信息
+
 ## Nano平台编译指南
-1. 获取Hi3322 SDK的代码，保存在用户指定路径
+1. 获取HiDiTing SDK的代码，保存在用户指定路径
     路径如下表示解压成功，且目录正确：
     {SDK_PATH}
         |---- application
@@ -301,14 +305,12 @@ lenet5
 │   │       └── CMakeLists.txt
 │   └── ......
 └── README.md
-- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。Hi3863 以及 Hi3322的SDK下载链接为(https://xxx)。
+- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。
 - **CMakeLists.txt**: Sample的编译框架，C代码实现。
 - **model目录**: 用于存放对应的onnx原始模型。
 - **scripts目录**: 用于存放对应的数据处理脚本，自动生成量化以及验证数据。
 - **src文件夹**: 用于存放板端推理源文件源码。
 - **README**: 此Sample的介绍。
-
-## 资源下载链接
 
 ## 常见问题
 若出现GLIBC环境不符，或者python环境不符，依次配置gcc环境，python3.11环境，将libstdc++ / libpython的动态链接库添加到LD_LIBRARY_PATH中
