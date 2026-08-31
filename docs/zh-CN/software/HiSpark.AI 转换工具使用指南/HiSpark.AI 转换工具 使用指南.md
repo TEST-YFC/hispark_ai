@@ -1638,6 +1638,8 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
 -   **[ReduceProd](#ZH-CN_TOPIC_0000003090115702)**  
 
+-   **[TransposeConv](#ZH-CN_TOPIC_0000002026082901)**  
+
 ### Conv2D<a name="ZH-CN_TOPIC_0000002326184638" id="ZH-CN_TOPIC_0000002326184638"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -7577,6 +7579,123 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
+### TransposeConv<a name="ZH-CN_TOPIC_0000002026082901" id="ZH-CN_TOPIC_0000002026082901"></a>
+
+**功能描述<a name="section2026082901a"></a>**
+
+TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NHWC。输出空间维按TFLite规格计算：SAME模式下o=i×s，即输出尺寸等于输入尺寸乘以步长；VALID模式下o=\(i-1\)×s+k，即输出尺寸等于输入尺寸减1乘以步长再加核尺寸。其中o为该维度的输出尺寸，i为该维度的输入尺寸，s为步长（上采样因子），k为卷积核在该维度的大小。
+
+**参数说明<a name="section2026082901b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>支持SAME和VALID两种padding、大于等于1的任意步长、2D空间卷积核（KH×KW，各维尺寸大于等于1，支持非方形核）以及带偏置的四输入形态；支持FP32和全量化INT8转换，权重按输出通道逐通道量化，int8模式下batch固定为1。TFLite规格本身不提供dilation、group和output_padding属性，需要这些功能时应改用ONNX格式。紧随其后的Mul（常量）会在转换期被吸收并改写权重；Relu不做融合，作为独立节点保留。
+
+**表 1**  TransposeConv参数概览
+
+<a name="table2026082901a"></a>
+<table><thead align="left"><tr id="row2026082901h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps2026082901.1"><p id="p202608290121"><a name="p202608290121"></a><a name="p202608290121"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps2026082901.2"><p id="p202608290122"><a name="p202608290122"></a><a name="p202608290122"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="mcps2026082901.3"><p id="p202608290123"><a name="p202608290123"></a><a name="p202608290123"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps2026082901.4"><p id="p202608290124"><a name="p202608290124"></a><a name="p202608290124"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps2026082901.5"><p id="p202608290125"><a name="p202608290125"></a><a name="p202608290125"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082901r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r1a"><a name="p2026082901r1a"></a><a name="p2026082901r1a"></a>output_shape</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082901.2 "><p id="p2026082901r1b"><a name="p2026082901r1b"></a><a name="p2026082901r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082901.3 "><p id="p2026082901r1c"><a name="p2026082901r1c"></a><a name="p2026082901r1c"></a>tensor (int32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r1d"><a name="p2026082901r1d"></a><a name="p2026082901r1d"></a>输出形状，为常量输入，由转换器消费。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r1e"><a name="p2026082901r1e"></a><a name="p2026082901r1e"></a>规格约束：形状为[4]，必需（TFLite规格要求）</p>
+</td>
+</tr>
+<tr id="row2026082901r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r2a"><a name="p2026082901r2a"></a><a name="p2026082901r2a"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082901.2 "><p id="p2026082901r2b"><a name="p2026082901r2b"></a><a name="p2026082901r2b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082901.3 "><p id="p2026082901r2c"><a name="p2026082901r2c"></a><a name="p2026082901r2c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r2d"><a name="p2026082901r2d"></a><a name="p2026082901r2d"></a>数据输入张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r2e"><a name="p2026082901r2e"></a><a name="p2026082901r2e"></a>规格约束：维度为4D，NHWC排布，静态shape，batch=1</p>
+</td>
+</tr>
+<tr id="row2026082901r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r3a"><a name="p2026082901r3a"></a><a name="p2026082901r3a"></a>filter</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082901.2 "><p id="p2026082901r3b"><a name="p2026082901r3b"></a><a name="p2026082901r3b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082901.3 "><p id="p2026082901r3c"><a name="p2026082901r3c"></a><a name="p2026082901r3c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r3d"><a name="p2026082901r3d"></a><a name="p2026082901r3d"></a>权重常量，布局为[输出通道, 核高, 核宽, 输入通道]。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r3e"><a name="p2026082901r3e"></a><a name="p2026082901r3e"></a>规格约束：维度为4D，权重布局由转换器自动重排</p>
+</td>
+</tr>
+<tr id="row2026082901r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r4a"><a name="p2026082901r4a"></a><a name="p2026082901r4a"></a>bias</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082901.2 "><p id="p2026082901r4b"><a name="p2026082901r4b"></a><a name="p2026082901r4b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082901.3 "><p id="p2026082901r4c"><a name="p2026082901r4c"></a><a name="p2026082901r4c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r4d"><a name="p2026082901r4d"></a><a name="p2026082901r4d"></a>可选偏置输入，默认无。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r4e"><a name="p2026082901r4e"></a><a name="p2026082901r4e"></a>规格约束：形状为[OC]，存在时节点为四输入</p>
+</td>
+</tr>
+<tr id="row2026082901r5"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r5a"><a name="p2026082901r5a"></a><a name="p2026082901r5a"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082901.2 "><p id="p2026082901r5b"><a name="p2026082901r5b"></a><a name="p2026082901r5b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082901.3 "><p id="p2026082901r5c"><a name="p2026082901r5c"></a><a name="p2026082901r5c"></a>tensor (float32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r5d"><a name="p2026082901r5d"></a><a name="p2026082901r5d"></a>转置卷积输出张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r5e"><a name="p2026082901r5e"></a><a name="p2026082901r5e"></a>规格约束：形状为[N, oH, oW, OC]，NHWC排布，oH/oW按功能描述中的公式计算；支持FP32和全量化INT8转换</p>
+</td>
+</tr>
+<tr id="row2026082901r6"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r6a"><a name="p2026082901r6a"></a><a name="p2026082901r6a"></a>padding</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082901.2 "><p id="p2026082901r6b"><a name="p2026082901r6b"></a><a name="p2026082901r6b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082901.3 "><p id="p2026082901r6c"><a name="p2026082901r6c"></a><a name="p2026082901r6c"></a>enum</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r6d"><a name="p2026082901r6d"></a><a name="p2026082901r6d"></a>填充模式。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r6e"><a name="p2026082901r6e"></a><a name="p2026082901r6e"></a>配置范围：SAME（自动补边）、VALID（不补边，以已计算为准）；必需属性</p>
+</td>
+</tr>
+<tr id="row2026082901r7"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r7a"><a name="p2026082901r7a"></a><a name="p2026082901r7a"></a>stride_h/stride_w</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082901.2 "><p id="p2026082901r7b"><a name="p2026082901r7b"></a><a name="p2026082901r7b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082901.3 "><p id="p2026082901r7c"><a name="p2026082901r7c"></a><a name="p2026082901r7c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r7d"><a name="p2026082901r7d"></a><a name="p2026082901r7d"></a>高、宽方向的空间步长。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r7e"><a name="p2026082901r7e"></a><a name="p2026082901r7e"></a>规格约束：每个大于等于1；必需属性</p>
+</td>
+</tr>
+<tr id="row2026082901r8"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082901.1 "><p id="p2026082901r8a"><a name="p2026082901r8a"></a><a name="p2026082901r8a"></a>fused_activation_function</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082901.2 "><p id="p2026082901r8b"><a name="p2026082901r8b"></a><a name="p2026082901r8b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082901.3 "><p id="p2026082901r8c"><a name="p2026082901r8c"></a><a name="p2026082901r8c"></a>enum</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082901.4 "><p id="p2026082901r8d"><a name="p2026082901r8d"></a><a name="p2026082901r8d"></a>融合激活函数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082901.5 "><p id="p2026082901r8e"><a name="p2026082901r8e"></a><a name="p2026082901r8e"></a>本实现不启用</p>
+</td>
+</tr>
+</tbody>
+</table>
+
 ## ONNX算子规格参考<a name="ZH-CN_TOPIC_0000002320738138" id="ZH-CN_TOPIC_0000002320738138"></a>
 
 -   **[Conv](#ZH-CN_TOPIC_0000002326152940)**  
@@ -7781,6 +7900,10 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 -   **[Softplus](#ZH-CN_TOPIC_0000002026082403)**  
 
 -   **[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)**  
+
+-   **[ConvTranspose](#ZH-CN_TOPIC_0000002026082902)**  
+
+-   **[RNN](#ZH-CN_TOPIC_0000002026082903)**  
 
 ### Conv<a name="ZH-CN_TOPIC_0000002326152940" id="ZH-CN_TOPIC_0000002326152940"></a>
 
@@ -15193,6 +15316,365 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tr>
 </tbody>
 </table>
+
+### ConvTranspose<a name="ZH-CN_TOPIC_0000002026082902" id="ZH-CN_TOPIC_0000002026082902"></a>
+
+**功能描述<a name="section2026082902a"></a>**
+
+转置卷积（反卷积）算子，用于上采样。输出空间维按ONNX规格公式计算：output_shape[i]=stride[i]×\(input_size[i]-1\)+output_padding[i]+\(\(kernel_shape[i]-1\)×dilations[i]+1\)-pads[start_i]-pads[end_i]。
+
+**参数说明<a name="section2026082902b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>支持group=1的标准反卷积，包括任意对称或非对称pads、步长 ≥ 1、膨胀 ≥ 1、auto_pad、output_padding以及可选偏置；支持FP32和全量化INT8转换，权重按输出通道逐通道量化。不支持output_shape属性、group大于1、int8模式下batch大于1以及非4D输入。
+
+**表 1**  ConvTranspose参数概览
+
+<a name="table2026082902a"></a>
+<table><thead align="left"><tr id="row2026082902h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps2026082902.1"><p id="p202608290221"><a name="p202608290221"></a><a name="p202608290221"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps2026082902.2"><p id="p202608290222"><a name="p202608290222"></a><a name="p202608290222"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="mcps2026082902.3"><p id="p202608290223"><a name="p202608290223"></a><a name="p202608290223"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps2026082902.4"><p id="p202608290224"><a name="p202608290224"></a><a name="p202608290224"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps2026082902.5"><p id="p202608290225"><a name="p202608290225"></a><a name="p202608290225"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082902r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r1a"><a name="p2026082902r1a"></a><a name="p2026082902r1a"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r1b"><a name="p2026082902r1b"></a><a name="p2026082902r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r1c"><a name="p2026082902r1c"></a><a name="p2026082902r1c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r1d"><a name="p2026082902r1d"></a><a name="p2026082902r1d"></a>数据输入张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r1e"><a name="p2026082902r1e"></a><a name="p2026082902r1e"></a>规格约束：维度为4D，NCHW排布，静态shape，batch=1</p>
+</td>
+</tr>
+<tr id="row2026082902r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r2a"><a name="p2026082902r2a"></a><a name="p2026082902r2a"></a>W</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r2b"><a name="p2026082902r2b"></a><a name="p2026082902r2b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r2c"><a name="p2026082902r2c"></a><a name="p2026082902r2c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r2d"><a name="p2026082902r2d"></a><a name="p2026082902r2d"></a>权重initializer。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r2e"><a name="p2026082902r2e"></a><a name="p2026082902r2e"></a>规格约束：形状为[C_in, C_out/group, kH, kW]</p>
+</td>
+</tr>
+<tr id="row2026082902r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r3a"><a name="p2026082902r3a"></a><a name="p2026082902r3a"></a>B</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r3b"><a name="p2026082902r3b"></a><a name="p2026082902r3b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r3c"><a name="p2026082902r3c"></a><a name="p2026082902r3c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r3d"><a name="p2026082902r3d"></a><a name="p2026082902r3d"></a>可选偏置输入，默认无。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r3e"><a name="p2026082902r3e"></a><a name="p2026082902r3e"></a>规格约束：形状为[C_out]，存在时节点为三输入</p>
+</td>
+</tr>
+<tr id="row2026082902r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r4a"><a name="p2026082902r4a"></a><a name="p2026082902r4a"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r4b"><a name="p2026082902r4b"></a><a name="p2026082902r4b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r4c"><a name="p2026082902r4c"></a><a name="p2026082902r4c"></a>tensor (float32/int8)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r4d"><a name="p2026082902r4d"></a><a name="p2026082902r4d"></a>转置卷积输出张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r4e"><a name="p2026082902r4e"></a><a name="p2026082902r4e"></a>规格约束：形状为[N, C_out, oH, oW]，oH/oW按功能描述中的公式计算；支持FP32和全量化INT8转换</p>
+</td>
+</tr>
+<tr id="row2026082902r5"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r5a"><a name="p2026082902r5a"></a><a name="p2026082902r5a"></a>auto_pad</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r5b"><a name="p2026082902r5b"></a><a name="p2026082902r5b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r5c"><a name="p2026082902r5c"></a><a name="p2026082902r5c"></a>string</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r5d"><a name="p2026082902r5d"></a><a name="p2026082902r5d"></a>指定padding的类型。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r5e"><a name="p2026082902r5e"></a><a name="p2026082902r5e"></a>配置范围：NOTSET、VALID、SAME_UPPER、SAME_LOWER；默认NOTSET；非NOTSET时不支持同时配置pads</p>
+</td>
+</tr>
+<tr id="row2026082902r6"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r6a"><a name="p2026082902r6a"></a><a name="p2026082902r6a"></a>dilations</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r6b"><a name="p2026082902r6b"></a><a name="p2026082902r6b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r6c"><a name="p2026082902r6c"></a><a name="p2026082902r6c"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r6d"><a name="p2026082902r6d"></a><a name="p2026082902r6d"></a>卷积核在各空间轴上的扩张系数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r6e"><a name="p2026082902r6e"></a><a name="p2026082902r6e"></a>规格约束：包含2个元素，每个元素大于等于1；默认[1, 1]</p>
+</td>
+</tr>
+<tr id="row2026082902r7"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r7a"><a name="p2026082902r7a"></a><a name="p2026082902r7a"></a>group</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r7b"><a name="p2026082902r7b"></a><a name="p2026082902r7b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r7c"><a name="p2026082902r7c"></a><a name="p2026082902r7c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r7d"><a name="p2026082902r7d"></a><a name="p2026082902r7d"></a>在输入输出channel上划分的分组个数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r7e"><a name="p2026082902r7e"></a><a name="p2026082902r7e"></a>规格约束：默认1；group大于1（含深度反卷积）不支持</p>
+</td>
+</tr>
+<tr id="row2026082902r8"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r8a"><a name="p2026082902r8a"></a><a name="p2026082902r8a"></a>kernel_shape</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r8b"><a name="p2026082902r8b"></a><a name="p2026082902r8b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r8c"><a name="p2026082902r8c"></a><a name="p2026082902r8c"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r8d"><a name="p2026082902r8d"></a><a name="p2026082902r8d"></a>卷积核的空间尺寸。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r8e"><a name="p2026082902r8e"></a><a name="p2026082902r8e"></a>规格约束：包含2个元素，配置时必须与W的空间维度一致；默认从W推导</p>
+</td>
+</tr>
+<tr id="row2026082902r9"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r9a"><a name="p2026082902r9a"></a><a name="p2026082902r9a"></a>output_padding</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r9b"><a name="p2026082902r9b"></a><a name="p2026082902r9b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r9c"><a name="p2026082902r9c"></a><a name="p2026082902r9c"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r9d"><a name="p2026082902r9d"></a><a name="p2026082902r9d"></a>输出附加尺寸，用于微调输出大小。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r9e"><a name="p2026082902r9e"></a><a name="p2026082902r9e"></a>规格约束：包含2个元素，每个元素小于对应维度的stride；默认[0, 0]</p>
+</td>
+</tr>
+<tr id="row2026082902r10"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r10a"><a name="p2026082902r10a"></a><a name="p2026082902r10a"></a>output_shape</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r10b"><a name="p2026082902r10b"></a><a name="p2026082902r10b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r10c"><a name="p2026082902r10c"></a><a name="p2026082902r10c"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r10d"><a name="p2026082902r10d"></a><a name="p2026082902r10d"></a>显式输出形状。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r10e"><a name="p2026082902r10e"></a><a name="p2026082902r10e"></a>规格约束：不支持，解析阶段直接报错；应改用显式pads导出模型</p>
+</td>
+</tr>
+<tr id="row2026082902r11"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r11a"><a name="p2026082902r11a"></a><a name="p2026082902r11a"></a>pads</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r11b"><a name="p2026082902r11b"></a><a name="p2026082902r11b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r11c"><a name="p2026082902r11c"></a><a name="p2026082902r11c"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r11d"><a name="p2026082902r11d"></a><a name="p2026082902r11d"></a>输入空间维度各轴前后的填充量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r11e"><a name="p2026082902r11e"></a><a name="p2026082902r11e"></a>规格约束：包含4个非负元素[top, left, bottom, right]，支持任意对称或非对称补边；默认[0, 0, 0, 0]</p>
+</td>
+</tr>
+<tr id="row2026082902r12"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082902.1 "><p id="p2026082902r12a"><a name="p2026082902r12a"></a><a name="p2026082902r12a"></a>strides</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082902.2 "><p id="p2026082902r12b"><a name="p2026082902r12b"></a><a name="p2026082902r12b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082902.3 "><p id="p2026082902r12c"><a name="p2026082902r12c"></a><a name="p2026082902r12c"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082902.4 "><p id="p2026082902r12d"><a name="p2026082902r12d"></a><a name="p2026082902r12d"></a>卷积核在各空间轴上的移动步长。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082902.5 "><p id="p2026082902r12e"><a name="p2026082902r12e"></a><a name="p2026082902r12e"></a>规格约束：包含2个元素，每个元素大于等于1；默认[1, 1]</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### RNN<a name="ZH-CN_TOPIC_0000002026082903" id="ZH-CN_TOPIC_0000002026082903"></a>
+
+**功能描述<a name="section2026082903a"></a>**
+
+循环神经网络算子，计算一层简单循环网络，对时间步t逐拍更新隐状态并输出：H<sub>t</sub>=activation\(X<sub>t</sub>·W<sup>T</sup>+H<sub>t-1</sub>·R<sup>T</sup>+Wb+Rb\)。其中X<sub>t</sub>为当前时间步输入，W为输入权重，R为循环权重，Wb/Rb为对应偏置（可省略，缺省为零）；clip属性存在时在激活之前把括号内求和值裁剪到[-clip, +clip]。每个方向维护独立的权重与隐状态。
+
+**参数说明<a name="section2026082903b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>模型数据类型仅支持float32，部署路径为FP32与全量化INT8。必须同时输出Y与Y_h。仅支持layout=0（时间步在前的布局），layout=1（批在前的布局）不支持。TFLite无对应builtin算子，不支持转换。
+
+**表 1**  RNN参数概览
+
+<a name="table2026082903a"></a>
+<table><thead align="left"><tr id="row2026082903h"><th class="cellrowborder" valign="top" width="17.68%" id="mcps2026082903.1"><p id="p202608290321"><a name="p202608290321"></a><a name="p202608290321"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.33%" id="mcps2026082903.2"><p id="p202608290322"><a name="p202608290322"></a><a name="p202608290322"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.49%" id="mcps2026082903.3"><p id="p202608290323"><a name="p202608290323"></a><a name="p202608290323"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.39%" id="mcps2026082903.4"><p id="p202608290324"><a name="p202608290324"></a><a name="p202608290324"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.11%" id="mcps2026082903.5"><p id="p202608290325"><a name="p202608290325"></a><a name="p202608290325"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row2026082903r1"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r1a"><a name="p2026082903r1a"></a><a name="p2026082903r1a"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r1b"><a name="p2026082903r1b"></a><a name="p2026082903r1b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r1c"><a name="p2026082903r1c"></a><a name="p2026082903r1c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r1d"><a name="p2026082903r1d"></a><a name="p2026082903r1d"></a>输入序列张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r1e"><a name="p2026082903r1e"></a><a name="p2026082903r1e"></a>规格约束：layout=0时形状为[seq, batch, input]</p>
+</td>
+</tr>
+<tr id="row2026082903r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r2a"><a name="p2026082903r2a"></a><a name="p2026082903r2a"></a>W</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r2b"><a name="p2026082903r2b"></a><a name="p2026082903r2b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r2c"><a name="p2026082903r2c"></a><a name="p2026082903r2c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r2d"><a name="p2026082903r2d"></a><a name="p2026082903r2d"></a>输入权重。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r2e"><a name="p2026082903r2e"></a><a name="p2026082903r2e"></a>规格约束：形状为[direction, hidden, input]，须为常量</p>
+</td>
+</tr>
+<tr id="row2026082903r3"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r3a"><a name="p2026082903r3a"></a><a name="p2026082903r3a"></a>R</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r3b"><a name="p2026082903r3b"></a><a name="p2026082903r3b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r3c"><a name="p2026082903r3c"></a><a name="p2026082903r3c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r3d"><a name="p2026082903r3d"></a><a name="p2026082903r3d"></a>循环权重。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r3e"><a name="p2026082903r3e"></a><a name="p2026082903r3e"></a>规格约束：形状为[direction, hidden, hidden]，须为常量</p>
+</td>
+</tr>
+<tr id="row2026082903r4"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r4a"><a name="p2026082903r4a"></a><a name="p2026082903r4a"></a>B</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r4b"><a name="p2026082903r4b"></a><a name="p2026082903r4b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r4c"><a name="p2026082903r4c"></a><a name="p2026082903r4c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r4d"><a name="p2026082903r4d"></a><a name="p2026082903r4d"></a>可选偏置输入，默认无；前hidden个元素为Wb，后hidden个元素为Rb。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r4e"><a name="p2026082903r4e"></a><a name="p2026082903r4e"></a>规格约束：形状为[direction, 2*hidden]，缺省为零</p>
+</td>
+</tr>
+<tr id="row2026082903r5"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r5a"><a name="p2026082903r5a"></a><a name="p2026082903r5a"></a>sequence_lens</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r5b"><a name="p2026082903r5b"></a><a name="p2026082903r5b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r5c"><a name="p2026082903r5c"></a><a name="p2026082903r5c"></a>tensor (int32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r5d"><a name="p2026082903r5d"></a><a name="p2026082903r5d"></a>可选输入，每个批次的有效时间步，默认无。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r5e"><a name="p2026082903r5e"></a><a name="p2026082903r5e"></a>规格约束：形状为[batch]，规格强制int32</p>
+</td>
+</tr>
+<tr id="row2026082903r6"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r6a"><a name="p2026082903r6a"></a><a name="p2026082903r6a"></a>initial_h</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r6b"><a name="p2026082903r6b"></a><a name="p2026082903r6b"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r6c"><a name="p2026082903r6c"></a><a name="p2026082903r6c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r6d"><a name="p2026082903r6d"></a><a name="p2026082903r6d"></a>可选输入，初始隐状态，默认无。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r6e"><a name="p2026082903r6e"></a><a name="p2026082903r6e"></a>规格约束：layout=0时形状为[direction, batch, hidden]</p>
+</td>
+</tr>
+<tr id="row2026082903r7"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r7a"><a name="p2026082903r7a"></a><a name="p2026082903r7a"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r7b"><a name="p2026082903r7b"></a><a name="p2026082903r7b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r7c"><a name="p2026082903r7c"></a><a name="p2026082903r7c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r7d"><a name="p2026082903r7d"></a><a name="p2026082903r7d"></a>每个有效时间步的隐状态。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r7e"><a name="p2026082903r7e"></a><a name="p2026082903r7e"></a>规格约束：layout=0时形状为[seq, direction, batch, hidden]；无效时间步为0</p>
+</td>
+</tr>
+<tr id="row2026082903r8"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r8a"><a name="p2026082903r8a"></a><a name="p2026082903r8a"></a>Y_h</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r8b"><a name="p2026082903r8b"></a><a name="p2026082903r8b"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r8c"><a name="p2026082903r8c"></a><a name="p2026082903r8c"></a>tensor (float32)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r8d"><a name="p2026082903r8d"></a><a name="p2026082903r8d"></a>每个批次最后一个有效时间步的隐状态。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r8e"><a name="p2026082903r8e"></a><a name="p2026082903r8e"></a>规格约束：layout=0时形状为[direction, batch, hidden]；零长度批次为0；必须与Y同时输出</p>
+</td>
+</tr>
+<tr id="row2026082903r9"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r9a"><a name="p2026082903r9a"></a><a name="p2026082903r9a"></a>direction</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r9b"><a name="p2026082903r9b"></a><a name="p2026082903r9b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r9c"><a name="p2026082903r9c"></a><a name="p2026082903r9c"></a>string</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r9d"><a name="p2026082903r9d"></a><a name="p2026082903r9d"></a>RNN的方向。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r9e"><a name="p2026082903r9e"></a><a name="p2026082903r9e"></a>配置范围：forward（正向）、reverse（反向）、bidirectional（双向）；默认forward。双向时两个方向各自使用独立的权重和隐状态，结果沿方向维拼接</p>
+</td>
+</tr>
+<tr id="row2026082903r10"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r10a"><a name="p2026082903r10a"></a><a name="p2026082903r10a"></a>hidden_size</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r10b"><a name="p2026082903r10b"></a><a name="p2026082903r10b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r10c"><a name="p2026082903r10c"></a><a name="p2026082903r10c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r10d"><a name="p2026082903r10d"></a><a name="p2026082903r10d"></a>隐状态维度。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r10e"><a name="p2026082903r10e"></a><a name="p2026082903r10e"></a>规格约束：必需属性，须与W/R形状一致</p>
+</td>
+</tr>
+<tr id="row2026082903r11"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r11a"><a name="p2026082903r11a"></a><a name="p2026082903r11a"></a>layout</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r11b"><a name="p2026082903r11b"></a><a name="p2026082903r11b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r11c"><a name="p2026082903r11c"></a><a name="p2026082903r11c"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r11d"><a name="p2026082903r11d"></a><a name="p2026082903r11d"></a>输入输出的布局。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r11e"><a name="p2026082903r11e"></a><a name="p2026082903r11e"></a>配置范围：0（时间步主序）、1（批主序）；默认0；仅支持0</p>
+</td>
+</tr>
+<tr id="row2026082903r12"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r12a"><a name="p2026082903r12a"></a><a name="p2026082903r12a"></a>clip</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r12b"><a name="p2026082903r12b"></a><a name="p2026082903r12b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r12c"><a name="p2026082903r12c"></a><a name="p2026082903r12c"></a>float</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r12d"><a name="p2026082903r12d"></a><a name="p2026082903r12d"></a>激活前的对称裁剪值。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r12e"><a name="p2026082903r12e"></a><a name="p2026082903r12e"></a>规格约束：大于等于0时生效，默认不裁剪</p>
+</td>
+</tr>
+<tr id="row2026082903r13"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r13a"><a name="p2026082903r13a"></a><a name="p2026082903r13a"></a>activations</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r13b"><a name="p2026082903r13b"></a><a name="p2026082903r13b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r13c"><a name="p2026082903r13c"></a><a name="p2026082903r13c"></a>list(string)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r13d"><a name="p2026082903r13d"></a><a name="p2026082903r13d"></a>每个方向的激活函数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r13e"><a name="p2026082903r13e"></a><a name="p2026082903r13e"></a>配置范围：Tanh、Relu、Sigmoid、Affine、LeakyRelu、ThresholdedRelu、ScaledTanh、HardSigmoid、Elu、Softsign、Softplus；默认Tanh</p>
+</td>
+</tr>
+<tr id="row2026082903r14"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r14a"><a name="p2026082903r14a"></a><a name="p2026082903r14a"></a>activation_alpha</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r14b"><a name="p2026082903r14b"></a><a name="p2026082903r14b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r14c"><a name="p2026082903r14c"></a><a name="p2026082903r14c"></a>list(float)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r14d"><a name="p2026082903r14d"></a><a name="p2026082903r14d"></a>带参数激活函数的alpha，每方向一个。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r14e"><a name="p2026082903r14e"></a><a name="p2026082903r14e"></a>用于Affine、LeakyRelu、ThresholdedRelu、ScaledTanh、Elu等；未显式给出时按ONNX各激活默认值补齐</p>
+</td>
+</tr>
+<tr id="row2026082903r15"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps2026082903.1 "><p id="p2026082903r15a"><a name="p2026082903r15a"></a><a name="p2026082903r15a"></a>activation_beta</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.33%" headers="mcps2026082903.2 "><p id="p2026082903r15b"><a name="p2026082903r15b"></a><a name="p2026082903r15b"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.49%" headers="mcps2026082903.3 "><p id="p2026082903r15c"><a name="p2026082903r15c"></a><a name="p2026082903r15c"></a>list(float)</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.39%" headers="mcps2026082903.4 "><p id="p2026082903r15d"><a name="p2026082903r15d"></a><a name="p2026082903r15d"></a>带参数激活函数的beta，每方向一个。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps2026082903.5 "><p id="p2026082903r15e"><a name="p2026082903r15e"></a><a name="p2026082903r15e"></a>用于Affine、ScaledTanh、HardSigmoid；未显式给出时按ONNX各激活默认值补齐</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+# 专题<a name="ZH-CN_TOPIC_0000002562713759" id="ZH-CN_TOPIC_0000002562713759"></a>
+
+-   **[高效算子支持](#ZH-CN_TOPIC_0000002531793838)**  
 
 ### Neg<a name="ZH-CN_TOPIC_0000002900000002" id="ZH-CN_TOPIC_0000002900000002"></a>
 
