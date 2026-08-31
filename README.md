@@ -1,7 +1,7 @@
 # HiSpark.AI 开源项目
 
 ## 项目介绍与整体架构
-HiSpark.AI是海思嵌入式AI应用开发解决方案，提供模型压缩、转换、推理等功能，可结合已在 [HiSpark 社区](https://gitcode.com/HiSpark) 开源的海思 SDK（如 [WS63](https://gitcode.com/HiSpark/fbb_ws63)、[HiDiTing](https://gitcode.com/HiSpark/hs-fbb)）进行 AI 应用开发。
+HiSpark.AI 是海思嵌入式 AI 应用开发解决方案，功能覆盖模型压缩、转换、端侧推理与训练，并提供统一 AI 开发接口、IDE 插件等开发工具，以及modelzoo模型方案库等生态资源，可结合已在 [HiSpark 社区](https://gitcode.com/HiSpark) 开源的海思 SDK（如 [WS63](https://gitcode.com/HiSpark/fbb_ws63)、[HiDiTing](https://gitcode.com/HiSpark/hs-fbb)）进行 AI 应用开发。
 解决方案整体架构如下图所示：
 
 <p align="center"><img src="docs/architecture.png" alt="HiSpark.AI 组件架构" width="70%" /></p>
