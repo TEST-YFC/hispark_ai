@@ -400,7 +400,6 @@ def generating_dataset():
         print(f"{error_info} {e.stderr}")
         raise
 
-
 def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, result_path='archives', build_type='gate', build_os='all'):
     """
     移动和复制压缩包到指定目录
