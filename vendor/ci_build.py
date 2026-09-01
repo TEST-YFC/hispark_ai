@@ -125,7 +125,6 @@ def prepare_dataset(hiSpark_ai_path):
     lenet5_target = Path(hiSpark_ai_path) / "src/samples/oh/lenet5/data/MNIST/raw"
     lenet5_source = Path(data_dir) / "lenet5"
 
-
     lenet5_target.mkdir(parents=True, exist_ok=True)
     
     if lenet5_source.exists():
