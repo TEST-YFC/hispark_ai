@@ -15672,9 +15672,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-# 专题<a name="ZH-CN_TOPIC_0000002562713759" id="ZH-CN_TOPIC_0000002562713759"></a>
 
--   **[高效算子支持](#ZH-CN_TOPIC_0000002531793838)**  
 
 ### Neg<a name="ZH-CN_TOPIC_0000002900000002" id="ZH-CN_TOPIC_0000002900000002"></a>
 
