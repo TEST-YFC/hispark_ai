@@ -7788,6 +7788,8 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 -   **[Mod](#ZH-CN_TOPIC_0000002600000004)**  
 
+-   **[BitShift](#ZH-CN_TOPIC_0000003090100001)**
+
 -   **[Clip](#ZH-CN_TOPIC_0000002552815891)**  
 
 -   **[ReduceMax](#ZH-CN_TOPIC_0000002557401349)**  
@@ -7795,6 +7797,8 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 -   **[ReduceMin](#ZH-CN_TOPIC_0000002526441430)**  
 
 -   **[ReduceSum](#ZH-CN_TOPIC_0000002557481311)**  
+
+-   **[ReduceSumSquare](#ZH-CN_TOPIC_0000003090100002)**
 
 -   **[ReduceMean](#ZH-CN_TOPIC_0000002526281478)**  
 
@@ -11418,6 +11422,79 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </tbody>
 </table>
 
+### BitShift<a name="ZH-CN_TOPIC_0000003090100001" id="ZH-CN_TOPIC_0000003090100001"></a>
+
+**功能描述<a name="section3090100001a"></a>**
+
+BitShift以X作为被移位数据、Y作为移位位数，逐元素执行无符号整数左移或右移运算，位移方向由direction属性指定。支持转换ONNX Opset 18及以上版本中的BitShift算子。
+
+**参数说明<a name="section3090100001b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>BitShift算子不支持量化，按uint8、uint16、uint32或uint64数据类型执行位移运算。
+
+**表 1**  BitShift参数概览
+
+<a name="table3090100001"></a>
+<table><thead align="left"><tr id="row3090100001"><th class="cellrowborder" valign="top" width="13.22%" id="bitshift1"><p id="p30901000011"><a name="p30901000011"></a><a name="p30901000011"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.01%" id="bitshift2"><p id="p30901000012"><a name="p30901000012"></a><a name="p30901000012"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="12.38%" id="bitshift3"><p id="p30901000013"><a name="p30901000013"></a><a name="p30901000013"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="32.93%" id="bitshift4"><p id="p30901000014"><a name="p30901000014"></a><a name="p30901000014"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="28.46%" id="bitshift5"><p id="p30901000015"><a name="p30901000015"></a><a name="p30901000015"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row3090100002"><td class="cellrowborder" valign="top" width="13.22%" headers="bitshift1"><p id="p30901000021"><a name="p30901000021"></a><a name="p30901000021"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.01%" headers="bitshift2"><p id="p30901000022"><a name="p30901000022"></a><a name="p30901000022"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="bitshift3"><p id="p30901000023"><a name="p30901000023"></a><a name="p30901000023"></a>tensor（uint8/uint16/uint32/uint64）</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="bitshift4"><p id="p30901000024"><a name="p30901000024"></a><a name="p30901000024"></a>被移位的输入张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="bitshift5"><p id="p30901000025"><a name="p30901000025"></a><a name="p30901000025"></a>必须为静态shape，rank小于16，数据类型必须与Y一致。shape必须与Y满足多方向广播规则。</p>
+</td>
+</tr>
+<tr id="row3090100003"><td class="cellrowborder" valign="top" width="13.22%" headers="bitshift1"><p id="p30901000031"><a name="p30901000031"></a><a name="p30901000031"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.01%" headers="bitshift2"><p id="p30901000032"><a name="p30901000032"></a><a name="p30901000032"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="bitshift3"><p id="p30901000033"><a name="p30901000033"></a><a name="p30901000033"></a>tensor（uint8/uint16/uint32/uint64）</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="bitshift4"><p id="p30901000034"><a name="p30901000034"></a><a name="p30901000034"></a>移位位数输入张量，每个元素表示对应数据需要移动的位数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="bitshift5"><p id="p30901000035"><a name="p30901000035"></a><a name="p30901000035"></a>必须为静态shape，rank小于16，数据类型必须与X一致。shape必须与X满足多方向广播规则。移位位数大于或等于数据类型位宽时，对应输出为0。</p>
+</td>
+</tr>
+<tr id="row3090100004"><td class="cellrowborder" valign="top" width="13.22%" headers="bitshift1"><p id="p30901000041"><a name="p30901000041"></a><a name="p30901000041"></a>Z</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.01%" headers="bitshift2"><p id="p30901000042"><a name="p30901000042"></a><a name="p30901000042"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="bitshift3"><p id="p30901000043"><a name="p30901000043"></a><a name="p30901000043"></a>tensor（uint8/uint16/uint32/uint64）</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="bitshift4"><p id="p30901000044"><a name="p30901000044"></a><a name="p30901000044"></a>逐元素位移后的输出张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="bitshift5"><p id="p30901000045"><a name="p30901000045"></a><a name="p30901000045"></a>数据类型与X、Y一致，shape为X和Y广播后的shape。</p>
+</td>
+</tr>
+<tr id="row3090100005"><td class="cellrowborder" valign="top" width="13.22%" headers="bitshift1"><p id="p30901000051"><a name="p30901000051"></a><a name="p30901000051"></a>direction</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.01%" headers="bitshift2"><p id="p30901000052"><a name="p30901000052"></a><a name="p30901000052"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="bitshift3"><p id="p30901000053"><a name="p30901000053"></a><a name="p30901000053"></a>string</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="bitshift4"><p id="p30901000054"><a name="p30901000054"></a><a name="p30901000054"></a>指定位移方向。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="bitshift5"><p id="p30901000055"><a name="p30901000055"></a><a name="p30901000055"></a>必选。LEFT表示左移，RIGHT表示右移。</p>
+</td>
+</tr>
+</tbody>
+</table>
+
 
 ### Clip<a name="ZH-CN_TOPIC_0000002552815891" id="ZH-CN_TOPIC_0000002552815891"></a>
 
@@ -11738,6 +11815,90 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 |---|---|---|
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；axes必须为int32常量，允许为空表示全维归约，axes必须合法且唯一，输出shape必须匹配keep_dims |
+
+### ReduceSumSquare<a name="ZH-CN_TOPIC_0000003090100002" id="ZH-CN_TOPIC_0000003090100002"></a>
+
+**功能描述<a name="section3090100002a"></a>**
+
+ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度执行求和归约。支持转换ONNX Opset 18及以上版本中的ReduceSumSquare算子。
+
+**参数说明<a name="section3090100002b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>ReduceSumSquare算子支持非量化FP32推理和全量化INT8推理。
+
+**表 1**  ReduceSumSquare参数概览
+
+<a name="table3090100010"></a>
+<table><thead align="left"><tr id="row3090100010"><th class="cellrowborder" valign="top" width="13.58%" id="reducesumsquare1"><p id="p30901000101"><a name="p30901000101"></a><a name="p30901000101"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="12.65%" id="reducesumsquare2"><p id="p30901000102"><a name="p30901000102"></a><a name="p30901000102"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="12.38%" id="reducesumsquare3"><p id="p30901000103"><a name="p30901000103"></a><a name="p30901000103"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="32.93%" id="reducesumsquare4"><p id="p30901000104"><a name="p30901000104"></a><a name="p30901000104"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="28.46%" id="reducesumsquare5"><p id="p30901000105"><a name="p30901000105"></a><a name="p30901000105"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row3090100011"><td class="cellrowborder" valign="top" width="13.58%" headers="reducesumsquare1"><p id="p30901000111"><a name="p30901000111"></a><a name="p30901000111"></a>data</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.65%" headers="reducesumsquare2"><p id="p30901000112"><a name="p30901000112"></a><a name="p30901000112"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="reducesumsquare3"><p id="p30901000113"><a name="p30901000113"></a><a name="p30901000113"></a>tensor（float32）</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="reducesumsquare4"><p id="p30901000114"><a name="p30901000114"></a><a name="p30901000114"></a>参与平方和归约的输入张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="reducesumsquare5"><p id="p30901000115"><a name="p30901000115"></a><a name="p30901000115"></a>必须为静态shape，rank不超过16。全量化INT8推理时，归约轴数量必须小于16。</p>
+</td>
+</tr>
+<tr id="row3090100012"><td class="cellrowborder" valign="top" width="13.58%" headers="reducesumsquare1"><p id="p30901000121"><a name="p30901000121"></a><a name="p30901000121"></a>axes</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.65%" headers="reducesumsquare2"><p id="p30901000122"><a name="p30901000122"></a><a name="p30901000122"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="reducesumsquare3"><p id="p30901000123"><a name="p30901000123"></a><a name="p30901000123"></a>tensor（int64）</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="reducesumsquare4"><p id="p30901000124"><a name="p30901000124"></a><a name="p30901000124"></a>指定执行平方和归约的轴。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="reducesumsquare5"><p id="p30901000125"><a name="p30901000125"></a><a name="p30901000125"></a>可选的第二个输入，必须为一维离线常量，各轴不能重复。支持单轴、多轴和负轴，每个元素的取值范围为[-rank(data), rank(data))。负轴表示从末维开始计数；缺省或为空时的行为由noop_with_empty_axes确定。</p>
+</td>
+</tr>
+<tr id="row3090100013"><td class="cellrowborder" valign="top" width="13.58%" headers="reducesumsquare1"><p id="p30901000131"><a name="p30901000131"></a><a name="p30901000131"></a>reduced</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.65%" headers="reducesumsquare2"><p id="p30901000132"><a name="p30901000132"></a><a name="p30901000132"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="reducesumsquare3"><p id="p30901000133"><a name="p30901000133"></a><a name="p30901000133"></a>tensor（float32）</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="reducesumsquare4"><p id="p30901000134"><a name="p30901000134"></a><a name="p30901000134"></a>平方和归约后的输出张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="reducesumsquare5"><p id="p30901000135"><a name="p30901000135"></a><a name="p30901000135"></a>输出shape由data、axes和keepdims共同确定。</p>
+</td>
+</tr>
+<tr id="row3090100014"><td class="cellrowborder" valign="top" width="13.58%" headers="reducesumsquare1"><p id="p30901000141"><a name="p30901000141"></a><a name="p30901000141"></a>keepdims</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.65%" headers="reducesumsquare2"><p id="p30901000142"><a name="p30901000142"></a><a name="p30901000142"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="reducesumsquare3"><p id="p30901000143"><a name="p30901000143"></a><a name="p30901000143"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="reducesumsquare4"><p id="p30901000144"><a name="p30901000144"></a><a name="p30901000144"></a>是否保留被归约的维度。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="reducesumsquare5"><p id="p30901000145"><a name="p30901000145"></a><a name="p30901000145"></a>配置范围：0/1，默认值为1。值为0时删除被归约的维度，值为1时将被归约维度的长度保留为1。</p>
+</td>
+</tr>
+<tr id="row3090100015"><td class="cellrowborder" valign="top" width="13.58%" headers="reducesumsquare1"><p id="p30901000151"><a name="p30901000151"></a><a name="p30901000151"></a>noop_with_empty_axes</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.65%" headers="reducesumsquare2"><p id="p30901000152"><a name="p30901000152"></a><a name="p30901000152"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.38%" headers="reducesumsquare3"><p id="p30901000153"><a name="p30901000153"></a><a name="p30901000153"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="32.93%" headers="reducesumsquare4"><p id="p30901000154"><a name="p30901000154"></a><a name="p30901000154"></a>定义axes缺省或为空时的行为。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.46%" headers="reducesumsquare5"><p id="p30901000155"><a name="p30901000155"></a><a name="p30901000155"></a>配置范围：0/1，默认值为0。值为0时对所有维度执行平方和归约；值为1时不执行运算，直接输出输入数据。</p>
+</td>
+</tr>
+</tbody>
+</table>
 
 ### ReduceMean<a name="ZH-CN_TOPIC_0000002526281478" id="ZH-CN_TOPIC_0000002526281478"></a>
 
