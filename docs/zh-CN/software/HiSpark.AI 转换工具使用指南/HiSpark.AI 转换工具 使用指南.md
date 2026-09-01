@@ -69,6 +69,7 @@
 
 | 文档版本 | 发布日期 | 修改说明 |
 | :--- | :--- | :--- |
+| 07 | 2026-09-01 | 新增ONNX算子规格：“[BitShift](#ZH-CN_TOPIC_0000003090100001)、[ReduceSumSquare](#ZH-CN_TOPIC_0000003090100002)”。 |
 | 06 | 2026-07-30 | 新增Onnx/TFLite算子规格：<br>新增“[Erf](#ZH-CN_TOPIC_0000002026072801)、[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)、[Celu](#ZH-CN_TOPIC_0000002026072803)”。<br>新增"[Shape](#ZH-CN_TOPIC_0000003030115802)、[Shape](#ZH-CN_TOPIC_0000003030115702)"。<br>新增"[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)"。<br>新增"[TopK](#ZH-CN_TOPIC_0000003050115802)、[TopK](#ZH-CN_TOPIC_0000003050115702)"。<br>新增"[Gelu](#ZH-CN_TOPIC_0000002661401191)、[Gelu](#ZH-CN_TOPIC_0000002661401194)、[Trilu](#ZH-CN_TOPIC_0000002661401195)、[Pack](#ZH-CN_TOPIC_0000002661401192)、[Unpack](#ZH-CN_TOPIC_0000002661401193)"。<br>新增"[Fill](#ZH-CN_TOPIC_0000002800000001)、[Neg](#ZH-CN_TOPIC_0000002900000001)、[Pow](#ZH-CN_TOPIC_0000002476598365)、[Neg](#ZH-CN_TOPIC_0000002900000002)、[Pow](#ZH-CN_TOPIC_0000002476598371)"。<br>新增"[Select](#ZH-CN_TOPIC_0000002600000001)、[SelectV2](#ZH-CN_TOPIC_0000002600000002)、[ReverseV2](#ZH-CN_TOPIC_0000002600000003)、[Mod](#ZH-CN_TOPIC_0000002600000004)、[ReduceL1](#ZH-CN_TOPIC_0000002600000005)、[ReduceL2](#ZH-CN_TOPIC_0000002600000006)"。<br>新增训练特性：<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新QAS INT8量化训练配置、FP32训练配置。<br>在“[参数说明](#ZH-CN_TOPIC_0000002319906348)”中更新训练参数，新增MSE loss和Adam优化器参数。<br>新增QAS INT8和FP32训练支持规格。 |
 | 05 | 2026-07-03 | 更新“[设置环境变量](#ZH-CN_TOPIC_0000002353775693)、[限制与约束](#ZH-CN_TOPIC_0000002319976756)”。<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新[5](#设置Micro配置项)。<br>新增“[ARM平台编译部署](#ZH-CN_TOPIC_0000002590121500)”小节。<br>在“[输入选项](#ZH-CN_TOPIC_0000002353985081)”中更新[表1](#table3808173922715)。<br>更新“[算子规格参考](#ZH-CN_TOPIC_0000002354161329)”。<br>新增“[专题](#ZH-CN_TOPIC_0000002562713759)”章节。 |
 | 04 | 2026-06-01 | 新增Onnx/TFLite算子规格：<br>更新“[PRelu](#ZH-CN_TOPIC_0000002568693026)、[PRelu](#ZH-CN_TOPIC_0000002568693026)、[CumSum](#ZH-CN_TOPIC_0000002599292569)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187919)、[CumSum](#ZH-CN_TOPIC_0000002568533372)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187805)、[Einsum](#ZH-CN_TOPIC_0000002599307751)”。<br>更新“[Relu6](#ZH-CN_TOPIC_0000002574010852)、[LeakyRelu](#ZH-CN_TOPIC_0000002604689955)、[HardSwish](#ZH-CN_TOPIC_0000002574309498)、[LeakyRelu](#ZH-CN_TOPIC_0000002574170496)、[HardSwish](#ZH-CN_TOPIC_0000002574469146)、[Swish](#ZH-CN_TOPIC_0000002605108551)”。<br>更新“[LogicalAnd](#ZH-CN_TOPIC_0000002574976868)、[Equal](#ZH-CN_TOPIC_0000002605336325)、[GreaterEqual](#ZH-CN_TOPIC_0000002574817236)、[Greater](#ZH-CN_TOPIC_0000002605456261)、[LessEqual](#ZH-CN_TOPIC_0000002574976872)、[Less](#ZH-CN_TOPIC_0000002605336331)、[NotEqual](#ZH-CN_TOPIC_0000002574817240)、[LogicalNot](#ZH-CN_TOPIC_0000002605456267)、[LogicalOr](#ZH-CN_TOPIC_0000002574976878)、[And](#ZH-CN_TOPIC_0000002574578826) 、[GreaterOrEqual](#ZH-CN_TOPIC_0000002605377849)、[Greater](#ZH-CN_TOPIC_0000002574738452)、[LessOrEqual](#ZH-CN_TOPIC_0000002574578828)、[Less](#ZH-CN_TOPIC_0000002605257909)、[Not](#ZH-CN_TOPIC_0000002605377851)、[Or](#ZH-CN_TOPIC_0000002574738488)、[Xor](#ZH-CN_TOPIC_0000002574578874)”。<br>更新“[Dropout](#ZH-CN_TOPIC_0000002659215655) [Identity](#ZH-CN_TOPIC_0000002628696446) [GatherElements](#ZH-CN_TOPIC_0000002659095703) [ReduceLogSum](#ZH-CN_TOPIC_0000002628856352) [ReduceLogSumExp](#ZH-CN_TOPIC_0000002659215657) [Expand](#ZH-CN_TOPIC_0000002628696448) [Elu](#ZH-CN_TOPIC_0000002660394575) [Elu](#ZH-CN_TOPIC_0000002660274969)”。<br>更新“[DepthToSpace](#ZH-CN_TOPIC_0000002629955352) [SpaceToDepth](#ZH-CN_TOPIC_0000002660274511) [GRU](#ZH-CN_TOPIC_0000002631448488) [DepthToSpace](#ZH-CN_TOPIC_0000002660395017) [SpaceToDepth](#ZH-CN_TOPIC_0000002630115702)”。 |
@@ -7186,6 +7187,8 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 
 -   **[Mod](#ZH-CN_TOPIC_0000002600000004)**  
 
+-   **[BitShift](#ZH-CN_TOPIC_0000003090100001)**
+
 -   **[Clip](#ZH-CN_TOPIC_0000002552815891)**  
 
 -   **[ReduceMax](#ZH-CN_TOPIC_0000002557401349)**  
@@ -7193,6 +7196,8 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 -   **[ReduceMin](#ZH-CN_TOPIC_0000002526441430)**  
 
 -   **[ReduceSum](#ZH-CN_TOPIC_0000002557481311)**  
+
+-   **[ReduceSumSquare](#ZH-CN_TOPIC_0000003090100002)**
 
 -   **[ReduceMean](#ZH-CN_TOPIC_0000002526281478)**  
 
@@ -10717,6 +10722,39 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
+### BitShift<a name="ZH-CN_TOPIC_0000003090100001" id="ZH-CN_TOPIC_0000003090100001"></a>
+
+**功能描述<a name="section3090100001a"></a>**
+
+对两个无符号整数输入张量进行逐元素位移运算。输入X提供被移位的数据，输入Y提供对应位置的移位位数，direction指定左移或右移，计算关系如下：
+
+```
+direction="LEFT"： Z = X << Y
+direction="RIGHT"：Z = X >> Y
+```
+
+X和Y支持ONNX定义的多方向（NumPy风格）广播，输出shape为两输入shape广播后的shape。例如X的shape为[2, 1, 4]、Y的shape为[1, 3, 1]时，输出shape为[2, 3, 4]。
+
+**参数说明<a name="section3090100001b"></a>**
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>BitShift使用原生无符号整数计算，不参与INT8量化。
+
+**表 1**  BitShift参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+|---|---|---|---|---|
+| X | input | tensor (uint8/uint16/uint32/uint64) | 被移位的输入张量。 | 必须为静态shape；数据类型必须与Y一致；shape必须与Y满足多方向广播规则。 |
+| Y | input | tensor (uint8/uint16/uint32/uint64) | 移位位数输入张量，Y中每个元素表示对应X元素需要移动的位数。 | 数据类型必须与X一致；shape必须与X满足多方向广播规则。移位位数大于或等于数据类型位宽时，对应输出为0。 |
+| Z | output | tensor (uint8/uint16/uint32/uint64) | 逐元素位移后的输出张量。 | 数据类型与X、Y一致，shape为X和Y广播后的shape。 |
+| direction | attribute | string | 指定位移方向。 | 必选，只支持`LEFT`或`RIGHT`。 |
+
+**规格约束**
+
+-   对外支持ONNX Opset 18版本的BitShift定义。
+-   广播由X和Y的shape自动推导，无需配置广播属性；shape不兼容时转换或推理失败。
+-   `uint8`、`uint16`、`uint32`、`uint64`的有效普通移位范围分别为0～7、0～15、0～31、0～63；达到或超过位宽时输出0。
+
 
 ### Clip<a name="ZH-CN_TOPIC_0000002552815891" id="ZH-CN_TOPIC_0000002552815891"></a>
 
@@ -11037,6 +11075,38 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 |---|---|---|
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；axes必须为int32常量，允许为空表示全维归约，axes必须合法且唯一，输出shape必须匹配keep_dims |
+
+### ReduceSumSquare<a name="ZH-CN_TOPIC_0000003090100002" id="ZH-CN_TOPIC_0000003090100002"></a>
+
+**功能描述<a name="section3090100002a"></a>**
+
+对输入张量的元素逐元素平方后，沿axes指定的维度求和。计算关系如下：
+
+```
+output = ReduceSum(data * data, axes)
+```
+
+例如data为`[[1, 2, 3], [4, 5, 6]]`、axes为`[1]`时，输出数值为`[14, 77]`。keepdims为0时输出shape为[2]，keepdims为1时输出shape为[2, 1]。
+
+**参数说明<a name="section3090100002b"></a>**
+
+**表 1**  ReduceSumSquare参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+|---|---|---|---|---|
+| data | input | tensor (float32) | 参与平方和归约的输入张量。 | 支持静态shape，rank不超过16。INT8量化部署时，模型边界保持float32，模型内部自动完成量化、INT8计算和反量化。 |
+| axes | input | 常量tensor (int64) | 指定执行平方和归约的轴，是算子的第二个输入Tensor。 | 必须为模型initializer中的离线常量，并在模型转换时确定，不支持板端运行时动态修改；每个元素范围为[-rank(data), rank(data))，负轴从末维开始计数。支持单轴和多轴。 |
+| reduced | output | tensor (float32) | 平方和归约后的输出张量。 | 输出shape由data、axes和keepdims共同确定。INT8量化部署时，模型内部使用INT8/INT32计算，模型边界输出为float32。 |
+| keepdims | attribute | int | 是否保留被归约的维度。值为0时删除归约维度，值为1时将归约维度长度保留为1。 | 配置范围：0/1，默认值为1。 |
+| noop_with_empty_axes | attribute | int | 定义axes为空时的行为。 | 配置范围：0/1，默认值为0。axes为空且值为0时对所有维度归约；axes为空且值为1时不执行平方或归约，直接输出输入数据。 |
+
+**规格约束**
+
+-   对外支持ONNX Opset 18版本的ReduceSumSquare定义。
+-   axes是算子的第二个输入，必须为模型initializer中的离线常量Tensor，转换后作为ReduceFusion的常量axes输入。
+-   axes缺省时对所有维度归约。axes为空时，由noop_with_empty_axes决定全维归约或原样输出。
+-   多轴归约只在第一轮执行平方，后续归约仅求和，避免对中间结果重复平方。
+-   支持FP32计算和INT8量化计算。INT8通路使用INT32保存平方及累加中间结果，并依据量化参数重新缩放输出。
 
 ### ReduceMean<a name="ZH-CN_TOPIC_0000002526281478" id="ZH-CN_TOPIC_0000002526281478"></a>
 
