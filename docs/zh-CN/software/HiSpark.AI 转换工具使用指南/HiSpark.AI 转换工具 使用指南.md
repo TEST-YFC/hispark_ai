@@ -69,7 +69,7 @@
 
 | 文档版本 | 发布日期 | 修改说明 |
 | :--- | :--- | :--- |
-| 07 | 2026-08-24 | 新增Onnx/TFLite算子规格：<br>新增“[Max](#ZH-CN_TOPIC_0000003060115802)、[Maximum](#ZH-CN_TOPIC_0000003060115702)、[Min](#ZH-CN_TOPIC_0000003070115802)、[Minimum](#ZH-CN_TOPIC_0000003070115702)、[Sum](#ZH-CN_TOPIC_0000003080115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115702)”。<br>新增“[OneHot](#ZH-CN_TOPIC_0000002026082105)、[OneHot](#ZH-CN_TOPIC_0000002026082104)、[Unique](#ZH-CN_TOPIC_0000002026082108)、[Unique](#ZH-CN_TOPIC_0000002026082107)、[Where](#ZH-CN_TOPIC_0000002026082102)、[ConvInteger](#ZH-CN_TOPIC_0000002026082103)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)、[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)、[Hardmax](#ZH-CN_TOPIC_0000002026082101)、[Softsign](#ZH-CN_TOPIC_0000002026082402)、[Softplus](#ZH-CN_TOPIC_0000002026082403)、[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)”。 |
+| 07 | 2026-08-24 | 新增Onnx/TFLite算子规格：<br>新增“[Constant](#ZH-CN_TOPIC_0000003110115802)、[ConstantOfShape](#ZH-CN_TOPIC_0000003120115802)”。<br>新增“[Max](#ZH-CN_TOPIC_0000003060115802)、[Maximum](#ZH-CN_TOPIC_0000003060115702)、[Min](#ZH-CN_TOPIC_0000003070115802)、[Minimum](#ZH-CN_TOPIC_0000003070115702)、[Sum](#ZH-CN_TOPIC_0000003080115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115702)”。<br>新增“[OneHot](#ZH-CN_TOPIC_0000002026082105)、[OneHot](#ZH-CN_TOPIC_0000002026082104)、[Unique](#ZH-CN_TOPIC_0000002026082108)、[Unique](#ZH-CN_TOPIC_0000002026082107)、[Where](#ZH-CN_TOPIC_0000002026082102)、[ConvInteger](#ZH-CN_TOPIC_0000002026082103)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)、[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)、[Hardmax](#ZH-CN_TOPIC_0000002026082101)、[Softsign](#ZH-CN_TOPIC_0000002026082402)、[Softplus](#ZH-CN_TOPIC_0000002026082403)、[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)”。 |
 | 06 | 2026-07-30 | 新增Onnx/TFLite算子规格：<br>新增“[Erf](#ZH-CN_TOPIC_0000002026072801)、[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)、[Celu](#ZH-CN_TOPIC_0000002026072803)”。<br>新增"[Shape](#ZH-CN_TOPIC_0000003030115802)、[Shape](#ZH-CN_TOPIC_0000003030115702)"。<br>新增"[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)"。<br>新增"[TopK](#ZH-CN_TOPIC_0000003050115802)、[TopK](#ZH-CN_TOPIC_0000003050115702)"。<br>新增"[Gelu](#ZH-CN_TOPIC_0000002661401191)、[Gelu](#ZH-CN_TOPIC_0000002661401194)、[Trilu](#ZH-CN_TOPIC_0000002661401195)、[Pack](#ZH-CN_TOPIC_0000002661401192)、[Unpack](#ZH-CN_TOPIC_0000002661401193)"。<br>新增"[Fill](#ZH-CN_TOPIC_0000002800000001)、[Neg](#ZH-CN_TOPIC_0000002900000001)、[Pow](#ZH-CN_TOPIC_0000002476598365)、[Neg](#ZH-CN_TOPIC_0000002900000002)、[Pow](#ZH-CN_TOPIC_0000002476598371)"。<br>新增"[Select](#ZH-CN_TOPIC_0000002600000001)、[SelectV2](#ZH-CN_TOPIC_0000002600000002)、[ReverseV2](#ZH-CN_TOPIC_0000002600000003)、[Mod](#ZH-CN_TOPIC_0000002600000004)、[ReduceL1](#ZH-CN_TOPIC_0000002600000005)、[ReduceL2](#ZH-CN_TOPIC_0000002600000006)"。<br>新增训练特性：<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新QAS INT8量化训练配置、FP32训练配置。<br>在“[参数说明](#ZH-CN_TOPIC_0000002319906348)”中更新训练参数，新增MSE loss和Adam优化器参数。<br>新增QAS INT8和FP32训练支持规格。 |
 | 05 | 2026-07-03 | 更新“[设置环境变量](#ZH-CN_TOPIC_0000002353775693)、[限制与约束](#ZH-CN_TOPIC_0000002319976756)”。<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新[5](#设置Micro配置项)。<br>新增“[ARM平台编译部署](#ZH-CN_TOPIC_0000002590121500)”小节。<br>在“[输入选项](#ZH-CN_TOPIC_0000002353985081)”中更新[表1](#table3808173922715)。<br>更新“[算子规格参考](#ZH-CN_TOPIC_0000002354161329)”。<br>新增“[专题](#ZH-CN_TOPIC_0000002562713759)”章节。 |
 | 04 | 2026-06-01 | 新增Onnx/TFLite算子规格：<br>更新“[PRelu](#ZH-CN_TOPIC_0000002568693026)、[PRelu](#ZH-CN_TOPIC_0000002568693026)、[CumSum](#ZH-CN_TOPIC_0000002599292569)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187919)、[CumSum](#ZH-CN_TOPIC_0000002568533372)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187805)、[Einsum](#ZH-CN_TOPIC_0000002599307751)”。<br>更新“[Relu6](#ZH-CN_TOPIC_0000002574010852)、[LeakyRelu](#ZH-CN_TOPIC_0000002604689955)、[HardSwish](#ZH-CN_TOPIC_0000002574309498)、[LeakyRelu](#ZH-CN_TOPIC_0000002574170496)、[HardSwish](#ZH-CN_TOPIC_0000002574469146)、[Swish](#ZH-CN_TOPIC_0000002605108551)”。<br>更新“[LogicalAnd](#ZH-CN_TOPIC_0000002574976868)、[Equal](#ZH-CN_TOPIC_0000002605336325)、[GreaterEqual](#ZH-CN_TOPIC_0000002574817236)、[Greater](#ZH-CN_TOPIC_0000002605456261)、[LessEqual](#ZH-CN_TOPIC_0000002574976872)、[Less](#ZH-CN_TOPIC_0000002605336331)、[NotEqual](#ZH-CN_TOPIC_0000002574817240)、[LogicalNot](#ZH-CN_TOPIC_0000002605456267)、[LogicalOr](#ZH-CN_TOPIC_0000002574976878)、[And](#ZH-CN_TOPIC_0000002574578826) 、[GreaterOrEqual](#ZH-CN_TOPIC_0000002605377849)、[Greater](#ZH-CN_TOPIC_0000002574738452)、[LessOrEqual](#ZH-CN_TOPIC_0000002574578828)、[Less](#ZH-CN_TOPIC_0000002605257909)、[Not](#ZH-CN_TOPIC_0000002605377851)、[Or](#ZH-CN_TOPIC_0000002574738488)、[Xor](#ZH-CN_TOPIC_0000002574578874)”。<br>更新“[Dropout](#ZH-CN_TOPIC_0000002659215655) [Identity](#ZH-CN_TOPIC_0000002628696446) [GatherElements](#ZH-CN_TOPIC_0000002659095703) [ReduceLogSum](#ZH-CN_TOPIC_0000002628856352) [ReduceLogSumExp](#ZH-CN_TOPIC_0000002659215657) [Expand](#ZH-CN_TOPIC_0000002628696448) [Elu](#ZH-CN_TOPIC_0000002660394575) [Elu](#ZH-CN_TOPIC_0000002660274969)”。<br>更新“[DepthToSpace](#ZH-CN_TOPIC_0000002629955352) [SpaceToDepth](#ZH-CN_TOPIC_0000002660274511) [GRU](#ZH-CN_TOPIC_0000002631448488) [DepthToSpace](#ZH-CN_TOPIC_0000002660395017) [SpaceToDepth](#ZH-CN_TOPIC_0000002630115702)”。 |
@@ -7882,6 +7882,10 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 -   **[Sum](#ZH-CN_TOPIC_0000003080115802)**  
 
+-   **[Constant](#ZH-CN_TOPIC_0000003110115802)**  
+
+-   **[ConstantOfShape](#ZH-CN_TOPIC_0000003120115802)**  
+
 -   **[ReduceProd](#ZH-CN_TOPIC_0000003090115802)**  
 
 -   **[Hardmax](#ZH-CN_TOPIC_0000002026082101)**  
@@ -14551,6 +14555,160 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 <td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p191865655319"><a name="p191865655319"></a><a name="p191865655319"></a>输出张量，维度为广播后的最大维度。</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p193418377529"><a name="p193418377529"></a><a name="p193418377529"></a>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Constant<a name="ZH-CN_TOPIC_0000003110115802" id="ZH-CN_TOPIC_0000003110115802"></a>
+
+**功能描述<a name="section3100000081"></a>**
+
+静态常量生成算子，输出一个由属性指定的常量张量，其值和形状在模型定义时确定，推理时不发生变化。该算子无输入，仅有一个输出，通过属性指定常量值。仅有ONNX规格。
+
+**参数说明<a name="section3100000082"></a>**
+
+**表 1**  Constant参数概览
+
+<a name="table20263110101"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row202631101011"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263110111"><a name="p20263110111"></a><a name="p20263110111"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263110112"><a name="p20263110112"></a><a name="p20263110112"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263110113"><a name="p20263110113"></a><a name="p20263110113"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263110114"><a name="p20263110114"></a><a name="p20263110114"></a>输出常量张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263110115"><a name="p20263110115"></a><a name="p20263110115"></a>形状和数据类型由 value 属性完全确定</p>
+</td>
+</tr>
+<tr id="row202631101012"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263110121"><a name="p20263110121"></a><a name="p20263110121"></a>value</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263110122"><a name="p20263110122"></a><a name="p20263110122"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263110123"><a name="p20263110123"></a><a name="p20263110123"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263110124"><a name="p20263110124"></a><a name="p20263110124"></a>常量张量的值（通用形式）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263110125"><a name="p20263110125"></a><a name="p20263110125"></a>支持任意形状和数据类型的张量</p>
+</td>
+</tr>
+<tr id="row202631101013"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263110131"><a name="p20263110131"></a><a name="p20263110131"></a>value_float</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263110132"><a name="p20263110132"></a><a name="p20263110132"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263110133"><a name="p20263110133"></a><a name="p20263110133"></a>float</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263110134"><a name="p20263110134"></a><a name="p20263110134"></a>标量 float32 常量值。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263110135"><a name="p20263110135"></a><a name="p20263110135"></a>等价于 0D 张量</p>
+</td>
+</tr>
+<tr id="row202631101014"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263110141"><a name="p20263110141"></a><a name="p20263110141"></a>value_floats</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263110142"><a name="p20263110142"></a><a name="p20263110142"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263110143"><a name="p20263110143"></a><a name="p20263110143"></a>float[]</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263110144"><a name="p20263110144"></a><a name="p20263110144"></a>1D float32 常量值列表。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263110145"><a name="p20263110145"></a><a name="p20263110145"></a>等价于 1D 张量</p>
+</td>
+</tr>
+<tr id="row202631101015"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263110151"><a name="p20263110151"></a><a name="p20263110151"></a>value_int</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263110152"><a name="p20263110152"></a><a name="p20263110152"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263110153"><a name="p20263110153"></a><a name="p20263110153"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263110154"><a name="p20263110154"></a><a name="p20263110154"></a>标量 int64 常量值（lite支持int32）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263110155"><a name="p20263110155"></a><a name="p20263110155"></a>等价于 0D 张量</p>
+</td>
+</tr>
+<tr id="row202631101016"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263110161"><a name="p20263110161"></a><a name="p20263110161"></a>value_ints</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263110162"><a name="p20263110162"></a><a name="p20263110162"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263110163"><a name="p20263110163"></a><a name="p20263110163"></a>int[]</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263110164"><a name="p20263110164"></a><a name="p20263110164"></a>1D int64 常量值列表。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263110165"><a name="p20263110165"></a><a name="p20263110165"></a>等价于 1D 张量</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>必须且只能指定以上属性（value/value_float/value_floats/value_int/value_ints）中的一个来定义常量值。
+
+### ConstantOfShape<a name="ZH-CN_TOPIC_0000003120115802" id="ZH-CN_TOPIC_0000003120115802"></a>
+
+**功能描述<a name="section3100000091"></a>**
+
+常量填充算子，根据输入张量指定的目标形状，生成一个所有元素值均相同的常量张量。仅有ONNX规格。
+
+**参数说明<a name="section3100000092"></a>**
+
+**表 1**  ConstantOfShape参数概览
+
+<a name="table20263120101"></a>
+<table><thead align="left"><tr id="row417995510501"><th class="cellrowborder" valign="top" width="17.79%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.17%" id="mcps1.2.6.1.2"><p id="p4185174319549"><a name="p4185174319549"></a><a name="p4185174319549"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="13.32%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="31.44%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.28%" id="mcps1.2.6.1.5"><p id="p1769075913564"><a name="p1769075913564"></a><a name="p1769075913564"></a>配置范围及规格约束说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row202631201011"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263120111"><a name="p20263120111"></a><a name="p20263120111"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263120112"><a name="p20263120112"></a><a name="p20263120112"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263120113"><a name="p20263120113"></a><a name="p20263120113"></a>tensor（int64）</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263120114"><a name="p20263120114"></a><a name="p20263120114"></a>1D int64 张量，指定输出张量的各维度大小。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263120115"><a name="p20263120115"></a><a name="p20263120115"></a>维度值均大于 0，维度数 1~8（lite支持1~4）</p>
+</td>
+</tr>
+<tr id="row202631201012"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263120121"><a name="p20263120121"></a><a name="p20263120121"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263120122"><a name="p20263120122"></a><a name="p20263120122"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263120123"><a name="p20263120123"></a><a name="p20263120123"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263120124"><a name="p20263120124"></a><a name="p20263120124"></a>按目标形状生成的常量填充张量。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263120125"><a name="p20263120125"></a><a name="p20263120125"></a>数据类型由 value 属性的 TensorProto 推断</p>
+</td>
+</tr>
+<tr id="row202631201013"><td class="cellrowborder" valign="top" width="17.79%" headers="mcps1.2.6.1.1 "><p id="p20263120131"><a name="p20263120131"></a><a name="p20263120131"></a>value</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.17%" headers="mcps1.2.6.1.2 "><p id="p20263120132"><a name="p20263120132"></a><a name="p20263120132"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="13.32%" headers="mcps1.2.6.1.3 "><p id="p20263120133"><a name="p20263120133"></a><a name="p20263120133"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="31.44%" headers="mcps1.2.6.1.4 "><p id="p20263120134"><a name="p20263120134"></a><a name="p20263120134"></a>填充常量值（TensorProto），默认值标量 0（float32）。</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.28%" headers="mcps1.2.6.1.5 "><p id="p20263120135"><a name="p20263120135"></a><a name="p20263120135"></a>可选；省略时填充 0，类型为 float32</p>
 </td>
 </tr>
 </tbody>
