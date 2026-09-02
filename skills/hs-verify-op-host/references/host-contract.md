@@ -1,14 +1,14 @@
-# Host spec contract
+# Host 规格与输入约定
 
 目录：
 
 - [前置检查](#前置检查)
 - [资源边界与 Bundled Harness](#资源边界与-bundled-harness就地运行不要改不要拷)
 - [唯一要写的文件](#唯一要写的文件op_specpy)
-- [能力清单冻结件](#能力清单冻结件-projscriptscapability_checklistjson-完整-workflow-必需implement-step3-落盘)
+- [能力清单锁定文件](#能力清单锁定文件-projscriptscapability_checklistjson-完整-workflow-必需implement-step3-保存)
 - [用例设计原则](#用例设计原则op_specpy-里两套独立设计)
 
-以下内容从入口按需下沉，`op_spec.py` 唯一写入边界和覆盖要求不变。
+进入对应阶段时读取本文件；`op_spec.py` 唯一写入边界和覆盖要求不变。
 
 ## 前置检查
 
@@ -46,7 +46,7 @@ Skill 包内固定资源包括 `scripts/run_all_cases.py`、`scripts/*.sh`、`sc
 | 文件 | 作用 |
 |---|---|
 | `scripts/run_all_cases.py` | **唯一入口**,算子无关。编排每用例内部 step1-step5、解析 benchmark 打印的输出张量、**在 Python 侧统一算余弦**、写 Excel。每次运行携带唯一 `RUN_ID`，旧日志不能冒充本轮结论。另自带防假结论闸门：按 spec 的目标节点校验源模型，并按 `<proj>/scripts/capability_checklist.json` 校验能力 covered_by 引用；清单还必须声明 `folding_and_rewrite` 矩阵，分别覆盖阻止折叠以证明目标 Kernel 真执行、允许重写以证明整图语义，或给出 N/A 证据。转换后必须保留 target/rewrite identity evidence，不能只凭原始模型节点判定 |
-| `scripts/validate_op_spec.py` | Host 拥有的长测试前机械门禁：检查动态输入、initializer、capability case ID 和 ONNX 属性冲突 |
+| `scripts/validate_op_spec.py` | Host 拥有的长测试前自动检查：检查动态输入、initializer、capability case ID 和 ONNX 属性冲突 |
 | `scripts/wait_verify.sh` | 后台启动后的**唯一等待方式**:内部轮询日志到 VERDICT 出现/进程退出/到时,免 sleep 算术 |
 | `scripts/judge.sh` | **手动判定辅助**(不改驱动、不复制公式):`judge.sh <case_dir> [path_key]` 转发到 `run_all_cases.py --judge-case`,读取最新 `output/<path>/stdout.log`,刷新 `output/<path>/output*.npy`,再用 harness 的 `cosine_similarity()` + `PATH_META` 对比稳定的 `gt/output*.npy` 打印 PASS/FAIL。`output/<path>/_run.sh` 手动重跑后也走同一入口刷新判定;**权威结论仍以 run_all_cases.py 的 VERDICT 为准** |
 | `scripts/onnx_x86.sh` / `tflite_x86.sh` | x86:转换(NCHW/NHWC)+ 编译 + benchmark **仅打印输出张量**(不传 calib、不做内置比对) |
@@ -86,7 +86,7 @@ spec **只描述"算什么",不碰"结果对不对"**。
 复制 `desc`，也不能包含 Markdown 表格分隔符 `|`。`test_point` 在 Host 前冻结，并原样传入 Excel、
 `verify_summary.txt` 和板端矩阵。
 
-### 能力清单冻结件 `<proj>/scripts/capability_checklist.json`（完整 workflow 必需，implement step3 落盘）
+### 能力清单锁定文件 `<proj>/scripts/capability_checklist.json`（完整 workflow 必需，implement step3 保存）
 
 把 `hs-dev-op-implement` step3 的「能力验收清单」逐行落成 JSON，harness 据此机械核对覆盖（详见「必守约束」对应红线）。结构：
 
@@ -115,7 +115,7 @@ spec **只描述"算什么",不碰"结果对不对"**。
       **只为"有"的框架写 `*_TEST_CASES`;`build_*_model` 里 `helper.make_node` / TFLite op 用的名字必须是查证命中的确切框架名。** 某框架"无" → 该框架 `*_TEST_CASES = []`,对应 `build_*_model` **保留为占位**(函数体直接 `raise NotImplementedError("<框架> has no <Op>")`——harness 校验符号存在,删函数会报错);**绝不改用"等价算子"顶替来让模型建得起来**(那测的是别的算子,结论无效)。
    - **目标算子身份是前置硬门禁**：ONNX 用例声明 `ONNX_TARGET_OP_TYPE`，TFLite 用例声明 `TFLITE_TARGET_BUILTIN`。harness 在参考运行和 converter 之前逐 case 解包源模型；如果 Fill 等节点被模型 API 常量折叠、lower 或规范化为 BroadcastTo 等别的节点，立即 `OP_MISMATCH`，先修 builder/shape/动态输入设计，不进入精度比较。不要把替代节点的 PASS 当成目标算子 PASS。
    - **converter运行环境和参数按当前包探测**：harness 不依赖用户在前一个shell中的`export`。它先在本轮`MSLITE_PKG`内定位`libmindspore_converter.so`，把真实目录置于当前子进程`LD_LIBRARY_PATH`最前，过滤明显属于其他MSLite包的旧目录，再以相同环境运行真实转换。随后对 `$MSLITE_PKG/tools/converter/converter/converter_lite --help` 只探测一次并缓存。只有 help 明确声明 `--encryption` 时才传 `--encryption=false`；help 成功但不支持时省略。自动配置成功就继续，不向用户转交手工设置；包内缺库时输出`CONVERTER_RUNTIME_GATE=FAIL`，help非零、超时或无法启动时输出 `CONVERTER_CAPABILITY_GATE=FAIL` 并停止，不得猜参数或把环境失败归到算子。每条 driver 日志记录 converter 绝对路径、动态库目录、help 返回码和最终选择，所有驱动不得再硬编码版本专属参数。
-   - **模型输入契约**：`make_inputs()` 返回的数组数必须等于模型动态输入数。ONNX 权重/zero-point 等若同时作为 graph input 与 initializer 存在,必须在 `INITIALIZER_INPUTS` 显式列名；否则 harness 会在 reference 前拒跑。不要依赖 Python `zip(input_names, inputs)` 静默截断,那会让测试少喂输入却看似通过。
+   - **模型输入要求**：`make_inputs()` 返回的数组数必须等于模型动态输入数。ONNX 权重/zero-point 等若同时作为 graph input 与 initializer 存在,必须在 `INITIALIZER_INPUTS` 显式列名；否则 harness 会在 reference 前拒跑。不要依赖 Python `zip(input_names, inputs)` 静默截断,那会让测试少喂输入却看似通过。
    - **原生整型/索引算子**：可声明 `INT8_KERNEL_SYMBOL=""` 表示量化 INT8 genuine 检查不适用,但仍要按规格覆盖每个原生 dtype（如 int8 与 uint8 分开用例）,并在能力清单用 `match` 锁定 dtype。
    - **属性按规格枚举**:ONNX `https://onnx.com.cn/onnx/operators/onnx__<OpName>.html`;TFLite `https://tensorflow.google.cn/mlir/tfl_ops`、`.../api_docs/python/tf`、`.../lite/performance/quantization_spec`(属性/量化/布局与 ONNX 可能不同,不要照搬;WebFetch 不可达回退 `curl -sL <url> | head -300`)。参考输出由 harness 用真实 runtime 现算,故属性**取值**的正确性自校验——你的风险是**漏掉属性组合**和**用了不存在的属性名**,不是属性数学算错。列全属性,每个有意义组合各一条用例。
    - **目标 builtin 实证(TFLite,builder 写完必做一次)**:转换器会按输入形状对同一上层算子**择优/规范化** builtin(实证:无广播的 `SelectV2` 调用被降成 `SELECT`,真广播形状才发 `SELECT_V2`)——**builder 调了哪个 raw_op 不等于模型里是哪个 builtin**。每类形状形态各构建一个最小模型,解包核对 operator code 恰为目标 builtin(编号用存在性查证命中的值):
@@ -147,7 +147,7 @@ spec **只描述"算什么",不碰"结果对不对"**。
 > 假 FAIL。"小量级"用例取 `1e-3` 量级即可达到测试目的(远小于默认 `±6` 的 baseline、足以考验量化
 > scale 分配),不要再往下压。
 
-### 输入形态覆盖与测试数据生成门禁
+### 输入形态覆盖与测试数据生成检查
 
 在启动 harness 前，先把规格中所有输入形态组合逐项列成 case 矩阵：dynamic、initializer、
 optional 缺省/显式、广播形态、索引/边界语义、折叠 blocked/allowed，以及每个支持的 dtype

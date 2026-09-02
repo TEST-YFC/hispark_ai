@@ -1,12 +1,12 @@
-# Host workflow gates
+# Host 流程检查点
 
 目录：
 
 - [使用方式总览](#使用方式总览)
 - [流程地图](#流程地图)
-- [workflow 模式的 pre-verify 门禁](#workflow-模式的-pre-verify-门禁)
+- [workflow 模式的 pre-verify 检查](#workflow-模式的-pre-verify-检查)
 
-以下内容从入口按需下沉，用户可见步骤和门禁不变。
+进入对应阶段时读取本文件；用户可见步骤和检查点不变。
 
 ## 使用方式总览
 
@@ -21,7 +21,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 - [ ] step1 standalone编写 / workflow只读对账 `<proj>/scripts/op_spec.py`
 - [ ] step2 运行固定 harness
 - [ ] step3 读取 `VERDICT` / `HARNESS_EXIT` / Excel / `verify_summary.txt`
-- [ ] step4 排查失败或签收结论
+- [ ] step4 排查失败并报告结论
 ```
 
 推进时只更新状态,并附一句当前证据。例如：
@@ -31,7 +31,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 - [x] step1 standalone编写 / workflow只读对账 `<proj>/scripts/op_spec.py`
 - [ ] step2 运行固定 harness - 正在等 `wait_verify.sh` 返回 VERDICT
 - [ ] step3 读取 `VERDICT` / `HARNESS_EXIT` / Excel / `verify_summary.txt`
-- [ ] step4 排查失败或签收结论
+- [ ] step4 排查失败并报告结论
 ```
 
 ## 流程地图
@@ -39,10 +39,10 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 | 阶段 | 做什么 | 成功证据 |
 |---|---|---|
 | step0 准备工具链与项目目录 | 确认 `MSLITE_PKG` 指向已解压构建产物,算子项目位于 `$MSLITE_OP_OUTPUT/<op>` | `converter_lite` 可执行,`op_spec.py` 不在 MindSpore Lite 源码/构建树内 |
-| step1 准备 spec | standalone任务按规格编写`<proj>/scripts/op_spec.py`；完整workflow只读对账stage1冻结文件并运行pre-verify两道机械门禁 | `OP_NAME`、两套`*_TEST_CASES`、逐 case `test_point`、builder、`make_inputs()`齐全且门禁PASS |
+| step1 准备 spec | standalone任务按规格编写`<proj>/scripts/op_spec.py`；完整workflow只读对账stage1已锁定文件并运行pre-verify两道自动检查 | `OP_NAME`、两套`*_TEST_CASES`、逐 case `test_point`、builder、`make_inputs()`齐全且检查通过 |
 | step2 运行 harness | 用 `run_all_cases.py --spec <abs path>` 执行 | 日志出现 `VERDICT` 和紧随其后的 `HARNESS_EXIT=N` |
 | step3 读取结果 | 只读取 harness 产物,不要自行判定 | `verify_summary.txt`、每框架 Excel、`output/<framework>/tc*/output/<path>/stderr.log` |
-| step4 排查或签收 | 非零退出按失败类型排查;全绿才签收 | 向用户照抄 VERDICT/退出码,列出 FAIL 证据或 PASS 报告 |
+| step4 排查并报告 | 非零退出按失败类型排查；全绿才报告 PASS | 向用户照抄 VERDICT/退出码，列出 FAIL 证据或 PASS 报告 |
 
 ### Harness 内部 step1-step5
 
@@ -57,7 +57,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 | step4 | 写入输入 `.bin` |
 | step5 | 跑 benchmark 打印输出张量,再由 Python 统一计算余弦 |
 
-### workflow 模式的 pre-verify 门禁
+### workflow 模式的 pre-verify 检查
 
 当`<proj>`来自完整算子workflow时，读取stage1已冻结的`op_spec.py`并与capability checklist
 只读对账；启动harness前必须执行：
@@ -68,12 +68,12 @@ python3 <hs-dev-op-implement skill root>/scripts/gate_artifacts.py \
 python3 <hs-verify-op-host skill root>/scripts/validate_op_spec.py <absolute proj>
 ```
 
-每个激活 framework 都要得到 `ARTIFACT_GATE=PASS`，且 validator 退出码为 0。前者确认实现合同、已有能力 review、能力清单和测试 spec 没有断链；后者在长转换前拦截动态输入数量、initializer 声明、capability case ID 及 ONNX `auto_pad/pads` 冲突。独立 Host 任务没有实现工作区时不伪造这些产物，但仍执行 harness 内建的 spec、目标算子身份和能力覆盖门禁。
+每个激活 framework 都要得到 `ARTIFACT_GATE=PASS`，且 validator 退出码为 0。前者确认实现约束、已有能力 review、能力清单和测试 spec 没有断链；后者在长转换前拦截动态输入数量、initializer 声明、capability case ID 及 ONNX `auto_pad/pads` 冲突。独立 Host 任务没有实现工作区时不伪造这些文件，但仍执行 harness 内建的 spec、目标算子身份和能力覆盖检查。
 
 harness 只要求所选 framework 的模型 builder：`--framework onnx` 必须定义
 `build_onnx_model`，但不得强制不存在的 TFLite 路径提供 `build_tflite_model`；TFLite 同理。
 `--framework all` 才同时要求两套 builder。公共的算子名、两套 case 容器和 `make_inputs()`
-仍是固定 spec 契约，范围外框架的 case 容器应为空。
+仍是固定 spec 规则，范围外框架的 case 容器应为空。
 
 完整workflow的Host阶段不得直接新增、删除或改写case。若对账发现模型构造、输入/GT、case或
 覆盖映射必须变化，返回顶层workflow的stage1，重新prepare、生成初版文档、通过pre-source并

@@ -1,9 +1,9 @@
-# 终态判据与结案报告
+# 终态判据与收尾报告
 
 ## 目录
 
 - [完成判据](#完成判据)
-- [统一结案报告](#统一结案报告)
+- [统一收尾报告](#统一收尾报告)
 - [资源索引](#资源索引)
 
 > 只有所有阶段进入终态后读取。这里是用户可见状态和证据格式的唯一详细定义；入口只保留摘要和链接。
@@ -45,19 +45,19 @@ Host 交付完成必须满足：
 状态：仅Host范围通过（用户明确未要求板端；不是完整流程通过）
 ```
 
-任一必需门禁FAIL时列出失败阶段、原始证据和回流owner；任一阶段NOT_RUN时列出未执行阶段、
+任一必需检查 FAIL 时列出失败阶段、原始证据和对应负责人；任一阶段 NOT_RUN 时列出未执行阶段、
 原因和恢复条件。只有明确`HOST_ONLY`时板测是`NOT_REQUESTED`；默认流程因无板卡未执行时是
 “Host验证通过、固件构建验证通过、真实板测未执行”，不能写成“已完成验证”或完整板测完成。
 
-## 统一结案报告
+## 统一收尾报告
 
-`terminal.report` 只能由 `workflow_state.py finalize` 写入，不能用通用 `start`/`finish` 绕过结案
-证据。结案前必须运行 `workflow_state.py finalize --state-dir <STATE_DIR> --run-id <RUN_ID> \
+`terminal.report` 只能由 `workflow_state.py finalize` 写入，不能用通用 `start`/`finish` 绕过收尾
+证据。收尾前必须运行 `workflow_state.py finalize --state-dir <STATE_DIR> --run-id <RUN_ID> \
 --evidence <本轮终态报告绝对路径>`，让脚本
-根据本轮检查点重新计算整体状态；不得手工把 `OP_WORKFLOW` 改成 PASS。结案消息首行、逐阶段
+根据本次运行的检查点重新计算整体状态；不得手工把 `OP_WORKFLOW` 改成 PASS。收尾消息首行、逐阶段
 表和状态文件中的结果必须一致，并同时报告 `RUN_ID`、`workflow_state.json`、`workflow_todo.md`
 和 `workflow_events.jsonl` 的绝对路径。若仍有 RUNNING/PENDING，先恢复或继续该任务；若有
-FAIL/BLOCKED，保留失败证据并说明 retry owner。
+FAIL/BLOCKED，保留失败证据并说明 retry 负责人。
 
 ```text
 OP_WORKFLOW=<PASS|FAIL|INCOMPLETE|HOST_ONLY_PASS>
@@ -83,7 +83,7 @@ ACCURACY_VERDICT=<PASS|FAIL|NOT_REQUESTED|NOT_RUN>
 选择`HOST_ONLY`且stage0-stage5全部PASS、板端字段均为`NOT_REQUESTED`时使用
 `HOST_ONLY_PASS`，不能缩写成无范围的PASS。
 
-结案消息在整体状态后必须输出逐阶段表，至少包含：
+收尾消息在整体状态后必须输出逐阶段表，至少包含：
 
 ```text
 阶段                         状态          数量/证据                     原因
@@ -102,6 +102,6 @@ Host全量验证                 PASS|FAIL     passed/expected               ...
 
 报告同时给出源码diff、`MSLITE_PKG`、Host summary/Excel、设计文档、验证文档、
 `board_expected_matrix.json`、逐case的fwpkg/烧录JSON/monitor/accuracy日志、
-`board_case_results.json`和`board_verify_summary.txt`绝对路径。面向用户的结案消息必须使用
+`board_case_results.json`和`board_verify_summary.txt`绝对路径。面向用户的收尾消息必须使用
 `框架 | 用例 | 模式 | 测试点 | 状态 | 证据/原因`逐行列出全部计划用例，不能只写“板测完成”、
 只展示一个成功case或把部分 PASS 写成整体验证通过。

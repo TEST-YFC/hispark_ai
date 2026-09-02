@@ -198,9 +198,9 @@ def test_frozen_contract_and_planned_cases_cannot_change_during_apply_or_host():
     host = read_bundle("hs-verify-op-host")
     apply_stage = workflow.split("## stage2：", 1)[1].split("## stage3：", 1)[0]
     host_stage = workflow.split("## stage4：", 1)[1].split("## stage5：", 1)[0]
-    assert "冻结合同" in apply_stage
+    assert "已锁定的实现约定" in apply_stage
     assert "返回 stage1" in apply_stage
-    assert re.search(r"读取并执行\s*stage1\s*冻结的完整\s*`op_spec\.py`", host_stage)
+    assert re.search(r"读取并执行\s*stage1\s*已锁定的完整\s*`op_spec\.py`", host_stage)
     assert "不把Host阶段当成正常改写计划用例的阶段" in host_stage
     assert "完整workflow的Host阶段不得直接新增、删除或改写case" in host
 

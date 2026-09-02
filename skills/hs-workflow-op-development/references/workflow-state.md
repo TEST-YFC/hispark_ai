@@ -1,12 +1,12 @@
-# 本轮状态与恢复契约
+# 本轮状态与恢复规则
 
 ## 目录
 
 - [初始化与一次确认](#本轮待办检查点和自动续跑)
-- [固定任务顺序](#固定任务顺序和逐步门禁)
+- [固定任务顺序](#固定任务顺序和逐步检查)
 - [人工确认边界](#人工确认边界)
 
-> 本文件由 `hs-workflow-op-development` 按需读取。入口 Skill 只保留最小调用契约；本文件保留完整的状态、证据和恢复规则。
+> 本文件由 `hs-workflow-op-development` 按需读取。入口 Skill 只保留最小调用约定；本文件保留完整的状态、证据和恢复规则。
 
 ## 本轮待办、检查点和自动续跑
 
@@ -57,11 +57,11 @@ python <skill>/scripts/workflow_state.py confirm \
 否则状态机拒绝写入。`--phrase` 只作为用户确认原文审计记录，不用自然语言子串猜测执行范围；
 确认成功后不再为普通阶段询问继续。
 
-### 固定任务顺序和逐步门禁
+### 固定任务顺序和逐步检查
 
 状态机只允许按下面的任务 ID 前进。`stage0.scope_environment` 由 `init` 隐式启动；除它、
 `stage0.confirm`（使用 `confirm`）和 `terminal.report`（使用 `finalize`）外，每一项都必须先 `start`，执行该项的专项 Skill 或确定性
-脚本，再用 `finish --status PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 写回至少一条本轮证据引用；完成一项立即落盘，
+脚本，再用 `finish --status PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 写回至少一条本次运行的证据引用；完成一项立即保存，
 不能把多个阶段做完后批量补记。`stage5.final_docs` 虽保留历史编号，但实际在 stage6、stage7
 到达终态后执行，确保终版文档能记录真实的板端结果。
 
@@ -69,14 +69,14 @@ python <skill>/scripts/workflow_state.py confirm \
 |---|---|
 | `stage0.scope_environment` | 范围、代码根、MSLite/SDK/设备环境只读探测回执 |
 | `stage0.confirm` | 一次总确认；`EXECUTION_CONFIRM_GATE=PASS` |
-| `stage1.plan` | 冻结合同、能力清单、计划 `op_spec.py` 及哈希 |
+| `stage1.plan` | 锁定实现约定、能力清单、计划 `op_spec.py` 及哈希 |
 | `stage1.initial_docs` | 成对初版设计/验证文档和 facts |
 | `stage1.pre_source_gate` | `PRE_SOURCE_GATE=PASS` |
 | `stage2.implementation` | 下游实现 Skill 的源码 diff 和实现回执 |
-| `stage2.code_review` | `code-review.md`、质量/安全门禁均 PASS |
+| `stage2.code_review` | `code-review.md`、质量/安全检查均 PASS |
 | `stage3.mslite_build` | 本轮 `MSLITE_PKG`、构建日志和新鲜度回执 |
 | `stage4.host_verify` | 全量 Host summary、`board_expected_matrix.json`、`HOST_VERIFY_GATE=PASS` |
-| `stage6.firmware_matrix` | 每个 framework/case/mode 独立 fwpkg、接线和固件内容门禁 |
+| `stage6.firmware_matrix` | 每个 framework/case/mode 独立 fwpkg、接线和固件内容检查 |
 | `stage7.board_matrix` | 每行 flash JSON、串口 Tensor、accuracy 结果和矩阵报告 |
 | `stage5.final_docs` | 确认后的终版成对文档及 facts/content/case audit；确认前阻断时仅作状态收尾记录 |
 | `terminal.report` | 逐任务状态、证据路径、失败/未执行原因和恢复条件 |
@@ -106,10 +106,10 @@ python <skill>/scripts/workflow_state.py finish --state-dir <STATE_DIR> --run-id
 把状态改成 PASS。上游任务重试会使其后的执行结果、终版文档和 `terminal.report` 全部失效，
 状态中的旧证据会被清除并保存在 retry 事件历史中；后续阶段必须重新执行并再次 `finalize`，
 不能沿用先前 PASS 证据。重启或会话中断后先执行
-`resume --run-id <RUN_ID>`：未受回流影响的已 PASS 任务不
+`resume --run-id <RUN_ID>`：未受失败影响的已 PASS 任务不
 重跑；`RUNNING` 任务只有其心跳过期、拥有者已退出或明确 `--force` 恢复时才回到 PENDING，
-中间产物不因此获得 PASS。最终必须先让 `terminal.report` 落盘，再根据脚本计算的
-`OP_WORKFLOW` 结案；状态仍为 `RUNNING/PENDING/NOT_RUN` 时不得结束当前任务。
+中间文件不因此获得 PASS。最终必须先把 `terminal.report` 保存到文件，再根据脚本计算的
+`OP_WORKFLOW` 收尾；状态仍为 `RUNNING/PENDING/NOT_RUN` 时不得结束当前任务。
 
 ### 人工确认边界
 

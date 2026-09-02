@@ -1,11 +1,11 @@
-# Flash and serial handoff
+# 烧录与串口交接
 
 目录：
 
 - [step5：委托烧录并采集完整串口Tensor](#step5委托烧录并采集完整串口tensor)
 - [端口重插后的重试顺序](#端口重插后的重试顺序)
 
-以下内容从入口按需下沉；flash JSON、端口探测、重插重试和串口完整性要求保持不变。
+进入对应阶段时读取本文件；flash JSON、端口探测、重插重试和串口完整性要求保持不变。
 
 ## step5：委托烧录并采集完整串口Tensor
 
@@ -27,7 +27,7 @@ port=<serial port>
 烧录交接必须保留以下执行规则，不能缩写成“运行 fbb flash”：
 
 1. 设置并回显用户授权SDK对应的 `FBB_SDK_DIR=<FIRMWARE_SDK_SRC>`；target必须来自
-   `fbb describe --json`或`fbb list-targets --json`，固件必须是step4签收的 `_all.fwpkg`；
+   `fbb describe --json`或`fbb list-targets --json`，固件必须是 step4 确认的 `_all.fwpkg`；
 2. 烧录前必须先运行本 skill 的 `scripts/probe_serial_ports.py`，保存本轮
    `serial_probe.json`。Windows 不能只调用 `Win32_SerialPort`/WMI：至少交叉查询
    `.NET SerialPort.GetPortNames()` 与 `HKLM:\\HARDWARE\\DEVICEMAP\\SERIALCOMM`；
@@ -57,7 +57,7 @@ port=<serial port>
    串口能力使用同一端口和Sample规定波特率采集。烧录波特率不能当作启动日志波特率。
 
 这些规则由 `hs-dev-flash`拥有；本skill负责在handoff和返回证据中逐项核对，不复制或
-绕过烧录实现。缺少端口、最终JSON、烧录时间或本轮monitor时间任一证据时，不进入精度签收。
+绕过烧录实现。缺少端口、最终 JSON、烧录时间或本次 monitor 时间任一证据时，不能确认精度。
 
 ### 端口重插后的重试顺序
 

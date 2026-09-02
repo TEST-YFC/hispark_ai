@@ -3,9 +3,9 @@
 目录：
 
 - [失败排查](#失败排查按优先级)
-- [范围、失败回流与底线](#范围失败回流与底线)
+- [范围、失败处理与底线](#范围失败处理与底线)
 
-以下内容从入口按需下沉，失败证据和回流 owner 不变。
+进入对应阶段时读取本文件；失败证据和负责人归属不变。
 
 ## 失败排查(按优先级)
 
@@ -25,7 +25,7 @@ python3 "$SKILL/scripts/run_all_cases.py" --run-id "$RUN_ID" \
 若包内缺少`libmindspore_converter.so`，harness会明确报告工具包不完整；只有这种需要重建/
 重新下载工具包或发现多包身份冲突的情形才请求用户确认。`--help` 失败归因于工具包/环境并
 停止当前验证；单个模型转换失败则保留该路径的
-`stderr.log`，回流模型/spec 或算子实现 owner，不能手工修改通用 harness 绕过错误。
+`stderr.log`，交给模型/spec 或算子实现负责人，不能手工修改通用 harness 绕过错误。
 该回退仍使用 `run_all_cases.py` 的固定驱动、余弦和门禁，不得自行替换 converter 参数或 GT。
 
 - **某路径 `ERR` / 没解析到余弦** → 转换或编译失败。看该路径 `stderr.log`;`[ERR]` 行指明在 converter/cmake/make 哪步挂。
@@ -41,10 +41,10 @@ python3 "$SKILL/scripts/run_all_cases.py" --run-id "$RUN_ID" \
 - **张量个数/shape 不匹配** → 解析到的张量与参考对不上;确认 spec 产出的输出 shape 符合预期、布局(NCHW vs NHWC)正确。x86 与 riscv 驱动**均**已 `sed` 关掉 benchmark 的 10 元素打印上限(全张量 dump 是 Python 侧统一算余弦的前提),若换了缺这行的脚本需补回。
 - **余弦恒为 `0.0` 且一边输出全零** → 设备/生成代码真的产出了全零张量(参考非零),这是真实失配,不是边界噪声。**绝不能**靠把 NaN/全零判成 1.0 来掩盖——按 fp32 bug 排查内核/opcoder。
 
-## 范围、失败回流与底线
+## 范围、失败处理与底线
 
 本 skill 负责**测试设计与 Host 验证**，不负责实现转换器/内核支持。某路径因算子源码缺陷失败时，输出首个
-`stderr.log` 错误、失败层和受影响 case，交给 `hs-workflow-op-development` 回流 `hs-dev-op-implement`；不要在本 skill
+`stderr.log` 错误、失败层和受影响 case，交给 `hs-workflow-op-development`，再返回 `hs-dev-op-implement` 处理；不要在本 skill
 中顺手修改 parser/kernel/opcoder。若证据表明是 `op_spec.py`、模型构造、输入值域、GT 或 capability 映射错误，才由本
 skill 修复并整轮重跑。绝不改参考输出、放宽阈值或手填余弦把红变绿。
 

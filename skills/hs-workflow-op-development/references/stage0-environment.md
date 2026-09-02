@@ -11,7 +11,7 @@
 
 ## stage0：冻结范围和环境
 
-进入Stage0的第一项动作是按 [`workflow-state.md`](workflow-state.md) 中的 `init` 契约运行
+进入Stage0的第一项动作是按 [`workflow-state.md`](workflow-state.md) 中的 `init` 约定运行
 `scripts/workflow_state.py init`，生成本轮待办和临时检查点；
 状态文件本身是控制性记录，不属于算子源码或交付文档写入。随后记录 source entry、
 implementation unit 候选、代码根、`MSLITE_OP_OUTPUT`、板测策略、板卡连接状态，以及各专项

@@ -14,14 +14,14 @@ description: >-
 
 # 算子适配端到端工作流
 
-本 skill 只负责跨阶段编排、门禁、状态和交接。每个阶段仍由对应专项 Skill 或确定性脚本执行；
-步骤不能被一句“完成接线”替代。入口正文只保留必须始终可见的契约，细节按阶段读取直接链接的
+本 skill 只负责跨阶段编排、检查点、状态和阶段衔接。每个阶段仍由对应专项 Skill 或确定性脚本执行；
+步骤不能被一句“完成接线”替代。入口正文只保留始终需要看到的约定，细节按阶段读取直接链接的
 `references/`文件。
 
 ## 工作流总览
 
 ```text
-stage0 范围/环境冻结（只读）
+stage0 确定范围和环境（只读）
   -> 一次 EXECUTION_CONFIRM_GATE
 stage1 prepare -> integrated-initial -> PRE_SOURCE_GATE
   -> stage2 apply -> IMPLEMENT_GATE
@@ -50,7 +50,7 @@ stage1 prepare -> integrated-initial -> PRE_SOURCE_GATE
 | “实现/适配/新增 MatMul 算子” | `hs-workflow-op-development` | 默认完整走文档、实现、构建、Host 和全用例板测；只有明确 Host-only 才跳过板端 |
 | “生成 BitShift 算子” | `hs-workflow-op-development` | 默认宣布`AUTO_ALL`，走实现、MSLite 构建、Host、固件和全部 case |
 | “在 WS63 上实现/运行 X 算子” | `hs-workflow-op-development` | 核对 SDK；总确认通过且设备可用时自动跑完整矩阵，不再询问是否上板 |
-| “实现 X，只改 MindSpore Lite 源码，不测试、不编译、不写文档” | `hs-dev-op-implement` | 只做源码实现并输出交接 |
+| “实现 X，只改 MindSpore Lite 源码，不测试、不编译、不写文档” | `hs-dev-op-implement` | 只做源码实现并把结果交给调用方 |
 | “只用 hs-dev-op-implement 分析/补 X” | `hs-dev-op-implement` | 用户点名专项 Skill，严格停在该 Skill 边界 |
 | “只写 X 的测试/做 Host accuracy” | `hs-verify-op-host` | 不修改正式算子源码，不构建固件 |
 | “只生成 X 的文档”或“用本 workflow 新生成 X 文档” | `hs-design-op-manual` | 已有算子产物使用 `artifact-sync`；不实现、不构建、不运行板测 |
@@ -66,7 +66,7 @@ stage1 prepare -> integrated-initial -> PRE_SOURCE_GATE
 ```markdown
 状态: stage<n> 进行中
 待办:
-- [ ] stage0 冻结范围、模式和环境
+- [ ] stage0 确定范围、模式和环境
 - [ ] stage0-confirm 展示环境和影响范围，等待一次执行确认
 - [ ] stage1 prepare、初版文档和 PRE_SOURCE_GATE
 - [ ] stage2 源码实现、代码审查和 IMPLEMENT_GATE
@@ -84,9 +84,9 @@ stage1 prepare -> integrated-initial -> PRE_SOURCE_GATE
 进度。完整恢复、重试、锁、attempt token 和 fail-closed 规则见
 [`references/workflow-state.md`](references/workflow-state.md)。
 完整 13 项 task ID 的固定顺序和每项最小证据见模板及状态 reference；初始化时必须整份生成，
-不得把任务合并、跳过或改成只在结案时补记。
+不得把任务合并、跳过或改成最后才补记。
 
-最小机械契约（所有命令使用同一 `RUN_ID`）：
+最小命令约定（所有命令使用同一 `RUN_ID`）：
 
 ```text
 python <skill>/scripts/workflow_state.py init \
@@ -108,11 +108,11 @@ python <skill>/scripts/workflow_state.py finalize --state-dir <STATE_DIR> --run-
 ```
 
 状态机拒绝空证据、乱序、损坏文件、模板占位符、锁超时、run ID 不一致和陈旧 token；
-失败会冻结后续任务，`retry`/`resume` 会使旧证据失效。只要有 `RUNNING/PENDING/NOT_RUN`，
-默认整体不是 PASS；必须先让 `terminal.report` 落盘。`stage0.confirm` 是本轮唯一确认，
+失败会阻止后续任务，`retry`/`resume` 会使旧证据失效。只要有 `RUNNING/PENDING/NOT_RUN`，
+整体就不能判 PASS；先把 `terminal.report` 保存到文件。`stage0.confirm` 是本轮唯一确认，
 确认后不再询问普通阶段。
 
-## stage0：冻结范围、环境和一次确认
+## stage0：确定范围、环境并完成一次确认
 
 Stage0 只读探测，不生成文档、源码、测试模型、Micro 工程或固件，不安装、下载、构建、烧录，
 也不启动后台长任务。必须区分代码存储、MSLite 执行、固件编译和设备 I/O 环境；字段包括：
@@ -174,7 +174,7 @@ Stage0 的完整探测、环境准备分流、依赖自动修复和安装/CLI �
 技术记录：STAGE0_PREVIEW=READY；BOARD_POLICY=AUTO_ALL；EXECUTION_CONFIRM_GATE=PENDING
 ```
 
-## stage1：文档先行的规划门禁
+## stage1：文档先行的规划检查
 
 只有 `EXECUTION_CONFIRM_GATE=PASS` 才进入。严格执行：
 
@@ -189,19 +189,19 @@ gate_artifacts.py --stage pre-source
 
 prepare 期间禁止源码写入；初版设计/验证文档、facts、implementation contract、能力清单和计划版
 `op_spec.py` 必须来自同一冻结输入；每条计划 case 必须包含明确且非空的 `test_point`。`PRE_SOURCE_GATE=PASS` 前不能调用
-`hs-dev-op-implement mode=apply`。不能先改代码再更新草稿；规格、合同、能力或计划用例变化时返回
+`hs-dev-op-implement mode=apply`。不能先改代码再更新草稿；规格、实现约定、能力或计划用例变化时返回
 stage1 完整重跑。详细产物和哈希校验见 [`references/stage1-plan.md`](references/stage1-plan.md)。
 
 ## stage2：实现源码
 
 进入 `stage2.implementation` 后调用 `hs-dev-op-implement mode=apply`，并传递冻结的
-implementation unit、全部产物哈希和 `HISPARK_ROOT`。只有 `PRE_SOURCE_GATE=PASS` 才能写源码；
+implementation unit、全部生成文件的哈希和 `HISPARK_ROOT`。只有 `PRE_SOURCE_GATE=PASS` 才能写源码；
 实现 Skill 必须先完整读取其 `references/code-style.md` 和 `references/code-quality-gate.md`，记录
 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。该规范是 Skill 自带的，不是用户
-需要安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别落盘，不能代写 Host 或正式文档。
+需要安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别保存，不能代写 Host 或正式文档。
 规范路径必须展开为绝对路径并记录其 SHA-256；它不是用户需要安装的工具。
 `apply` 中不得在源码阶段直接
-修改冻结合同；若合同、能力清单、计划 `op_spec.py` 或初版文档变化，必须返回 stage1 重新冻结，不能先改代码再更新草稿。
+修改已锁定的实现约定；若实现约定、能力清单、计划 `op_spec.py` 或初版文档变化，必须返回 stage1 重新确定，不能先改代码再更新草稿。
 
 ## stage3：构建 MindSpore Lite 工具包
 
@@ -225,10 +225,10 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 
 ## stage4：Host 全量验证
 
-进入 `stage4.host_verify` 后调用 `hs-verify-op-host`，读取并执行 stage1 冻结的完整
+进入 `stage4.host_verify` 后调用 `hs-verify-op-host`，读取并执行 stage1 已锁定的完整
 `op_spec.py`；不把Host阶段当成正常改写计划用例的阶段。必须先通过 `pre-verify`/validator，
 再用 `--target all` 运行固定 harness，生成含逐 case 测试点的 `verify_summary.txt`、
-`board_expected_matrix.json`、两份 Excel 和逐 case 证据。Host 失败按实现、模型/spec 或工具链回流，
+`board_expected_matrix.json`、两份 Excel 和逐 case 证据。Host 失败时，按实现、模型/spec 或工具链类别返回对应阶段，
 不能用部分 PASS 缩小分母。细节按 Host Skill 的 references 按需读取。
 
 ## stage6：AUTO_ALL 固件矩阵
@@ -262,7 +262,7 @@ Stage6/7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_
 终态文档固定写入 `<opdir>/docs/{op}-operator-design-doc.md` 和
 `<opdir>/docs/{op}-operator-verify-doc.md`。
 
-## 完成和结案
+## 完成与收尾
 
 用户可见首句必须先给整体状态。完整报告的唯一详细模板在
 [`references/final-report.md`](references/final-report.md)；入口只保留这些语义：
@@ -275,9 +275,9 @@ Stage6/7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_
 - 如果板端未执行，即使Host和24份固件全部成功，整体仍是`OP_WORKFLOW=INCOMPLETE`。
 - 禁止把“已完成迁移和验证”“已完成开发和验证”“验证通过”“全部通过”用于未完整通过的范围；
   `executed=pass+fail` 不把 `NOT_RUN` 计入 executed。`全部通过` 只有完整流程全部 PASS 才能用。
-- 结案前必须让 `terminal.report` 通过 `finalize` 落盘；不得手工改写 `OP_WORKFLOW`。
+- 收尾前必须让 `terminal.report` 通过 `finalize` 保存到文件；不得手工改写 `OP_WORKFLOW`。
 
-## 资源索引和按需读取
+## 阶段资料
 
 | 阶段 | 直接读取 |
 |---|---|
@@ -287,10 +287,10 @@ Stage6/7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_
 | 固件环境准备和 CLI 回退 | [`references/environment-prep.md`](references/environment-prep.md) |
 | Stage1 prepare、文档和 pre-source | [`references/stage1-plan.md`](references/stage1-plan.md) |
 | Stage3 工具链 | [`references/build-and-toolchain.md`](references/build-and-toolchain.md) |
-| Stage6/7 顶层交接 | [`references/board-orchestration.md`](references/board-orchestration.md) |
+| Stage6/7 顶层衔接 | [`references/board-orchestration.md`](references/board-orchestration.md) |
 | Board 构建 handoff | [`../hs-verify-op-board/references/ws63-build-handoff.md`](../hs-verify-op-board/references/ws63-build-handoff.md) |
 | Board 烧录与串口交接 | [`../hs-verify-op-board/references/flash-serial-handoff.md`](../hs-verify-op-board/references/flash-serial-handoff.md) |
-| Board 精度与矩阵契约 | [`../hs-verify-op-board/references/board-accuracy-contract.md`](../hs-verify-op-board/references/board-accuracy-contract.md) |
+| Board 精度与矩阵规则 | [`../hs-verify-op-board/references/board-accuracy-contract.md`](../hs-verify-op-board/references/board-accuracy-contract.md) |
 | Board 红线与失败分流 | [`../hs-verify-op-board/references/board-guardrails.md`](../hs-verify-op-board/references/board-guardrails.md) |
 | 终态报告 | [`references/final-report.md`](references/final-report.md) |
 | WS63 具体接线 | [`../hs-verify-op-board/chips/ws63/references/sdk-integration.md`](../hs-verify-op-board/chips/ws63/references/sdk-integration.md) |

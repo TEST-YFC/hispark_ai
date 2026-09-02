@@ -14,7 +14,7 @@ description: >-
 
 本 Skill 只维护两份人读主文档，不实现源码、不运行构建或验证、不烧录。设计文档只写规格、支持范围、
 七类能力复用裁决、关键场景和软件调用链；验证文档只写测试设计、用例矩阵、各阶段结果和证据索引。
-机器 facts、日志、summary 和二进制产物是证据，不能替代主文档。
+机器 facts、日志、summary 和二进制文件是证据，不能替代主文档。
 
 ## 模式与边界
 
@@ -23,19 +23,19 @@ description: >-
 | `standalone-generate` | 独立生成一对文档 | `<opdir>/docs/{op}-operator-design-doc.md` + `<opdir>/docs/{op}-operator-verify-doc.md` |
 | `standalone-update` | 独立更新已有一对文档 | 同上 |
 | `template-analysis` | 只分析模板 | 不写文件 |
-| `integrated-initial` | `prepare` 后、源码前冻结初版 | facts + 一对 draft 文档 |
+| `integrated-initial` | `prepare` 后、源码前锁定初版 | facts + 一对 draft 文档 |
 | `integrated-final` | 父流程终态同步 | facts + 一对终态文档 |
-| `artifact-sync` | 从已有产物同步 | 一对文档；按 A/B/C/D 标注证据等级，D 不写文件 |
+| `artifact-sync` | 文件同步模式，从已有文件生成文档 | 一对文档；按 A/B/C/D 标注证据等级，D 不写文件 |
 
 一次调用只能选择一个模式和一组固定目标。独立模式可在开始时确认代码根、`<opdir>`、算子名和框架；
-产物集成模式只能使用父流程传入的绝对路径和冻结参数，不重新扫描仓库或查询外部规格。模式不匹配、
+文件同步模式只能使用父流程传入的绝对路径和已确定参数，不重新扫描仓库或查询外部规格。模式不匹配、
 参数缺失、路径冲突或主源冲突时返回上游并 FAIL，不猜测补全。
 
 ## 固定工作流
 
 按顺序执行下面七步，不能跳步、交换或把两个文档合并成一份：
 
-| Step | 动作 | 必须满足的门禁 |
+| Step | 动作 | 必须满足的检查 |
 |---|---|---|
 | 0 | 选择模式，核对授权参数和两个精确目标路径 | 范围、模式、目标明确 |
 | 1 | 集成模式运行 `audit_manual_inputs.py` 并判定 A/B/C/D；独立模式完成已查证事实 | D 或核心冲突立即 FAIL |
@@ -43,19 +43,19 @@ description: >-
 | 3 | 分别生成设计候选和验证候选；终态从最新 facts 重建用例表和结果章节 | 两份文档职责分离，case 顺序及逐行测试点与 `op_spec.py` 一致 |
 | 4 | 审核格式、来源、支持措辞、敏感信息和占位符 | 全部检查 PASS |
 | 5 | 在 `<opdir>/docs/` 写临时候选，执行 facts/content/case audit | `OP_MANUAL_FACTS_SYNC=PASS`、`OP_MANUAL_CONTENT_SYNC=PASS`、`OP_MANUAL_CASE_SYNC=PASS` |
-| 6 | 通过门禁后成对发布，重新读取并核对；任一步失败就回滚两份 | `OP_MANUAL_SYNC=PASS` 或明确 FAIL |
+| 6 | 通过检查后成对发布，重新读取并核对；任一步失败就把两份文档恢复到发布前状态 | `OP_MANUAL_SYNC=PASS` 或明确 FAIL |
 
-完整规则按阶段按需读取：
+进入对应阶段时读取完整规则：
 
 1. 先读 [`references/facts-contract.md`](references/facts-contract.md)，了解模式参数、唯一事实源、facts schema、输入审计和 A/B/C/D 分级。
 2. 生成正文前读 [`references/document-rendering.md`](references/document-rendering.md)，并按需读两个文档模板。
 3. 写入/发布前读 [`references/publication-transaction.md`](references/publication-transaction.md)，执行敏感信息检查、候选审计、成对事务发布和最终复核。
 
-## 事实与自动化契约
+## 事实与自动化规则
 
-产物集成模式只接受父流程冻结的：`code_root`、`opdir`、`op`/`Op`、`implementation_unit`、
+文件同步模式只接受父流程已确定的：`code_root`、`opdir`、`op`/`Op`、`implementation_unit`、
 `framework_scope`，以及 `integrated-final` 的 `terminal_state=completed|blocked|hard-stop`。父流程已经完成
-环境和 SDK 的一次人工确认后，本 Skill 自动读取产物、生成 facts、渲染候选并运行审计，不再逐步询问用户。
+环境和 SDK 完成一次人工确认后，本 Skill 自动读取文件、生成 facts、渲染候选并运行审计，不再逐步询问用户。
 独立模式仅在开始确认输入/目标路径；确认后生成和更新由 agent 自动完成。
 
 facts 的四个主源固定为：
@@ -65,9 +65,9 @@ facts 的四个主源固定为：
 - 验证用例：`<opdir>/scripts/op_spec.py`；
 - 结果：本轮可信 `verify_summary.txt`、板端矩阵及其证据。
 
-只写已公开、已核对或已冻结的事实。缺少转换入口写“不支持转换”，缺少类型写“不支持该类型”，
+只写已公开、已核对或已锁定的事实。缺少转换入口写“不支持转换”，缺少类型写“不支持该类型”，
 属性/shape/layout/target 不支持写“不支持该规格”；不得把未执行写成 PASS、不得从聚合路径猜逐 case
-结论、不得写“待确认”或内部路径。`integrated-initial` 只能表示编码前计划冻结，不能表示源码、构建或验证完成。
+结论、不得写“待确认”或内部路径。`integrated-initial` 只能表示编码前计划已锁定，不能表示源码、构建或验证完成。
 
 ## 文档职责与输出
 
@@ -95,6 +95,6 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NO
 | [`references/publication-transaction.md`](references/publication-transaction.md) | step4-step6、公开边界、回滚和自检 |
 | [`references/operator-design-doc-template.md`](references/operator-design-doc-template.md) | 设计文档候选 |
 | [`references/operator-verify-doc-template.md`](references/operator-verify-doc-template.md) | 验证文档候选 |
-| `scripts/audit_manual_inputs.py` | 集成模式输入、facts 和候选的机械审计 |
+| `scripts/audit_manual_inputs.py` | 集成模式输入、facts 和候选的自动审计 |
 
 reference 只从本入口直接链接；引用文件内部的规则不构成另一层必读入口。所有路径在实际命令中使用正斜杠和绝对路径。

@@ -6,7 +6,7 @@
 - [Stage7 烧录与精度](#stage7默认全矩阵烧录与板端精度)
 
 > 仅在完整 AUTO_ALL 工作流进入板端阶段时读取。WS63 的具体接线步骤由
-> `hs-verify-op-board/chips/ws63/references/sdk-integration.md` 负责；本文件记录顶层任务、handoff 和状态机交接。
+> `hs-verify-op-board/chips/ws63/references/sdk-integration.md` 负责；本文件记录顶层任务、文件交接和状态机衔接。
 
 ## stage6：默认全矩阵固件接入与构建
 
@@ -80,7 +80,7 @@ ArgMax/标签、让任务无限循环，或让Sample用硬编码答案自报最�
 
 ## stage7：默认全矩阵烧录与板端精度
 
-自动启动 `stage7.board_matrix`，逐行完成烧录、串口采集和精度判定并立即落盘。详细的 flash、
+自动启动 `stage7.board_matrix`，逐行完成烧录、串口采集和精度判定并立即保存。详细的 flash、
 端口交叉探测、重插/RESET、monitor 时间和 JSON 解析规则必须读取
 [`hs-verify-op-board/references/flash-serial-handoff.md`](../../hs-verify-op-board/references/flash-serial-handoff.md)；Tensor、阈值和矩阵规则必须读取
 [`hs-verify-op-board/references/board-accuracy-contract.md`](../../hs-verify-op-board/references/board-accuracy-contract.md) 及

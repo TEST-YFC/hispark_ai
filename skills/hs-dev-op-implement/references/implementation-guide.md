@@ -407,7 +407,7 @@ auto in = reinterpret_cast<int8_t *>(in_tensors_.at(0)->MutableData());  // 取�
 REG_KERNEL(kCPU, kNumberTypeInt8, PrimitiveType_Xxx, LiteKernelCreator<XxxInt8CPUKernel>)
 ```
 
-- **生命周期契约（最易丢，丢了是隐性 bug）**：`Prepare()` 必须建立 `Run()` 需要的**全部**派生态（shape、`n_dim_`、axis 归一化、qparams），并以 **`return ReSize();`** 收尾。把 shape 派生态只放在 `ReSize()` 是错的——converter 的 **bias_correction** 子流程**不保证 `ReSize()` 先于首个 `Run()`**，会 `n_dim_=0` 致 int8 全路转换 FAIL（实证 Hardmax）。本仓 53 个有 `Prepare()` 的 int8 kernel 中 42 个以此收尾，是框架契约不是个别算子的风格。`ReSize()` 负责按当前 shape 重算派生态，含定长数组（`input_shape_[DIMENSION_xD]` 类成员）填充循环前的 `> DIMENSION_xD` 守卫（rank 判据 ② 见下）。
+- **生命周期要求（此项常被遗漏）**：`Prepare()` 必须建立 `Run()` 需要的**全部**派生态（shape、`n_dim_`、axis 归一化、qparams），并以 **`return ReSize();`** 收尾。把 shape 派生态只放在 `ReSize()` 是错的——converter 的 **bias_correction** 子流程**不保证 `ReSize()` 先于首个 `Run()`**，会 `n_dim_=0` 致 int8 全路转换 FAIL（实证 Hardmax）。本仓 53 个有 `Prepare()` 的 int8 kernel 中 42 个以此收尾，这是框架要求，不是个别算子风格。`ReSize()` 负责按当前 shape 重算派生态，含定长数组（`input_shape_[DIMENSION_xD]` 类成员）填充循环前的 `> DIMENSION_xD` 守卫（rank 判据 ② 见下）。
 - **`nnacl_c/**/*.c` 是 C 文件，强转写 `(int32_t)(x)`，不能用 `static_cast<>`。** 只有 `.cc`（LiteKernel、opcoder）是 C++。
 - **防御性代码两条，抄模板时最容易丢（实证：Hardmax 两处全丢，预检/构建/验证三道闸全放行——它们只测合法输入包络）：**
   1. **每个**向固定长数组（`input_shape_[DIMENSION_xD]` 类成员）填充的循环前都要守卫：`ReSize()`/`Prepare()`/`InitParam`/nnacl `Resize` 里 `for i<n_dim` 直写数组前，必须先 `MS_CHECK_TRUE_RET(in_dims <= DIMENSION_xD, RET_ERROR)`（C kernel 用显式 `if (n_dim > DIMENSION_xD) return NNACL_ERR;`）。这是 SKILL.md rank 不变量判据 ②：**infer 与每个写数组的层都要守，且取同一个 `DIMENSION_xD`**——不要把 infer 设宽（如 `DIMENSION_8D`）而数组开窄（`DIMENSION_4D/5D`），那是实证反例 A；也不要"各层常量都对上了"就以为安全——infer 用 `SetShapeTensor` 无守卫 + nnacl kernel 填充前无守卫 = 反例 B，常量全 4D 仍越界。`quick_check.sh` rank advisory (2)/(3) 会秒级拦这两处，命中即修。
@@ -433,7 +433,7 @@ int max_idx = 0;
 for (int j = 1; j < axis_size; j++) { if (in[base + j * inner] > max_val) { ... } }
 ```
 
-> hs-verify-op-host 的 `all-zeros` / `single-element-axis` 用例正是为暴露这类塌缩而设。它们 FAIL 几乎总是初值契约被违反，**不是**“量化精度极限”——按 Host skill 的失败分流保留原始日志并回流实现。
+> hs-verify-op-host 的 `all-zeros` / `single-element-axis` 用例正是为暴露这类塌缩而设。它们 FAIL 几乎总是初值要求被违反，**不是**“量化精度极限”——按 Host skill 的失败分流保留原始日志并返回实现阶段。
 
 #### ⑤″ 首输入是 condition/index 的算子（条件选择、按索引取数类）：int8 **不要**单独注册
 

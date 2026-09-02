@@ -95,7 +95,7 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
   该目录包含 `hs-dev-env-prep`、`hs-dev-build` 和 `hs-dev-flash`；安装后应重新检查
   当前使用者自己的 `<skill-root>`，不得只复制 `SKILL.md`；必须保留该 Skill 目录下对应的
   `references/` 和 `scripts/` 子目录及其中脚本。
-- 用户未安装或当前环境不能加载：workflow 可按两者公开契约直接使用 CLI 回退，构建用
+- 用户未安装或当前环境不能加载：workflow 可按两者公开约定直接使用 CLI 回退，构建用
   `fbb --version`、`fbb describe --json` 或 `fbb list-targets --json` 取得真实 target，
   再执行 `fbb build --clean <target>`；烧录用 `fbb flash <target> --json-summary`，只按最后一行
   JSON 的 `success` 和 `error.code` 判定。回退不降低 clean build、target 解析或 JSON 判定要求。

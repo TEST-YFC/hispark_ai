@@ -1,15 +1,15 @@
-# Board workflow gates
+# 板端流程检查点
 
 目录：
 
 - [算子真板精度验证](#算子真板精度验证)
 - [职责边界](#职责边界)
 - [用户可见进度](#用户可见进度)
-- [step0：固件SDK位置授权和身份门禁](#step0固件sdk位置授权和身份门禁)
+- [step0：固件 SDK 位置授权和身份检查](#step0固件-sdk-位置授权和身份检查)
 - [step0a：板端 Python 依赖预检](#step0a板端-python-依赖预检在-step1-前执行)
-- [step1：冻结完整板端期望矩阵](#step1冻结完整板端期望矩阵)
+- [step1：锁定完整板端期望矩阵](#step1锁定完整板端期望矩阵)
 
-以下内容从入口按需下沉；SDK授权、矩阵分母和进度步骤保持不变。
+进入对应阶段时读取本文件；SDK 授权、矩阵分母和进度步骤保持不变。
 
 # 算子真板精度验证
 
@@ -68,7 +68,7 @@ Host 与 Board 不合并为一个 skill：
 
 每个 step 只有在证据已展示后才能勾选。
 
-## step0：固件SDK位置授权和身份门禁
+## step0：固件 SDK 位置授权和身份检查
 
 进入任何固件SDK写入前，必须让用户在本次请求或当前会话中明确提供：
 
@@ -104,7 +104,7 @@ python3 chips/ws63/scripts/check_python_deps.py --framework <onnx|tflite|all>
 `PY_DEPS_GATE=FAIL` 并阻塞本轮板端阶段，不得跨环境继续解析或手工填充元数据。
 本预检只确认可用性，不硬编码某个具体版本；依赖安装由用户选择的环境准备方式负责。
 
-## step1：冻结完整板端期望矩阵
+## step1：锁定完整板端期望矩阵
 
 唯一分母是本轮`hs-verify-op-host`生成的`board_expected_matrix.json`。完整workflow的Host阶段
 必须使用`--target all`，该manifest会列出每个RISC-V `framework/case_id/mode/test_point`。逐行确认：

@@ -27,7 +27,7 @@
    Parser、Populate、Infer、Kernel、OpCoder、Quantizer、注册或构建接线源码。只有
    `OP_SPEC_GATE=PASS`和每个framework的`OP_PLAN_GATE=PASS`才继续。
 2. 顶层workflow调用`hs-design-op-manual mode=integrated-initial`。文档Skill只消费第1步
-   已冻结的四个主源，不负责扫描或生成实现合同，输出
+   已确定的四个主源，不负责扫描或生成实现约定，输出
    `operator-manual-facts.json`、`{op}-operator-design-doc.md`和`{op}-operator-verify-doc.md`。只有
    `OP_MANUAL_SYNC=PASS mode=integrated-initial publication=record`才继续。
 3. 对每个framework运行带`--code-root`的`gate_artifacts.py --stage pre-source`，机械复核
@@ -47,5 +47,5 @@
 才可生成新ID并显式rotate；旧receipt必须归档，不得静默重置基线。固件SDK不属于本门禁范围，
 其写入授权、接线receipt和新鲜度由stage6单独门控。
 
-实现过程中若规格、合同、能力清单或计划用例需要变化，停止源码修改并回到stage1完整重跑
+实现过程中若规格、实现约定、能力清单或计划用例需要变化，停止源码修改并回到stage1完整重跑
 prepare→integrated-initial→pre-source；不能先改代码再更新草稿。

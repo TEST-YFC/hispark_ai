@@ -6,7 +6,7 @@
 - [step0-step3 规划](#step0冻结范围)
 - [step4 源码](#step4编写或修复源码)
 
-> 在 `hs-dev-op-implement` 执行对应模式时按需读取。入口保留模式、门禁和交接；本文件保留完整的规划与源码规则。
+> 在 `hs-dev-op-implement` 执行对应模式时读取。入口保留模式、检查点和阶段衔接；本文件保留完整的规划与源码规则。
 
 ## 安全红线
 
@@ -24,15 +24,15 @@
 
 | Step | 目标 | 必做动作 | 门控产物 |
 |---|---|---|---|
-| step0 | 冻结范围 | 列出 framework × operator source entry；解析语义名；确定 `<opdir>` | 范围声明 |
+| step0 | 确定范围 | 列出 framework × operator source entry；解析语义名；确定 `<opdir>` | 范围声明 |
 | step1 | 查证事实 | 每个 source entry 运行并完整阅读 `scan_op.sh`；归档完整日志 | FOUND/NOT_FOUND/UNREACHABLE 与七层扫描证据 |
-| step2 | 冻结实现决策 | source grouping；decision2 复用/新建；decision3 层集开关 | `docs/decision.md` 与逐层做/跳表 |
-| step3 | 冻结编码前全部输入 | 生成spec、链路分析、能力清单和implementation contract；review已有/复用能力；生成计划版`op_spec.py`并校验 | `OP_PLAN_GATE=PASS`，随后交给workflow生成初版文档 |
+| step2 | 锁定实现决策 | source grouping；decision2 复用/新建；decision3 层集开关 | `docs/decision.md` 与逐层做/跳表 |
+| step3 | 锁定编码前全部输入 | 生成spec、链路分析、能力清单和implementation contract；review已有/复用能力；生成计划版`op_spec.py`并校验 | `OP_PLAN_GATE=PASS`，随后交给workflow生成初版文档 |
 | step4 | 实现源码 | 先通过`PRE_SOURCE_GATE`，必要时对比参考实现，再按七层模板最小修改 | 源码diff与能力落点 |
 | step5 | 编码后交叉审查 | 审核注册键、分支可达性、量化归属、折叠/重写和死代码 | `docs/code-review.md` |
-| step6 | 实现质量门禁 | 运行快速预检、code style、安全和 diff 审计 | `IMPLEMENT_GATE=PASS` 或结构化 FAIL |
+| step6 | 实现质量检查 | 运行快速预检、code style、安全和 diff 审计 | `IMPLEMENT_GATE=PASS` 或结构化 FAIL |
 
-## step0：冻结范围
+## step0：确定范围
 
 推荐输入是“只实现 ONNX 的 X”或“用 hs-dev-op-implement 分析 X”。不要在扫描前断言某框架不存在该算子。多个入口先分组再实现；多个 implementation unit 分别维护工作区和 todo。
 
@@ -72,14 +72,14 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 
 向用户展示每层“做/补/复用/不适用”结论，不只写“复用”或“新建”。细化矩阵保留在 `references/decision2-reuse-decision.md` 和 `references/implementation-guide.md`。
 
-## step3：冻结链路和能力合同
+## step3：确定链路和能力约定
 
 链路表固定覆盖 Schema、Parser、Populate/Parameter、Infer、Kernel float/量化 int8/原生 dtype、OpCoder、Quantizer 和 fusion。标“已有”必须同时给定义点与注册/可达点；未注册到目标路径按缺失处理。
 
-**复用不等于跳过 code review。** 对链路表中每个“已有/复用”项，完整阅读定义文件、注册点及其到下一层的调用/数据合同，不能只 grep 文件名或注册宏。把结果写入 `<opdir>/docs/existing-capability-review.md`，至少包含：
+**复用不等于跳过 code review。** 对链路表中每个“已有/复用”项，完整阅读定义文件、注册点及其到下一层的调用和数据约定，不能只 grep 文件名或注册宏。把结果写入 `<opdir>/docs/existing-capability-review.md`，至少包含：
 
 - `reviewed_layers`：逐层列出已有能力和实际文件/符号；
-- `definition_evidence`：核心实现、dtype/shape/属性/可选输入/量化参数和错误传播是否符合本次合同；
+- `definition_evidence`：核心实现、dtype/shape/属性/可选输入/量化参数和错误传播是否符合本次约定；
 - `registration_evidence`：目标 parser、runtime、Micro codegen 和量化路径是否真实可达，有无重复注册或死代码；
 - `code_findings`：边界检查、rank、内存、返回值、code style、安全红线和已知缺陷模式；
 - `disposition`：每层只能是 `REUSE_REVIEWED`、`FIX_REQUIRED` 或 `N/A`，并映射 capability ID。
@@ -115,7 +115,7 @@ python3 <hs-verify-op-host>/scripts/validate_op_spec.py <opdir>
 能力清单是单向真值：修正或补充op_spec，禁止为迁就现有case反向删除、改弱能力行。只有
 `OP_SPEC_GATE=PASS`才能执行prepare终态门禁。
 
-所有prepare产物落盘后，按冻结的每个framework运行机械门禁：
+所有 prepare 文件保存后，按已锁定的每个 framework 运行自动检查：
 
 ```bash
 python3 <skill_root>/scripts/gate_artifacts.py \
@@ -125,7 +125,7 @@ python3 <skill_root>/scripts/gate_artifacts.py \
 
 只有每个framework都输出`OP_PLAN_GATE=PASS`，且prepare开始前后由workflow记录的算子源码
 指纹一致，才能把规划产物交给workflow。`mode=prepare`必须在这里停止；不能进入step4，不能
-调用文档Skill，也不能生成任何算子源码。门禁失败时补规划产物，不用对话里的表格代替文件。
+调用文档Skill，也不能生成任何算子源码。检查失败时补齐规划文件，不用对话里的表格代替文件。
 
 ## step4：编写或修复源码
 
@@ -138,7 +138,7 @@ python3 <skill_root>/scripts/gate_artifacts.py \
 <opdir>/docs/{op}-operator-verify-doc.md
 ```
 
-写任何①-⑦源码前，运行pre-source门禁：
+写任何①-⑦源码前，运行 pre-source 检查：
 
 ```bash
 python3 <skill_root>/scripts/gate_artifacts.py \
@@ -146,13 +146,13 @@ python3 <skill_root>/scripts/gate_artifacts.py \
   --plan-run-id "$OP_PLAN_RUN_ID" --framework <framework>
 ```
 
-只有每个framework都输出`PRE_SOURCE_GATE=PASS`才允许动源码。该门禁会机械复算
+只有每个framework都输出`PRE_SOURCE_GATE=PASS`才允许动源码。该检查会自动复算
 `source-freeze.json`中的Git可见源码指纹，检查计划版op_spec、初版facts/draft及facts记录的
 四个主源哈希，并重新运行文档Skill的facts/content/case三项audit；仅在对话中声称
 “文档已生成”不算证据。
 
 能力清单、contract、op_spec或初版文档后续发生变化时，立即停止apply并回到workflow
-stage1：重新执行prepare、`integrated-initial`和pre-source门禁。不能先改源码后补文档。
+stage1：重新执行prepare、`integrated-initial`和 pre-source 检查。不能先改源码后补文档。
 
 `code-style.md` 是随本 Skill 分发的团队统一 C/C++、CMake 和注册接线编程规范，不是用户需要提前
 安装的工具或环境。在本轮首次修改任何①-⑦源码前，必须完整读取
