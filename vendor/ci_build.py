@@ -124,7 +124,7 @@ def prepare_dataset(hiSpark_ai_path):
     # 处理LeNet5数据
     lenet5_target = Path(hiSpark_ai_path) / "src/samples/oh/lenet5/data/MNIST/raw"
     lenet5_source = Path(data_dir) / "lenet5"
-
+    
     lenet5_target.mkdir(parents=True, exist_ok=True)
     
     if lenet5_source.exists():
@@ -398,6 +398,7 @@ def generating_dataset():
     except subprocess.CalledProcessError as e:
         print(f"{error_info} {e.stderr}")
         raise
+
 
 def move_and_copy_archives(hiSpark_ai_path, samples_target, adaptor_target, result_path='archives', build_type='gate', build_os='all'):
     """
