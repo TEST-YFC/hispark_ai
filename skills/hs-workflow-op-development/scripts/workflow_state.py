@@ -612,6 +612,17 @@ def validate_state(state: dict[str, Any], expected_run_id: str | None = None) ->
     by_id = task_map(state)
     if state["execution_confirmed"] != (by_id["stage0.confirm"]["status"] == "PASS"):
         raise StateError("execution confirmation flag and task status disagree")
+    stage0_status = by_id["stage0.scope_environment"]["status"]
+    stage5_status = by_id["stage5.final_docs"]["status"]
+    if not state["execution_confirmed"]:
+        if stage5_status not in {"PENDING", "BLOCKED"}:
+            raise StateError(
+                "unconfirmed run cannot start or complete stage5.final_docs; only state closure is allowed"
+            )
+        if stage0_status in {"FAIL", "BLOCKED"} and stage5_status != "BLOCKED":
+            raise StateError(
+                "Stage0 failure must block stage5.final_docs before terminal report finalization"
+            )
     if state["mode"] == "HOST_ONLY":
         for task_id in ("stage6.firmware_matrix", "stage7.board_matrix"):
             if by_id[task_id]["status"] != "NOT_REQUESTED":
@@ -902,7 +913,7 @@ def cmd_start(args: argparse.Namespace) -> int:
         raise StateError(f"ALREADY_COMPLETE task={args.task}")
     if record["status"] not in {"PENDING", "NOT_RUN"}:
         raise StateError(f"cannot start task={args.task} from status={record['status']}")
-    if args.task not in {"stage0.scope_environment", "stage5.final_docs"} and not state["execution_confirmed"]:
+    if args.task != "stage0.scope_environment" and not state["execution_confirmed"]:
         raise StateError("EXECUTION_CONFIRM_REQUIRED: only stage0 read-only probing is allowed before confirmation")
     record["status"] = "RUNNING"
     record["attempts"] += 1
@@ -994,6 +1005,10 @@ def cmd_finish(args: argparse.Namespace) -> int:
     state = load_state(state_dir, args.run_id)
     if args.task in {"stage0.confirm", "terminal.report"}:
         raise StateError(f"{args.task} is controlled by its dedicated command")
+    if args.task == "stage5.final_docs" and not state["execution_confirmed"]:
+        raise StateError(
+            "EXECUTION_CONFIRM_REQUIRED: final documents cannot be completed before the one-shot Stage0 confirmation"
+        )
     record = require_current(state, args.task)
     if not args.attempt_token or args.attempt_token != record.get("attempt_token"):
         raise StateError(f"ATTEMPT_TOKEN_MISMATCH task={args.task}; use the token returned by start")
@@ -1024,7 +1039,25 @@ def cmd_finish(args: argparse.Namespace) -> int:
         # Freeze every later executable task. Host-only skips remain explicit.
         index = next(index for index, item in enumerate(state["tasks"]) if item["id"] == args.task)
         for later in state["tasks"][index + 1 :]:
-            if later["id"] in {"stage5.final_docs", "terminal.report"}:
+            # Before the one-shot execution confirmation, a failed Stage0
+            # run may only close its state; it must never leave final-docs
+            # startable because that could be mistaken for a publication step.
+            # Once confirmation has happened, later final-doc backfill remains
+            # available for recording an upstream failure.
+            if later["id"] == "stage5.final_docs":
+                if args.task == "stage0.scope_environment" and not state["execution_confirmed"]:
+                    later_status = "BLOCKED"
+                    later["status"] = later_status
+                    later["blocked_by"] = args.task
+                    later["note"] = "Stage0 未确认即阻断；仅 terminal.report 可做状态收尾"
+                    later["evidence"] = [f"blocked-by:{args.task}"]
+                    state["artifacts"][later["id"]] = {
+                        "status": later_status,
+                        "evidence": list(later["evidence"]),
+                        "updated_at": utc_now(),
+                    }
+                continue
+            if later["id"] == "terminal.report":
                 continue
             if later["status"] == "PENDING":
                 # An unavailable board stage leaves later board work visibly
@@ -1056,6 +1089,11 @@ def cmd_retry(args: argparse.Namespace) -> int:
         raise StateError(
             "cannot retry stage0.scope_environment after execution confirmation; "
             "start a new RUN_ID for a changed environment or scope"
+        )
+    if args.task == "stage5.final_docs" and not state["execution_confirmed"]:
+        raise StateError(
+            "stage5.final_docs cannot be retried before execution confirmation; "
+            "only terminal.report may close the blocked run"
         )
     if args.task in {"stage0.confirm", "terminal.report"}:
         raise StateError(f"{args.task} is controlled by its dedicated command")

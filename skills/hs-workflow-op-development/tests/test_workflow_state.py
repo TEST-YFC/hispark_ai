@@ -596,11 +596,34 @@ def test_stale_attempt_token_cannot_finish_a_restarted_task(tmp_path):
     )
 
 
-def test_environment_failure_still_allows_terminal_docs_and_finalize(tmp_path):
+def test_environment_failure_blocks_document_backfill_and_allows_state_finalize(tmp_path):
     state_dir = init_run(tmp_path)
     finish_current(state_dir, "stage0.scope_environment", "FAIL", "env-error.log")
-    assert read_state(state_dir)["current_task"] == "stage5.final_docs"
-    finish_current(state_dir, "stage5.final_docs", "PASS", "blocked-run.md")
+    state_after_failure = read_state(state_dir)
+    assert state_after_failure["current_task"] == "terminal.report"
+    stage5 = next(item for item in state_after_failure["tasks"] if item["id"] == "stage5.final_docs")
+    assert stage5["status"] == "BLOCKED"
+    assert "仅 terminal.report" in stage5["note"]
+    cannot_retry_docs = invoke(
+        state_dir,
+        "retry",
+        "--run-id",
+        state_dir.name,
+        "--task",
+        "stage5.final_docs",
+        expected=2,
+    )
+    assert "cannot be retried before" in cannot_retry_docs.stderr
+    cannot_start_docs = invoke(
+        state_dir,
+        "start",
+        "--run-id",
+        state_dir.name,
+        "--task",
+        "stage5.final_docs",
+        expected=2,
+    )
+    assert "OUT_OF_ORDER" in cannot_start_docs.stderr
     invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
     state = read_state(state_dir)
     assert state["overall_status"] == "FAIL"

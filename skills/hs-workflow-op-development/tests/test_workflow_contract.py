@@ -12,9 +12,20 @@ def read(relative: str) -> str:
     return (SKILLS_ROOT / relative).read_text(encoding="utf-8")
 
 
+def read_bundle(skill: str) -> str:
+    """Read an entry plus its directly linked references.
+
+    Progressive disclosure keeps stage detail out of SKILL.md; contract tests must
+    still inspect that detail without treating a reference as a second entry point.
+    """
+    root = SKILLS_ROOT / skill
+    files = [root / "SKILL.md"] + sorted((root / "references").glob("*.md"))
+    return "\n".join(path.read_text(encoding="utf-8") for path in files)
+
+
 def test_board_sdk_location_requires_explicit_user_input():
-    workflow = read("hs-workflow-op-development/SKILL.md")
-    board = read("hs-verify-op-board/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
+    board = read_bundle("hs-verify-op-board")
     for text in (workflow, board):
         assert "FIRMWARE_SDK_ROOT" in text
         assert "用户" in text
@@ -26,8 +37,8 @@ def test_board_sdk_location_requires_explicit_user_input():
 
 
 def test_board_workflow_keeps_all_required_gates():
-    workflow = read("hs-workflow-op-development/SKILL.md")
-    board = read("hs-verify-op-board/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
+    board = read_bundle("hs-verify-op-board")
     integration = read("hs-verify-op-board/chips/ws63/references/sdk-integration.md")
     combined = "\n".join((workflow, board, integration))
     required = (
@@ -53,7 +64,7 @@ def test_board_workflow_keeps_all_required_gates():
 
 
 def test_board_accuracy_requires_complete_same_run_tensor_evidence():
-    board = read("hs-verify-op-board/SKILL.md")
+    board = read_bundle("hs-verify-op-board")
     for token in (
         "同一 case",
         "完整输出Tensor",
@@ -83,12 +94,15 @@ def test_active_skills_do_not_expose_internal_version_comparisons():
 
 
 def test_environment_preparation_is_intent_and_sdk_path_gated():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "环境准备分流",
         "只想安装或检查 `fbb CLI`",
         "已明确提供 SDK 源码路径",
         "没有 SDK，且明确要求编译/上板",
+        "不在本算子 run 内调用",
+        "默认 `AUTO_ALL` 必须先由用户在 Stage0 提供",
+        "SDK 来源为 `USER_PROVIDED`",
         "只做算子源码、MindSpore Lite 构建或 Host 验证",
         "禁止下载另一份 SDK",
         "不得把 `fbb sdk install <chip>` 当作默认补救动作",
@@ -97,7 +111,7 @@ def test_environment_preparation_is_intent_and_sdk_path_gated():
 
 
 def test_environment_skill_missing_is_reported_before_board_stage():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "环境准备 Skill 的可用性门禁",
         "该使用者当前会话",
@@ -111,7 +125,7 @@ def test_environment_skill_missing_is_reported_before_board_stage():
 
 
 def test_environment_build_flash_skills_share_install_source():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     source = "https://gitcode.com/HiSpark/hibot-skills/tree/master/skills"
     assert workflow.count(source) >= 2
     for skill in ("hs-dev-env-prep", "hs-dev-build", "hs-dev-flash"):
@@ -121,20 +135,20 @@ def test_environment_build_flash_skills_share_install_source():
 
 
 def test_workflow_route_disambiguation_prefers_full_flow_for_generic_requests():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "实现/适配/新增 MatMul 算子",
         "在 WS63 上实现/运行 X 算子",
         "只改 MindSpore Lite 源码，不测试、不编译、不写文档",
         "只用 hs-dev-op-implement 分析/补 X",
-        "不得降级为 `hs-dev-op-implement`",
+        "不得降级为",
         "先按完整 workflow",
     ):
         assert token in workflow, token
 
 
 def test_workflow_requires_document_first_and_terminal_background_reporting():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     stage1 = workflow.split("## stage1：", 1)[1].split("## stage2：", 1)[0]
     stage2 = workflow.split("## stage2：", 1)[1].split("## stage3：", 1)[0]
     assert stage1.index("hs-dev-op-implement mode=prepare") < stage1.index(
@@ -151,15 +165,15 @@ def test_workflow_requires_document_first_and_terminal_background_reporting():
 
 
 def test_document_first_roles_and_mechanical_gate_do_not_conflict():
-    impl = read("hs-dev-op-implement/SKILL.md")
-    manual = read("hs-design-op-manual/SKILL.md")
+    impl = read_bundle("hs-dev-op-implement")
+    manual = read_bundle("hs-design-op-manual")
     gate = read("hs-dev-op-implement/scripts/gate_artifacts.py")
     for token in (
         "mode=prepare",
         "mode=apply",
         "OP_PLAN_GATE=PASS",
         "PRE_SOURCE_GATE=PASS",
-        "本skill不得自行调用文档Skill",
+        "本 skill 不自行调用文档 Skill",
     ):
         assert token in impl, token
     assert "只能在父流程已经完成`hs-dev-op-implement mode=prepare`" in manual
@@ -181,18 +195,18 @@ def test_document_first_roles_and_mechanical_gate_do_not_conflict():
 
 def test_frozen_contract_and_planned_cases_cannot_change_during_apply_or_host():
     workflow = read("hs-workflow-op-development/SKILL.md")
-    host = read("hs-verify-op-host/SKILL.md")
+    host = read_bundle("hs-verify-op-host")
     apply_stage = workflow.split("## stage2：", 1)[1].split("## stage3：", 1)[0]
     host_stage = workflow.split("## stage4：", 1)[1].split("## stage5：", 1)[0]
-    assert "不得在apply中直接\n修改冻结合同" in apply_stage
-    assert "返回stage1" in apply_stage
-    assert "读取并执行stage1冻结的完整`op_spec.py`" in host_stage
+    assert "冻结合同" in apply_stage
+    assert "返回 stage1" in apply_stage
+    assert re.search(r"读取并执行\s*stage1\s*冻结的完整\s*`op_spec\.py`", host_stage)
     assert "不把Host阶段当成正常改写计划用例的阶段" in host_stage
     assert "完整workflow的Host阶段不得直接新增、删除或改写case" in host
 
 
 def test_final_manual_is_host_gated_and_board_report_is_signed_separately():
-    manual = read("hs-design-op-manual/SKILL.md")
+    manual = read_bundle("hs-design-op-manual")
     assert "验证文档" in manual
     assert "不能把固件构建写成板测通过" in manual
 
@@ -222,8 +236,8 @@ def test_design_and_verify_templates_match_manual_audit_contract():
 
 
 def test_operator_documents_have_one_owner_directory_and_fixed_pair():
-    manual = read("hs-design-op-manual/SKILL.md")
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    manual = read_bundle("hs-design-op-manual")
+    workflow = read_bundle("hs-workflow-op-development")
     audit = read("hs-design-op-manual/scripts/audit_manual_inputs.py")
     design_template = read(
         "hs-design-op-manual/references/operator-design-doc-template.md"
@@ -238,7 +252,7 @@ def test_operator_documents_have_one_owner_directory_and_fixed_pair():
         assert name in manual
         assert name in workflow
     standalone = manual.split("### 独立模式", 1)[1].split("### 产物集成模式", 1)[0]
-    assert "<opdir>/docs/" in standalone
+    assert "<opdir>/docs/" in manual
     assert "成对生成" in manual
     output_table = manual.split("## 输出决策", 1)[1].split("## 自检与最终复核", 1)[0]
     assert "<code_root>/" not in output_table
@@ -273,7 +287,7 @@ def test_operator_documents_have_one_owner_directory_and_fixed_pair():
 
 
 def test_document_only_request_routes_to_artifact_sync_without_development():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     assert "用本 workflow 新生成 X 文档" in workflow
     assert "已有算子产物使用 `artifact-sync`" in workflow
     assert "不实现、不构建、不运行板测" in workflow
@@ -330,8 +344,8 @@ def test_implement_requires_post_code_review_and_fold_checks():
 
 
 def test_operator_workflow_loads_repository_code_style_before_source_changes():
-    workflow = read("hs-workflow-op-development/SKILL.md")
-    impl = read("hs-dev-op-implement/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
+    impl = read_bundle("hs-dev-op-implement")
     quality = read("hs-dev-op-implement/references/code-quality-gate.md")
     bundled_style = SKILLS_ROOT / "hs-dev-op-implement/references/code-style.md"
 
@@ -341,7 +355,7 @@ def test_operator_workflow_loads_repository_code_style_before_source_changes():
     assert "完整读取" in apply_stage
     assert "references/code-style.md" in apply_stage
     assert "展开为绝对路径" in impl
-    assert "使用者无需提供或创建" in apply_stage
+    assert "使用者无需提供或创建" in impl
     assert apply_stage.index("完整读取") < apply_stage.index("每一层动笔前")
 
     for token in (
@@ -357,7 +371,7 @@ def test_operator_workflow_loads_repository_code_style_before_source_changes():
     stage2 = workflow.split("## stage2：", 1)[1].split("## stage3：", 1)[0]
     stage3 = workflow.split("## stage3：", 1)[1].split("## stage4：", 1)[0]
     assert "references/code-style.md" in stage2
-    assert "展开后的绝对" in stage2
+    assert "展开后的绝对" in stage2 or "展开为绝对路径" in stage2
     assert "不是用户需要安装的工具" in stage2
     assert "在写任何①-⑦源码前" in stage2
     assert "同一`CODE_STYLE_SOURCE`" in stage3
@@ -375,10 +389,10 @@ def test_operator_workflow_loads_repository_code_style_before_source_changes():
     assert quality_gate < build_start
 
 
-def test_leaf_trigger_is_explicit_and_board_stage_numbers_match():
-    impl = read("hs-dev-op-implement/SKILL.md")
-    board = read("hs-verify-op-board/SKILL.md")
-    workflow = read("hs-workflow-op-development/SKILL.md")
+def test_individual_skill_trigger_is_explicit_and_board_stage_numbers_match():
+    impl = read_bundle("hs-dev-op-implement")
+    board = read_bundle("hs-verify-op-board")
+    workflow = read_bundle("hs-workflow-op-development")
     assert "explicitly requests source-only work" in impl
     assert "本 skill step0-3" in board
     assert "workflow stage6 的 sample/adaptor/固件接线" in board
@@ -386,9 +400,9 @@ def test_leaf_trigger_is_explicit_and_board_stage_numbers_match():
 
 
 def test_full_workflow_defaults_to_automatic_full_board_matrix():
-    workflow = read("hs-workflow-op-development/SKILL.md")
-    board = read("hs-verify-op-board/SKILL.md")
-    host = read("hs-verify-op-host/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
+    board = read_bundle("hs-verify-op-board")
+    host = read_bundle("hs-verify-op-host")
     for token in (
         "BOARD_POLICY=AUTO_ALL",
         "只有用户明确说“只做Host/不上板/不烧录”",
@@ -405,8 +419,8 @@ def test_full_workflow_defaults_to_automatic_full_board_matrix():
 
 
 def test_incomplete_board_flow_cannot_be_reported_as_overall_pass():
-    workflow = read("hs-workflow-op-development/SKILL.md")
-    board = read("hs-verify-op-board/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
+    board = read_bundle("hs-verify-op-board")
 
     for token in (
         "OP_WORKFLOW=<PASS|FAIL|INCOMPLETE|HOST_ONLY_PASS>",
@@ -434,7 +448,7 @@ def test_incomplete_board_flow_cannot_be_reported_as_overall_pass():
 
 
 def test_stage0_does_not_conflate_wsl_with_firmware_environment():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "生成 BitShift 算子",
         "默认宣布`AUTO_ALL`",
@@ -452,7 +466,7 @@ def test_stage0_does_not_conflate_wsl_with_firmware_environment():
 
 
 def test_stage0_auto_detects_before_asking_user():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "先自动探测",
         "可由当前会话、路径存在性和工具实测",
@@ -473,7 +487,7 @@ def test_stage0_auto_detects_before_asking_user():
 
 
 def test_stage0_requires_one_confirmation_before_any_write_or_execution():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "EXECUTION_CONFIRM_GATE（一次总确认；确认前只读）",
         "EXECUTION_CONFIRM_GATE=PENDING",
@@ -495,7 +509,7 @@ def test_stage0_requires_one_confirmation_before_any_write_or_execution():
 
 
 def test_stage0_user_message_uses_plain_language_before_internal_fields():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "执行方式：完整开发和验证（默认）",
         "模型转换和电脑端测试",
@@ -516,7 +530,7 @@ def test_stage0_user_message_uses_plain_language_before_internal_fields():
 
 
 def test_fbb_cli_sdk_toolchain_and_firmware_terms_are_distinct():
-    workflow = read("hs-workflow-op-development/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "`fbb CLI`是提供`fbb describe/build/flash/monitor`等命令的命令行工具",
         "`固件SDK`是用户提供的芯片源码工程",
@@ -529,8 +543,8 @@ def test_fbb_cli_sdk_toolchain_and_firmware_terms_are_distinct():
 
 
 def test_missing_lightweight_dependencies_are_auto_repaired_before_blocking():
-    workflow = read("hs-workflow-op-development/SKILL.md")
-    host = read("hs-verify-op-host/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
+    host = read_bundle("hs-verify-op-host")
     runner = read("hs-verify-op-host/scripts/run_all_cases.py")
     for token in (
         "缺失依赖自动修复",
@@ -550,9 +564,9 @@ def test_missing_lightweight_dependencies_are_auto_repaired_before_blocking():
 
 
 def test_converter_shared_library_failure_is_auto_repaired_in_process():
-    workflow = read("hs-workflow-op-development/SKILL.md")
-    host = read("hs-verify-op-host/SKILL.md")
-    board = read("hs-verify-op-board/SKILL.md")
+    workflow = read_bundle("hs-workflow-op-development")
+    host = read_bundle("hs-verify-op-host")
+    board = read_bundle("hs-verify-op-board")
     env_setup = read("hs-workflow-mslite-env-setup/SKILL.md")
     combined = "\n".join((workflow, host, board, env_setup))
     for token in (

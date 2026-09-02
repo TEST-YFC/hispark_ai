@@ -10,48 +10,108 @@ from pathlib import Path
 
 IDENTITY_FIELDS = ("framework", "case_id", "mode")
 PASS_EVIDENCE = ("model", "input_dir", "gt_dir", "firmware",
-                 "flash_log", "monitor", "accuracy_log")
+                 "flash_log", "monitor", "accuracy_log", "serial_probe")
 
 
 def identity(item):
-    return tuple(str(item.get(name, "")) for name in IDENTITY_FIELDS)
+    if not isinstance(item, dict):
+        raise ValueError("case record must be a JSON object")
+    values = []
+    for name in IDENTITY_FIELDS:
+        if name not in item:
+            raise ValueError(f"missing identity field {name}")
+        value = item[name]
+        allowed = (str, int) if name == "case_id" else (str,)
+        if isinstance(value, bool) or not isinstance(value, allowed):
+            kind = "string or integer" if name == "case_id" else "string"
+            raise ValueError(f"identity field {name} must be a {kind}")
+        normalized = str(value)
+        if not normalized or normalized != normalized.strip():
+            raise ValueError(f"identity field {name} must be non-empty without surrounding whitespace")
+        values.append(normalized)
+    return tuple(values)
+
+
+def _read_text(path):
+    """Read tool output written as UTF-8, BOM/UTF-16, or a Windows code page."""
+    raw = Path(path).read_bytes()
+    if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+        try:
+            return raw.decode("utf-16")
+        except UnicodeDecodeError:
+            pass
+    utf8_text = raw.decode("utf-8", errors="replace")
+    if "[AI_MCU]" in utf8_text or "ACCURACY_VERDICT" in utf8_text:
+        return utf8_text
+    for encoding in ("utf-8-sig", "gb18030"):
+        try:
+            text = raw.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+        if "\x00" not in text:
+            return text
+    for encoding in ("utf-16-le", "utf-16-be"):
+        try:
+            return raw.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    return raw.decode("utf-8", errors="replace")
 
 
 def load_json(path):
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(_read_text(path))
 
 
 def last_json_line(path):
-    lines = [line.strip() for line in path.read_text(
-        encoding="utf-8", errors="replace").splitlines() if line.strip()]
-    for line in reversed(lines):
-        try:
-            return json.loads(line)
-        except json.JSONDecodeError:
-            continue
-    raise ValueError(f"no JSON object found in flash log: {path}")
+    lines = [line.strip() for line in _read_text(path).splitlines() if line.strip()]
+    if not lines:
+        raise ValueError(f"flash log has no non-empty lines: {path}")
+    final_line = lines[-1]
+    try:
+        payload = json.loads(final_line)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"flash log final non-empty line is not valid JSON: {path}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise ValueError(f"flash log final JSON is not an object: {path}")
+    return payload
 
 
 def validate_pass_evidence(result, expected):
     errors = []
+    evidence_paths = {}
     for field in PASS_EVIDENCE:
         raw = result.get(field)
         if not raw:
             errors.append(f"missing PASS evidence field {field}")
             continue
+        if not isinstance(raw, str) or raw != raw.strip():
+            errors.append(f"PASS evidence field {field} must be a non-empty path string")
+            continue
         path = Path(raw)
+        evidence_paths[field] = path
         if not path.is_absolute() or not path.exists():
             errors.append(f"{field} missing/not absolute: {path}")
         elif path.is_file() and path.stat().st_size == 0:
             errors.append(f"{field} is empty: {path}")
 
     for field in ("model", "input_dir", "gt_dir"):
-        if result.get(field) and expected.get(field):
-            if Path(result[field]).resolve() != Path(expected[field]).resolve():
+        expected_raw = expected.get(field)
+        if not isinstance(expected_raw, str) or not expected_raw or expected_raw != expected_raw.strip():
+            errors.append(f"Host matrix field {field} must be a non-empty path string")
+            continue
+        expected_path = Path(expected_raw)
+        if not expected_path.is_absolute():
+            errors.append(f"Host matrix field {field} is not absolute: {expected_path}")
+            continue
+        result_path = evidence_paths.get(field)
+        if result_path is not None and result_path.is_absolute():
+            if result_path.resolve() != expected_path.resolve():
                 errors.append(f"{field} does not match Host matrix")
 
-    flash_log = Path(result.get("flash_log", ""))
-    if flash_log.is_file():
+    flash_log = evidence_paths.get("flash_log")
+    if flash_log is not None and flash_log.is_file():
         try:
             flash = last_json_line(flash_log)
             if flash.get("success") is not True:
@@ -59,11 +119,19 @@ def validate_pass_evidence(result, expected):
         except (OSError, ValueError) as exc:
             errors.append(str(exc))
 
-    accuracy_log = Path(result.get("accuracy_log", ""))
-    if accuracy_log.is_file():
-        text = accuracy_log.read_text(encoding="utf-8", errors="replace")
-        if re.search(r"^ACCURACY_VERDICT=PASS\s*$", text, re.MULTILINE) is None:
+    accuracy_log = evidence_paths.get("accuracy_log")
+    if accuracy_log is not None and accuracy_log.is_file():
+        text = _read_text(accuracy_log)
+        if re.search(r"ACCURACY_VERDICT=PASS\s*$", text, re.MULTILINE) is None:
             errors.append("accuracy log has no exact ACCURACY_VERDICT=PASS")
+    serial_probe = evidence_paths.get("serial_probe")
+    if serial_probe is not None and serial_probe.is_file():
+        try:
+            probe = load_json(serial_probe)
+            if not isinstance(probe, dict) or not probe.get("probed_at_utc"):
+                errors.append("serial_probe is not a valid probe receipt")
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"invalid serial_probe receipt: {exc}")
     return errors
 
 
@@ -87,6 +155,13 @@ def main():
     except (OSError, json.JSONDecodeError) as exc:
         print(f"BOARD_MATRIX_GATE=FAIL reason=invalid_expected_manifest detail={exc}")
         return 1
+    if not isinstance(manifest, dict):
+        print("BOARD_MATRIX_GATE=FAIL reason=invalid_expected_manifest detail=root must be a JSON object")
+        return 1
+    for field in ("run_id", "operator"):
+        value = manifest.get(field)
+        if not isinstance(value, str) or not value or value != value.strip():
+            errors.append(f"manifest {field} must be a non-empty string")
 
     expected_cases = manifest.get("cases")
     if not isinstance(expected_cases, list) or not expected_cases:
@@ -96,11 +171,13 @@ def main():
         errors.append("expected_count does not match cases length")
 
     expected_by_key = {}
-    for item in expected_cases:
-        key = identity(item)
-        if not all(key):
-            errors.append(f"invalid expected identity: {key}")
-        elif key in expected_by_key:
+    for index, item in enumerate(expected_cases):
+        try:
+            key = identity(item)
+        except ValueError as exc:
+            errors.append(f"invalid expected identity at index {index}: {exc}")
+            continue
+        if key in expected_by_key:
             errors.append(f"duplicate expected identity: {key}")
         else:
             expected_by_key[key] = item
@@ -112,11 +189,11 @@ def main():
         for path in sorted(results_dir.rglob("board_result.json")):
             try:
                 item = load_json(path)
-            except (OSError, json.JSONDecodeError) as exc:
+                key = identity(item)
+            except (OSError, json.JSONDecodeError, ValueError) as exc:
                 errors.append(f"invalid result JSON {path}: {exc}")
                 continue
             item["result_file"] = str(path.resolve())
-            key = identity(item)
             if key in results_by_key:
                 errors.append(f"duplicate board result identity: {key}")
             else:
@@ -169,7 +246,10 @@ def main():
             "result_file": "" if result is None else result.get("result_file", ""),
         })
 
-    expected_count = len(expected_by_key)
+    # Keep the manifest's raw row count as the denominator.  A duplicate
+    # identity is still an invalid manifest and must fail, but collapsing it
+    # into expected_by_key must not make the report appear complete.
+    expected_count = len(expected_cases)
     recorded_count = len(set(results_by_key) & set(expected_by_key))
     # A NOT_RUN receipt only accounts for why a row was skipped.  It is not
     # evidence that real-board flash/serial/accuracy execution happened.

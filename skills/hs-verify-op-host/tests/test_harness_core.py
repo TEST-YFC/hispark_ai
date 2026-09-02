@@ -50,6 +50,15 @@ def _load_harness():
 h = _load_harness()
 
 
+def test_multi_output_ground_truth_uses_numeric_filename_order(tmp_path):
+    for index in (10, 2, 1):
+        np.save(tmp_path / f"output_{index}.npy", np.asarray([index]))
+
+    outputs = h._load_numpy_outputs(tmp_path)
+
+    assert [int(output[0]) for output in outputs] == [1, 2, 10]
+
+
 def test_onnx_reference_falls_back_only_for_ort_not_implemented(monkeypatch):
     class FailingSession:
         def __init__(self, *_args, **_kwargs):

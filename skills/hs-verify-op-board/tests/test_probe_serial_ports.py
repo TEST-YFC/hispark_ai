@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 
 
@@ -28,3 +29,65 @@ def test_pnp_parser_keeps_device_evidence():
     )
     assert "Instance ID: USB\\VID_1A86&PID_7523\\X" in parsed["COM12"]
     assert "Device Description: USB-SERIAL CH340 (COM12)" in parsed["COM12"]
+
+
+def test_probe_retries_after_empty_inventory(monkeypatch):
+    empty = {
+        "schema_version": 1,
+        "probed_at_utc": "t0",
+        "system": "Windows",
+        "sources": {},
+        "ports": [],
+        "compatible_candidates": [],
+        "unique_compatible": False,
+    }
+    ready = {
+        "schema_version": 1,
+        "probed_at_utc": "t1",
+        "system": "Windows",
+        "sources": {},
+        "ports": [{"port": "COM12", "class": "usb_uart_candidate", "evidence": ["CH340"]}],
+        "compatible_candidates": [{"port": "COM12", "class": "usb_uart_candidate", "evidence": ["CH340"]}],
+        "unique_compatible": True,
+    }
+    reports = iter((empty, ready))
+    monkeypatch.setattr(probe, "inventory", lambda timeout: next(reports))
+    monkeypatch.setattr(probe.time, "sleep", lambda seconds: None)
+
+    result = probe.probe_with_retries(timeout=1, attempts=3, interval=2)
+
+    assert result["unique_compatible"] is True
+    assert result["attempt_count"] == 2
+    assert len(result["attempt_history"]) == 2
+    assert result["attempt_history"][0]["probe_attempt"] == 1
+    assert result["attempt_history"][1]["probe_attempt"] == 2
+
+
+def test_decode_output_handles_utf16_and_code_page_text():
+    text = "设备描述: USB-SERIAL CH340 (COM12)"
+    assert "COM12" in probe._decode_output(text.encode("utf-16"))
+    assert "COM12" in probe._decode_output(text.encode("gb18030"))
+
+
+def test_cli_writes_receipt_and_leaves_json_as_last_output_line(monkeypatch, tmp_path, capsys):
+    report = {
+        "schema_version": 1,
+        "probed_at_utc": "2026-01-01T00:00:00Z",
+        "system": "Windows",
+        "sources": {},
+        "ports": [],
+        "compatible_candidates": [],
+        "unique_compatible": False,
+        "attempt_count": 1,
+        "attempts_requested": 1,
+        "retry_interval_seconds": 0.0,
+        "attempt_history": [],
+    }
+    monkeypatch.setattr(probe, "probe_with_retries", lambda timeout, attempts, interval: report)
+    output = tmp_path / "serial_probe.json"
+
+    assert probe.main(["--output", str(output), "--attempts", "1", "--interval", "0"]) == 0
+
+    captured = capsys.readouterr().out.splitlines()
+    assert json.loads(captured[-1]) == report
+    assert json.loads(output.read_text(encoding="utf-8")) == report

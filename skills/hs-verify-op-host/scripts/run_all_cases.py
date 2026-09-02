@@ -508,8 +508,20 @@ def _tensor_output_name(idx, count):
     return f"output_{idx}.npy" if count > 1 else "output.npy"
 
 
+def _output_file_sort_key(path: Path):
+    """Sort indexed tensor files numerically, preserving the single-output name."""
+    name = Path(path).name
+    if name == "output.npy":
+        return (0, 0, name)
+    match = re.fullmatch(r"output_(\d+)\.npy", name)
+    if match:
+        return (1, int(match.group(1)), name)
+    return (2, 0, name)
+
+
 def _load_numpy_outputs(out_dir: Path):
-    return [np.load(p) for p in sorted(out_dir.glob("output*.npy"))]
+    files = sorted(out_dir.glob("output*.npy"), key=_output_file_sort_key)
+    return [np.load(p) for p in files]
 
 
 def _clear_numpy_outputs(out_dir: Path):
