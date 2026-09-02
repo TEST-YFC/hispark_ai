@@ -150,6 +150,8 @@ def _make_onehot_nodes(initializer_list):
 
 
 def _make_unique_nodes(initializer_list):
+    """Unique 变长输出 unique_vals 不可被下游消费(Micro 仅允许终端 QuantDTypeCast);
+    使用固定形状的 inverse_indices 并入 Z 拼接, 保留算子覆盖且收敛为单输出."""
     cascade_flat_shape = helper.make_tensor(
         'cascade_flat_shape', TensorProto.INT64, [1], [16])
     initializer_list.append(cascade_flat_shape)
@@ -159,9 +161,14 @@ def _make_unique_nodes(initializer_list):
     unique_round_node = helper.make_node(
         'Round', inputs=['where_flat'], outputs=['where_rounded'])
     unique_node = helper.make_node(
-        'Unique', inputs=['where_rounded'], outputs=['unique_vals'],
+        'Unique', inputs=['where_rounded'],
+        outputs=['unique_vals', 'unique_indices', 'unique_inverse'],
         sorted=1)
-    return [unique_in_reshape, unique_round_node, unique_node]
+    unique_inverse_cast = helper.make_node(
+        'Cast', inputs=['unique_inverse'], outputs=['unique_inverse_f'],
+        to=TensorProto.FLOAT)
+    return [unique_in_reshape, unique_round_node, unique_node,
+            unique_inverse_cast]
 
 
 def _make_quant_integer_nodes(initializer_list):
@@ -244,6 +251,7 @@ _ROW_SPECS = (
     ('onehot_out', 'onehot_row', 32),
     ('ciconv_y_f', 'ciconv_row', 4),
     ('matint_y_f', 'matint_row', 16),
+    ('unique_inverse_f', 'unique_inverse_row', 16),
 )
 
 
@@ -280,7 +288,7 @@ def _make_row_nodes(initializer_list):
 
 
 def _make_cascade_graph(initializer_list):
-    """组装计算图: 输入X/Y, 输出Z与unique_vals(变长, 终端输出)"""
+    """组装计算图: 输入X/Y, 输出单一固定形状张量Z"""
     input_shape = [1, 4, 4]
     input_x = helper.make_tensor_value_info(
         'X', TensorProto.FLOAT, input_shape)
@@ -307,9 +315,7 @@ def _make_cascade_graph(initializer_list):
         'cascade_ops_graph_v7',
         [input_x, input_y],
         [helper.make_tensor_value_info('Z', TensorProto.FLOAT,
-                                       [1, total_width]),
-         helper.make_tensor_value_info('unique_vals', TensorProto.FLOAT,
-                                       ['num_unique'])],
+                                       [1, total_width])],
         initializer=initializer_list
     )
 

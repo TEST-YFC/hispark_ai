@@ -30,9 +30,8 @@ class _cascadeoperatormodel(tf.Module):
     ])
     def __call__(self, x):
         main = self._run_math_chain(x)
-        rows, u_val = self._run_search_and_struct_nodes(main)
-        merged = tf.concat(rows, axis=1, name="merged_output")
-        return merged, u_val
+        rows = self._run_search_and_struct_nodes(main)
+        return tf.concat(rows, axis=1, name="merged_output")
 
     def _run_math_chain(self, x):
         """数学/激活级联: Neg Pow Gelu LogSoftmax Maximum Minimum ReduceProd"""
@@ -67,7 +66,7 @@ class _cascadeoperatormodel(tf.Module):
         oh = tf.one_hot(ti_flat, 2, name="one_hot")
         g_flat = tf.reshape(g, [4], name="gelu_flat")
         u_in = tf.cast(tf.round(g_flat), tf.int32, name="unique_in")
-        u_val, _ = tf.unique(u_in, name="unique")
+        _, u_idx = tf.unique(u_in, name="unique")
         sh = tf.shape(g_flat, name="shape")
         fl = tf.fill(sh, 0.25, name="fill")
         fl_first = tf.slice(fl, [0], [1], name="fill_first")
@@ -94,8 +93,10 @@ class _cascadeoperatormodel(tf.Module):
             tf.reshape(oh, [1, 8], name="onehot_row"),
             tf.reshape(gn, [1, 2], name="gathernd_row"),
             tf.reshape(sh_f, [1, 1], name="shape_row"),
+            tf.reshape(tf.cast(u_idx, tf.float32, name="unique_idx_f"),
+                       [1, 4], name="unique_idx_row"),
         ]
-        return rows, u_val
+        return rows
 
 
 def create_cascademodel_tflite_model(output_path):
