@@ -32,7 +32,11 @@ class _cascadeoperatormodel(tf.Module):
         main = self._run_math_chain(x)
         rows, u_val = self._run_search_and_struct_nodes(main)
         merged = tf.concat(rows, axis=1, name="merged_output")
-        return merged, u_val
+        # u_val 为变长 Unique 输出, 归约为标量后与 merged 相加, 收敛为单一固定形状输出
+        u_sum = tf.reduce_sum(tf.cast(u_val, tf.float32, name="unique_cast"),
+                              name="unique_sum")
+        out = tf.add(merged, u_sum, name="final_output")
+        return out
 
     def _run_math_chain(self, x):
         """数学/激活级联: Neg Pow Gelu LogSoftmax Maximum Minimum ReduceProd"""

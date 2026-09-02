@@ -280,7 +280,7 @@ def _make_row_nodes(initializer_list):
 
 
 def _make_cascade_graph(initializer_list):
-    """组装计算图: 输入X/Y, 输出Z与unique_vals(变长, 终端输出)"""
+    """组装计算图: 输入X/Y, 输出单一固定形状张量Z_out"""
     input_shape = [1, 4, 4]
     input_x = helper.make_tensor_value_info(
         'X', TensorProto.FLOAT, input_shape)
@@ -297,19 +297,26 @@ def _make_cascade_graph(initializer_list):
     row_nodes, row_names, total_width = _make_row_nodes(initializer_list)
     concat_final_node = helper.make_node(
         'Concat', inputs=row_names, outputs=['Z'], axis=1)
+    # unique_vals 为变长张量, 归约为标量后与 Z 相加, 收敛为单一固定形状输出
+    unique_sum_axes = helper.make_tensor(
+        'unique_sum_axes', TensorProto.INT64, [1], [0])
+    initializer_list.append(unique_sum_axes)
+    unique_sum_node = helper.make_node(
+        'ReduceSum', inputs=['unique_vals', 'unique_sum_axes'],
+        outputs=['unique_sum'], keepdims=0)
+    add_node = helper.make_node(
+        'Add', inputs=['Z', 'unique_sum'], outputs=['Z_out'])
     all_nodes = (
         nodes_chain + nodes_elementwise + nodes_reduce + nodes_search +
         nodes_onehot + nodes_unique + nodes_quant + nodes_matint +
-        row_nodes + [concat_final_node]
+        row_nodes + [concat_final_node, unique_sum_node, add_node]
     )
     return helper.make_graph(
         all_nodes,
         'cascade_ops_graph_v7',
         [input_x, input_y],
-        [helper.make_tensor_value_info('Z', TensorProto.FLOAT,
-                                       [1, total_width]),
-         helper.make_tensor_value_info('unique_vals', TensorProto.FLOAT,
-                                       ['num_unique'])],
+        [helper.make_tensor_value_info('Z_out', TensorProto.FLOAT,
+                                       [1, total_width])],
         initializer=initializer_list
     )
 
