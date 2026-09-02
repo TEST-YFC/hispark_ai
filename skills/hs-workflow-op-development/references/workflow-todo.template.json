@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "status_values": [
+    "PENDING",
+    "RUNNING",
+    "PASS",
+    "FAIL",
+    "NOT_RUN",
+    "NOT_REQUESTED",
+    "BLOCKED"
+  ],
+  "tasks": [
+    {
+      "id": "stage0.scope_environment",
+      "stage": "stage0",
+      "title": "冻结范围并只读探测环境",
+      "manual": false
+    },
+    {
+      "id": "stage0.confirm",
+      "stage": "stage0-confirm",
+      "title": "展示方案并取得一次执行确认",
+      "manual": true
+    },
+    {
+      "id": "stage1.plan",
+      "stage": "stage1",
+      "title": "生成并冻结实现计划、合同和能力清单",
+      "manual": false
+    },
+    {
+      "id": "stage1.initial_docs",
+      "stage": "stage1",
+      "title": "生成初版设计文档和验证文档",
+      "manual": false
+    },
+    {
+      "id": "stage1.pre_source_gate",
+      "stage": "stage1",
+      "title": "执行初版文档与源码指纹门禁",
+      "manual": false
+    },
+    {
+      "id": "stage2.implementation",
+      "stage": "stage2",
+      "title": "自动写入或修复算子源码",
+      "manual": false
+    },
+    {
+      "id": "stage2.code_review",
+      "stage": "stage2",
+      "title": "执行代码审查和实现质量门禁",
+      "manual": false
+    },
+    {
+      "id": "stage3.mslite_build",
+      "stage": "stage3",
+      "title": "构建本轮 MindSpore Lite 工具包",
+      "manual": false
+    },
+    {
+      "id": "stage4.host_verify",
+      "stage": "stage4",
+      "title": "生成并运行 Host 全量验证",
+      "manual": false
+    },
+    {
+      "id": "stage6.firmware_matrix",
+      "stage": "stage6",
+      "title": "按矩阵自动接入并构建全部固件",
+      "manual": false
+    },
+    {
+      "id": "stage7.board_matrix",
+      "stage": "stage7",
+      "title": "逐项烧录、采集串口并验收板端精度",
+      "manual": false
+    },
+    {
+      "id": "stage5.final_docs",
+      "stage": "stage5",
+      "title": "回填终版成对算子文档",
+      "manual": false
+    },
+    {
+      "id": "terminal.report",
+      "stage": "terminal",
+      "title": "生成逐阶段终态报告",
+      "manual": false
+    }
+  ]
+}

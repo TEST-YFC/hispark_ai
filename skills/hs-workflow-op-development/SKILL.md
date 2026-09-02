@@ -1,7 +1,7 @@
 ---
 name: hs-workflow-op-development
 description: >-
-  End-to-end workflow for adapting, adding, porting, or supporting a MindSpore Lite Micro operator on HiSpark.AI, from specification and implementation through host tests, documentation, automatic firmware build/flash, and full board-case accuracy. This is the default top-level skill for generic requests such as “适配一个算子”, “新增/支持 xxx 算子”, “port/add/implement an operator”, or any request combining operator implementation with verification, build, flash, documentation, or board testing. Do not use it when the user explicitly asks to use a named stage-specific skill or clearly requests only implementation, only host tests, only documentation, only build, only flash, or only board accuracy.
+  End-to-end workflow for adapting, adding, porting, or supporting a MindSpore Lite Micro operator on HiSpark.AI, from specification and implementation through host tests, documentation, automatic firmware build/flash, and full board-case accuracy. It creates a per-run TODO checklist and persisted, resumable checkpoints so every stage reaches a recorded terminal state. This is the default top-level skill for generic requests such as “适配一个算子”, “新增/支持 xxx 算子”, “port/add/implement an operator”, or any request combining operator implementation with verification, build, flash, documentation, or board testing. Do not use it when the user explicitly asks to use a named stage-specific skill or clearly requests only implementation, only host tests, only documentation, only build, only flash, or only board accuracy.
 ---
 
 # 算子适配端到端工作流
@@ -72,10 +72,131 @@ hs-design-op-manual (integrated-final：分别更新设计文档和验证文档�
 - [ ] stage2 实现/修复算子源码并通过代码审查
 - [ ] stage3 构建 MindSpore Lite 工具包
 - [ ] stage4 生成并运行 Host 测试
-- [ ] stage5 生成终版算子文档
 - [ ] stage6 默认：取得用户明确提供的固件SDK位置，按板端期望矩阵逐项接入并构建固件
 - [ ] stage7 默认：逐项烧录、采集串口并完成全部板端 case 精度验证
+- [ ] stage5（stage6-stage7终态后）生成终版算子文档
 ```
+
+## 本轮待办、检查点和自动续跑
+
+每次开始“生成/实现/适配算子”时，必须先创建本轮待办和临时状态文件，再调用任何会生成
+文档、写源码、生成测试或构建的下游 Skill。待办模板是
+`references/workflow-todo.template.md`，状态唯一写入入口是
+`scripts/workflow_state.py`；不要凭对话记忆维护进度，也不要手工编辑生成的待办。
+状态目录应放在本轮算子输出目录的临时子目录（例如
+`<opdir>/.workflow-state/<RUN_ID>/`），不能放在 skill 源目录或其他算子的目录中。
+
+初始化只创建控制性文件，不代表算子产物已经生成，也不绕过 stage0 的只读限制。用确认的
+算子输出根目录生成一个本轮唯一 ID（不能复用历史 ID），并立即执行：
+
+```text
+python <hs-workflow-op-development>/scripts/workflow_state.py init \
+  --state-dir <opdir>/.workflow-state/<RUN_ID> \
+  --operator <算子名> --run-id <RUN_ID> --mode AUTO_ALL \
+  --sdk-root <用户明确提供的固件SDK绝对路径>
+```
+
+如果 SDK 路径尚未在用户请求中给出，仍先用 `init` 生成待办，但不要猜测路径；在 stage0 的
+唯一一次人工交互中同时索取 SDK 绝对路径和执行范围确认。收到这一条回复后，agent 先用该路径
+自动完成剩余只读探测并 `finish` stage0，再立即把同一条回复写入 `confirm`，不得二次询问。
+AUTO_ALL 没有用户 SDK 路径时，状态机拒绝确认，不能以缺失路径继续。若用户在最初请求中已经
+明确选择仅电脑端，直接以 `--mode HOST_ONLY` 初始化；若是在默认 AUTO_ALL 预览的唯一回复中
+改选仅电脑端，则自动废弃尚未确认的 run，以新 `RUN_ID` 和 `HOST_ONLY` 重新 `init`、完成并
+`finish` stage0，再用同一条回复执行 `confirm --confirmed-mode HOST_ONLY`，不得二次询问，也不得
+在 AUTO_ALL run 上直接切换模式。不能因为没有板卡就自行切换该模式。`init` 必须同时生成
+`workflow_state.json`、`workflow_todo.md` 和
+`workflow_events.jsonl`，并把 stage0 只读探测标为 `RUNNING`。这三个文件均由脚本在同一目录
+用临时文件写入后原子替换；状态文件损坏、模板占位符未展开、锁超时或 run ID 不一致时必须
+fail-closed，停止流程并报告原因，不能用旧文件猜测进度。
+`init` 同时输出 stage0 探测的 `ATTEMPT_TOKEN`；完成该探测时必须原样传回，不能从别的运行取值。
+SDK 未在 `init` 时提供时，收到用户唯一一次回复后使用同一轮 ID，严格按下面顺序执行：
+
+```text
+<使用回复中的 SDK 路径自动完成 fbb/SDK/目标/端口等剩余只读探测>
+python <skill>/scripts/workflow_state.py finish \
+  --state-dir <STATE_DIR> --run-id <RUN_ID> --task stage0.scope_environment \
+  --attempt-token <INIT输出的ATTEMPT_TOKEN> --status PASS --evidence <本轮stage0探测回执绝对路径>
+python <skill>/scripts/workflow_state.py confirm \
+  --state-dir <STATE_DIR> --run-id <RUN_ID> \
+  --phrase "确认执行" --confirmed-mode AUTO_ALL \
+  --sdk-root <用户提供的固件SDK绝对路径>
+```
+
+这条命令是本轮唯一的执行确认；`--confirmed-mode` 必须与初始化时的 `--mode` 完全一致，
+否则状态机拒绝写入。`--phrase` 只作为用户确认原文审计记录，不用自然语言子串猜测执行范围；
+确认成功后不再为普通阶段询问继续。
+
+### 固定任务顺序和逐步门禁
+
+状态机只允许按下面的任务 ID 前进。`stage0.scope_environment` 由 `init` 隐式启动；除它、
+`stage0.confirm`（使用 `confirm`）和 `terminal.report`（使用 `finalize`）外，每一项都必须先 `start`，执行该项的专项 Skill 或确定性
+脚本，再用 `finish --status PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 写回至少一条本轮证据引用；完成一项立即落盘，
+不能把多个阶段做完后批量补记。`stage5.final_docs` 虽保留历史编号，但实际在 stage6、stage7
+到达终态后执行，确保终版文档能记录真实的板端结果。
+
+| 任务 ID | 主要检查和最小证据 |
+|---|---|
+| `stage0.scope_environment` | 范围、代码根、MSLite/SDK/设备环境只读探测回执 |
+| `stage0.confirm` | 一次总确认；`EXECUTION_CONFIRM_GATE=PASS` |
+| `stage1.plan` | 冻结合同、能力清单、计划 `op_spec.py` 及哈希 |
+| `stage1.initial_docs` | 成对初版设计/验证文档和 facts |
+| `stage1.pre_source_gate` | `PRE_SOURCE_GATE=PASS` |
+| `stage2.implementation` | 下游实现 Skill 的源码 diff 和实现回执 |
+| `stage2.code_review` | `code-review.md`、质量/安全门禁均 PASS |
+| `stage3.mslite_build` | 本轮 `MSLITE_PKG`、构建日志和新鲜度回执 |
+| `stage4.host_verify` | 全量 Host summary、`board_expected_matrix.json`、`HOST_VERIFY_GATE=PASS` |
+| `stage6.firmware_matrix` | 每个 framework/case/mode 独立 fwpkg、接线和固件内容门禁 |
+| `stage7.board_matrix` | 每行 flash JSON、串口 Tensor、accuracy 结果和矩阵报告 |
+| `stage5.final_docs` | 终版成对文档、facts/content/case audit |
+| `terminal.report` | 逐任务状态、证据路径、失败/未执行原因和恢复条件 |
+
+推荐的机械调用形态如下（每次调用都必须携带同一个 `RUN_ID`）：
+
+```text
+python <skill>/scripts/workflow_state.py start  --state-dir <STATE_DIR> --run-id <RUN_ID> --task <TASK_ID>
+# 记录上一条命令输出的 ATTEMPT_TOKEN
+<调用对应专项 Skill 或脚本；文档、源码、Host/板端验证均由 agent 自动完成>
+python <skill>/scripts/workflow_state.py finish --state-dir <STATE_DIR> --run-id <RUN_ID> \
+  --task <TASK_ID> --attempt-token <ATTEMPT_TOKEN> --status PASS --evidence <本轮绝对路径>
+```
+
+`finish` 不接受空证据；证据可以是本轮产物的绝对路径或明确的单行回执标识。`finalize` 同样
+必须带终态报告证据。状态脚本会拒绝损坏、空白或多行证据，避免无产物的 PASS。
+
+`finish` 会自动推进到下一个未完成任务；失败会冻结后续执行任务为 `BLOCKED`（板端不可用的
+级联任务明确记 `NOT_RUN`），但仍允许 `stage5.final_docs` 和 `terminal.report` 记录终态。
+每次 `start` 都生成新的 `ATTEMPT_TOKEN`；`finish`/`heartbeat` 必须携带同一 token，`retry` 或
+`resume` 会使旧 token 失效，防止旧 worker 覆盖新尝试。短命令行进程不要被误认为长任务 owner；若能取得实际 worker PID，可在 `start` 或 `heartbeat` 时
+传 `--owner-pid <PID>` 注册，否则保留未知 owner，`resume` 只有在心跳超过 `--stale-after`
+或显式 `--force` 时才回收，避免下游仍在写代码/构建/板测时被重复启动。修复责任归属后用
+`retry --task <TASK_ID>` 清理被阻断的后继状态，再从该任务重跑；禁止直接
+把状态改成 PASS。上游任务重试会使其后的执行结果、终版文档和 `terminal.report` 全部失效，
+状态中的旧证据会被清除并保存在 retry 事件历史中；后续阶段必须重新执行并再次 `finalize`，
+不能沿用先前 PASS 证据。重启或会话中断后先执行
+`resume --run-id <RUN_ID>`：未受回流影响的已 PASS 任务不
+重跑；`RUNNING` 任务只有其心跳过期、拥有者已退出或明确 `--force` 恢复时才回到 PENDING，
+中间产物不因此获得 PASS。最终必须先让 `terminal.report` 落盘，再根据脚本计算的
+`OP_WORKFLOW` 结案；状态仍为 `RUNNING/PENDING/NOT_RUN` 时不得结束当前任务。
+
+### 人工确认边界
+
+人工交互只发生在 stage0：确认算子范围、运行环境、用户提供的固件 SDK 绝对路径以及一次
+执行范围（完整流程或明确 Host-only）。调用 `confirm` 时必须显式传入与本轮相同的
+`--confirmed-mode`；状态中的
+`confirmation_count` 固定为 1；任何再次确认都直接报错。之后 agent 必须自动生成两份文档、
+写代码、审查、构建、生成并运行 Host 用例、生成固件、逐项验证并回填文档，不得逐阶段询问
+“是否继续/是否写文档/是否运行验证”。
+确认命令的 `--confirmed-mode` 必须与本轮 `mode` 一致；AUTO_ALL 缺少用户 SDK 路径时，先用
+用户同一条确认回复中的路径完成并落盘 stage0 只读探测，再在 `confirm` 命令补入
+`--sdk-root`。状态机不会接受无路径的完整流程确认。用户确认原文保存在状态中供审计，不用
+易误判的关键词解析替代结构化范围字段。
+若这条唯一回复把默认 AUTO_ALL 改为 HOST_ONLY，自动用新 `RUN_ID` 重新初始化 HOST_ONLY 并完成
+stage0，再以同一回复确认；这仍是一次人工交互，不得在旧 run 上调用不匹配的确认模式。
+
+只有安全或外部条件确实无法由 agent 决定时才暂停并记录 `BLOCKED/NOT_RUN`，例如缺少用户
+SDK 路径、环境候选无法唯一选择、端口歧义、设备需要人工 RESET、需要管理员权限或用户明确
+改变范围；这类暂停不是常规阶段确认，也不能把未执行写成 PASS。自动恢复时继续使用同一个
+状态文件和 RUN_ID，不得重新开一轮或读取历史日志冒充证据。
 
 只有用户明确要求Host-only时，stage6-stage7标记`NOT_REQUESTED`。默认完整工作流中没有连接
 板卡、缺少SDK或设备I/O不可用时标记`NOT_RUN`并说明原因，不把它们伪装成PASS，也不否定
@@ -97,7 +218,17 @@ hs-design-op-manual (integrated-final：分别更新设计文档和验证文档�
 
 ## stage0：冻结范围和环境
 
-记录 source entry、implementation unit 候选、代码根、`MSLITE_OP_OUTPUT`、板测策略、板卡连接状态，以及各专项 Skill 的可用性。完整workflow默认`BOARD_POLICY=AUTO_ALL`；只有用户明确说“只做Host/不上板/不烧录”才记录`BOARD_POLICY=HOST_ONLY`。Stage0只完成只读探测和计划生成；在`EXECUTION_CONFIRM_GATE=PASS`前禁止进入stage1，禁止调用下游生成/实现/验证Skill，禁止创建或修改算子文档、源码、测试模型、Micro工程、SDK接线和固件，禁止安装、下载、构建、烧录或启动后台长任务。
+进入Stage0的第一项动作是运行上面的 `workflow_state.py init`，生成本轮待办和临时检查点；
+状态文件本身是控制性记录，不属于算子源码或交付文档写入。随后记录 source entry、
+implementation unit 候选、代码根、`MSLITE_OP_OUTPUT`、板测策略、板卡连接状态，以及各专项
+Skill 的可用性，并在 `stage0.scope_environment` 完成后立即 `finish`。完整workflow默认
+`BOARD_POLICY=AUTO_ALL`；只有用户明确说“只做Host/不上板/不烧录”才记录
+`BOARD_POLICY=HOST_ONLY`。Stage0只完成只读探测和计划生成；在`EXECUTION_CONFIRM_GATE=PASS`
+前禁止进入stage1，禁止调用下游生成/实现/验证Skill；禁止创建或修改算子文档、源码、测试模型、Micro工程、SDK接线和固件，
+禁止安装、下载、构建、烧录或启动后台长任务。
+若 `stage0.scope_environment` 以失败或阻断结束且尚未通过确认，状态机允许启动
+`stage5.final_docs` 仅写入阻断运行的失败原因、恢复命令和状态证据；此例外不得生成或修改
+算子设计/验证交付文档，常规终版文档回填仍须在确认通过且 stage6、stage7 到达终态后执行。
 
 开始前先自动探测代码存储位置和各阶段实际执行环境；可由当前会话、路径存在性和工具实测
 唯一确定的信息不得再次询问用户。路径只直接证明“文件存在哪里”，不能单独证明“命令在哪里
@@ -207,11 +338,18 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 技术记录：STAGE0_PREVIEW=READY；BOARD_POLICY=AUTO_ALL；EXECUTION_CONFIRM_GATE=PENDING
 ```
 
-如果缺少`FIRMWARE_SDK_ROOT`，先只展示已知的HiSpark存储/运行环境和默认AUTO_ALL范围，询问
-SDK绝对路径，不得提前请求最终确认；收到路径并完成固件构建/设备I/O探测后，再输出上述完整
-确认模板。若某项有歧义，只把该项及候选证据列为`待确认`，待用户修正后重新展示最终方案。
+如果缺少`FIRMWARE_SDK_ROOT`，先只展示已知的HiSpark存储/运行环境和默认AUTO_ALL范围，在同一条
+提示中索取SDK绝对路径和执行范围确认，不得猜测或自动挑选路径。收到这一条回复后，agent 无需
+再次询问：先用该路径自动完成剩余只读探测，把回执作为
+`stage0.scope_environment` 的 evidence 并 `finish`；只有 stage0 已经 PASS 后，才调用
+`confirm --confirmed-mode AUTO_ALL --sdk-root <绝对路径>`，把同一条回复作为唯一确认落盘并进入
+stage1。若某项仍有歧义，只把该项及候选证据列为`待确认`，待用户修正后在新 RUN_ID 重新展示
+最终方案。
 用户明确回复“确认/继续/按上述方案执行”等同意语义后记录`EXECUTION_CONFIRM_GATE=PASS`，才可
-进入stage1。用户要求调整时更新对应字段、重做受影响的只读探测并再次确认；不得把最初一句
+进入stage1。用户要求调整范围或更换 SDK 时废弃当前轮次并新建 `RUN_ID`，重新执行 stage0 和
+唯一一次确认；如果调整来自这条唯一回复，agent 自动重建 run、完成只读探测并复用该回复，
+不得要求用户再次确认。尤其不能在 AUTO_ALL run 上直接执行
+`confirm --confirmed-mode HOST_ONLY`。不得把最初一句
 “生成某算子”或提供SDK路径本身当成已经通过该门禁。
 
 记录用户回答后，在每个阶段用实际命令验证路径和工具是否可用。当前MSLite工具包是
@@ -227,8 +365,11 @@ fwpkg时核对哈希即可，不为环境组合另建一套状态机。
   总确认通过后才允许在该SDK内完成确定性接线和构建。确认通过后不得再询问“是否要上板”。
 - 总确认已通过、固件位置已给出且设备探测得到唯一兼容板卡/端口时，自动执行全用例固件构建、烧录、串口
   采集和精度判定，直至全矩阵终态。
-- 标准流程只在Stage0进行一次总确认。除此之外，只有缺少必需SDK路径、自动探测无法唯一决定执行环境、检测不到板卡、端口有歧义、端口被占用、需要人工RESET、超出下述自动修复边界的安装/下载、或用户明确改变范围时才与用户交互。检测不到板卡时报告当前矩阵未执行，
-  询问用户是否现在连接并继续；不能把未执行写成验证完成。
+- 标准流程只在Stage0进行一次总确认。确认成功后，文档生成、源码编写、代码审查、构建、Host
+  和板端验证均由 agent 按待办自动推进，不再逐阶段询问是否继续。Stage0没有发现、或确认后
+  外部条件发生变化时，自动把缺少的 SDK、设备、端口、权限或工具记录为 `BLOCKED/NOT_RUN`，
+  保存首个错误和恢复命令后停止受影响分支；本轮不发起第二次常规确认。用户以后补齐条件并
+  显式执行同一 RUN_ID 的 `resume` 时再继续，不能把未执行写成验证完成。
 - 用户明确`HOST_ONLY`时不探测、不构建、不烧录，报告`NOT_REQUESTED`；默认策略下因外部条件
   不能执行则报告`NOT_RUN`，两者不能混用。
 
@@ -244,8 +385,10 @@ fwpkg时核对哈希即可，不为环境组合另建一套状态机。
    镜像源失败可再尝试默认源。安装后必须用同一解释器执行真实`import`/`--version`验证，成功后
    自动重新启动失败阶段。构建或长测试环境发生变化时生成新`RUN_ID`，不得读取旧失败状态。
 3. 只有安装需要管理员/root权限、全局系统修改、卸载或降级现有包、解决破坏性版本冲突、接受
-   许可证/登录、下载大型SDK/专有工具链，或写入Stage0未确认的目录时，才暂停并向用户说明
-   “需要安装什么、为什么、将修改哪里、预计大小/影响”，取得确认后继续。
+   许可证/登录、下载大型SDK/专有工具链，或写入Stage0未确认的目录时，才把该项记为
+   `BLOCKED`，同时写明“需要安装什么、为什么、将修改哪里、预计大小/影响”。不要在后续阶段
+   再索取常规确认；把所需授权和恢复命令写入状态，用户随后主动授权并通过同一 RUN_ID 的
+   恢复动作继续。
 4. 自动安装和验证均失败时，报告已尝试的命令、两个源的首个真实错误、当前解释器和下一步，
    再将阶段标为`BLOCKED`；不能只复述缺少的包名，也不能伪造后续PASS。
 
@@ -261,6 +404,10 @@ ONNX Host路径开始前必须同时验证`onnx`（建模/读图）和`onnxrunti
 ## stage1：实现计划和初版文档先行
 
 仅当`EXECUTION_CONFIRM_GATE=PASS`时进入本阶段；`PENDING`或缺少记录都必须停在Stage0。
+
+进入本阶段先将 `stage1.plan` 标为 `RUNNING`，并在计划、初版文档和
+`PRE_SOURCE_GATE` 各自完成后立即分别落盘 `PASS`；任一门禁失败要写入首个错误和证据路径，
+不得只在对话中口头记账。
 
 本阶段固定按下面顺序执行，不能把三个动作合并或调换：
 
@@ -307,9 +454,14 @@ prepare→integrated-initial→pre-source；不能先改代码再更新草稿。
 | 没有 SDK，且明确要求编译/上板 | 先说明将下载 SDK、工具链和烧录工具，再调用环境准备专项 Skill 的完整流程 | 允许调用 |
 | 只做算子源码、MindSpore Lite 构建或 Host 验证 | 不检查或下载固件 SDK；只使用对应阶段自己的依赖 | 不调用 |
 
+表中的“用户明确授权”只能在 Stage0 的一次总确认中取得；Stage6 只读取该确认和冻结的
+状态，不再发起工具链安装询问。若授权缺失，直接记录 `BLOCKED` 及恢复命令，等待用户主动
+授权后用同一 `RUN_ID` 恢复。
+
 任何环境准备调用前，都必须在状态中记录：用户意图、`FIRMWARE_SDK_ROOT`（如已提供）、
 是否允许下载 SDK，以及调用返回的 `fbb describe --json`。如果用户只提供了已有 SDK 路径，
-不得把 `fbb sdk install <chip>` 当作默认补救动作；SDK缺失问题应先报告并请求用户授权。
+不得把 `fbb sdk install <chip>` 当作默认补救动作；若 Stage0 没有记录下载授权，就把 SDK
+缺失写为 `BLOCKED` 和恢复条件，不在后续阶段再次请求确认。
 
 ### 专项 Skill 安装地址
 
@@ -355,9 +507,11 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
    ```
 
    此时不得假装环境已准备好、不得启动后台 `fbb build`/`fbb flash`，也不得自行下载一份
-   外部 Skill。用户安装或提供该 Skill 后，从 stage0 重新检查；不需要重做已通过的 Host 阶段。
+   外部 Skill；将安装路径和恢复命令写入状态。用户安装或提供该 Skill 后，从 stage0 重新检查；
+   不需要重做已通过的 Host 阶段。
 4. 若 `hs-dev-env-prep` 可加载但用户已经给出 SDK 路径，调用时必须明确“只补环境和工具链，
-   使用该 SDK，禁止再次执行 `fbb sdk install`”；若用户没有 SDK，则先取得其下载授权。
+   使用该 SDK，禁止再次执行 `fbb sdk install`”；若 Stage0 没有下载授权，则记录
+   `BOARD_STAGE=BLOCKED`，等待用户主动授权后恢复，不在 Stage1 之后发起新确认。
 
 检查 `hs-dev-build` 和 `hs-dev-flash` 是否已安装：
 
@@ -388,6 +542,10 @@ target）。任一命令不可用、路径身份不符或SDK描述失败时，st
 
 ## stage2：实现源码
 
+按待办先启动 `stage2.implementation`，源码和代码审查完成后再启动
+`stage2.code_review`；两个任务必须分别写回状态和审查证据。确认门禁通过后，这一阶段以及
+后续文档、构建、Host/板端验证由 agent 自动执行，不再向用户索取常规继续确认。
+
 调用`hs-dev-op-implement mode=apply`，传递stage1冻结的implementation unit、全部产物哈希和
 `HISPARK_ROOT`。`code-style.md`是随 Skill 分发的团队统一编程规范，不是用户需要安装的工具；apply
 在写任何①-⑦源码前必须完整读取 Skill 内置的`references/code-style.md`，并返回该文件展开后的绝对
@@ -401,6 +559,9 @@ apply并返回stage1，重新执行prepare、`integrated-initial`和pre-source�
 修改冻结合同，也不得越权代写Host结果或正式文档。
 
 ## stage3：构建 MindSpore Lite 工具包
+
+启动 `stage3.mslite_build` 后才允许运行受控构建脚本；构建成功或失败都要立即把 RUN_ID、
+日志和 `MSLITE_PKG`/首个 stderr 写入检查点。不要因为后台命令已启动就把任务标成 PASS。
 
 这一步构建的是 `converter_lite` 和通用算子库，不是 WS63 fwpkg。它与 stage6 的 `hs-dev-build` 不同，不能互相替代。
 
@@ -453,12 +614,17 @@ workflow 必须把 `OP_BUILD_RUN_ID` 写入本轮状态并在后续每次 `--wai
 MSLite包的目录，在**同一子进程**中注入后运行`converter_lite --help`自检；自检通过就直接
 继续原阶段，不能让用户手工`export`后重试；不修改`.bashrc`、`ldconfig`等全局设置，也不能默认修改其他全局环境。
 只有本轮包内完全没有该库、converter和库来自不同工具包、需要重新构建/下载包或需要系统级
-修改时，才展示已探测路径、建议方案和影响并请求用户确认。环境身份发生变化后创建新`RUN_ID`，
+修改时，才展示已探测路径、建议方案和影响并将阶段记为`BLOCKED`；不在本轮再次请求用户确认。
+用户主动授权后通过恢复动作继续；环境身份发生变化后创建新`RUN_ID`，
 不得读取旧失败记录冒充本轮结果。
 
 成功证据是新鲜的 `MSLITE_PKG=<absolute path>`。
 
 ## stage4：Host 测试优先
+
+启动 `stage4.host_verify` 后自动完成 pre-verify、全量 harness 和矩阵报告，并在同一轮状态中
+写入 `HOST_VERIFY_GATE`、`board_expected_matrix.json` 和退出码；没有真实结论时保持 RUNNING 或
+FAIL，不能先结束任务再补报告。
 
 调用`hs-verify-op-host`，让其读取并执行stage1冻结的完整`op_spec.py`，依据capability checklist
 做只读对账，不把Host阶段当成正常改写计划用例的阶段。发现模型构造、case或覆盖映射必须变化时，
@@ -487,6 +653,11 @@ harness前，检查它已对每个framework执行`gate_artifacts.py --stage pre-
 
 ## stage5：两份文档终态回填（在stage6-stage7之后执行）
 
+`stage5.final_docs` 是终态回填任务：只有 stage6、stage7 已经 PASS、FAIL 或 NOT_RUN（而不是
+仍为 RUNNING/PENDING）后才启动。文档生成由 agent 自动完成；文档失败只回流文档 owner，不能
+通过再次询问用户来替代 audit。若它因 stage0 阻断而作为例外收尾，只记录状态证据，不生成
+算子交付文档。
+
 Host、固件构建和板端阶段都完成或明确终止后，调用
 `hs-design-op-manual mode=integrated-final terminal_state=completed|blocked|hard-stop`，由文档
 skill 从同一轮冻结事实和验证摘要分别更新
@@ -499,9 +670,15 @@ skill 从同一轮冻结事实和验证摘要分别更新
 
 ## stage6：默认全矩阵固件接入与构建
 
+自动启动 `stage6.firmware_matrix`，按 `board_expected_matrix.json` 逐行记录构建结果；不允许
+人工挑选代表用例或在完成一行后等待用户确认下一行。SDK/工具链确实不可用时写
+`NOT_RUN`/`BLOCKED` 和恢复条件，并让状态机继续到终态文档；状态脚本允许将当前阶段
+明确写为 `BLOCKED`，后续阶段会自动继承阻断标记。
+
 除非用户在stage0明确`BOARD_POLICY=HOST_ONLY`，否则默认执行。本阶段若发现
-`FIRMWARE_SDK_ROOT`缺失、身份变化或环境结论失效，必须将`EXECUTION_CONFIRM_GATE`置回`PENDING`
-并返回Stage0重新探测和确认，不能等到Host完成后才首次询问SDK。开始前必须显示：
+`FIRMWARE_SDK_ROOT`缺失、身份变化或环境结论失效，自动将本阶段写为`BLOCKED`或`NOT_RUN`，
+保存首个错误和恢复命令；不要在Host完成后补发第二次 SDK/执行确认。只有用户主动开始新的
+范围或更换 SDK 时才新建一轮并重新执行Stage0。不能等到Host完成后才首次询问SDK；开始前必须显示：
 
 ```text
 BOARD_SDK_GATE=PASS
@@ -574,6 +751,9 @@ ArgMax/标签、让任务无限循环，或让Sample用硬编码答案自报最�
 
 ## stage7：默认全矩阵烧录与板端精度
 
+自动启动 `stage7.board_matrix`，逐行完成烧录、串口采集和精度判定并立即落盘；端口或人工
+RESET 等外部阻塞只记录为 `NOT_RUN`/`FAIL`，不再次询问是否进行普通验证，也不复用上一轮证据。
+
 对`board_expected_matrix.json`的每一行调用`hs-dev-flash`烧录该行stage6生成的固件，只按fbb CLI最后一行JSON判断烧录；随后必须采集串口并运行精度判定。可使用该skill公开的`fbb flash <target> --then-monitor --until <keyword> --timeout <seconds> --json-summary`链路保存串口文本；缺skill时用相同CLI契约回退，不直接调用BurnTool。
 进入本阶段以及每次 `PORT_NOT_FOUND` 重试前，必须运行
 `hs-verify-op-board/scripts/probe_serial_ports.py --output <serial_probe.json>`，并把该回执
@@ -583,9 +763,9 @@ ArgMax/标签、让任务无限循环，或让Sample用硬编码答案自报最�
 
 不得把上述委托压缩成不可核验的一句话。进入烧录前必须确认 `FBB_SDK_DIR`仍指向用户
 提供的SDK、target来自fbb真实列表、输入固件是stage6通过内容门禁的新鲜 `_all.fwpkg`。
-端口歧义时让用户选择；只读stdout最后一行JSON并按 `success`与`error.code`分流。
-若返回 `DEVICE_NOT_RESPONDING`，必须先问用户是否在板边，得到确认后才调用
-`--manual-reset`重试并提示只按一下RESET。烧录成功后采集时间必须晚于本轮烧录，串口
+端口歧义时把候选、错误和恢复命令写入状态并将该行标为`NOT_RUN`，不在本轮主动要求用户选择；
+只读stdout最后一行JSON并按 `success`与`error.code`分流。若返回 `DEVICE_NOT_RESPONDING`，
+将该行标为`NOT_RUN`并记录需要人工RESET的明确操作；不在后续阶段再次索取确认。烧录成功后采集时间必须晚于本轮烧录，串口
 端口和日志波特率必须可追溯；缺任一证据都不能进入板端精度签收。详细执行规则以
 `hs-dev-flash`和 `hs-verify-op-board` step5为准，workflow负责确认二者实际执行完毕。
 
@@ -651,8 +831,19 @@ Host 交付完成必须满足：
 
 ## 统一结案报告
 
+`terminal.report` 只能由 `workflow_state.py finalize` 写入，不能用通用 `start`/`finish` 绕过结案
+证据。结案前必须运行 `workflow_state.py finalize --state-dir <STATE_DIR> --run-id <RUN_ID> \
+--evidence <本轮终态报告绝对路径>`，让脚本
+根据本轮检查点重新计算整体状态；不得手工把 `OP_WORKFLOW` 改成 PASS。结案消息首行、逐阶段
+表和状态文件中的结果必须一致，并同时报告 `RUN_ID`、`workflow_state.json`、`workflow_todo.md`
+和 `workflow_events.jsonl` 的绝对路径。若仍有 RUNNING/PENDING，先恢复或继续该任务；若有
+FAIL/BLOCKED，保留失败证据并说明 retry owner。
+
 ```text
 OP_WORKFLOW=<PASS|FAIL|INCOMPLETE|HOST_ONLY_PASS>
+RUN_ID=<本轮唯一ID>
+WORKFLOW_STATE=<workflow_state.json绝对路径>
+WORKFLOW_TODO=<workflow_todo.md绝对路径>
 EXECUTION_CONFIRM_GATE=<PASS|PENDING>
 IMPLEMENT_GATE=<PASS|FAIL>
 MSLITE_BUILD=<PASS|FAIL>
@@ -698,9 +889,13 @@ Host全量验证                 PASS|FAIL     passed/expected               ...
 |---|---|
 | `scripts/build_mslite.sh` | workflow stage3 的算子源码后工具包重建、RUN_ID 与子模块/注册断言 |
 | `scripts/check_build_freshness.py` | workflow stage3 在进入 Host 前核对源码与解压包新鲜度 |
+| `scripts/workflow_state.py` | 初始化待办、原子写入检查点、顺序门禁、恢复、重试和终态计算 |
+| `references/workflow-todo.template.md` | 每轮生成的可读待办模板；由状态脚本自动渲染，不手工编辑 |
+| `references/workflow-todo.template.json` | 任务 ID、固定顺序和状态值的机器可读契约 |
 | `references/build-and-toolchain.md` | stage3 工具链、产物和构建失败分诊 |
 | `../hs-verify-op-board/chips/ws63/references/sdk-integration.md` | stage6必须完整读取的WS63模型库、adaptor、Sample与SDK接线规范（跨 Skill 资源） |
 | `tests/test_build_state.sh` | RUN_ID、源码指纹、陈旧状态和子模块漂移回归 |
+| `tests/test_workflow_state.py` | BitShift 12×2 打桩流程、状态顺序、失败回流、Host-only 和恢复回归 |
 
 这些资源由本 workflow 持有，避免 `hs-dev-op-implement` 托管自己不执行的构建流程。
 每个专项 Skill 的 `references/` 与 `scripts/` 子目录也必须随 Skill 一起安装；这里的表格只列本
