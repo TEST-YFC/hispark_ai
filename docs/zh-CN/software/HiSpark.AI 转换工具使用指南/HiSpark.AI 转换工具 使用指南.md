@@ -69,6 +69,8 @@
 
 | 文档版本 | 发布日期 | 修改说明 |
 | :--- | :--- | :--- |
+| 09 | 2026-09-02 | 新增Micro Conv3D算子规格：<br>新增ONNX “[Conv3D](#ZH-CN_TOPIC_0000003190115802)”和TFLite “[Conv3D](#ZH-CN_TOPIC_0000003190115702)”。<br>补充GatherND算子规格：<br>新增ONNX “[GatherND](#ZH-CN_TOPIC_0000003200115802)”，更新TFLite “[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。 |
+| 08 | 2026-09-01 | 新增ONNX量化算子规格：<br>新增“[QLinearMatMul](#ZH-CN_TOPIC_0000003130115802)、[QLinearConv](#ZH-CN_TOPIC_0000003140115802)”。<br>新增Scatter系列算子规格：“[Scatter](#ZH-CN_TOPIC_0000003150115802)、[ScatterElements](#ZH-CN_TOPIC_0000003160115802)、[ScatterND](#ZH-CN_TOPIC_0000003170115802)”，以及TFLite“[ScatterND](#ZH-CN_TOPIC_0000003150115702)”。<br>新增ONNX激活算子规格：“[Selu](#ZH-CN_TOPIC_0000003180115802)”。 |
 | 07 | 2026-08-24 | 新增Onnx/TFLite算子规格：<br>新增“[Constant](#ZH-CN_TOPIC_0000003110115802)、[ConstantOfShape](#ZH-CN_TOPIC_0000003120115802)”。<br>新增“[Max](#ZH-CN_TOPIC_0000003060115802)、[Maximum](#ZH-CN_TOPIC_0000003060115702)、[Min](#ZH-CN_TOPIC_0000003070115802)、[Minimum](#ZH-CN_TOPIC_0000003070115702)、[Sum](#ZH-CN_TOPIC_0000003080115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115702)”。<br>新增“[OneHot](#ZH-CN_TOPIC_0000002026082105)、[OneHot](#ZH-CN_TOPIC_0000002026082104)、[Unique](#ZH-CN_TOPIC_0000002026082108)、[Unique](#ZH-CN_TOPIC_0000002026082107)、[Where](#ZH-CN_TOPIC_0000002026082102)、[ConvInteger](#ZH-CN_TOPIC_0000002026082103)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)、[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)、[Hardmax](#ZH-CN_TOPIC_0000002026082101)、[Softsign](#ZH-CN_TOPIC_0000002026082402)、[Softplus](#ZH-CN_TOPIC_0000002026082403)、[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)”。 |
 | 06 | 2026-07-30 | 新增Onnx/TFLite算子规格：<br>新增“[Erf](#ZH-CN_TOPIC_0000002026072801)、[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)、[Celu](#ZH-CN_TOPIC_0000002026072803)”。<br>新增"[Shape](#ZH-CN_TOPIC_0000003030115802)、[Shape](#ZH-CN_TOPIC_0000003030115702)"。<br>新增"[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)"。<br>新增"[TopK](#ZH-CN_TOPIC_0000003050115802)、[TopK](#ZH-CN_TOPIC_0000003050115702)"。<br>新增"[Gelu](#ZH-CN_TOPIC_0000002661401191)、[Gelu](#ZH-CN_TOPIC_0000002661401194)、[Trilu](#ZH-CN_TOPIC_0000002661401195)、[Pack](#ZH-CN_TOPIC_0000002661401192)、[Unpack](#ZH-CN_TOPIC_0000002661401193)"。<br>新增"[Fill](#ZH-CN_TOPIC_0000002800000001)、[Neg](#ZH-CN_TOPIC_0000002900000001)、[Pow](#ZH-CN_TOPIC_0000002476598365)、[Neg](#ZH-CN_TOPIC_0000002900000002)、[Pow](#ZH-CN_TOPIC_0000002476598371)"。<br>新增"[Select](#ZH-CN_TOPIC_0000002600000001)、[SelectV2](#ZH-CN_TOPIC_0000002600000002)、[ReverseV2](#ZH-CN_TOPIC_0000002600000003)、[Mod](#ZH-CN_TOPIC_0000002600000004)、[ReduceL1](#ZH-CN_TOPIC_0000002600000005)、[ReduceL2](#ZH-CN_TOPIC_0000002600000006)"。<br>新增训练特性：<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新QAS INT8量化训练配置、FP32训练配置。<br>在“[参数说明](#ZH-CN_TOPIC_0000002319906348)”中更新训练参数，新增MSE loss和Adam优化器参数。<br>新增QAS INT8和FP32训练支持规格。 |
 | 05 | 2026-07-03 | 更新“[设置环境变量](#ZH-CN_TOPIC_0000002353775693)、[限制与约束](#ZH-CN_TOPIC_0000002319976756)”。<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新[5](#设置Micro配置项)。<br>新增“[ARM平台编译部署](#ZH-CN_TOPIC_0000002590121500)”小节。<br>在“[输入选项](#ZH-CN_TOPIC_0000002353985081)”中更新[表1](#table3808173922715)。<br>更新“[算子规格参考](#ZH-CN_TOPIC_0000002354161329)”。<br>新增“[专题](#ZH-CN_TOPIC_0000002562713759)”章节。 |
@@ -1476,6 +1478,8 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
 -   **[Conv2D](#ZH-CN_TOPIC_0000002326184638)**  
 
+-   **[Conv3D](#ZH-CN_TOPIC_0000003190115702)**
+
 -   **[MaxPool2D](#ZH-CN_TOPIC_0000002360102989)**  
 
 -   **[FullyConnected](#ZH-CN_TOPIC_0000002326344486)**  
@@ -1630,6 +1634,8 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
 -   **[GatherNd](#ZH-CN_TOPIC_0000002026082401)**
 
+-   **[ScatterND](#ZH-CN_TOPIC_0000003150115702)**
+
 -   **[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)**  
 
 -   **[Maximum](#ZH-CN_TOPIC_0000003060115702)**  
@@ -1782,6 +1788,45 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 |---|---|---|
 | QAS INT8 | 支持 | 支持INT8输入/权重/输出、INT32 bias、rank为4、group为1、3x3卷积、无融合激活或融合ReLU；权重为OHWI格式，支持per-tensor或per-output-channel量化 |
 | FP32 | 支持 | 支持rank为4、batch为1、无bias、无融合激活、stride和dilation均为1的depthwise等价卷积；要求group=input_channel=output_channel，权重为OHWI格式且I=1 |
+
+### Conv3D<a name="ZH-CN_TOPIC_0000003190115702" id="ZH-CN_TOPIC_0000003190115702"></a>
+
+**功能描述<a name="section3190115702a"></a>**
+
+对5D输入进行三维卷积计算。该算子仅支持TFLite格式和RISCV Micro目标，source entry为TFLite CONV_3D，输入布局为NDHWC，权重布局为[KD, KH, KW, IC, OC]。
+
+float32模型可通过全量化生成int8数据通路，量化后权重为int8，偏置为int32。
+
+**参数说明<a name="section3190115702b"></a>**
+
+**表 1**  Conv3D参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| input | input | tensor (float32/int8) | 输入张量，维度为5D，格式为NDHWC。 | 支持float32模型；float32模型可通过全量化生成int8数据通路。 |
+| filter | input | tensor (float32/int8) | 权重张量，维度为5D，格式为[KD, KH, KW, IC, OC]。 | 规格约束：权重为离线常量；全量化后权重为int8。 |
+| bias | input | tensor (float32/int32) | 偏置张量，维度为1D。 | 可选输入；无bias时按0处理；全量化后偏置为int32。 |
+| output | output | tensor (float32/int8) | 输出张量，维度为5D，格式为NDHWC。 | 数据类型与执行通路一致。 |
+| padding | attribute | string | 填充类型。 | 支持SAME、VALID。SAME按out=ceil(in/stride)计算输出尺寸并推导填充。 |
+| stride_d | attribute | int32 | filter在D方向上的移动步长。 | 支持正整数。 |
+| stride_h | attribute | int32 | filter在H方向上的移动步长。 | 支持正整数。 |
+| stride_w | attribute | int32 | filter在W方向上的移动步长。 | 支持正整数。 |
+| dilation_d_factor | attribute | int32 | filter在D方向上的扩张系数。 | 规格约束：仅支持1。 |
+| dilation_h_factor | attribute | int32 | filter在H方向上的扩张系数。 | 规格约束：仅支持1。 |
+| dilation_w_factor | attribute | int32 | filter在W方向上的扩张系数。 | 规格约束：仅支持1。 |
+| fused_activation_function | attribute | string | 融合的激活函数类型。 | 规格约束：仅支持NONE。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>TFLite Conv3D不支持dilation factor不为1的场景，不支持fused_activation_function不为NONE的场景。原生int8/int32输入模型不作为该规格支持范围；int8通路来自float32模型的全量化转换。
+
+**关键场景分析**
+
+| 使用场景 | 什么时候会遇到 | 软件行为与限制 |
+| :--- | :--- | :--- |
+| TFLite NDHWC卷积 | TFLite/TF导出CONV_3D | 输入输出按NDHWC布局处理，SAME按out=ceil(in/stride)推导填充。 |
+| 无bias两输入节点 | CONV_3D节点仅input/filter输入 | 偏置按0处理。 |
+| 全量化int8通路 | float32模型 + FULL_QUANT | 转换后使用int8输入/权重/输出和int32偏置执行。 |
+| 不支持规格命中 | dilation factor不为1或fused_activation_function不为NONE | 转换期报错，不生成模型。 |
 
 ### MaxPool2D<a name="ZH-CN_TOPIC_0000002360102989" id="ZH-CN_TOPIC_0000002360102989"></a>
 
@@ -7472,10 +7517,12 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 
 根据 indices 中的多维坐标，从 params 中收集元素或切片。设索引深度为 D=indices.shape[-1] ，输出shape为 indices.shape[:-1]+params.shape[D:] ，输出数据类型与 params 一致。
 
+该算子仅支持TFLite格式和RISCV Micro目标，source entry为TFLite GATHER_ND。支持FP32、INT32、BOOL数据通路；float32模型可通过全量化生成INT8数据通路。
+
 **参数说明<a name="section2026082401b"></a>**
 
 >![](public_sys-resources/icon-note.gif) **说明：**
->GatherNd无属性。indices 仅用于定位数据，不参与量化；float32模型可通过全量化生成int8数据通路。
+>GatherNd无属性。indices仅用于定位数据，不参与量化；INT8通路来自float32模型的全量化转换，不支持将indices量化。
 
 **表 1**  GatherNd参数概览
 
@@ -7496,11 +7543,11 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </td>
 <td class="cellrowborder" valign="top" width="11.67%" headers="mcps2026082401.2 "><p id="p2026082401r1b"><a name="p2026082401r1b"></a><a name="p2026082401r1b"></a>input</p>
 </td>
-<td class="cellrowborder" valign="top" width="13.65%" headers="mcps2026082401.3 "><p id="p2026082401r1c"><a name="p2026082401r1c"></a><a name="p2026082401r1c"></a>tensor (float32/int32/bool)</p>
+<td class="cellrowborder" valign="top" width="13.65%" headers="mcps2026082401.3 "><p id="p2026082401r1c"><a name="p2026082401r1c"></a><a name="p2026082401r1c"></a>tensor (float32/int32/bool/int8)</p>
 </td>
 <td class="cellrowborder" valign="top" width="31.17%" headers="mcps2026082401.4 "><p id="p2026082401r1d"><a name="p2026082401r1d"></a><a name="p2026082401r1d"></a>被收集元素或切片的数据张量。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r1e"><a name="p2026082401r1e"></a><a name="p2026082401r1e"></a>float32模型支持非量化和全量化int8通路。</p>
+<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r1e"><a name="p2026082401r1e"></a><a name="p2026082401r1e"></a>必须为静态形状；rank不超过16。float32模型支持非量化和全量化int8通路。</p>
 </td>
 </tr>
 <tr id="row2026082401r2"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps2026082401.1 "><p id="p2026082401r2a"><a name="p2026082401r2a"></a><a name="p2026082401r2a"></a>indices</p>
@@ -7511,7 +7558,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </td>
 <td class="cellrowborder" valign="top" width="31.17%" headers="mcps2026082401.4 "><p id="p2026082401r2d"><a name="p2026082401r2d"></a><a name="p2026082401r2d"></a>多维索引张量，最后一维保存索引元组。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r2e"><a name="p2026082401r2e"></a><a name="p2026082401r2e"></a>rank(indices)必须大于等于1；D必须小于等于rank(params)；坐标值必须大于等于0且小于params对应维度大小。</p>
+<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r2e"><a name="p2026082401r2e"></a><a name="p2026082401r2e"></a>必须为静态形状；rank(indices)必须大于等于1且不超过16；D必须大于0且小于等于rank(params)；坐标值必须大于等于0且小于params对应维度大小。</p>
 </td>
 </tr>
 <tr id="row2026082401r3"><td class="cellrowborder" valign="top" width="17.51%" headers="mcps2026082401.1 "><p id="p2026082401r3a"><a name="p2026082401r3a"></a><a name="p2026082401r3a"></a>output</p>
@@ -7522,11 +7569,43 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </td>
 <td class="cellrowborder" valign="top" width="31.17%" headers="mcps2026082401.4 "><p id="p2026082401r3d"><a name="p2026082401r3d"></a><a name="p2026082401r3d"></a>按索引元组收集得到的元素或切片，数据类型与params一致。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r3e"><a name="p2026082401r3e"></a><a name="p2026082401r3e"></a>shape为indices.shape[:-1]+params.shape[D:]；输出元素数、步长和偏移量必须在有符号32位整数范围内。</p>
+<td class="cellrowborder" valign="top" width="26%" headers="mcps2026082401.5 "><p id="p2026082401r3e"><a name="p2026082401r3e"></a><a name="p2026082401r3e"></a>必须为静态形状；shape为indices.shape[:-1]+params.shape[D:]；输出元素数、步长和偏移量必须在有符号32位整数范围内。</p>
 </td>
 </tr>
 </tbody>
 </table>
+
+**关键场景分析**
+
+| 使用场景 | 什么时候会遇到 | 软件行为与限制 |
+| :--- | :--- | :--- |
+| TFLite基本GatherNd | TFLite/TF导出GATHER_ND | 按indices最后一维表示的多维坐标从params收集元素或切片。 |
+| 收集标量元素 | D等于rank(params) | 输出shape为indices.shape[:-1]。 |
+| 收集尾部切片 | D小于rank(params) | 输出shape为indices.shape[:-1]+params.shape[D:]。 |
+| 全量化int8通路 | float32模型 + FULL_QUANT | params/output使用INT8通路，indices保持INT32或INT64，不参与量化。 |
+| 不支持规格命中 | indices为负数、越界、D大于rank(params)、shape非静态或中间计算溢出INT32 | 转换期或运行期报错，不生成有效结果。 |
+
+### ScatterND<a name="ZH-CN_TOPIC_0000003150115702" id="ZH-CN_TOPIC_0000003150115702"></a>
+
+**功能描述<a name="section3150115702a"></a>**
+
+根据indices中的多维坐标，将updates中的元素或切片写入由shape指定的全零输出张量。设索引深度为K=indices.shape[-1]，则updates.shape必须等于indices.shape[:-1]+shape[K:]。多个相同索引对应的updates执行累加。
+
+该算子仅支持TFLite格式和RISCV Micro目标，支持FP32和全量化INT8通路。
+
+**参数说明<a name="section3150115702b"></a>**
+
+**表 1**  ScatterND参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| indices | input | tensor (int32) | 多维索引张量，最后一维保存索引元组。 | 必须为静态形状，rank为2~16；K必须大于0且不超过输出rank；仅支持非负索引。 |
+| updates | input | tensor (float32/int8) | 写入或累加到目标位置的元素或切片。 | 必须为静态形状，shape等于indices.shape[:-1]+shape[K:]；支持FP32和全量化INT8。 |
+| shape | input | tensor (int32) | 指定输出张量形状。 | 必须是转换时可确定的常量1D张量，元素个数等于输出rank，且内容与推导出的输出形状一致。 |
+| output | output | tensor (float32/int8) | 以全零张量为初值，按indices累加updates得到的结果。 | 数据类型与updates一致，必须为静态形状，rank为1~16。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>TFLite ScatterND没有data输入，输出以0初始化；重复索引按TFLite语义累加。索引小于0或超出对应输出维度范围时运行失败。INT8通路使用per-tensor量化参数。
 
 ### LogSoftmax<a name="ZH-CN_TOPIC_0000002026082404" id="ZH-CN_TOPIC_0000002026082404"></a>
 
@@ -7700,6 +7779,8 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 -   **[Conv](#ZH-CN_TOPIC_0000002326152940)**  
 
+-   **[Conv3D](#ZH-CN_TOPIC_0000003190115802)**
+
 -   **[MaxPool](#ZH-CN_TOPIC_0000002325993104)**  
 
 -   **[Gemm](#ZH-CN_TOPIC_0000002360071441)**  
@@ -7872,6 +7953,16 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 -   **[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)**  
 
+-   **[QLinearMatMul](#ZH-CN_TOPIC_0000003130115802)**
+
+-   **[GatherND](#ZH-CN_TOPIC_0000003200115802)**
+
+-   **[Scatter](#ZH-CN_TOPIC_0000003150115802)**
+
+-   **[ScatterElements](#ZH-CN_TOPIC_0000003160115802)**
+
+-   **[ScatterND](#ZH-CN_TOPIC_0000003170115802)**
+
 -   **[TopK](#ZH-CN_TOPIC_0000003050115802)**  
 
 -   **[Erf](#ZH-CN_TOPIC_0000002026072801)**  
@@ -7879,6 +7970,8 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 -   **[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)**  
 
 -   **[Celu](#ZH-CN_TOPIC_0000002026072803)**  
+
+-   **[Selu](#ZH-CN_TOPIC_0000003180115802)**
 
 -   **[Max](#ZH-CN_TOPIC_0000003060115802)**  
 
@@ -7897,6 +7990,8 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 -   **[Where](#ZH-CN_TOPIC_0000002026082102)**  
 
 -   **[ConvInteger](#ZH-CN_TOPIC_0000002026082103)**  
+
+-   **[QLinearConv](#ZH-CN_TOPIC_0000003140115802)**
 
 -   **[OneHot](#ZH-CN_TOPIC_0000002026082105)**  
 
@@ -8055,6 +8150,47 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 |---|---|---|
 | QAS INT8 | 支持 | 支持INT8输入/权重/输出、INT32 bias、rank为4、group为1、3x3卷积、无融合激活或融合ReLU；权重为OHWI格式，支持per-tensor或per-output-channel量化 |
 | FP32 | 支持 | 支持rank为4、batch为1、无bias、无融合激活、stride和dilation均为1的depthwise等价卷积；要求group=input_channel=output_channel，权重为OHWI格式且I=1 |
+
+### Conv3D<a name="ZH-CN_TOPIC_0000003190115802" id="ZH-CN_TOPIC_0000003190115802"></a>
+
+**功能描述<a name="section3190115802a"></a>**
+
+基于5D权重对5D输入进行三维卷积计算。该算子仅支持ONNX格式和RISCV Micro目标，source entry为ONNX Conv；转换器按输入和权重rank自动识别为Conv3D。输入X布局为NCDHW，输出布局为NCDHW。
+
+float32模型可通过全量化生成int8数据通路。原生int8/int32模型不作为该规格支持范围。
+
+**参数说明<a name="section3190115802b"></a>**
+
+**表 1**  Conv3D参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| X | input | tensor (float32/int8) | 输入张量，维度为5D，格式为NCDHW。 | 支持float32模型；float32模型可通过全量化生成int8数据通路。 |
+| W | input | tensor (float32/int8) | 权重张量，维度为5D。 | 规格约束：权重必须为initializer离线常量。 |
+| B | input | tensor (float32/int32) | 偏置张量，维度为1D。 | 可选输入；偏置必须为initializer离线常量；无bias时按0处理。 |
+| Y | output | tensor (float32/int8) | 输出张量，维度为5D，格式为NCDHW。 | 数据类型与执行通路一致。 |
+| auto_pad | attribute | string | 指定padding的类型。 | 规格约束：仅支持NOTSET。 |
+| dilations | attribute | list(int) | 每个空间轴上的扩张系数。 | 规格约束：仅支持[1, 1, 1]。 |
+| group | attribute | int | 在输入输出channel上划分的分组个数。 | 规格约束：仅支持1。 |
+| kernel_shape | attribute | list(int) | kernel沿D/H/W轴的大小。 | 缺省时按权重空间维推导。 |
+| pads | attribute | list(int) | D/H/W三个空间轴前后填充零的个数。 | 支持对称与非对称pads；缺省为全0。 |
+| strides | attribute | list(int) | D/H/W三个方向上kernel的移动步长。 | 支持1或2；缺省为[1, 1, 1]。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>ONNX Conv3D通过ONNX Conv的5D输入和5D权重识别，不是独立的ONNX算子名。pads按ONNX格式[D_begin, H_begin, W_begin, D_end, H_end, W_end]解析，支持逐维前后填充不同。
+>
+>不支持group大于1、dilations不等于[1, 1, 1]、auto_pad不等于NOTSET的场景，命中不支持规格时转换期报错，不生成模型。
+
+**关键场景分析**
+
+| 使用场景 | 什么时候会遇到 | 软件行为与限制 |
+| :--- | :--- | :--- |
+| ONNX基本三维卷积 | NCDHW模型常规导出 | 按strides/pads正向卷积，输出NCDHW。 |
+| ONNX缺省属性 | 节点未写kernel_shape、strides或pads | 分别按权重空间维、[1, 1, 1]、全0推导。 |
+| ONNX非对称pads | 前后填充不同，如[2, 1, 0, 0, 1, 2] | 解析期重排为逐维前后填充，独立填充。 |
+| 无bias两输入节点 | Conv节点仅X/W输入 | 偏置按0处理。 |
+| 全量化int8通路 | float32模型 + FULL_QUANT | 转换后使用int8数据通路执行，requant按乘法量化因子q=round(acc * mult) + zp计算。 |
+| 不支持规格命中 | group大于1、dilations不等于[1, 1, 1]、auto_pad不等于NOTSET | 转换期报错，不生成模型。 |
 
 ### MaxPool<a name="ZH-CN_TOPIC_0000002325993104" id="ZH-CN_TOPIC_0000002325993104"></a>
 
@@ -14293,6 +14429,142 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
+### QLinearMatMul<a name="ZH-CN_TOPIC_0000003130115802" id="ZH-CN_TOPIC_0000003130115802"></a>
+
+**功能描述<a name="section3130115802a"></a>**
+
+对两个INT8量化张量执行矩阵乘法，并使用输出量化参数将INT32累加结果重新量化为INT8输出。计算过程如下：
+
+`acc = Σ((a - a_zero_point) × (b - b_zero_point))`
+
+`y = saturate(round_to_nearest_even(acc × a_scale × b_scale / y_scale) + y_zero_point)`
+
+该算子仅支持ONNX格式和RISCV Micro目标，支持ONNX Opset 10及以上版本。转换时复用MatMulFusion算子及其INT8 Micro实现。
+
+**参数说明<a name="section3130115802b"></a>**
+
+**表 1**  QLinearMatMul参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| a | input | tensor (int8) | 左输入量化张量。 | 仅支持INT8和2D/3D/4D静态形状。 |
+| a_scale | input | tensor (float32) | 输入a的量化缩放因子。 | 必须是有限正数和常量标量，仅支持per-tensor量化。 |
+| a_zero_point | input | tensor (int8) | 输入a的量化零点。 | 必须是常量标量。 |
+| b | input | tensor (int8) | 右输入量化张量。 | 仅支持INT8和2D/3D/4D静态形状；倒数第二维必须与a的最后一维匹配，不支持批次维广播。 |
+| b_scale | input | tensor (float32) | 输入b的量化缩放因子。 | 必须是有限正数常量；支持标量per-tensor量化，或长度等于b最后一维的1D per-column量化。 |
+| b_zero_point | input | tensor (int8) | 输入b的量化零点。 | 必须为常量，形状与b_scale一致。 |
+| y_scale | input | tensor (float32) | 输出y的量化缩放因子。 | 必须是有限正数和常量标量，仅支持per-tensor量化。 |
+| y_zero_point | input | tensor (int8) | 输出y的量化零点。 | 必须是常量标量。 |
+| y | output | tensor (int8) | 重新量化后的矩阵乘法结果。 | 仅支持INT8和2D/3D/4D静态形状。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>a、b和y仅支持INT8，不支持UINT8。所有scale和zero point必须在模型转换时可确定，且每组scale和zero point的元素个数必须一致。输入a和输出y仅支持per-tensor量化；输入b支持per-tensor或按输出列per-column量化。
+>
+>当模型使用QuantizeLinear和DequantizeLinear作为浮点网络与QLinearMatMul之间的边界时，边界算子仅支持常量标量float32 scale和常量标量int8 zero point，转换后分别作为FP32到INT8、INT8到FP32的QuantDTypeCast执行。
+>
+>QLinearMatMul源图已经包含量化参数，转换时不能再次启用全量化，否则转换器会按重复量化处理并终止转换。
+
+### GatherND<a name="ZH-CN_TOPIC_0000003200115802" id="ZH-CN_TOPIC_0000003200115802"></a>
+
+**功能描述<a name="section3200115802a"></a>**
+
+根据indices中的多维坐标，从data中收集元素或切片。设索引深度为D=indices.shape[-1]，输出shape为indices.shape[:-1]+data.shape[D:]，输出数据类型与data一致。
+
+该算子仅支持ONNX格式和RISCV Micro目标，source entry为ONNX GatherND，转换后映射为GatherNd。支持FP32、INT32、BOOL数据通路；float32模型可通过全量化生成INT8数据通路。
+
+**参数说明<a name="section3200115802b"></a>**
+
+**表 1**  GatherND参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| data | input | tensor (float32/int32/bool/int8) | 被收集元素或切片的数据张量。 | 必须为静态形状，rank不超过16；float32模型支持非量化和全量化INT8通路。 |
+| indices | input | tensor (int32/int64) | 多维索引张量，最后一维保存索引元组。 | 必须为静态形状；rank(indices)必须大于等于1且不超过16；D必须大于0且小于等于rank(data)；坐标值必须大于等于0且小于data对应维度大小。 |
+| output | output | tensor | 按索引元组收集得到的元素或切片，数据类型与data一致。 | 必须为静态形状；shape为indices.shape[:-1]+data.shape[D:]；输出元素数、步长和偏移量必须在有符号32位整数范围内。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>GatherND无属性。indices仅用于定位数据，不参与量化；INT8通路来自float32模型的全量化转换，不支持将indices量化。
+
+**关键场景分析**
+
+| 使用场景 | 什么时候会遇到 | 软件行为与限制 |
+| :--- | :--- | :--- |
+| ONNX基本GatherND | ONNX模型导出GatherND | 按indices最后一维表示的多维坐标从data收集元素或切片。 |
+| 收集标量元素 | D等于rank(data) | 输出shape为indices.shape[:-1]。 |
+| 收集尾部切片 | D小于rank(data) | 输出shape为indices.shape[:-1]+data.shape[D:]。 |
+| 全量化int8通路 | float32模型 + FULL_QUANT | data/output使用INT8通路，indices保持INT32或INT64，不参与量化。 |
+| 不支持规格命中 | indices为负数、越界、D大于rank(data)、shape非静态或中间计算溢出INT32 | 转换期或运行期报错，不生成有效结果。 |
+
+### Scatter<a name="ZH-CN_TOPIC_0000003150115802" id="ZH-CN_TOPIC_0000003150115802"></a>
+
+**功能描述<a name="section3150115802a"></a>**
+
+先复制data得到输出，再沿axis使用indices指定的位置，以updates中的对应值进行覆盖。该算子转换后复用ScatterElements及其Micro实现。
+
+该算子仅支持ONNX格式和RISCV Micro目标，适用于ONNX Opset 9和10；ONNX从Opset 11起已废弃Scatter，建议新模型使用ScatterElements。支持FP32和全量化INT8通路。
+
+**参数说明<a name="section3150115802b"></a>**
+
+**表 1**  Scatter参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| data | input | tensor (float32/int8) | 提供输出初值的数据张量。 | 必须为静态形状，rank为1~16；支持FP32和全量化INT8。 |
+| indices | input | tensor (int32/int64) | 指定axis维上的目标位置。 | 必须与data具有相同rank，并与updates形状完全一致；索引范围为[-data.shape[axis], data.shape[axis]-1]。 |
+| updates | input | tensor (float32/int8) | 覆盖目标位置的新值。 | 数据类型通路与data一致，形状必须与indices一致；除axis外，各维大小不能超过data对应维度。 |
+| axis | attribute | int | 指定执行离散更新的维度。 | 默认0，范围为[-rank(data), rank(data)-1]。 |
+| output | output | tensor (float32/int8) | 完成覆盖更新后的结果。 | 形状与data一致。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>Scatter仅支持覆盖语义。负索引按对应维度从尾部计数；索引越界时运行失败。相同输出位置不应出现重复索引，否则最终覆盖值依赖更新顺序。
+
+### ScatterElements<a name="ZH-CN_TOPIC_0000003160115802" id="ZH-CN_TOPIC_0000003160115802"></a>
+
+**功能描述<a name="section3160115802a"></a>**
+
+先复制data得到输出，再逐元素读取indices，在axis维替换当前坐标，并使用updates中的对应元素覆盖该输出位置。
+
+该算子仅支持ONNX格式和RISCV Micro目标，支持ONNX Opset 11及以上版本，支持FP32和全量化INT8通路。
+
+**参数说明<a name="section3160115802b"></a>**
+
+**表 1**  ScatterElements参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| data | input | tensor (float32/int8) | 提供输出初值的数据张量。 | 必须为静态形状，rank为1~16；支持FP32和全量化INT8。 |
+| indices | input | tensor (int32/int64) | 逐元素指定axis维上的目标位置。 | 必须与data具有相同rank，并与updates形状完全一致；索引范围为[-data.shape[axis], data.shape[axis]-1]。 |
+| updates | input | tensor (float32/int8) | 覆盖目标位置的新值。 | 数据类型通路与data一致，形状必须与indices一致；除axis外，各维大小不能超过data对应维度。 |
+| axis | attribute | int | 指定执行离散更新的维度。 | 默认0，范围为[-rank(data), rank(data)-1]。 |
+| reduction | attribute | string | 指定重复位置的归约方式。 | 仅支持none；不支持add、mul、max和min。 |
+| output | output | tensor (float32/int8) | 完成覆盖更新后的结果。 | 形状与data一致。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>ScatterElements仅支持reduction=none。负索引按对应维度从尾部计数；索引越界时运行失败。reduction=none时相同输出位置不应出现重复索引。
+
+### ScatterND<a name="ZH-CN_TOPIC_0000003170115802" id="ZH-CN_TOPIC_0000003170115802"></a>
+
+**功能描述<a name="section3170115802a"></a>**
+
+先复制data得到输出，再将indices最后一维表示的K维坐标作为目标位置，使用updates覆盖对应元素或完整尾部切片。updates.shape必须等于indices.shape[:-1]+data.shape[K:]。
+
+该算子仅支持ONNX格式和RISCV Micro目标，支持ONNX Opset 11及以上版本，支持FP32和全量化INT8通路。转换时映射为ScatterNdUpdate及其Micro实现。
+
+**参数说明<a name="section3170115802b"></a>**
+
+**表 1**  ScatterND参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| data | input | tensor (float32/int8) | 提供输出初值的数据张量。 | 必须为静态形状，rank为1~16；支持FP32和全量化INT8。 |
+| indices | input | tensor (int32/int64) | 多维索引张量，最后一维保存K维坐标元组。 | 必须为静态形状，rank为1~16；K必须大于0且不超过data的rank；每维索引范围为[-data.shape[i], data.shape[i]-1]。 |
+| updates | input | tensor (float32/int8) | 覆盖目标元素或尾部切片的新值。 | 数据类型通路与data一致，必须为静态形状，shape等于indices.shape[:-1]+data.shape[K:]。 |
+| reduction | attribute | string | 指定重复位置的归约方式。 | 仅支持none；不支持add、mul、max和min。 |
+| output | output | tensor (float32/int8) | 完成覆盖更新后的结果。 | 形状与data一致。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>ONNX ScatterND包含data、indices和updates三个输入，与TFLite ScatterND的indices、updates、shape输入形式不同。负索引按对应维度从尾部计数；索引越界时运行失败。reduction=none时不应使用重复索引。INT8通路仅支持per-tensor量化。
+
 ### TopK<a name="ZH-CN_TOPIC_0000003050115802" id="ZH-CN_TOPIC_0000003050115802"></a>
 
 **功能描述<a name="section3050115802a"></a>**
@@ -14574,6 +14846,32 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tr>
 </tbody>
 </table>
+
+### Selu<a name="ZH-CN_TOPIC_0000003180115802" id="ZH-CN_TOPIC_0000003180115802"></a>
+
+**功能描述<a name="section3180115802a"></a>**
+
+对输入张量逐元素执行缩放指数线性激活。计算公式如下：
+
+`y = gamma × x, x > 0`
+
+`y = gamma × alpha × (exp(x) - 1), x <= 0`
+
+该算子仅支持ONNX格式，转换时复用Activation算子。支持FP32和全量化INT8通路；INT8通路使用256项查找表执行。
+
+**参数说明<a name="section3180115802b"></a>**
+
+**表 1**  Selu参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| X | input | tensor (float32/int8) | 待执行Selu激活的输入张量。 | 逐元素计算；支持FP32和全量化INT8通路。 |
+| alpha | attribute | float | 控制负值区间的指数缩放。 | 可选，默认值为1.6732631921768188。 |
+| gamma | attribute | float | 控制整体输出缩放。 | 可选，默认值为1.0507009873554805。 |
+| Y | output | tensor (float32/int8) | Selu激活结果。 | 数据类型和形状与对应执行通路的输入一致。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>全量化INT8通路使用per-tensor输入和输出量化参数，在模型转换阶段生成覆盖全部INT8输入值的查找表。
 
 
 
@@ -15234,6 +15532,48 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tr>
 </tbody>
 </table>
+
+### QLinearConv<a name="ZH-CN_TOPIC_0000003140115802" id="ZH-CN_TOPIC_0000003140115802"></a>
+
+**功能描述<a name="section3140115802a"></a>**
+
+对INT8量化输入和INT8量化权重执行二维卷积，并使用输出量化参数将INT32累加结果重新量化为INT8输出。计算过程如下：
+
+`acc = Σ((x - x_zero_point) × (w - w_zero_point)) + B`
+
+`y = saturate(round_to_nearest_even(acc × x_scale × w_scale / y_scale) + y_zero_point)`
+
+该算子仅支持ONNX格式和RISCV Micro目标，支持ONNX Opset 10及以上版本。转换时复用Conv2DFusion算子及其INT8 Micro实现。
+
+**参数说明<a name="section3140115802b"></a>**
+
+**表 1**  QLinearConv参数概览
+
+| 参数名 | 参数/输入输出 | 数据类型 | 参数含义 | 配置范围及规格约束说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| x | input | tensor (int8) | 量化输入张量，格式为NCHW。 | 仅支持INT8和4D二维卷积输入。 |
+| x_scale | input | tensor (float32) | 输入x的量化缩放因子。 | 必须是有限正数和常量标量，仅支持per-tensor量化。 |
+| x_zero_point | input | tensor (int8) | 输入x的量化零点。 | 必须是常量标量。 |
+| w | input | tensor (int8) | 量化卷积权重。 | 必须是常量4D张量，形状为[M, C, kH, kW]；M为输出通道数。 |
+| w_scale | input | tensor (float32) | 权重w的量化缩放因子。 | 必须是有限正数常量；支持标量per-tensor量化，或长度等于M的1D per-output-channel量化。 |
+| w_zero_point | input | tensor (int8) | 权重w的量化零点。 | 必须为常量，形状与w_scale一致。 |
+| y_scale | input | tensor (float32) | 输出y的量化缩放因子。 | 必须是有限正数和常量标量，仅支持per-tensor量化。 |
+| y_zero_point | input | tensor (int8) | 输出y的量化零点。 | 必须是常量标量。 |
+| B | input | tensor (int32) | 可选偏置。 | 必须是常量1D张量，元素个数等于M；省略时按全0偏置处理。偏置scale为x_scale与对应w_scale的乘积，zero point为0。 |
+| y | output | tensor (int8) | 重新量化后的卷积结果，格式为NCHW。 | 仅支持INT8和4D输出。 |
+| auto_pad | attribute | string | 指定padding类型。 | 仅支持NOTSET。 |
+| dilations | attribute | list(int) | 卷积核在两个空间轴上的扩张系数。 | 包含2个元素，每个元素大于等于1；默认[1, 1]。 |
+| group | attribute | int | 输入和输出通道的分组数。 | 仅支持1。 |
+| kernel_shape | attribute | list(int) | 卷积核的空间尺寸。 | 包含2个元素，配置时必须与w的[kH, kW]一致；默认从w推导。 |
+| pads | attribute | list(int) | 输入空间维度各轴前后的填充量。 | 包含4个非负元素[top, left, bottom, right]；仅在auto_pad为NOTSET时生效，默认[0, 0, 0, 0]。 |
+| strides | attribute | list(int) | 卷积核在两个空间轴上的移动步长。 | 包含2个元素，每个元素大于等于1；默认[1, 1]。 |
+
+>![](public_sys-resources/icon-note.gif) **说明：**
+>x、w和y仅支持INT8，不支持UINT8。所有scale和zero point必须在模型转换时可确定，且每组scale和zero point的元素个数必须一致。输入x和输出y仅支持per-tensor量化；权重w支持per-tensor或按输出通道per-output-channel量化。
+>
+>当模型使用QuantizeLinear和DequantizeLinear作为浮点网络与QLinearConv之间的边界时，边界算子仅支持常量标量float32 scale和常量标量int8 zero point，转换后分别作为FP32到INT8、INT8到FP32的QuantDTypeCast执行。
+>
+>QLinearConv源图已经包含量化参数，转换时不能再次启用全量化，否则转换器会按重复量化处理并终止转换。
 
 ### OneHot<a name="ZH-CN_TOPIC_0000002026082105" id="ZH-CN_TOPIC_0000002026082105"></a>
 
