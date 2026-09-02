@@ -104,7 +104,8 @@ dtype 逐项映射到独立 case，以及生成模型中的真实节点/输入�
 
 仍在prepare阶段、尚未修改任何①-⑦源码时，使用
 `hs-verify-op-host/scripts/operator_spec_template.py`作为唯一模板，把能力清单逐项落实到
-`<opdir>/scripts/op_spec.py`。每条`covered_by`必须指向计划版中的真实case ID，非平凡能力
+`<opdir>/scripts/op_spec.py`。每条 case 的 `test_point` 必须明确说明验证的行为、边界或缺陷类型；
+每条`covered_by`必须指向计划版中的真实case ID，非平凡能力
 保留可机械核对的`match`，然后运行：
 
 ```bash

@@ -220,6 +220,7 @@ def test_design_and_verify_templates_match_manual_audit_contract():
     assert "## 3. 证据索引" in verify
     expected_headers = (
         "用例编号",
+        "测试点",
         "框架/source entry",
         "模型 dtype",
         "已覆盖运行通路",
@@ -233,6 +234,21 @@ def test_design_and_verify_templates_match_manual_audit_contract():
     assert "{op}-operator-design-doc.md" in design
     assert "{op}-operator-verify-doc.md" in verify
     assert "七类能力不是每次推理按顺序执行" in design
+
+
+def test_test_point_flows_from_spec_to_host_board_and_manual_reports():
+    implement = read_bundle("hs-dev-op-implement")
+    host_harness = read("hs-verify-op-host/scripts/run_all_cases.py")
+    host_validator = read("hs-verify-op-host/scripts/validate_op_spec.py")
+    board_report = read("hs-verify-op-board/scripts/board_matrix_report.py")
+    manual_audit = read("hs-design-op-manual/scripts/audit_manual_inputs.py")
+    final_report = read("hs-workflow-op-development/references/final-report.md")
+
+    for content in (implement, host_harness, host_validator, board_report, manual_audit):
+        assert "test_point" in content
+    assert '"测试点"' in host_harness
+    assert '"测试点"' in manual_audit
+    assert "框架 | 用例 | 模式 | 测试点 | 状态 | 证据/原因" in final_report
 
 
 def test_operator_documents_have_one_owner_directory_and_fixed_pair():

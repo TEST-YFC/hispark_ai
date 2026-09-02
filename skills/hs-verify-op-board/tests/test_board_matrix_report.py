@@ -24,6 +24,7 @@ def make_expected(tmp_path, count=2):
         (case / "model" / "model.onnx").write_bytes(b"model")
         cases.append({
             "operator": "Add", "framework": "onnx", "case_id": str(idx),
+            "test_point": f"验证用例 {idx} 的板端计算",
             "mode": "fp32", "host_path": "riscv_fp32", "host_status": "PASS",
             "model": str((case / "model" / "model.onnx").resolve()),
             "input_dir": str((case / "input").resolve()),
@@ -31,7 +32,7 @@ def make_expected(tmp_path, count=2):
         })
     manifest = tmp_path / "board_expected_matrix.json"
     write_json(manifest, {
-        "schema_version": 1, "run_id": "run-1", "operator": "Add",
+        "schema_version": 2, "run_id": "run-1", "operator": "Add",
         "expected_count": len(cases), "cases": cases,
     })
     return manifest, cases
@@ -100,6 +101,7 @@ def test_full_matrix_pass_lists_every_case(tmp_path):
     assert "BOARD_MATRIX expected=2 executed=2 pass=2 fail=0 not_run=0" in completed.stdout
     assert "onnx tc1 fp32 PASS" in completed.stdout
     assert "onnx tc2 fp32 PASS" in completed.stdout
+    assert 'test_point="验证用例 1 的板端计算"' in completed.stdout
     assert "BOARD_MATRIX_GATE=PASS" in completed.stdout
 
 
@@ -125,9 +127,29 @@ def test_not_run_receipts_are_accounted_but_not_executed(tmp_path):
     report = json.loads(
         (tmp_path / "report" / "board_case_results.json").read_text(encoding="utf-8")
     )
-    assert report["schema_version"] == 2
+    assert report["schema_version"] == 3
     assert report["recorded"] == 2
     assert report["executed"] == 0
+    assert report["cases"][0]["test_point"] == "验证用例 1 的板端计算"
+
+
+def test_expected_case_requires_nonempty_test_point(tmp_path):
+    manifest, cases = make_expected(tmp_path, count=1)
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    payload["cases"][0].pop("test_point")
+    write_json(manifest, payload)
+
+    completed = run_report(manifest, tmp_path / "results", tmp_path / "report")
+
+    assert completed.returncode != 0
+    report = json.loads(
+        (tmp_path / "report" / "board_case_results.json").read_text(encoding="utf-8")
+    )
+    assert report["board_matrix_gate"] == "FAIL"
+    assert any(
+        "Host matrix test_point must be a non-empty string" in error
+        for error in report["errors"]
+    )
 
 
 def test_pass_requires_serial_probe_receipt(tmp_path):

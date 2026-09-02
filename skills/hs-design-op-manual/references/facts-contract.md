@@ -95,7 +95,7 @@ facts 顶层固定包含：
 }
 ```
 
-每个 `sources` 项记录相对 `path` 和当前文件 `sha256`。每个 `chapter_facts` 项记录 `chapter`、核心源中的逐字 `quote` 和公开 `manual_text`。每个 capability 保留原始 `id`、`description`、规范化 `covered_by`，可另加不改变语义的公开 `manual_text`。`scenario_groups` 只负责把 capability 归并为读者能理解的使用场景，不能删除、重复或改写源 capability；`coverage_principles` 负责验证文档 `1.1 测试覆盖原则` 的白话说明。每个 case 固定记录原始 ID、framework/source entry、模型 dtype、input shape、value domain、属性、逐 case PASS 验证路径、结构化预期输出、公开预期输出文本和预期输出证据。case 顺序必须等于 `op_spec.py`。
+每个 `sources` 项记录相对 `path` 和当前文件 `sha256`。每个 `chapter_facts` 项记录 `chapter`、核心源中的逐字 `quote` 和公开 `manual_text`。每个 capability 保留原始 `id`、`description`、规范化 `covered_by`，可另加不改变语义的公开 `manual_text`。`scenario_groups` 只负责把 capability 归并为读者能理解的使用场景，不能删除、重复或改写源 capability；`coverage_principles` 负责验证文档 `1.1 测试覆盖原则` 的白话说明。每个 case 固定记录原始 ID、`test_point`、framework/source entry、模型 dtype、input shape、value domain、属性、逐 case PASS 验证路径、结构化预期输出、公开预期输出文本和预期输出证据。`test_point` 必须逐字来自 `op_spec.py`，用于说明该用例验证什么，不能由文档阶段另行发挥。case 顺序必须等于 `op_spec.py`。
 
 capability 的公开改写不得扩大用例实际覆盖：case 只把属性写成默认值时，必须写“默认值配置”，不能写“省略属性后的默认解析”；只有模型构造确实省略该属性时才能宣称覆盖默认解析。同理，spec/contract 的 opset 策略不能写成另一个 opset 测试覆盖，除非对应验证模型真实使用该 opset。
 
@@ -104,6 +104,7 @@ case 字段名和形状固定如下；算子特有属性只放在 `attributes`�
 ```json
 {
   "id": "TC-001",
+  "test_point": "验证最后一维 TopK 的 Values/Indices 语义与排序",
   "framework_source_entry": "ONNX TopK",
   "framework": "onnx",
   "model_dtype": "float32",

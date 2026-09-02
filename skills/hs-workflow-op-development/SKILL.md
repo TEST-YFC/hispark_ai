@@ -188,7 +188,7 @@ gate_artifacts.py --stage pre-source
 ```
 
 prepare 期间禁止源码写入；初版设计/验证文档、facts、implementation contract、能力清单和计划版
-`op_spec.py` 必须来自同一冻结输入。`PRE_SOURCE_GATE=PASS` 前不能调用
+`op_spec.py` 必须来自同一冻结输入；每条计划 case 必须包含明确且非空的 `test_point`。`PRE_SOURCE_GATE=PASS` 前不能调用
 `hs-dev-op-implement mode=apply`。不能先改代码再更新草稿；规格、合同、能力或计划用例变化时返回
 stage1 完整重跑。详细产物和哈希校验见 [`references/stage1-plan.md`](references/stage1-plan.md)。
 
@@ -227,7 +227,7 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 
 进入 `stage4.host_verify` 后调用 `hs-verify-op-host`，读取并执行 stage1 冻结的完整
 `op_spec.py`；不把Host阶段当成正常改写计划用例的阶段。必须先通过 `pre-verify`/validator，
-再用 `--target all` 运行固定 harness，生成 `verify_summary.txt`、
+再用 `--target all` 运行固定 harness，生成含逐 case 测试点的 `verify_summary.txt`、
 `board_expected_matrix.json`、两份 Excel 和逐 case 证据。Host 失败按实现、模型/spec 或工具链回流，
 不能用部分 PASS 缩小分母。细节按 Host Skill 的 references 按需读取。
 

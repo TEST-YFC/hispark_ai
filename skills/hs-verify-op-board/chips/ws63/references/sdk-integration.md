@@ -45,6 +45,7 @@ target=<fbb describe返回的真实target>
 framework=<onnx|tflite>
 case_id=<Host PASS case>
 mode=<fp32|int8>
+test_point=<Host manifest 冻结的测试点>
 model=<绝对路径>
 input_dir=<绝对路径>
 gt_dir=<绝对路径>

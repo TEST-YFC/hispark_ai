@@ -129,10 +129,15 @@ BOARD_PATH_MODE = {
     "riscv_fp32": "fp32",
     "riscv_int8": "int8",
 }
+EXCEL_CASE_COLUMNS = ["用例编号", "描述", "测试点"]
+
+
+def excel_case_metadata(tc):
+    return [tc.get("id", ""), tc.get("desc", ""), tc.get("test_point", "")]
 
 
 def make_board_matrix_entry(project_dir, operator, framework, case_id,
-                            path_key, status, cosine):
+                            test_point, path_key, status, cosine):
     """Describe one Host variant that must be replayed on the real board.
 
     The Host harness owns the case denominator. Emitting the identity while the
@@ -146,6 +151,7 @@ def make_board_matrix_entry(project_dir, operator, framework, case_id,
         "operator": operator,
         "framework": framework,
         "case_id": str(case_id),
+        "test_point": test_point,
         "mode": BOARD_PATH_MODE[path_key],
         "host_path": path_key,
         "host_status": status,
@@ -314,6 +320,21 @@ def load_spec(spec_path: Path, frameworks=None):
     if mod.TFLITE_TEST_CASES and getattr(mod, "TFLITE_TARGET_BUILTIN", None) is None:
         sys.exit("[ERROR] TFLITE_TEST_CASES 非空但未声明 TFLITE_TARGET_BUILTIN；"
                  "无法防止 TF API/Converter 把目标 builtin 静默规范化成别的算子。")
+    for framework in frameworks:
+        cases = (mod.ONNX_TEST_CASES if framework == "onnx"
+                 else mod.TFLITE_TEST_CASES)
+        for index, tc in enumerate(cases):
+            if not isinstance(tc, dict):
+                sys.exit(f"[ERROR] {framework} case[{index}] 必须是字典。")
+            test_point = tc.get("test_point")
+            if (not isinstance(test_point, str) or not test_point.strip()
+                    or test_point != test_point.strip()
+                    or any(char in test_point for char in "\r\n|")):
+                sys.exit(
+                    f"[ERROR] {framework} case[{index}] 的 test_point 必须是非空、单行、无首尾空白"
+                    "且不含 | 的字符串；"
+                    "它要明确说明该用例验证什么，不能只依赖 desc。"
+                )
     return mod
 
 
@@ -1159,7 +1180,7 @@ def write_excel(rows, excel_path, active_paths, framework, spec):
     ws.title = f"{spec.OP_NAME} {framework}"[:31]
 
     cos_cols = [PATH_META[p]["col"] for p in active_paths]
-    headers = ["用例编号", "描述"] + list(spec.PARAM_COLUMNS) + cos_cols + ["结果", "备注"]
+    headers = EXCEL_CASE_COLUMNS + list(spec.PARAM_COLUMNS) + cos_cols + ["结果", "备注"]
     ws.append(headers)
     for c in ws[1]:
         c.fill, c.font, c.alignment = blue, white_bold, center
@@ -1168,7 +1189,7 @@ def write_excel(rows, excel_path, active_paths, framework, spec):
     for row in rows:
         tc = row["tc"]
         params = tc.get("params", {})
-        line = [tc.get("id", ""), tc.get("desc", "")]
+        line = excel_case_metadata(tc)
         line += [str(params.get(k, "")) for k in spec.PARAM_COLUMNS]
         cos_vals, ran_all, all_ok, notes = [], True, True, []
         for pk in active_paths:
@@ -1193,7 +1214,7 @@ def write_excel(rows, excel_path, active_paths, framework, spec):
             c.fill = fill
         # number format for cosine columns
         for j in range(len(cos_vals)):
-            col = 2 + len(spec.PARAM_COLUMNS) + 1 + j
+            col = 3 + len(spec.PARAM_COLUMNS) + 1 + j
             ws.cell(row=r, column=col).number_format = "0.000000"
 
     total = len(rows)
@@ -1362,6 +1383,17 @@ def report_capability_coverage(checklist, passed_case_ids):
     return [head, *lines], uncovered
 
 
+def host_gate_result(expected, executed, passed, capability_uncovered=0):
+    failed = max(expected - passed, 0)
+    complete = (
+        expected > 0
+        and executed == expected
+        and passed == expected
+        and capability_uncovered == 0
+    )
+    return failed, 0 if complete else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description="hs-verify-op-host fixed harness")
     ap.add_argument("--spec", default="scripts/op_spec.py",
@@ -1515,12 +1547,17 @@ def main():
     # verbatim, never from memory. Exit code mirrors it (nonzero == at least one FAIL).
     summary_lines = []
     board_expected_cases = []
+    expected_total = sum(
+        len(spec.ONNX_TEST_CASES if fw == "onnx" else spec.TFLITE_TEST_CASES)
+        for fw in frameworks
+    ) * len(active_paths)
     total = passed = 0
     passed_case_ids = set()   # ids whose case passed ALL active paths in ≥1 framework
     for fw in frameworks:
         rows = run_framework(fw, active_paths, mslite_pkg, spec, project_dir, args.verbose)
         for row in rows:
             cid = row["tc"].get("id", "")
+            test_point = row["tc"].get("test_point", "")
             row_ok = True
             for pk in active_paths:
                 st, cos, msg = row["paths"].get(pk, ("FAIL", None, "not run"))
@@ -1531,9 +1568,10 @@ def main():
                 cos_s = "ERR" if cos is None else f"{cos:.6f}"
                 summary_lines.append(
                     f"{fw:<6} tc{cid:<3} {pk:<11} {st:<4} cos={cos_s}"
+                    f" test_point={json.dumps(test_point, ensure_ascii=False)}"
                     + (f"  {msg}" if msg else ""))
                 board_entry = make_board_matrix_entry(
-                    project_dir, spec.OP_NAME, fw, cid, pk, st,
+                    project_dir, spec.OP_NAME, fw, cid, test_point, pk, st,
                     None if cos is None else float(cos),
                 )
                 if board_entry is not None:
@@ -1549,14 +1587,13 @@ def main():
     if checklist:
         cap_lines, cap_uncovered = report_capability_coverage(checklist, passed_case_ids)
 
-    failed = total - passed
-    exit_code = 1 if (failed or cap_uncovered) else 0
+    failed, exit_code = host_gate_result(expected_total, total, passed, cap_uncovered)
     cap_tag = ""
     if checklist:
         cap_tag = (f"  capabilities={len(checklist['capabilities']) - cap_uncovered}/"
                    f"{len(checklist['capabilities'])}")
-    verdict = (f"VERDICT: op={spec.OP_NAME}  {passed}/{total} variant-cases PASS, "
-               f"{failed} FAIL{cap_tag}  "
+    verdict = (f"VERDICT: op={spec.OP_NAME}  {passed}/{expected_total} variant-cases PASS, "
+               f"{failed} FAIL  executed={total}/{expected_total}{cap_tag}  "
                f"thresholds(fp32={args.threshold_fp32}, int8={args.threshold_int8})")
     header = (f"hs-verify-op-host summary\nop={spec.OP_NAME}  frameworks={frameworks}  "
               f"paths={active_paths}\nMSLITE_PKG={mslite_pkg}\n"
@@ -1568,7 +1605,7 @@ def main():
                         f"HARNESS_EXIT={exit_code}"])
     (project_dir / "verify_summary.txt").write_text(report + "\n")
     board_matrix = {
-        "schema_version": 1,
+        "schema_version": 2,
         "run_id": run_id,
         "operator": spec.OP_NAME,
         "host_summary": str((project_dir / "verify_summary.txt").resolve()),

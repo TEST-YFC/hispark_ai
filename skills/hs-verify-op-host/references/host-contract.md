@@ -62,7 +62,7 @@ Skill 包内固定资源包括 `scripts/run_all_cases.py`、`scripts/*.sh`、`sc
 
 ```python
 OP_NAME            : str
-ONNX_TEST_CASES    : list[dict]   # 每条 {"id","desc","params":{...}}，按 ONNX 规格(NCHW)
+ONNX_TEST_CASES    : list[dict]   # 每条 {"id","desc","test_point","params":{...}}，按 ONNX 规格(NCHW)
 TFLITE_TEST_CASES  : list[dict]   # 独立按 TFLite 规格(NHWC)设计
 build_onnx_model(tc, model_path)     # 用 onnx.helper 建图并保存 .onnx
 build_tflite_model(tc, model_path)   # 用 tf.Module + experimental_new_converter=False 保存 .tflite
@@ -80,6 +80,11 @@ make_inputs(tc, framework) -> list[np.ndarray]   # 模型输入顺序、确定�
 
 harness 自动:用 spec 的模型现算参考输出、生成 calib、存 `input.bin`、跑三条路径、解析真实余弦、写表。
 spec **只描述"算什么",不碰"结果对不对"**。
+
+每条 case 的 `desc` 是便于定位的短名称；`test_point` 是报告中的“测试点”，必须用非空单行字符串明确说明
+该用例要验证的行为、边界或缺陷类型，例如“验证中间维广播的步长与索引”，不能只写“功能测试”或
+复制 `desc`，也不能包含 Markdown 表格分隔符 `|`。`test_point` 在 Host 前冻结，并原样传入 Excel、
+`verify_summary.txt` 和板端矩阵。
 
 ### 能力清单冻结件 `<proj>/scripts/capability_checklist.json`（完整 workflow 必需，implement step3 落盘）
 

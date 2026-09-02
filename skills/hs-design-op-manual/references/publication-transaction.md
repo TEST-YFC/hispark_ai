@@ -127,7 +127,7 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NO
 - [ ] 不支持项使用固定措辞，C 级失败 variant/target/path 未写成支持。
 - [ ] 模型 dtype、已覆盖运行通路、value_domain/输入数据特征各自保留且没有混淆；机器验证标识只保留在 facts，公开设计文档已转换为实际运行含义。
 - [ ] 文档标题和正文定位为算子设计文档；全文没有出现内部验证任务名。
-- [ ] 产物集成模式中 op_spec 每个 case 恰好一行，原始 `TC-*` ID 未重排；每个 `covered_by` 都存在。
+- [ ] 产物集成模式中 op_spec 每个 case 恰好一行，原始 `TC-*` ID 未重排；每行“测试点”与 `test_point` 一致；每个 `covered_by` 都存在。
 - [ ] 全文没有本机绝对路径、内部流转信息、私有链接或“待确认”；设计所需的仓库相对路径和公开符号已保留。
 - [ ] facts/content/case 任一 audit 尚未通过时，既有两份文档仍未被覆盖；失败临时候选会被丢弃。
 - [ ] 成对发布任一步失败时，两份目标都恢复发布前状态；两份目标版本一致，且没有候选或备份残留。

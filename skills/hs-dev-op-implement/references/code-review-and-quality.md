@@ -89,7 +89,7 @@ IMPLEMENT_GATE=PASS unit=<implementation_unit>
 ```
 
 - decision、spec、link analysis、contract 和 capability checklist 存在且互相一致；
-- 计划版 `op_spec.py`已经通过validator，且每条能力均映射到计划case；
+- 计划版 `op_spec.py`已经通过validator，每条 case 都有明确 `test_point`，且每条能力均映射到计划case；
 - `integrated-initial` facts/content/case audit均PASS，编码前草稿存在；
 - 本次源码 diff 的每个文件都能映射到某条能力或必要注册点；
 - `quick_check.sh` 没有真实 FAIL，rank advisory 已逐项处置；

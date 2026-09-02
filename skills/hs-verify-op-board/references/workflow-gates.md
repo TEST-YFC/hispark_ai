@@ -107,7 +107,7 @@ python3 chips/ws63/scripts/check_python_deps.py --framework <onnx|tflite|all>
 ## step1：冻结完整板端期望矩阵
 
 唯一分母是本轮`hs-verify-op-host`生成的`board_expected_matrix.json`。完整workflow的Host阶段
-必须使用`--target all`，该manifest会列出每个RISC-V `framework/case_id/mode`。逐行确认：
+必须使用`--target all`，该manifest会列出每个RISC-V `framework/case_id/mode/test_point`。逐行确认：
 
 - `verify_summary.txt` 中该case/mode的明确PASS；
 - 该 case 的模型文件；
@@ -119,5 +119,6 @@ python3 chips/ws63/scripts/check_python_deps.py --framework <onnx|tflite|all>
 `expected_count`必须等于cases数组长度且每行`host_status=PASS`；存在重复身份、Host FAIL、空矩阵
 或缺失产物立即停止。不能跨轮拼接模型、输入和GT；不能拿一个case的GT验另一个固件。
 
-默认按固定顺序`framework → case_id → mode(fp32,int8)`逐项执行全部矩阵。不要假设多张最小
+默认按固定顺序`framework → case_id → mode(fp32,int8)`逐项执行全部矩阵。每行沿用 Host 冻结的
+`test_point`，不得在板端改写测试目的。不要假设多张最小
 模型已合并进一个`libnet.a`或一个fwpkg；每行都有独立Micro库、Sample、固件和串口证据。

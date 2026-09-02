@@ -40,7 +40,7 @@ description: >-
 | 0 | 选择模式，核对授权参数和两个精确目标路径 | 范围、模式、目标明确 |
 | 1 | 集成模式运行 `audit_manual_inputs.py` 并判定 A/B/C/D；独立模式完成已查证事实 | D 或核心冲突立即 FAIL |
 | 2 | 集成模式从原始主源整份生成/刷新 `operator-manual-facts.json`；独立模式整理已查证事实 | schema、来源 hash、provenance 完整 |
-| 3 | 分别生成设计候选和验证候选；终态从最新 facts 重建用例表和结果章节 | 两份文档职责分离，case 顺序与 `op_spec.py` 一致 |
+| 3 | 分别生成设计候选和验证候选；终态从最新 facts 重建用例表和结果章节 | 两份文档职责分离，case 顺序及逐行测试点与 `op_spec.py` 一致 |
 | 4 | 审核格式、来源、支持措辞、敏感信息和占位符 | 全部检查 PASS |
 | 5 | 在 `<opdir>/docs/` 写临时候选，执行 facts/content/case audit | `OP_MANUAL_FACTS_SYNC=PASS`、`OP_MANUAL_CONTENT_SYNC=PASS`、`OP_MANUAL_CASE_SYNC=PASS` |
 | 6 | 通过门禁后成对发布，重新读取并核对；任一步失败就回滚两份 | `OP_MANUAL_SYNC=PASS` 或明确 FAIL |
@@ -73,7 +73,7 @@ facts 的四个主源固定为：
 
 设计文档必须保留三个一级章节：算子概述、框架算子规格、MindSpore Lite Micro 软件设计，并覆盖
 Schema、Parser、Populate/Parameter、Infer、Kernel、OpCoder、Quantizer 七类能力及真实调用链。
-验证文档必须保留测试覆盖原则、逐 case 用例表、Host/固件/烧录/串口/板端状态和证据索引；未执行阶段写
+验证文档必须保留测试覆盖原则、带“测试点”列的逐 case 用例表、Host/固件/烧录/串口/板端状态和证据索引；未执行阶段写
 `NOT_RUN` 及原因。不得在设计文档混入运行或板测结果，也不得在验证文档重复完整软件设计。
 
 所有写入模式都输出同一对绝对目标文件；`template-analysis` 和 A/B/C/D 的 D 级只输出分析，不伪造文件。

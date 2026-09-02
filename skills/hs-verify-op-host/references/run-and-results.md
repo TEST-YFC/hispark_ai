@@ -55,11 +55,15 @@ bash "$SKILL/scripts/wait_verify.sh" "/tmp/op_verify_${RUN_ID}.log" 540 \
 - **退出码只认 VERDICT 后紧跟的 `HARNESS_EXIT=N` 行**(0=全 PASS,非 0=有 FAIL;同步写入日志与
   summary)——nohup 后台模式下进程退出码不可观测,这一行就是为此而设。**禁止自行 `grep -c FAIL`
   之类计数判定**:VERDICT 的 "0 FAIL" 字样也会被计入,全绿会被误判成失败(实证踩过)。
+- **整体通过分母**：计划 variant 数 = 全部激活 framework 的 case 数 × 全部激活 path 数。
+  只有 `expected=executed=passed>0`、能力清单无未覆盖项且 `HARNESS_EXIT=0` 才是 Host 通过；单条、
+  抽样或部分用例 PASS 只能报告为局部结果。
 - **报告**(每框架一份):`<op>_<framework>_test_results.xlsx`(写在你运行 harness 的项目目录下)。
-  一行一个用例;列 = 用例编号 / 描述 / `PARAM_COLUMNS` / 各 active 路径余弦 / 结果 / 备注。
+  一行一个用例;列 = 用例编号 / 描述 / 测试点 / `PARAM_COLUMNS` / 各 active 路径余弦 / 结果 / 备注。
+  “测试点”原样读取 case 的 `test_point`，必须明确该行验证的行为、边界或缺陷类型。
   所有已运行路径达各自阈值才整行 PASS(绿),否则 FAIL(红);末尾汇总行给总计/通过/失败与判据。
 - **板端期望分母**:`board_expected_matrix.json`。harness从本轮实际执行的
-  `riscv_fp32/riscv_int8`行自动生成，每行冻结`framework/case_id/mode/model/input_dir/gt_dir`
+  `riscv_fp32/riscv_int8`行自动生成，每行冻结`framework/case_id/mode/test_point/model/input_dir/gt_dir`
   和Host状态。完整workflow必须使用`--target all`；Board不得手工重写该文件或只挑代表case。
 - **现场**(`output/<framework>/tc<id>/`，按类型分类，类型下再分三路径):
   ```

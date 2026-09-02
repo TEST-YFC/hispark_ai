@@ -141,7 +141,8 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 链路固定覆盖 Schema、Parser、Populate/Parameter、Infer、Kernel float/量化 int8/原生 dtype、
 OpCoder、Quantizer 和 fusion。每个“已有/复用”项必须有定义与注册/可达证据，并写入
 `existing-capability-review.md`。按 `hs-verify-op-host/scripts/operator_spec_template.py` 生成计划版
-`<opdir>/scripts/op_spec.py`，每条 `covered_by` 指向真实 case，运行：
+`<opdir>/scripts/op_spec.py`；每条 case 必须包含明确说明验证目的的非空 `test_point`，每条
+`covered_by` 指向真实 case，运行：
 
 ```bash
 python3 <hs-verify-op-host>/scripts/validate_op_spec.py <opdir>

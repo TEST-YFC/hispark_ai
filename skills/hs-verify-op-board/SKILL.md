@@ -33,7 +33,7 @@ description: >-
 |---|---|---|
 | 0 | 取得并核对用户提供的固件 SDK、chip、target 和运行环境 | `BOARD_SDK_GATE=PASS` |
 | 0a | 预检本轮 framework 所需 Python 依赖 | `PY_DEPS_GATE=PASS` |
-| 1 | 冻结 Host 生成的 `board_expected_matrix.json` 全部行 | 每行 Host 明确 PASS，模型/输入/GT/模式同轮且唯一 |
+| 1 | 冻结 Host 生成的 `board_expected_matrix.json` 全部行 | 每行 Host 明确 PASS，测试点、模型/输入/GT/模式同轮且唯一 |
 | 2 | 每行生成 Micro 工程并交叉编译 `libmicro_runtime.a`、`libnet.a` | 模型身份、dtype、Kernel 符号和 receipt 可追溯 |
 | 3 | 每行安装 adaptor、生成 Sample、接入 CMake/Kconfig/target | `SAMPLE_PREP_GATE=PASS`、`BOARD_WIRING_GATE=PASS` |
 | 4 | 委托 `hs-dev-build` clean build 并核对 fwpkg 内容 | `FIRMWARE_BUILD=PASS`、`FIRMWARE_CONTENT_GATE=PASS` |
@@ -57,7 +57,7 @@ step0 之前只允许人工确认一次：`FIRMWARE_SDK_ROOT` 的绝对路径、
 
 唯一分母是同一轮 `hs-verify-op-host` 产生的 `board_expected_matrix.json`，完整 workflow 必须使用
 Host `--target all`。固定顺序为 `framework → case_id → mode(fp32,int8)`；每行独立拥有模型、输入、
-GT、Micro 库、Sample、fwpkg、flash JSON、monitor 和 `board_result.json`。`expected_count` 必须等于
+GT、`test_point`、Micro 库、Sample、fwpkg、flash JSON、monitor 和 `board_result.json`。`expected_count` 必须等于
 cases 数量且每行 `host_status=PASS`；重复、缺失、跨 run/operator 或 Host FAIL 立即停止该行并记录。
 
 同一行的模型库必须包含 `modelN.c`、`netN.c/ExecuteN()`、权威目标 Kernel 和真实 RISC-V 归档对象；
@@ -98,9 +98,11 @@ python3 <skill_root>/scripts/board_matrix_report.py \
   --results-dir <board-results> --output-dir <board-report-dir>
 ```
 
-只有 `expected=executed=pass`、`fail=not_run=0` 且 `BOARD_MATRIX_GATE=PASS`，同时每个 Tensor 达到
+矩阵报告必须从 Host manifest 原样带出每行 `test_point`。只有
+`expected=recorded=executed=pass`、`fail=not_run=0` 且 `BOARD_MATRIX_GATE=PASS`，同时每个 Tensor 达到
 fp32 `cos >= 0.999` 或 INT8 `cos >= 0.99`，才可输出 `ACCURACY_VERDICT=PASS`。`executed=pass+fail`，
-`NOT_RUN` 只能计入 recorded，不能计入 executed；烧录成功、启动日志或 Sample 自报 PASS 都不等于精度通过。
+`NOT_RUN` 只能计入 recorded，不能计入 executed；烧录成功、启动日志、Sample 自报 PASS 或单个成功 case
+都不等于全矩阵精度通过。
 
 没有完整 shape/Data、同轮 GT、flash JSON 或矩阵行时输出 `ACCURACY_VERDICT=NOT_RUN|FAIL` 并列出 owner。
 未全矩阵通过时禁止使用“板测完成”“端到端通过”“验证全部通过”等完成语义；Host/固件构建通过但

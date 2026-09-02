@@ -102,5 +102,6 @@ Host全量验证                 PASS|FAIL     passed/expected               ...
 
 报告同时给出源码diff、`MSLITE_PKG`、Host summary/Excel、设计文档、验证文档、
 `board_expected_matrix.json`、逐case的fwpkg/烧录JSON/monitor/accuracy日志、
-`board_case_results.json`和`board_verify_summary.txt`绝对路径。面向用户的结案消息必须逐行列出
-`framework/case_id/mode/status`，不能只写“板测完成”或只展示一个成功case。
+`board_case_results.json`和`board_verify_summary.txt`绝对路径。面向用户的结案消息必须使用
+`框架 | 用例 | 模式 | 测试点 | 状态 | 证据/原因`逐行列出全部计划用例，不能只写“板测完成”、
+只展示一个成功case或把部分 PASS 写成整体验证通过。

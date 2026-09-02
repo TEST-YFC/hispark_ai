@@ -24,7 +24,7 @@ description: >-
 | Step | 动作 | 通过证据 |
 |---|---|---|
 | 0 | 准备工具包、运行环境和算子项目目录 | `converter_lite` 可执行；`op_spec.py` 不在源码/构建树 |
-| 1 | standalone 编写或 workflow 只读对账 `op_spec.py` | `OP_NAME`、激活框架 cases、builder、`make_inputs()` 完整；门禁 PASS |
+| 1 | standalone 编写或 workflow 只读对账 `op_spec.py` | `OP_NAME`、激活框架 cases、逐 case `test_point`、builder、`make_inputs()` 完整；门禁 PASS |
 | 2 | 调用唯一 `run_all_cases.py` harness | 每条用例内部 step1-step5 串行完成 |
 | 3 | 读取本轮结果 | `VERDICT` 后紧随 `HARNESS_EXIT`，summary/Excel/日志同一 `RUN_ID` |
 | 4 | 按证据排查或签收 | 非零退出如实 FAIL；只有 harness 全绿才 PASS |
@@ -80,11 +80,13 @@ fp32 阈值为 `0.999`，INT8 为 `0.99`。全量化 INT8 还必须命中声明�
 
 只认本轮 harness 的最后一组 `VERDICT`、紧随其后的 `HARNESS_EXIT=N`、`verify_summary.txt`、对应 Excel
 和逐路径 stderr。`HARNESS_EXIT!=0` 就是 FAIL；不能凭日志片段、启动成功、聚合 `paths=[...]` 或记忆宣布
-通过。结果缺失、RUN_ID 不一致、旧日志或任一用例失败都必须保留原文并回流 owner。
+通过。只有全部激活 framework 的全部计划 case 在全部激活 path 上完成且 PASS，才能输出
+`HOST_VERIFY_GATE=PASS`；跑通一条或部分用例只能报告局部结果。结果缺失、RUN_ID 不一致、旧日志或
+任一用例失败都必须保留原文并回流 owner。Excel 和逐 case 摘要必须显示 `test_point`，明确每条用例验证什么。
 
 ## 输出与交接
 
-结束时先列每个 framework/case/path 的状态，再给机器可读摘要：
+结束时先列每个 framework/case/path 的测试点和状态，再给机器可读摘要：
 
 ```text
 HOST_VERIFY_GATE=<PASS|FAIL>

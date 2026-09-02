@@ -39,12 +39,17 @@ python3 <skill_root>/scripts/board_matrix_report.py \
 ```
 
 脚本机械拒绝缺行、重复行、跨run/operator、Host非PASS、额外case以及PASS证据缺失，输出
-`board_case_results.json`和`board_verify_summary.txt`。后者必须逐行列出
-`framework tc<case_id> mode status`，并分别统计
+`board_case_results.json`和`board_verify_summary.txt`。每行的“测试点”只能读取 Host manifest 冻结的
+`test_point`，不得在板端另写或改写。后者必须逐行列出
+`framework tc<case_id> mode status test_point=<测试点>`，并分别统计
 `expected/recorded/executed/pass/fail/not_run`：`recorded`只表示已有一条结果或未执行原因记录；
 `executed=pass+fail`只统计真正进入板端执行并得到PASS/FAIL终态的行；`NOT_RUN`绝不能计入
 `executed`。因此“24条NOT_RUN记录”的正确结果是`recorded=24 executed=0 not_run=24`，不能输出
 `executed=24 not_run=24`。
+
+只有 `expected=recorded=executed=pass` 且 `fail=not_run=0` 时才能输出
+`BOARD_MATRIX_GATE=PASS` 和 `ACCURACY_VERDICT=PASS`。单条或部分用例 PASS 只能作为逐行结果，不能写成
+“板端验证通过”。
 
 失败分流：
 

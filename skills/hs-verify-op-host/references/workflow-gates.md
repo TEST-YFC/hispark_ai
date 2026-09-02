@@ -39,7 +39,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 | 阶段 | 做什么 | 成功证据 |
 |---|---|---|
 | step0 准备工具链与项目目录 | 确认 `MSLITE_PKG` 指向已解压构建产物,算子项目位于 `$MSLITE_OP_OUTPUT/<op>` | `converter_lite` 可执行,`op_spec.py` 不在 MindSpore Lite 源码/构建树内 |
-| step1 准备 spec | standalone任务按规格编写`<proj>/scripts/op_spec.py`；完整workflow只读对账stage1冻结文件并运行pre-verify两道机械门禁 | `OP_NAME`、两套`*_TEST_CASES`、builder、`make_inputs()`齐全且门禁PASS |
+| step1 准备 spec | standalone任务按规格编写`<proj>/scripts/op_spec.py`；完整workflow只读对账stage1冻结文件并运行pre-verify两道机械门禁 | `OP_NAME`、两套`*_TEST_CASES`、逐 case `test_point`、builder、`make_inputs()`齐全且门禁PASS |
 | step2 运行 harness | 用 `run_all_cases.py --spec <abs path>` 执行 | 日志出现 `VERDICT` 和紧随其后的 `HARNESS_EXIT=N` |
 | step3 读取结果 | 只读取 harness 产物,不要自行判定 | `verify_summary.txt`、每框架 Excel、`output/<framework>/tc*/output/<path>/stderr.log` |
 | step4 排查或签收 | 非零退出按失败类型排查;全绿才签收 | 向用户照抄 VERDICT/退出码,列出 FAIL 证据或 PASS 报告 |

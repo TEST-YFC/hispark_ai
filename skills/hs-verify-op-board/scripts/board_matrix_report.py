@@ -183,6 +183,11 @@ def main():
             expected_by_key[key] = item
         if item.get("host_status") != "PASS":
             errors.append(f"Host variant is not PASS: {key}")
+        test_point = item.get("test_point")
+        if (not isinstance(test_point, str) or not test_point.strip()
+                or test_point != test_point.strip()
+                or any(char in test_point for char in "\r\n|")):
+            errors.append(f"Host matrix test_point must be a non-empty string: {key}")
 
     results_by_key = {}
     if results_dir.is_dir():
@@ -242,6 +247,8 @@ def main():
                 errors.append(f"{key}: {reason}")
         rows.append({
             "framework": key[0], "case_id": key[1], "mode": key[2],
+            "test_point": (expected.get("test_point", "")
+                           if isinstance(expected.get("test_point"), str) else ""),
             "status": status, "reason": reason,
             "result_file": "" if result is None else result.get("result_file", ""),
         })
@@ -263,7 +270,7 @@ def main():
     matrix_gate = accuracy_verdict
 
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "run_id": manifest.get("run_id"),
         "operator": manifest.get("operator"),
         "expected_manifest": str(expected_path),
@@ -292,7 +299,9 @@ def main():
     for row in rows:
         lines.append(
             f"{row['framework']} tc{row['case_id']} {row['mode']} "
-            f"{row['status']}" + (f" reason={row['reason']}" if row['reason'] else "")
+            f"{row['status']} test_point="
+            f"{json.dumps(row['test_point'], ensure_ascii=False)}"
+            + (f" reason={row['reason']}" if row['reason'] else "")
         )
     lines.extend([
         f"BOARD_MATRIX_GATE={matrix_gate}",
