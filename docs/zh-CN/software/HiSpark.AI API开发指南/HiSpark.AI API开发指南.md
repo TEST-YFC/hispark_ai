@@ -227,7 +227,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >1.  在应用开发过程中，各环节都涉及内存的申请与释放、数据传输（通过内存复制实现）、数据类型的创建与销毁，因此未在图中一一标识。
->2.  系统初始化在3322、1156E为必选步骤，在WS63、3066H为可选步骤。
+>2.  系统初始化在3322、1156E为必选步骤，在WS63、3066H为可选步骤。训练评估通路仅支持WS63。
 
 在[接口调用流程图](#fig18338134105017)中展示了应用开发中的典型功能抽象出主要接口的调用流程。当前接口调用流程覆盖模型推理、模型评估和模型训练三类典型通路。
 
@@ -469,35 +469,35 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1769920214447"><a name="p1769920214447"></a><a name="p1769920214447"></a>设置模型训练模式。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p2748450134216"><a name="p2748450134216"></a><a name="p2748450134216"></a>WS63、3066H</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p2748450134216"><a name="p2748450134216"></a><a name="p2748450134216"></a>WS63</p>
 </td>
 </tr>
 <tr id="row168409013551"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p58401709552"><a name="p58401709552"></a><a name="p58401709552"></a>OH_AI_Status OH_AI_ModelGetTrainMode(OH_AI_ModelHandle model, bool *train)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p198409045517"><a name="p198409045517"></a><a name="p198409045517"></a>获取模型训练模式。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p58402018558"><a name="p58402018558"></a><a name="p58402018558"></a>WS63、3066H</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p58402018558"><a name="p58402018558"></a><a name="p58402018558"></a>WS63</p>
 </td>
 </tr>
 <tr id="row68614612314"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p28611961937"><a name="p28611961937"></a><a name="p28611961937"></a>OH_AI_Status OH_AI_ModelRunStep(OH_AI_ModelHandle model)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p101084151344"><a name="p101084151344"></a><a name="p101084151344"></a>根据当前的训练模式，执行一次模型训练或评估步骤。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p188611465319"><a name="p188611465319"></a><a name="p188611465319"></a>WS63、3066H</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p188611465319"><a name="p188611465319"></a><a name="p188611465319"></a>WS63</p>
 </td>
 </tr>
 <tr id="row1581734110559"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p2081714125518"><a name="p2081714125518"></a><a name="p2081714125518"></a>OH_AI_Status OH_AI_ModelSaveWeight(OH_AI_ModelHandle model, uintptr_t flash_addr)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p8817114114559"><a name="p8817114114559"></a><a name="p8817114114559"></a>保存模型可训练权重到指定Flash地址。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1881744195517"><a name="p1881744195517"></a><a name="p1881744195517"></a>WS63、3066H</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1881744195517"><a name="p1881744195517"></a><a name="p1881744195517"></a>WS63</p>
 </td>
 </tr>
 <tr id="row286935018567"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p178701750135616"><a name="p178701750135616"></a><a name="p178701750135616"></a>OH_AI_Status OH_AI_ModelLoadWeight(OH_AI_ModelHandle model, uintptr_t flash_addr)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p887055014561"><a name="p887055014561"></a><a name="p887055014561"></a>从指定Flash地址加载模型可训练权重。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p587013506563"><a name="p587013506563"></a><a name="p587013506563"></a>WS63、3066H</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p587013506563"><a name="p587013506563"></a><a name="p587013506563"></a>WS63</p>
 </td>
 </tr>
 <tr id="row4164161016336"><td class="cellrowborder" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p9165201019332"><a name="p9165201019332"></a><a name="p9165201019332"></a>错误码</p>
@@ -1444,11 +1444,6 @@ WS63、3066H错误码定义参考文档《MindSpore Lite API文档》
 请参考“[获取Sample方法](#ZH-CN_TOPIC_0000002356410665)”章节。
 
 ### 编译及运行应用<a name="ZH-CN_TOPIC_0000002359684261"></a>
-
-样例代码，可参考《HiSpark.AI 转换工具使用指南》的“基础知识”和“参数说明”章节的内容，然后通过converter\_lite转换工具获取Micro工程中benchmark样例。使用MindSpore Lite框架执行推理，主要包括以下步骤，更详细的步骤请参考板端sample。
-
->![](public_sys-resources/icon-note.gif) **说明：** 
->状态码说明：OH\_AI\_STATUS\_FAILED表示相关API调用失败；OH\_AI\_STATUS\_SUCCESS表示相关API调用成功。
 
 1.  环境初始化。
 
