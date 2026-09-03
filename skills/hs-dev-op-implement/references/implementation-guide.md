@@ -14,7 +14,7 @@
 - [CMakeLists — 无需手动更新](#cmakelists--无需手动更新)
 - [代码风格](#代码风格)
 
-按层顺序推进。每节要点都已与实际代码核对。INT8 OpCoder 另见 `references/int8-coder-conventions.md`；融合 pass 见 `references/optimizer-fusion-template.md`。
+按层顺序推进。每节要点都已与实际代码核对。INT8 OpCoder 另见 [`int8-coder-conventions.md`](int8-coder-conventions.md)；融合 pass 见 [`optimizer-fusion-template.md`](optimizer-fusion-template.md)。
 
 ---
 
@@ -383,7 +383,7 @@ REG_KERNEL(kCPU, kNumberTypeFloat32, PrimitiveType_Xxx, LiteKernelCreator<XxxCPU
 
 新增**子类型**（落到自定义 creator 这一类）时，要在该 creator——或它构造的 kernel `Prepare()`——里补上对应分支；漏掉会在 bias_correction 阶段报错中断（例如按 mode 分发的 kernel 会打印 `[<op>_int8.cc:NNN] Prepare] <Op> unsupported mode: N`）。这类多路复用文件还要在顶部与其它 `using` 并列导入用到的 schema 枚举（枚举不会自动导入），例如 `using mindspore::schema::ReduceMode_ReduceL1;`。
 
-`Prepare()` 的通用职责：从 `in_tensors_[0]->quant_params()` / `out_tensors_[0]->quant_params()` 取 scale/zp，校验非空，按需用 `QuantizeMultiplier` 预计算定点乘数（中间量类型/公式须与 runtime int8 kernel 一致，见 `references/int8-coder-conventions.md`）。
+`Prepare()` 的通用职责：从 `in_tensors_[0]->quant_params()` / `out_tensors_[0]->quant_params()` 取 scale/zp，校验非空，按需用 `QuantizeMultiplier` 预计算定点乘数（中间量类型/公式须与 runtime int8 kernel 一致，见 [`int8-coder-conventions.md`](int8-coder-conventions.md)）。
 
 运行时 int8 LiteKernel（`src/litert/kernel/cpu/int8/xxx_int8.{h,cc}`）分两部分对待——**工程骨架算子无关、逐字照抄；数值部分从本算子规格推导，绝不从参考算子拷贝**：
 
@@ -407,7 +407,7 @@ auto in = reinterpret_cast<int8_t *>(in_tensors_.at(0)->MutableData());  // 取�
 REG_KERNEL(kCPU, kNumberTypeInt8, PrimitiveType_Xxx, LiteKernelCreator<XxxInt8CPUKernel>)
 ```
 
-- **生命周期契约（最易丢，丢了是隐性 bug）**：`Prepare()` 必须建立 `Run()` 需要的**全部**派生态（shape、`n_dim_`、axis 归一化、qparams），并以 **`return ReSize();`** 收尾。把 shape 派生态只放在 `ReSize()` 是错的——converter 的 **bias_correction** 子流程**不保证 `ReSize()` 先于首个 `Run()`**，会 `n_dim_=0` 致 int8 全路转换 FAIL（实证 Hardmax）。本仓 53 个有 `Prepare()` 的 int8 kernel 中 42 个以此收尾，是框架契约不是个别算子的风格。`ReSize()` 负责按当前 shape 重算派生态，含定长数组（`input_shape_[DIMENSION_xD]` 类成员）填充循环前的 `> DIMENSION_xD` 守卫（rank 判据 ② 见下）。
+- **生命周期要求（此项常被遗漏）**：`Prepare()` 必须建立 `Run()` 需要的**全部**派生态（shape、`n_dim_`、axis 归一化、qparams），并以 **`return ReSize();`** 收尾。把 shape 派生态只放在 `ReSize()` 是错的——converter 的 **bias_correction** 子流程**不保证 `ReSize()` 先于首个 `Run()`**，会 `n_dim_=0` 致 int8 全路转换 FAIL（实证 Hardmax）。本仓 53 个有 `Prepare()` 的 int8 kernel 中 42 个以此收尾，这是框架要求，不是个别算子风格。`ReSize()` 负责按当前 shape 重算派生态，含定长数组（`input_shape_[DIMENSION_xD]` 类成员）填充循环前的 `> DIMENSION_xD` 守卫（rank 判据 ② 见下）。
 - **`nnacl_c/**/*.c` 是 C 文件，强转写 `(int32_t)(x)`，不能用 `static_cast<>`。** 只有 `.cc`（LiteKernel、opcoder）是 C++。
 - **防御性代码两条，抄模板时最容易丢（实证：Hardmax 两处全丢，预检/构建/验证三道闸全放行——它们只测合法输入包络）：**
   1. **每个**向固定长数组（`input_shape_[DIMENSION_xD]` 类成员）填充的循环前都要守卫：`ReSize()`/`Prepare()`/`InitParam`/nnacl `Resize` 里 `for i<n_dim` 直写数组前，必须先 `MS_CHECK_TRUE_RET(in_dims <= DIMENSION_xD, RET_ERROR)`（C kernel 用显式 `if (n_dim > DIMENSION_xD) return NNACL_ERR;`）。这是 SKILL.md rank 不变量判据 ②：**infer 与每个写数组的层都要守，且取同一个 `DIMENSION_xD`**——不要把 infer 设宽（如 `DIMENSION_8D`）而数组开窄（`DIMENSION_4D/5D`），那是实证反例 A；也不要"各层常量都对上了"就以为安全——infer 用 `SetShapeTensor` 无守卫 + nnacl kernel 填充前无守卫 = 反例 B，常量全 4D 仍越界。`quick_check.sh` rank advisory (2)/(3) 会秒级拦这两处，命中即修。
@@ -433,7 +433,7 @@ int max_idx = 0;
 for (int j = 1; j < axis_size; j++) { if (in[base + j * inner] > max_val) { ... } }
 ```
 
-> hs-verify-op-host 的 `all-zeros` / `single-element-axis` 用例正是为暴露这类塌缩而设。它们 FAIL 几乎总是初值契约被违反，**不是**“量化精度极限”——按 Host skill 的失败分流保留原始日志并回流实现。
+> hs-verify-op-host 的 `all-zeros` / `single-element-axis` 用例正是为暴露这类塌缩而设。它们 FAIL 几乎总是初值要求被违反，**不是**“量化精度极限”——按 Host skill 的失败分流保留原始日志并返回实现阶段。
 
 #### ⑤″ 首输入是 condition/index 的算子（条件选择、按索引取数类）：int8 **不要**单独注册
 
@@ -666,7 +666,7 @@ REG_OPERATOR_CODER(kAllTargets, kNumberTypeFloat32,
 
 对于激活子类型，在 `opcoders/nnacl/int8/activation_int8_coder.cc` 的工厂函数 `CreateActivationInt8Coder()` 中为新的 `ActivationType_XXX` 添加分支。注意该 switch 是 **case-return 形态**（每个 case 直接 `return CPUOpCoderCreator<XxxInt8Coder>(...)`），没有 `break`、也不会穿透；`default` 返回 `nullptr`。照已有 case 的写法加一行即可。
 
-**写 INT8 coder 之前先阅读 `references/int8-coder-conventions.md`。**
+**写 INT8 coder 之前先阅读 [`int8-coder-conventions.md`](int8-coder-conventions.md)。**
 最重要的约定：**int8 coder 必须逐位复刻对应 runtime int8 kernel（`src/litert/kernel/cpu/int8/<op>_int8.cc`）的乘数运算**——相同的中间类型、常量、公式。因为 converter 在 bias_correction 阶段跑的就是该 runtime kernel，MCU 输出要与之对齐。本仓库（如 hswish）乘数用 **`float`** 中间量再传入 `QuantizeMultiplier`（其形参是 `double`，float 在调用处自动提升）；**照抄 kernel 的 float 写法，不要擅自改成 `double`**，否则生成代码与 kernel 不一致、相似度校验会失败。
 
 #### Wrapper
@@ -705,9 +705,9 @@ REG_OPERATOR_CODER(kAllTargets, kNumberTypeFloat32,
 
 ### 代码风格
 
-本仓算子代码以代码根 `.clang-format` 和本 Skill 的 `references/code-style.md` 为准。两者发生
+本仓算子代码以代码根 `.clang-format` 和本 Skill 的 [`code-style.md`](code-style.md) 为准。两者发生
 格式差异时，格式由 `.clang-format` 决定，安全与可维护性规则由 Skill 内置规范决定。完整执行清单见
-`references/code-quality-gate.md`。不要使用“固定 2 空格、函数 100 行”这类泛化描述：当前项目门禁要求
+[`code-quality-gate.md`](code-quality-gate.md)。不要使用“固定 2 空格、函数 100 行”这类泛化描述：当前项目门禁要求
 函数不超过 50 个非空非注释行、5 个参数和 4 层嵌套，并对修改代码执行仓内 clang-format。
 Python 遵循 PEP 8。
 

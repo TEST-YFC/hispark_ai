@@ -4,6 +4,20 @@
 `hs-dev-build`，烧录交给 `hs-dev-flash`；执行这两个阶段前，必须先完成本文规定的
 Micro模型、adaptor、Sample、CMake/Kconfig和target接线步骤。
 
+## 目录
+
+- [1. 必填输入和授权边界](#1-必填输入和授权边界)
+- [2. SDK 身份只读核对](#2-sdk-身份只读核对)
+- [3. 逐项使用与 Host 完全相同的全部用例](#3-逐项使用与-host-完全相同的全部用例)
+- [4. converter_lite 生成 RISC-V Micro C 工程](#4-converter_lite-生成-risc-v-micro-c-工程)
+- [5. 交叉编译模型静态库](#5-交叉编译模型静态库)
+- [6. 安装或核对 OH_AI CPU adaptor](#6-安装或核对-oh_ai-cpu-adaptor)
+- [7. 安装当前 case 的模型库](#7-安装当前-case-的模型库)
+- [8. 生成板端验证 Sample](#8-生成板端验证-sample)
+- [9. 接入 CMake、Kconfig 和 target](#9-接入-cmakekconfig-和-target)
+- [10. 构建前接线门禁](#10-构建前接线门禁)
+- [11. 委托构建、烧录和精度验证](#11-委托构建烧录和精度验证)
+
 ## 1. 必填输入和授权边界
 
 进入任何 SDK 写入动作前，必须由用户在本次会话中明确提供：
@@ -12,11 +26,11 @@ Micro模型、adaptor、Sample、CMake/Kconfig和target接线步骤。
 FIRMWARE_SDK_ROOT=<固件SDK仓库绝对路径>
 ```
 
-示例（必须替换为使用者本次明确提供的真实绝对路径）：
+示例（ROOT 必须由使用者本次明确提供；SRC 由 agent 在该 ROOT 内只读核对）：
 
 ```text
 FIRMWARE_SDK_ROOT=<用户提供的固件SDK仓库绝对路径>
-FIRMWARE_SDK_SRC=<用户提供的固件SDK源码绝对路径>
+FIRMWARE_SDK_SRC=<从已授权 FIRMWARE_SDK_ROOT 只读解析出的源码绝对路径>
 ```
 
 不能仅根据当前目录、当前会话之外的记录、`FBB_SDK_DIR`、搜索到的第一个
@@ -31,6 +45,7 @@ target=<fbb describe返回的真实target>
 framework=<onnx|tflite>
 case_id=<Host PASS case>
 mode=<fp32|int8>
+test_point=<Host manifest 冻结的测试点>
 model=<绝对路径>
 input_dir=<绝对路径>
 gt_dir=<绝对路径>
@@ -68,8 +83,10 @@ verify_summary.txt 中该case的PASS记录
 
 禁止跨轮、跨 case 或跨量化模式拼装。记录模型、输入和GT的绝对路径及哈希。
 
-每行独立完成第4节到固件烧录、串口和精度判定，并写`board_result.json`。一行PASS不能
-替代其他行；只有矩阵汇总得到`expected=executed=pass`且`fail=not_run=0`才算完整板测通过。
+每行独立追踪并完成第4节至后续交接，并写`board_result.json`；第11节中的构建、烧录、串口和
+精度由上层 Board/`hs-dev-build`/`hs-dev-flash` handoff 完成，不在本 reference 内绕过 owner
+另起一轮。一行PASS不能替代其他行；只有矩阵汇总得到`expected=executed=pass`且
+`fail=not_run=0`才算完整板测通过。
 其中`executed=pass+fail`，NOT_RUN结果记录只计入`recorded`，不能计入`executed`。
 
 从 Host case 的 `model/` 旁边寻找 `input/`，并在执行前显式核对；不允许找不到输入时

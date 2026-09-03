@@ -118,6 +118,26 @@ def validate_capability_ids(opdir, module, errors):
                 errors.append(f"capability {cap.get('id')} covered_by tc{cid}, but op_spec has no such case id")
 
 
+def validate_case_test_points(module, errors):
+    for name in ["ONNX_TEST_CASES", "TFLITE_TEST_CASES"]:
+        cases = getattr(module, name, [])
+        if not isinstance(cases, (list, tuple)):
+            errors.append(f"{name} must be a list or tuple")
+            continue
+        for index, tc in enumerate(cases):
+            if not isinstance(tc, dict):
+                errors.append(f"{name}[{index}] must be a dict")
+                continue
+            test_point = tc.get("test_point")
+            if (not isinstance(test_point, str) or not test_point.strip()
+                    or test_point != test_point.strip()
+                    or any(char in test_point for char in "\r\n|")):
+                errors.append(
+                    f"{name}[{index}] test_point must be a non-empty single-line string "
+                    "without surrounding whitespace or |"
+                )
+
+
 def main():
     if len(sys.argv) != 2:
         print("usage: validate_op_spec.py <opdir>", file=sys.stderr)
@@ -136,6 +156,13 @@ def main():
         # load_module exec's the user-supplied op_spec.py; treat its realistic
         # failure modes as a gate failure rather than a traceback.
         fail(f"cannot import {spec_path}: {exc}")
+        return 1
+
+    validate_case_test_points(module, errors)
+    if errors:
+        for err in errors:
+            fail(err)
+        print(f"OP_SPEC_GATE=FAIL errors={len(errors)}")
         return 1
 
     validate_capability_ids(opdir, module, errors)

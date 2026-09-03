@@ -36,6 +36,35 @@ THRESHOLD_FP32 = 0.999
 THRESHOLD_INT8 = 0.99
 
 
+def _read_text(path):
+    """Read serial output across Windows PowerShell encoding variants."""
+    raw = Path(path).read_bytes()
+    if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+        try:
+            return raw.decode("utf-16")
+        except UnicodeDecodeError:
+            pass
+    # Serial captures can begin with a short binary/noise prefix.  Decode the
+    # rest as UTF-8 with replacement when the machine-readable protocol is
+    # still present; choosing a code page first would hide the ASCII markers.
+    utf8_text = raw.decode("utf-8", errors="replace")
+    if "[AI_MCU]" in utf8_text or "ACCURACY_VERDICT" in utf8_text:
+        return utf8_text
+    for encoding in ("utf-8-sig", "gb18030"):
+        try:
+            text = raw.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+        if "\x00" not in text:
+            return text
+    for encoding in ("utf-16-le", "utf-16-be"):
+        try:
+            return raw.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    return raw.decode("utf-8", errors="replace")
+
+
 # --------------------------------------------------------------------------- #
 # 余弦相似度（与 hs-verify-op-host/run_all_cases.py 同一实现）
 # --------------------------------------------------------------------------- #
@@ -322,10 +351,21 @@ def _tensor_output_name(idx, count):
     return f"output_{idx}.npy" if count > 1 else "output.npy"
 
 
+def _output_file_sort_key(path: Path):
+    """Sort indexed tensor files numerically, preserving the single-output name."""
+    name = Path(path).name
+    if name == "output.npy":
+        return (0, 0, name)
+    match = re.fullmatch(r"output_(\d+)\.npy", name)
+    if match:
+        return (1, int(match.group(1)), name)
+    return (2, 0, name)
+
+
 def load_gt_outputs(gt_dir):
-    """加载 gt/ 下的参考输出张量。按文件名排序保证顺序一致。"""
+    """加载 gt/ 下的参考输出张量，按输出索引而非字典序排列。"""
     gt_dir = Path(gt_dir)
-    files = sorted(gt_dir.glob("output*.npy"))
+    files = sorted(gt_dir.glob("output*.npy"), key=_output_file_sort_key)
     if not files:
         return []
     return [np.load(p) for p in files]
@@ -354,7 +394,11 @@ def main():
     if not monitor_path.is_file():
         print(f"ACCURACY_VERDICT=FAIL  (monitor 文件不存在: {args.monitor})")
         sys.exit(1)
-    monitor_text = monitor_path.read_text()
+    try:
+        monitor_text = _read_text(monitor_path)
+    except OSError as exc:
+        print(f"ACCURACY_VERDICT=FAIL  (monitor 文件读取失败: {exc})")
+        sys.exit(1)
 
     # 2) 解析张量（优先 benchmark PrintTensorHandle 格式，fallback vendor [AI_MCU] Data: 格式）
     device_tensors = parse_benchmark_tensors(monitor_text)

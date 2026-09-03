@@ -45,6 +45,7 @@ MANUAL_SCENARIO_SECTION = re.compile(
 MANUAL_CASE_ROW = re.compile(r"^\s*\|\s*(TC-\d{3,})\s*\|", re.MULTILINE)
 MANUAL_CASE_HEADERS = (
     "用例编号",
+    "测试点",
     "框架/source entry",
     "模型 dtype",
     "已覆盖运行通路",
@@ -106,6 +107,7 @@ class OpCase:
     case_id: str
     framework: str
     description: str
+    test_point: str
     params: dict[str, object]
 
 
@@ -231,11 +233,20 @@ def parse_op_spec(path: Path | str) -> OpSpecState:
             description = case.get("desc", "")
             if not isinstance(description, str):
                 raise ValueError(f"{name} case desc must be a string")
+            test_point = case.get("test_point")
+            if (not isinstance(test_point, str) or not test_point.strip()
+                    or test_point != test_point.strip()
+                    or any(char in test_point for char in "\r\n|")):
+                raise ValueError(
+                    f"{name} case test_point must be a non-empty single-line string "
+                    "without surrounding whitespace or |"
+                )
             parsed_cases.append(
                 OpCase(
                     case_id=_normalize_case_id(case["id"]),
                     framework=framework,
                     description=description.strip(),
+                    test_point=test_point.strip(),
                     params=params,
                 )
             )
@@ -624,6 +635,7 @@ def _validate_facts(
         expected_fields = {
             "id": op_case.case_id,
             "framework": op_case.framework,
+            "test_point": op_case.test_point,
             "model_dtype": op_case.params.get("dtype"),
             "input_shape": op_case.params.get("shape"),
             "value_domain": op_case.params.get("value_domain"),
@@ -861,6 +873,7 @@ def compare_verify_content(
         if row is None:
             continue
         expected = {
+            "test_point": str(fact_case.get("test_point", "")),
             "framework_source_entry": str(fact_case.get("framework_source_entry", "")),
             "model_dtype": str(fact_case.get("model_dtype", "")),
             "verification_paths": _public_verification_coverage(fact_case),
@@ -870,10 +883,11 @@ def compare_verify_content(
             "expected_outputs": str(fact_case.get("expected_outputs_text", "")),
         }
         actual = {
-            "framework_source_entry": row[1], "model_dtype": row[2],
-            "verification_paths": row[3], "input_shape": row[4],
-            "value_domain": row[5], "attributes": row[6],
-            "expected_outputs": row[7],
+            "test_point": row[1],
+            "framework_source_entry": row[2], "model_dtype": row[3],
+            "verification_paths": row[4], "input_shape": row[5],
+            "value_domain": row[6], "attributes": row[7],
+            "expected_outputs": row[8],
         }
         for field, expected_value in expected.items():
             if actual[field] != expected_value:
