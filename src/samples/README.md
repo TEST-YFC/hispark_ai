@@ -195,10 +195,10 @@ HiSpark.AI提供了以下Sample供开发参考：
 
 - **准备待部署模型与数据**
   - 准备好待部署模型。可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的mnist-12.onnx以及GRU_S_STREAM.onnx。
-  - 准备好量化数据。**无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式，可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的 运行数据预处理脚本之后的npy_data文件夹。
+  - 准备好量化数据。**Hi1156E无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式，可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的 运行数据预处理脚本之后的npy_data文件夹。
 
 - **准备SDK**
-  - 从开源社区下载SDK源码
+  - 使用商用发布SDK或从开源社区下载SDK源码
 
 - **准备Samples**
   进入sample一级目录，如LeNet-5就进入{hispark_ai_root}/src/samples/OH/Lenet5目录，而Gru就进入{hispark_ai_root}/src/samples/OH/Gru目录。Sample目录结构如下：
@@ -221,8 +221,9 @@ HiSpark.AI提供了以下Sample供开发参考：
         └── CMakeLists.txt
     ```
 
-- **模型量化**
-  - 使用CANN工具链中的AMCT工具进行模型量化，具体可参考对应sample README中的量化指南
+- **Hi3322模型量化**
+ Hi1156E不涉及量化，直接参考**模型转换**章节。  
+ Hi3322使用CANN工具链中的AMCT工具进行模型量化，具体可参考对应sample README中的量化指南。
   ```
   amct_onnx calibration --model "xxx" --save_path "xxx" --input_shape "xxx" --data_dir "xxx" --data_types "xxx" --batch_num xxx
   ```
@@ -249,13 +250,10 @@ HiSpark.AI提供了以下Sample供开发参考：
   - --output：存放转换后的离线模型的路径以及文件名
   - --input_fp16_nodes：指定输入数据类型为FP16的输入节点名称
   - --output_type：指定网络输出数据类型
-  - --soc_version：指定模型转换时昇腾AI处理器的版本
+  - --soc_version：指定模型转换时昇腾AI处理器的版本。Hi3322指定：Ascend035A；Hi1156E指定：Ascend031。
   - --input_shape：指定模型输入数据的shape
-  - --mode：运行模式
-
-  运行成功后生成
-  - mode选择30：xxx.exeom
-  - mode选择0：xxx.om
+  - --mode：运行模式。Hi3322指定30；Hi1156E指定0。
+  模型转换成功后Hi3322生成后缀exeom的模型，Hi1156E生成后缀om的模型。
 
 - **3322 SDK编译**
     配置对应环境变量，在具体sample（如gru）下运行build_npu.sh脚本，即可完成编译
