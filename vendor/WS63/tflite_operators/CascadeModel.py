@@ -66,7 +66,7 @@ class _cascadeoperatormodel(tf.Module):
         oh = tf.one_hot(ti_flat, 2, name="one_hot")
         g_flat = tf.reshape(g, [4], name="gelu_flat")
         u_in = tf.cast(tf.round(g_flat), tf.int32, name="unique_in")
-        _, u_idx = tf.unique(u_in, name="unique")
+        _, _ = tf.unique(u_in, name="unique")
         sh = tf.shape(g_flat, name="shape")
         fl = tf.fill(sh, 0.25, name="fill")
         fl_first = tf.slice(fl, [0], [1], name="fill_first")
@@ -93,8 +93,6 @@ class _cascadeoperatormodel(tf.Module):
             tf.reshape(oh, [1, 8], name="onehot_row"),
             tf.reshape(gn, [1, 2], name="gathernd_row"),
             tf.reshape(sh_f, [1, 1], name="shape_row"),
-            tf.reshape(tf.cast(u_idx, tf.float32, name="unique_idx_f"),
-                       [1, 4], name="unique_idx_row"),
         ]
         return rows
 

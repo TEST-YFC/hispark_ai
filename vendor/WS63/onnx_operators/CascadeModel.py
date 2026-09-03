@@ -150,8 +150,8 @@ def _make_onehot_nodes(initializer_list):
 
 
 def _make_unique_nodes(initializer_list):
-    """Unique 变长输出 unique_vals 不可被下游消费(Micro 仅允许终端 QuantDTypeCast);
-    使用固定形状的 inverse_indices 并入 Z 拼接, 保留算子覆盖且收敛为单输出."""
+    """Unique 变长输出不可被下游消费(Micro 仅允许终端 QuantDTypeCast);
+    保留为独立侧枝, 不参与 Concat, 避免 infer shape 失败."""
     cascade_flat_shape = helper.make_tensor(
         'cascade_flat_shape', TensorProto.INT64, [1], [16])
     initializer_list.append(cascade_flat_shape)
@@ -161,14 +161,9 @@ def _make_unique_nodes(initializer_list):
     unique_round_node = helper.make_node(
         'Round', inputs=['where_flat'], outputs=['where_rounded'])
     unique_node = helper.make_node(
-        'Unique', inputs=['where_rounded'],
-        outputs=['unique_vals', 'unique_indices', 'unique_inverse'],
+        'Unique', inputs=['where_rounded'], outputs=['unique_vals'],
         sorted=1)
-    unique_inverse_cast = helper.make_node(
-        'Cast', inputs=['unique_inverse'], outputs=['unique_inverse_f'],
-        to=TensorProto.FLOAT)
-    return [unique_in_reshape, unique_round_node, unique_node,
-            unique_inverse_cast]
+    return [unique_in_reshape, unique_round_node, unique_node]
 
 
 def _make_quant_integer_nodes(initializer_list):
@@ -251,7 +246,6 @@ _ROW_SPECS = (
     ('onehot_out', 'onehot_row', 32),
     ('ciconv_y_f', 'ciconv_row', 4),
     ('matint_y_f', 'matint_row', 16),
-    ('unique_inverse_f', 'unique_inverse_row', 16),
 )
 
 
