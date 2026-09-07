@@ -9,7 +9,7 @@
 -   不支持创建多线程多进程。
 -   对于创建类接口（例如OH\_AI\_ContextCreate、OH\_AI\_ModelCreate等），用户在调用该类接口创建对应的资源后，建议在资源使用完成后及时调用对应的销毁类接口（例如：OH\_AI\_ContextDestroy、OH\_AI\_ModelDestroy等），以避免程序内存泄漏。
 -   对于销毁类接口（例如OH\_AI\_ContextDestroy、OH\_AI\_ModelDestroy等），用户在调用该类接口后，不能继续使用已释放或销毁的资源，建议用户在调用销毁类接口后，将相关资源设置为无效值（例如，置为NULL）。
--   HiSpark.AI WS63 MCU平台默认最多支持单线程单核CPU后端推理，仅支持x86\_64（用于精度调试标杆）与RISCV平台部署调用。
+-   HiSpark.AI WS63、3066H MCU平台默认最多支持单线程单核CPU后端推理，仅支持x86\_64（用于精度调试标杆）与RISCV平台部署调用。
 
 **读者对象<a name="section4378592816410"></a>**
 
@@ -227,7 +227,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >1.  在应用开发过程中，各环节都涉及内存的申请与释放、数据传输（通过内存复制实现）、数据类型的创建与销毁，因此未在图中一一标识。
->2.  系统初始化在3322、1156E为必选步骤，在WS63为可选步骤。
+>2.  系统初始化在3322、1156E为必选步骤，在WS63、3066H为可选步骤。训练评估通路仅支持WS63。
 
 在[接口调用流程图](#fig18338134105017)中展示了应用开发中的典型功能抽象出主要接口的调用流程。当前接口调用流程覆盖模型推理、模型评估和模型训练三类典型通路。
 
@@ -328,7 +328,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
     OH_AI_TensorHandle *handle_list;
 } OH_AI_TensorHandleArray;</pre>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p17181535162315"><a name="p17181535162315"></a><a name="p17181535162315"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p17181535162315"><a name="p17181535162315"></a><a name="p17181535162315"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row18731193020"><td class="cellrowborder" rowspan="3" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p10533123914304"><a name="p10533123914304"></a><a name="p10533123914304"></a>系统配置</p>
@@ -344,14 +344,14 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p142831422103017"><a name="p142831422103017"></a><a name="p142831422103017"></a>从内存数据初始化</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1918233582319"><a name="p1918233582319"></a><a name="p1918233582319"></a>WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1918233582319"><a name="p1918233582319"></a><a name="p1918233582319"></a>WS63、3066H</p>
 </td>
 </tr>
 <tr id="row8347152653016"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p734732613016"><a name="p734732613016"></a><a name="p734732613016"></a>OH_AI_Deinit</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p434792615307"><a name="p434792615307"></a><a name="p434792615307"></a>去初始化</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p14778922191116"><a name="p14778922191116"></a><a name="p14778922191116"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p14778922191116"><a name="p14778922191116"></a><a name="p14778922191116"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row20829617310"><td class="cellrowborder" rowspan="2" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p2829013315"><a name="p2829013315"></a><a name="p2829013315"></a>Context管理</p>
@@ -360,14 +360,14 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p668310556343"><a name="p668310556343"></a><a name="p668310556343"></a>创建一个OH_AI_Context。</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p1844933215114"><a name="p1844933215114"></a><a name="p1844933215114"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p1844933215114"><a name="p1844933215114"></a><a name="p1844933215114"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row1282991173117"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p31619380227"><a name="p31619380227"></a><a name="p31619380227"></a>void OH_AI_ContextDestroy(OH_AI_ContextHandle* context)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p18081624153613"><a name="p18081624153613"></a><a name="p18081624153613"></a>销毁一个OH_AI_Context。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1618293513235"><a name="p1618293513235"></a><a name="p1618293513235"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1618293513235"><a name="p1618293513235"></a><a name="p1618293513235"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row178301113319"><td class="cellrowborder" rowspan="2" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p16830018312"><a name="p16830018312"></a><a name="p16830018312"></a>Tensor管理</p>
@@ -376,14 +376,14 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p4115382220"><a name="p4115382220"></a><a name="p4115382220"></a>获取OH_AI_Tensor的元素个数。</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p161821835122313"><a name="p161821835122313"></a><a name="p161821835122313"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p161821835122313"><a name="p161821835122313"></a><a name="p161821835122313"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row98301119312"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p16464218329"><a name="p16464218329"></a><a name="p16464218329"></a>void *OH_AI_TensorGetMutableData(const OH_AI_TensorHandle tensor);</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p2067854691014"><a name="p2067854691014"></a><a name="p2067854691014"></a>获取可变的OH_AI_Tensor的数据。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p16182163512236"><a name="p16182163512236"></a><a name="p16182163512236"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p16182163512236"><a name="p16182163512236"></a><a name="p16182163512236"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row983081113117"><td class="cellrowborder" rowspan="16" valign="top" width="10.378962103789622%" headers="mcps1.2.5.1.1 "><p id="p8830611311"><a name="p8830611311"></a><a name="p8830611311"></a>模型加载与运行</p>
@@ -392,77 +392,77 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p94153817228"><a name="p94153817228"></a><a name="p94153817228"></a>创建一个模型对象。</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p618216355237"><a name="p618216355237"></a><a name="p618216355237"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p618216355237"><a name="p618216355237"></a><a name="p618216355237"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row683017173118"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p16353815224"><a name="p16353815224"></a><a name="p16353815224"></a><span>void OH_AI_ModelDestroy(OH_AI_ModelHandle *model)</span></p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p582640114214"><a name="p582640114214"></a><a name="p582640114214"></a>销毁一个模型对象。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p17182103518230"><a name="p17182103518230"></a><a name="p17182103518230"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p17182103518230"><a name="p17182103518230"></a><a name="p17182103518230"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row1583114110319"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p1834754013229"><a name="p1834754013229"></a><a name="p1834754013229"></a><span>OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle model)</span></p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1811719351440"><a name="p1811719351440"></a><a name="p1811719351440"></a>获取模型的输入张量数组结构体。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p81821235122315"><a name="p81821235122315"></a><a name="p81821235122315"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p81821235122315"><a name="p81821235122315"></a><a name="p81821235122315"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row1477843644414"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p936872684612"><a name="p936872684612"></a><a name="p936872684612"></a>OH_AI_TensorHandleArray OH_AI_ModelGetLabels(const OH_AI_ModelHandle model)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p16486121819498"><a name="p16486121819498"></a><a name="p16486121819498"></a>获取模型的所有标签张量句柄。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p147791036174413"><a name="p147791036174413"></a><a name="p147791036174413"></a>WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p147791036174413"><a name="p147791036174413"></a><a name="p147791036174413"></a>WS63、3066H</p>
 </td>
 </tr>
 <tr id="row118315143110"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p17470228338"><a name="p17470228338"></a><a name="p17470228338"></a>OH_AI_TensorHandleArray OH_AI_ModelGetOutputs(const OH_AI_ModelHandle model)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p6641154704416"><a name="p6641154704416"></a><a name="p6641154704416"></a>获取模型的输出张量数组结构体。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p151821359239"><a name="p151821359239"></a><a name="p151821359239"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p151821359239"><a name="p151821359239"></a><a name="p151821359239"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row8471242113918"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p247134211395"><a name="p247134211395"></a><a name="p247134211395"></a>OH_AI_TensorHandle OH_AI_ModelGetInputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p847116424395"><a name="p847116424395"></a><a name="p847116424395"></a>根据指定的张量名称获取模型对应的输入张量。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p15471134216391"><a name="p15471134216391"></a><a name="p15471134216391"></a>WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p15471134216391"><a name="p15471134216391"></a><a name="p15471134216391"></a>WS63、3066H</p>
 </td>
 </tr>
 <tr id="row126951546183915"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p9696104693919"><a name="p9696104693919"></a><a name="p9696104693919"></a>OH_AI_TensorHandle OH_AI_ModelGetOutputByTensorName(const OH_AI_ModelHandle model, const char *tensor_name)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1969614603917"><a name="p1969614603917"></a><a name="p1969614603917"></a>根据指定的张量名称获取模型对应的输出张量。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p196961146193913"><a name="p196961146193913"></a><a name="p196961146193913"></a>WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p196961146193913"><a name="p196961146193913"></a><a name="p196961146193913"></a>WS63、3066H</p>
 </td>
 </tr>
 <tr id="row083118112314"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p1025383223"><a name="p1025383223"></a><a name="p1025383223"></a>OH_AI_Status OH_AI_ModelBuild(OH_AI_ModelHandle model, const void *model_data, size_t data_size, const OH_AI_ContextHandle model_context)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p3390855184214"><a name="p3390855184214"></a><a name="p3390855184214"></a>从内存缓冲区加载并编译模型。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p818211358235"><a name="p818211358235"></a><a name="p818211358235"></a>WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p818211358235"><a name="p818211358235"></a><a name="p818211358235"></a>WS63、3066H</p>
 </td>
 </tr>
 <tr id="row191584561762"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p21781691970"><a name="p21781691970"></a><a name="p21781691970"></a>OH_AI_Status OH_AI_ModelBuildFromFile (OH_AI_ModelHandle model, const char * model_path, const OH_AI_ContextHandle model_context )</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p201581556462"><a name="p201581556462"></a><a name="p201581556462"></a>从模型文件加载并编译模型</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p171596561967"><a name="p171596561967"></a><a name="p171596561967"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p171596561967"><a name="p171596561967"></a><a name="p171596561967"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row1633019235810"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p1667729984"><a name="p1667729984"></a><a name="p1667729984"></a>OH_AI_Status OH_AI_ModelBuildFromName (OH_AI_ModelHandle model, const char * model_name, const OH_AI_ContextHandle model_context )</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p133313237816"><a name="p133313237816"></a><a name="p133313237816"></a>从模型名称加载并编译模型</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p513623294711"><a name="p513623294711"></a><a name="p513623294711"></a>WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p513623294711"><a name="p513623294711"></a><a name="p513623294711"></a>WS63、3066H</p>
 </td>
 </tr>
 <tr id="row11470182113319"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p93481540142216"><a name="p93481540142216"></a><a name="p93481540142216"></a>OH_AI_Status OH_AI_ModelPredict(OH_AI_ModelHandle model, const OH_AI_TensorHandleArray inputs, OH_AI_TensorHandleArray *outputs)</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="p1586810193441"><a name="p1586810193441"></a><a name="p1586810193441"></a>执行模型推理。</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1018243582310"><a name="p1018243582310"></a><a name="p1018243582310"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="p1018243582310"><a name="p1018243582310"></a><a name="p1018243582310"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 <tr id="row166986213448"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="p1869817216447"><a name="p1869817216447"></a><a name="p1869817216447"></a>OH_AI_Status OH_AI_ModelSetTrainMode(OH_AI_ModelHandle model,  bool train)</p>
@@ -506,7 +506,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </td>
 <td class="cellrowborder" valign="top" width="33.35666433356664%" headers="mcps1.2.5.1.3 "><p id="p1371202583312"><a name="p1371202583312"></a><a name="p1371202583312"></a>获取错误码</p>
 </td>
-<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p2018253552316"><a name="p2018253552316"></a><a name="p2018253552316"></a>Hi3322、Hi1156E、WS63</p>
+<td class="cellrowborder" valign="top" width="7.5492450754924505%" headers="mcps1.2.5.1.4 "><p id="p2018253552316"><a name="p2018253552316"></a><a name="p2018253552316"></a>Hi3322、Hi1156E、WS63、3066H</p>
 </td>
 </tr>
 </tbody>
@@ -1423,15 +1423,15 @@ int32\_t OH\_AI\_GetErrorCode\(\)
 
 Hi3322、Hi1156E错误码定义参考文档《AscendCL应用开发指南（C&C++）》
 
-WS63错误码定义参考文档《MindSpore Lite API文档》
+WS63、3066H错误码定义参考文档《MindSpore Lite API文档》
 
 # 样例使用指导<a name="ZH-CN_TOPIC_0000002356428969"></a>
 
--   **[WS63 CPU平台样例使用指导](#ZH-CN_TOPIC_0000002522762115)**  
+-   **[RISC-V平台样例使用指导](#ZH-CN_TOPIC_0000002522762115)**  
 
 -   **[NPU平台样例使用指导](#ZH-CN_TOPIC_0000002522762563)**  
 
-## WS63 CPU平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762115"></a>
+## RISC-V平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762115"></a>
 
 本章节介绍如何调用HiSpark.AI API，并在x86\_64平台实现mnist.tflite的部署推理。板端Sample请参考交付包中的AI Sample部署。
 
@@ -1444,11 +1444,6 @@ WS63错误码定义参考文档《MindSpore Lite API文档》
 请参考“[获取Sample方法](#ZH-CN_TOPIC_0000002356410665)”章节。
 
 ### 编译及运行应用<a name="ZH-CN_TOPIC_0000002359684261"></a>
-
-样例代码，可参考《HiSpark.AI 转换工具使用指南》的“基础知识”和“参数说明”章节的内容，然后通过converter\_lite转换工具获取Micro工程中benchmark样例。使用MindSpore Lite框架执行推理，主要包括以下步骤，更详细的步骤请参考板端sample。
-
->![](public_sys-resources/icon-note.gif) **说明：** 
->状态码说明：OH\_AI\_STATUS\_FAILED表示相关API调用失败；OH\_AI\_STATUS\_SUCCESS表示相关API调用成功。
 
 1.  环境初始化。
 
