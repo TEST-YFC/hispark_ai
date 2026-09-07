@@ -1,0 +1,29 @@
+# 环境适配文件清单（方案 §2.2 实测 20 个 + 2 个特殊项）
+# 用途：apply 失败转人工复核时，标注冲突文件是否属于"环境适配层"（§4.3）
+# 注意：这些文件不拦截同步，仅作复核报告的分类标注
+protected:
+  - cmake/external_libs/jpeg_turbo.cmake
+  - cmake/external_libs/ompi.cmake
+  - cmake/external_libs/eigen.cmake
+  - cmake/external_libs/flatbuffers.cmake
+  - cmake/external_libs/securec.cmake
+  - cmake/external_libs/opencv.cmake
+  - cmake/external_libs/openssl.cmake
+  - cmake/external_libs/json.cmake
+  - cmake/external_libs/zlib.cmake
+  - cmake/external_libs/glog.cmake
+  - cmake/external_libs/protobuf.cmake
+  - cmake/external_libs/pocketfft.cmake
+  - cmake/external_libs/mockcpp.cmake
+  - cmake/external_libs/pybind11.cmake
+  - cmake/external_libs/robin.cmake
+  - cmake/external_libs/protobuf_arm.cmake
+  - cmake/external_libs/gtest.cmake
+  - mindspore-lite/CMakeLists.txt
+  - mindspore-lite/test/CMakeLists.txt
+  - mindspore-lite/tools/converter/CMakeLists.txt
+
+# 永久忽略（§8.3 已查清）
+ignore_forever:
+  - cmake/external_libs/opencl.cmake        # A 侧历史残留，上游已拆分为 opencl-headers/opencl-clhpp
+  - cmake/external_libs/openssl copy.cmake  # 垃圾副本
