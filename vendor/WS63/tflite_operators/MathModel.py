@@ -113,10 +113,6 @@ class _mathoperatorsmodel(tf.Module):
         x_new = (tf.maximum(0.0, x_new) +
                  self.prelu_alpha * tf.minimum(0.0, x_new))
         x_new = tf.identity(x_new, name="prelu")
-        x_new = tf.quantization.fake_quant_with_min_max_args(
-            x_new, min=-20.0, max=20.0, num_bits=8, narrow_range=False,
-            name="fake_quant"
-        )
         div_const = tf.constant([[[0.5, 1.0], [2.0, 0.5]]],
                                 dtype=tf.float32)
         x_new = tf.math.divide(x_new, div_const + 0.1, name="div")
