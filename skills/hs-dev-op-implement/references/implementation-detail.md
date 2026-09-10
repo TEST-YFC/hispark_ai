@@ -97,7 +97,7 @@ dtype 逐项映射到独立 case，以及生成模型中的真实节点/输入�
 
 同族多 builtin 场景把实际“输入形态 → builtin”解包证据写入 `builtin-probe.md`。缺实际命令输出时不能用“无归一化”代替证据。
 
-在prepare阶段继续冻结`implementation-contract.md`，至少包含source entries、primitive、
+在prepare阶段继续冻结实现约定文件`implementation-contract.md`，至少包含source entries、primitive、
 输入/可选输入、属性、layout、dtype、输出、验证方式和暂不支持范围。计算路径新增、修改、
 启用或接管时，同时生成`<opdir>/docs/reference-impl.md`，记录上游实现与仓内相似实现的算法、
 边界和采纳理由；该文件是算子项目运行时产物，不是Skill包内置模板。
@@ -183,7 +183,7 @@ CODE_STYLE_SOURCE_SHA256=<sha256>
 项目策略是：默认值与语义按最新opset实现，不临时发明opset分支；扫描发现
 版本差异时Parser加入 `Project policy: parse per opset <N> semantics regardless of model
 opset.` 注释，语义差异另写事实注释。属性审计必须落到 `decision.md`或
-`implementation-contract.md`，并由`gate_artifacts.py --stage pre-source`机械验收。
+实现约定文件`implementation-contract.md`，并由`gate_artifacts.py --stage pre-source`机械验收。
 
 组合算子还必须完成构造型fusion审计；任何算子都要完成消除/重写型pass审计。命中
 消除型pass时，必须记录触发/存活条件，并在能力清单设计“一条pass不触发且真到Kernel”

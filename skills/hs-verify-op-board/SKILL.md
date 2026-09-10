@@ -78,7 +78,7 @@ step3 完成后暂停当前矩阵行并把接线 receipt、target、模型库和
 1. [`references/workflow-gates.md`](references/workflow-gates.md)：职责边界、step0/0a、矩阵锁定和进度模板。
 2. [`references/ws63-build-handoff.md`](references/ws63-build-handoff.md)：WS63 step2-step4 的 Micro、adaptor、Sample、SDK、构建接线和固件内容核对。
 3. [`references/flash-serial-handoff.md`](references/flash-serial-handoff.md)：step5 的 flash 委托、串口交叉探测、重插重试和 monitor 证据。
-4. [`references/board-accuracy-contract.md`](references/board-accuracy-contract.md)：step6 的 Tensor 解析、阈值、逐行结果和矩阵统计规则。
+4. [板端精度与矩阵规则](references/board-accuracy-contract.md)：step6 的 Tensor 解析、阈值、逐行结果和矩阵统计规则。
 5. [`references/board-guardrails.md`](references/board-guardrails.md)：禁止事项、完成判据、失败措辞和资源所有权。
 
 ## 结果与完成语义
@@ -116,7 +116,7 @@ fp32 `cos >= 0.999` 或 INT8 `cos >= 0.99`，才可输出 `ACCURACY_VERDICT=PASS
 | [`references/workflow-gates.md`](references/workflow-gates.md) | 入口、授权、矩阵和进度 |
 | [`references/ws63-build-handoff.md`](references/ws63-build-handoff.md) | WS63 模型库、Sample、SDK 接线和构建 handoff |
 | [`references/flash-serial-handoff.md`](references/flash-serial-handoff.md) | flash/串口/端口重探和重试 |
-| [`references/board-accuracy-contract.md`](references/board-accuracy-contract.md) | Tensor 精度和矩阵报告 |
+| [板端精度与矩阵规则](references/board-accuracy-contract.md) | Tensor 精度和矩阵报告 |
 | [`references/board-guardrails.md`](references/board-guardrails.md) | 禁止事项、完成判据和分流 |
 | [`chips/ws63/references/sdk-integration.md`](chips/ws63/references/sdk-integration.md) | WS63 必读的具体 SDK 接线规范 |
 | [`chips/ws63/references/device.md`](chips/ws63/references/device.md) | WS63 设备、端口和 I/O 环境事实 |

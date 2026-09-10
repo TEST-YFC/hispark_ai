@@ -23,7 +23,7 @@
    `gate_artifacts.py --stage source-freeze --plan-run-id <ID>`生成绑定算子、框架范围和code root的
    `source-freeze.json`，再执行step0-step3，生成并冻结
    `spec.md`、`decision.md`、`link-analysis.md`、`existing-capability-review.md`、
-   `implementation-contract.md`、`capability_checklist.json`和计划版`op_spec.py`；每条 case 的
+   实现约定文件`implementation-contract.md`、`capability_checklist.json`和计划版`op_spec.py`；每条 case 的
    `test_point`必须明确说明该用例验证的行为、边界或缺陷类型；运行
    `validate_op_spec.py`及带`--code-root`的`gate_artifacts.py --stage prepare`。prepare期间禁止修改Schema、
    Parser、Populate、Infer、Kernel、OpCoder、Quantizer、注册或构建接线源码。只有
@@ -34,7 +34,7 @@
    `OP_MANUAL_SYNC=PASS mode=integrated-initial publication=record`才继续。
 3. 对每个framework运行带`--code-root`的`gate_artifacts.py --stage pre-source`，机械复核
    `source-freeze.json`中的源码指纹、计划版`op_spec.py`、facts、两份文档以及facts记录的
-   `spec/implementation-contract/capability-checklist/op_spec`哈希，并重新执行facts/content/case
+   `spec.md`、实现约定文件、能力清单和计划版`op_spec.py`这四份主源文件的哈希，并重新执行facts/content/case
    三项文档audit。
    只有全部输出`PRE_SOURCE_GATE=PASS`才能进入Stage3。
 

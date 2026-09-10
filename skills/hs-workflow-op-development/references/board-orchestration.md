@@ -83,7 +83,7 @@ ArgMax/标签、让任务无限循环，或让Sample用硬编码答案自报最�
 自动启动 `stage7.board_matrix`，逐行完成烧录、串口采集和精度判定并立即保存。详细的 flash、
 端口交叉探测、重插/RESET、monitor 时间和 JSON 解析规则必须读取
 [`hs-verify-op-board/references/flash-serial-handoff.md`](../../hs-verify-op-board/references/flash-serial-handoff.md)；Tensor、阈值和矩阵规则必须读取
-[`hs-verify-op-board/references/board-accuracy-contract.md`](../../hs-verify-op-board/references/board-accuracy-contract.md) 及
+[板端精度与矩阵规则](../../hs-verify-op-board/references/board-accuracy-contract.md)和
 [`hs-verify-op-board/references/board-guardrails.md`](../../hs-verify-op-board/references/board-guardrails.md)。
 
 对 `board_expected_matrix.json` 的每一行调用 `hs-dev-flash` 烧录该行 Stage6 生成的新鲜固件，

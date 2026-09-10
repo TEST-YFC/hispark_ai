@@ -64,7 +64,7 @@ Stage1 尚未完成执行确认时的阻断只允许由父 workflow 做状态收
 
 | 文档内容 | 唯一主源 | 允许的辅助证据 |
 |---|---|---|
-| 设计文档规格/软件设计 | `<opdir>/docs/spec.md`、`implementation-contract.md` | `builtin-probe.md`、`reference-impl.md`、`link-analysis.md`、`decision.md` |
+| 设计文档规格/软件设计 | 规格文件 `<opdir>/docs/spec.md`、实现约定文件 `<opdir>/docs/implementation-contract.md` | `builtin-probe.md`、`reference-impl.md`、`link-analysis.md`、`decision.md` |
 | 设计文档场景 | `<opdir>/scripts/capability_checklist.json` | `decision.md` |
 | 验证文档用例 | `<opdir>/scripts/op_spec.py` | capability checklist、builtin probe |
 | 验证文档结果 | 最新可信 `verify_summary.txt` 及板端矩阵 | 各阶段日志和产物哈希 |

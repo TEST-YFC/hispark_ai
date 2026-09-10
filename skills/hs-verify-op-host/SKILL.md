@@ -33,7 +33,7 @@ description: >-
 
 1. [`references/workflow-gates.md`](references/workflow-gates.md)：用户可见 todo、流程地图、harness 内部步骤和 workflow 的 pre-verify 检查。
 2. [`references/host-guardrails.md`](references/host-guardrails.md)：不可变 harness、余弦/INT8 防伪、目录和依赖红线及前置检查。
-3. [`references/host-contract.md`](references/host-contract.md)：`op_spec.py`、能力清单、输入/输出和两框架用例设计的规则。
+3. [Host 规格与用例规则](references/host-contract.md)：`op_spec.py`、能力清单、输入/输出和两框架用例设计的规则。
 4. [`references/run-and-results.md`](references/run-and-results.md)：运行命令、长任务等待、结果文件和报告格式。
 5. [`references/failure-triage.md`](references/failure-triage.md)：converter/工具链/实现失败分流、处理方式和范围底线。
 
@@ -114,7 +114,7 @@ next_owner=<hs-workflow-op-development|implementation|toolchain>
 | `scripts/judge.sh` | 单 case 诊断；不形成最终结论 |
 | [`references/workflow-gates.md`](references/workflow-gates.md) | step0/1 和 workflow 对账 |
 | [`references/host-guardrails.md`](references/host-guardrails.md) | 禁止事项、依赖和目录边界 |
-| [`references/host-contract.md`](references/host-contract.md) | spec、能力和用例完整规则 |
+| [Host 规格与用例规则](references/host-contract.md) | spec、能力和用例完整规则 |
 | [`references/run-and-results.md`](references/run-and-results.md) | 执行、等待、结果读取 |
 | [`references/failure-triage.md`](references/failure-triage.md) | 失败排查与处理 |
 

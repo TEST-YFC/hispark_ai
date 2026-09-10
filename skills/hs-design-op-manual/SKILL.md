@@ -58,7 +58,7 @@ description: >-
 
 进入对应阶段时读取完整规则：
 
-1. 先读 [`references/facts-contract.md`](references/facts-contract.md)，了解模式参数、事实来源、facts schema、输入审计和 A/B/C/D 分级。
+1. 先读 [事实来源与文件分级](references/facts-contract.md)，了解模式参数、事实来源、facts schema、输入审计和 A/B/C/D 分级。
 2. 生成正文前读 [`references/document-rendering.md`](references/document-rendering.md)，并按需读两个文档模板。
 3. 写入/发布前读 [`references/publication-transaction.md`](references/publication-transaction.md)，执行敏感信息检查、候选审计、成对事务发布和最终复核。
 
@@ -71,7 +71,7 @@ description: >-
 
 facts 的四个主源固定为：
 
-- 设计规格和软件设计：`<opdir>/docs/spec.md`、`implementation-contract.md`（实现约定）；
+- 设计规格文件 `<opdir>/docs/spec.md` 和实现约定文件 `<opdir>/docs/implementation-contract.md`；
 - 场景和能力：`<opdir>/scripts/capability_checklist.json`；
 - 验证用例：`<opdir>/scripts/op_spec.py`；
 - 结果：本轮可信 `verify_summary.txt`、板端矩阵及其证据。
@@ -101,7 +101,7 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NO
 
 | 资源 | 何时读取 |
 |---|---|
-| [`references/facts-contract.md`](references/facts-contract.md) | step0-step2、输入审计、facts 和分级 |
+| [事实来源与文件分级](references/facts-contract.md) | step0-step2、输入审计、facts 和分级 |
 | [`references/document-rendering.md`](references/document-rendering.md) | step3、章节和逐 case 渲染 |
 | [`references/publication-transaction.md`](references/publication-transaction.md) | step4-step6、公开边界、回滚和自检 |
 | [`references/operator-design-doc-template.md`](references/operator-design-doc-template.md) | 设计文档候选 |

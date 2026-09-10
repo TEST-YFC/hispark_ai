@@ -308,7 +308,7 @@ Stage6/Stage7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN
 | Stage6/Stage7 顶层衔接 | [`references/board-orchestration.md`](references/board-orchestration.md) |
 | Board 构建 handoff | [`../hs-verify-op-board/references/ws63-build-handoff.md`](../hs-verify-op-board/references/ws63-build-handoff.md) |
 | Board 烧录与串口交接 | [`../hs-verify-op-board/references/flash-serial-handoff.md`](../hs-verify-op-board/references/flash-serial-handoff.md) |
-| Board 精度与矩阵规则 | [`../hs-verify-op-board/references/board-accuracy-contract.md`](../hs-verify-op-board/references/board-accuracy-contract.md) |
+| Board 精度与矩阵规则 | [板端精度与矩阵规则](../hs-verify-op-board/references/board-accuracy-contract.md) |
 | Board 红线与失败分流 | [`../hs-verify-op-board/references/board-guardrails.md`](../hs-verify-op-board/references/board-guardrails.md) |
 | 终态报告 | [`references/final-report.md`](references/final-report.md) |
 | WS63 具体接线 | [`../hs-verify-op-board/chips/ws63/references/sdk-integration.md`](../hs-verify-op-board/chips/ws63/references/sdk-integration.md) |

@@ -88,7 +88,7 @@ implementation unit。多个入口只有计算/输出语义、dtype/shape、属�
 ├── docs/decision.md
 ├── docs/link-analysis.md
 ├── docs/existing-capability-review.md
-├── docs/implementation-contract.md
+├── docs/implementation-contract.md  # 实现约定；固定路径，不要改名
 ├── docs/source-freeze.json
 ├── docs/code-style-audit.md
 ├── docs/reference-impl.md

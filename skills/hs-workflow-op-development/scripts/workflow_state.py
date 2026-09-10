@@ -46,7 +46,7 @@ class TaskDef:
 TASKS = (
     TaskDef("stage1.scope_environment", "stage1", "冻结范围并只读探测环境"),
     TaskDef("stage1.confirm", "stage1", "展示方案并取得一次执行确认", manual=True),
-    TaskDef("stage2.plan", "stage2", "生成并冻结实现计划、合同和能力清单"),
+    TaskDef("stage2.plan", "stage2", "生成并冻结实现计划、实现约定和能力清单"),
     TaskDef("stage2.initial_docs", "stage2", "生成初版设计文档和验证文档"),
     TaskDef("stage2.pre_source_gate", "stage2", "执行初版文档与源码指纹门禁"),
     TaskDef("stage3.implementation", "stage3", "自动写入或修复算子源码"),
