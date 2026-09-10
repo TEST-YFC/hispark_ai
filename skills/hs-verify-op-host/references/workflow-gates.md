@@ -63,10 +63,13 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 只读对账；启动harness前必须执行：
 
 ```bash
-python3 <hs-dev-op-implement skill root>/scripts/gate_artifacts.py \
-  --opdir <absolute proj> --op <Op> --stage pre-verify --framework <framework>
-python3 <hs-verify-op-host skill root>/scripts/validate_op_spec.py <absolute proj>
+python3 "<hs-dev-op-implement>/scripts/gate_artifacts.py" \
+  --opdir <absolute proj> --op <Op> --stage pre-verify --framework <framework> \
+  --manual-audit-script "<hs-design-op-manual>/scripts/audit_manual_inputs.py"
+python3 "<hs-verify-op-host>/scripts/validate_op_spec.py" <absolute proj>
 ```
+
+`<hs-...>` 使用按名称找到的对应 Skill 实际根目录。
 
 每个激活 framework 都要得到 `ARTIFACT_GATE=PASS`，且 validator 退出码为 0。前者确认实现约束、已有能力 review、能力清单和测试 spec 没有断链；后者在长转换前拦截动态输入数量、initializer 声明、capability case ID 及 ONNX `auto_pad/pads` 冲突。独立 Host 任务没有实现工作区时不伪造这些文件，但仍执行 harness 内建的 spec、目标算子身份和能力覆盖检查。
 

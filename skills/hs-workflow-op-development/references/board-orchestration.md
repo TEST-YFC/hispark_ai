@@ -6,7 +6,7 @@
 - [Stage7 烧录与精度](#stage7默认全矩阵烧录与板端精度)
 
 > 仅在完整 AUTO_ALL 工作流进入板端阶段时读取。WS63 的具体接线步骤由
-> `hs-verify-op-board/chips/ws63/references/sdk-integration.md` 负责；本文件记录顶层任务、文件交接和状态机衔接。
+> `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md` 负责；本文件记录顶层任务、文件交接和状态机衔接。
 
 ## Stage6：默认全矩阵固件接入与构建
 
@@ -30,9 +30,9 @@ chip=<chip>
 target=<fbb真实target>
 ```
 
-本阶段必须完整读取并逐节执行 [`hs-verify-op-board/chips/ws63/references/sdk-integration.md`](../../hs-verify-op-board/chips/ws63/references/sdk-integration.md)
-及 Board Skill 的 [`references/ws63-build-handoff.md`](../../hs-verify-op-board/references/ws63-build-handoff.md)。下表是编排映射，不是删减步骤；每个映射项
-仍须按被链接 reference 的原步骤执行并回传证据：
+本阶段必须完整读取并逐节执行 `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`
+及 `references/ws63-build-handoff.md`。下表是编排映射，不是删减步骤；每个映射项
+仍须按对应 reference 的原步骤执行并回传证据：
 
 对于 WS63，顶层先调用 `hs-verify-op-board` step0-3 准备模型与 SDK 接线，在它输出构建 handoff
 后才调用 `hs-dev-build`；构建结果返回同一轮 Board Skill step4 验收，不在烧录后重新从 step0
@@ -71,8 +71,8 @@ ArgMax/标签、让任务无限循环，或让Sample用硬编码答案自报最�
 
 随后调用 `hs-dev-build` 生成 fwpkg；它只负责通过 fbb CLI 构建指定 target。若使用 CLI 回退，先从
 `fbb list-targets --json` 或 `fbb describe --json` 获取真实 target，配置变更后强制 clean build。
-必须按 SDK reference §11 和 [`hs-verify-op-board/references/ws63-build-handoff.md`](../../hs-verify-op-board/references/ws63-build-handoff.md) 运行
-`hs-verify-op-board/chips/ws63/scripts/verify_firmware.py`，核对 Sample 对应
+必须按 SDK reference §11 和 `hs-verify-op-board` 内的 `references/ws63-build-handoff.md` 运行
+该 Skill 内的 `chips/ws63/scripts/verify_firmware.py`，核对 Sample 对应
 `.c.obj`、模型 Predict/Execute、目标 Kernel 和本轮新鲜度；只有 `FIRMWARE_CONTENT_GATE=PASS`
 才能继续。`fbb build` 退出 0 但缺少这些证据时，Stage6 仍为 FAIL。
 
@@ -82,19 +82,19 @@ ArgMax/标签、让任务无限循环，或让Sample用硬编码答案自报最�
 
 自动启动 `stage7.board_matrix`，逐行完成烧录、串口采集和精度判定并立即保存。详细的 flash、
 端口交叉探测、重插/RESET、monitor 时间和 JSON 解析规则必须读取
-[`hs-verify-op-board/references/flash-serial-handoff.md`](../../hs-verify-op-board/references/flash-serial-handoff.md)；Tensor、阈值和矩阵规则必须读取
-[板端精度与矩阵规则](../../hs-verify-op-board/references/board-accuracy-contract.md)和
-[`hs-verify-op-board/references/board-guardrails.md`](../../hs-verify-op-board/references/board-guardrails.md)。
+`hs-verify-op-board` 内的 `references/flash-serial-handoff.md`；Tensor、阈值和矩阵规则必须读取
+同一 Skill 内的 `references/board-accuracy-contract.md`（板端精度与矩阵规则）和
+`references/board-guardrails.md`。
 
 对 `board_expected_matrix.json` 的每一行调用 `hs-dev-flash` 烧录该行 Stage6 生成的新鲜固件，
 只接受本轮 flash 的最后一行 `success=true` JSON，随后采集串口并运行精度判定；不能直接绕过统一
 flash 入口调用 BurnTool。
-进入本阶段以及每次 `PORT_NOT_FOUND` 重试前，必须按 [`hs-verify-op-board/references/flash-serial-handoff.md`](../../hs-verify-op-board/references/flash-serial-handoff.md) 运行
+进入本阶段以及每次 `PORT_NOT_FOUND` 重试前，必须按 `hs-verify-op-board` 内的 `references/flash-serial-handoff.md` 运行
 `probe_serial_ports.py` 并保存本轮回执；其中的 .NET/注册表交叉探测、PnP 超时和 USB-UART
 候选排除规则是强制门禁，不能被简化为端口名称判断。
 
 进入烧录前核对 `FBB_SDK_DIR`、真实 target 和 Stage6 内容门禁的新鲜 `_all.fwpkg`。
-端口歧义时按 [`hs-verify-op-board/references/flash-serial-handoff.md`](../../hs-verify-op-board/references/flash-serial-handoff.md) 输出候选、错误和恢复命令，请求具体端口选择或重新接线；
+端口歧义时按 `hs-verify-op-board` 内的 `references/flash-serial-handoff.md` 输出候选、错误和恢复命令，请求具体端口选择或重新接线；
 只读 stdout 最后一行 JSON 并按 `success` 与 `error.code` 分流。若返回 `DEVICE_NOT_RESPONDING`，
 将该行标为 `NOT_RUN` 并记录一次人工 RESET 动作；不在后续阶段再次索取总确认。烧录后采集时间、端口和日志波特率必须可追溯；
 缺任一证据都不能进入精度签收。详细执行规则由 `hs-dev-flash` 与 `hs-verify-op-board` step5
@@ -114,7 +114,7 @@ fp32/INT8模式，由它输出`ACCURACY_VERDICT`。这是恢复同一轮Board Sk
 不得把“烧录成功”“出现启动日志”或Sample自报PASS当作精度PASS。
 
 每行完成后写 `<board-results>/<framework>/tc<case_id>/<mode>/board_result.json`。所有可执行行到达
-`PASS|FAIL|NOT_RUN` 后运行 `hs-verify-op-board/scripts/board_matrix_report.py`，生成
+`PASS|FAIL|NOT_RUN` 后运行 `hs-verify-op-board` 内的 `scripts/board_matrix_report.py`，生成
 `board_case_results.json` 和 `board_verify_summary.txt`；若阶段级工具/设备故障使部分行只能标为
 `BLOCKED`，先为每个未执行行写入带原因的 `NOT_RUN` 记录，再运行报告并把阶段本身保留为 `BLOCKED`。
 只有 `expected=executed=pass`、`fail=not_run=0` 且 `BOARD_MATRIX_GATE=PASS`，才允许整个板测输出

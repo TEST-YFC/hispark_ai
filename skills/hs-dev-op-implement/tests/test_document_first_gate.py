@@ -4,8 +4,12 @@
 import hashlib
 import importlib.util
 import json
+import shutil
 import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 
 GATE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "gate_artifacts.py"
@@ -57,8 +61,9 @@ def make_initial_manual_fixture(tmp_path: Path, *, mode="integrated-initial") ->
     return opdir
 
 
-def install_manual_audit(monkeypatch, tmp_path: Path, *, passed=True) -> None:
-    script = tmp_path / "manual_audit.py"
+def install_manual_audit(tmp_path: Path, *, passed=True) -> Path:
+    script = tmp_path / "separate plugin location" / "manual resources" / "audit_manual_inputs.py"
+    script.parent.mkdir(parents=True, exist_ok=True)
     if passed:
         output = (
             "OP_MANUAL_FACTS_SYNC=PASS\n"
@@ -79,60 +84,157 @@ def install_manual_audit(monkeypatch, tmp_path: Path, *, passed=True) -> None:
         f"raise SystemExit({exit_code})\n",
         encoding="utf-8",
     )
-    monkeypatch.setattr(gate, "MANUAL_AUDIT_SCRIPT", script)
+    return script.resolve()
 
 
-def test_initial_manual_gate_accepts_current_prepare_sources(tmp_path, monkeypatch):
-    install_manual_audit(monkeypatch, tmp_path)
+def test_initial_manual_gate_accepts_current_prepare_sources(tmp_path):
+    script = install_manual_audit(tmp_path)
     opdir = make_initial_manual_fixture(tmp_path)
     errors = []
-    gate.check_initial_manual(opdir, "ReduceSumSquare", errors)
+    gate.check_initial_manual(opdir, "ReduceSumSquare", errors, script)
     assert errors == []
 
 
-def test_initial_manual_gate_rejects_missing_draft(tmp_path, monkeypatch):
-    install_manual_audit(monkeypatch, tmp_path)
+def test_initial_manual_gate_rejects_missing_draft(tmp_path):
+    script = install_manual_audit(tmp_path)
     opdir = make_initial_manual_fixture(tmp_path)
     (opdir / "docs/reducesumsquare-operator-design-doc.md").unlink()
     errors = []
-    gate.check_initial_manual(opdir, "ReduceSumSquare", errors)
+    gate.check_initial_manual(opdir, "ReduceSumSquare", errors, script)
     assert any("reducesumsquare-operator-design-doc.md" in error for error in errors)
 
 
-def test_initial_manual_gate_rejects_missing_verify_document(tmp_path, monkeypatch):
-    install_manual_audit(monkeypatch, tmp_path)
+def test_initial_manual_gate_rejects_missing_verify_document(tmp_path):
+    script = install_manual_audit(tmp_path)
     opdir = make_initial_manual_fixture(tmp_path)
     (opdir / "docs/reducesumsquare-operator-verify-doc.md").unlink()
     errors = []
-    gate.check_initial_manual(opdir, "ReduceSumSquare", errors)
+    gate.check_initial_manual(opdir, "ReduceSumSquare", errors, script)
     assert any("reducesumsquare-operator-verify-doc.md" in error for error in errors)
 
 
-def test_initial_manual_gate_rejects_source_changed_after_draft(tmp_path, monkeypatch):
-    install_manual_audit(monkeypatch, tmp_path)
+def test_initial_manual_gate_rejects_source_changed_after_draft(tmp_path):
+    script = install_manual_audit(tmp_path)
     opdir = make_initial_manual_fixture(tmp_path)
     (opdir / "docs/implementation-contract.md").write_text(
         "ReduceSumSquare changed after initial manual\n", encoding="utf-8"
     )
     errors = []
-    gate.check_initial_manual(opdir, "ReduceSumSquare", errors)
+    gate.check_initial_manual(opdir, "ReduceSumSquare", errors, script)
     assert any("implementation_contract.sha256" in error for error in errors)
 
 
-def test_initial_manual_gate_rejects_final_facts_before_source(tmp_path, monkeypatch):
-    install_manual_audit(monkeypatch, tmp_path)
+def test_initial_manual_gate_rejects_final_facts_before_source(tmp_path):
+    script = install_manual_audit(tmp_path)
     opdir = make_initial_manual_fixture(tmp_path, mode="integrated-final")
     errors = []
-    gate.check_initial_manual(opdir, "ReduceSumSquare", errors)
+    gate.check_initial_manual(opdir, "ReduceSumSquare", errors, script)
     assert any("mode must be integrated-initial" in error for error in errors)
 
 
-def test_initial_manual_gate_rejects_failed_content_audit(tmp_path, monkeypatch):
-    install_manual_audit(monkeypatch, tmp_path, passed=False)
+def test_initial_manual_gate_rejects_failed_content_audit(tmp_path):
+    script = install_manual_audit(tmp_path, passed=False)
     opdir = make_initial_manual_fixture(tmp_path)
     errors = []
-    gate.check_initial_manual(opdir, "ReduceSumSquare", errors)
+    gate.check_initial_manual(opdir, "ReduceSumSquare", errors, script)
     assert any("integrated-initial manual audit failed" in error for error in errors)
+
+
+@pytest.mark.parametrize("invalid", ["missing-argument", "missing-file", "relative-path"])
+def test_initial_manual_gate_rejects_unresolved_audit_script(tmp_path, invalid):
+    opdir = make_initial_manual_fixture(tmp_path)
+    script = {
+        "missing-argument": None,
+        "missing-file": tmp_path / "not installed" / "audit_manual_inputs.py",
+        "relative-path": Path("hs-design-op-manual/scripts/audit_manual_inputs.py"),
+    }[invalid]
+    errors = []
+    gate.check_initial_manual(opdir, "ReduceSumSquare", errors, script)
+    assert len(errors) == 1
+    expected = {
+        "missing-argument": "--manual-audit-script is required",
+        "missing-file": "missing manual audit script",
+        "relative-path": "must be an absolute path",
+    }[invalid]
+    assert expected in errors[0]
+
+
+@pytest.mark.parametrize("missing_token", ["FACTS", "CONTENT", "CASE"])
+def test_manual_audit_requires_all_pass_markers_even_with_zero_exit(tmp_path, missing_token):
+    script = install_manual_audit(tmp_path)
+    script.write_text(
+        script.read_text(encoding="utf-8").replace(
+            f"OP_MANUAL_{missing_token}_SYNC=PASS", f"OP_MANUAL_{missing_token}_SYNC=FAIL"
+        ),
+        encoding="utf-8",
+    )
+    errors = []
+    gate.check_initial_manual(make_initial_manual_fixture(tmp_path), "ReduceSumSquare", errors, script)
+    assert any("integrated-initial manual audit failed (exit=0" in error for error in errors)
+
+
+def test_manual_audit_rejects_nonzero_exit_with_all_pass_markers(tmp_path):
+    script = install_manual_audit(tmp_path)
+    script.write_text(
+        script.read_text(encoding="utf-8").replace("SystemExit(0)", "SystemExit(1)"),
+        encoding="utf-8",
+    )
+    errors = []
+    gate.check_initial_manual(make_initial_manual_fixture(tmp_path), "ReduceSumSquare", errors, script)
+    assert any("integrated-initial manual audit failed (exit=1" in error for error in errors)
+
+
+def test_manual_audit_works_after_independent_installation_with_spaces(tmp_path):
+    installed_gate = tmp_path / "operator plugin" / "nested install" / "scripts" / "gate_artifacts.py"
+    installed_gate.parent.mkdir(parents=True)
+    shutil.copy2(GATE_PATH, installed_gate)
+    spec = importlib.util.spec_from_file_location("independently_installed_gate", installed_gate)
+    installed = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installed)
+    script = install_manual_audit(tmp_path)
+    opdir = make_initial_manual_fixture(tmp_path)
+    errors = []
+    installed.check_initial_manual(opdir, "ReduceSumSquare", errors, script)
+    assert errors == []
+
+
+@pytest.mark.parametrize(
+    ("stage", "source_only", "audits"),
+    [
+        ("step3", False, False),
+        ("prepare", False, False),
+        ("pre-source", True, False),
+        ("pre-code", True, False),
+        ("pre-source", False, True),
+        ("pre-code", False, True),
+        ("pre-verify", False, True),
+    ],
+)
+def test_cli_requires_resolved_audit_only_for_document_stages(tmp_path, monkeypatch, capsys, stage, source_only, audits):
+    opdir = make_initial_manual_fixture(tmp_path)
+    for name in ("decision.md", "link-analysis.md"):
+        (opdir / "docs" / name).write_text("ReduceSumSquare planning stub\n", encoding="utf-8")
+    # Scope this test to audit dispatch. Other source/checklist/review gates have
+    # their own regression cases and are deliberately stubbed here.
+    for name in (
+        "require_mentions", "load_checklist", "check_source_freeze",
+        "check_existing_capability_review", "check_contract", "check_op_spec_text", "check_code_review",
+    ):
+        monkeypatch.setattr(gate, name, lambda *args: None)
+    argv = [
+        str(GATE_PATH), "--opdir", str(opdir), "--op", "ReduceSumSquare",
+        "--stage", stage, "--code-root", str(tmp_path), "--plan-run-id", "plan-001",
+    ]
+    if source_only:
+        argv.append("--source-only")
+    monkeypatch.setattr(sys, "argv", argv)
+    assert gate.main() == (1 if audits else 0)
+    output = capsys.readouterr().out
+    assert ("--manual-audit-script is required" in output) == audits
+    if audits:
+        script = install_manual_audit(tmp_path)
+        monkeypatch.setattr(sys, "argv", argv + ["--manual-audit-script", str(script)])
+        assert gate.main() == 0
 
 
 def test_source_freeze_detects_source_change_without_requiring_clean_tree(tmp_path):

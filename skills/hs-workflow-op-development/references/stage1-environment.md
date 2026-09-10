@@ -71,8 +71,8 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
    系统且对应环境检查成功时优先该环境；只有一个候选通过时自动选择它。
 4. 从SDK身份、芯片参考和`fbb describe --json`记录`TARGET_RUNTIME`；不能把Host或固件编译
    环境误写成MCU实际运行环境。
-5. 分别探测候选环境中的兼容设备/串口可见性。Windows 必须运行
-   `hs-verify-op-board/scripts/probe_serial_ports.py`，交叉记录 `.NET SerialPort.GetPortNames()`、
+5. 分别探测候选环境中的兼容设备/串口可见性。Windows 必须
+   按名称定位 `hs-verify-op-board` 并运行其内部的 `scripts/probe_serial_ports.py`，交叉记录 `.NET SerialPort.GetPortNames()`、
    `HKLM:\\HARDWARE\\DEVICEMAP\\SERIALCOMM` 和有界的 `pnputil` 结果；不得只依赖
    `Win32_SerialPort`/WMI。WSL/Linux 记录 `/dev/serial/by-id`、`/dev/serial/by-path` 及
    `ttyUSB/ttyACM`。串口探测必须在 `DEVICE_IO_ENV` 执行：Windows 设备用 Windows Python/PowerShell

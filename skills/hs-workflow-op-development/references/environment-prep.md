@@ -46,15 +46,10 @@
 https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
 ```
 
-期望的文件分别是：
+安装后分别按名称加载 `hs-dev-env-prep`、`hs-dev-build`、`hs-dev-flash`，确认各自的 `SKILL.md` 可读。
+它们无需与本工作流或彼此安装在同一父目录。
 
-```text
-<skill-root>/hs-dev-env-prep/SKILL.md
-<skill-root>/hs-dev-build/SKILL.md
-<skill-root>/hs-dev-flash/SKILL.md
-```
-
-安装后必须重新检查当前使用者的 `<skill-root>`，并保留各 Skill 的 `references/`、
+必须通过当前环境提供的实际位置或资源读取方式检查，并保留各 Skill 的 `references/`、
 `scripts/` 等配套资源；不能只下载一个 `SKILL.md` 作为已安装判据。
 
 ### 环境准备 Skill 的可用性门禁
@@ -69,15 +64,15 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
 2. 若用户要求固件编译/烧录，先执行 `fbb --version` 和 `fbb describe --json`，并核对用户给出的
    `FIRMWARE_SDK_ROOT`以及SDK全局/目标芯片的`min_cli_version`。命令成功且CLI版本满足要求时，输出 `ENV_PREP_SKILL=NOT_REQUIRED`，直接进入
    `hs-dev-build`/`hs-dev-flash`；“已安装并可用的 fbb CLI 环境”已经满足其前置条件。
-3. 若固件阶段需要补环境，尝试加载用户提供或已安装的
-   `hs-dev-env-prep/SKILL.md`。加载不到时，必须立即在该使用者当前会话报告：
+3. 若固件阶段需要补环境，按名称加载用户提供或已安装的 `hs-dev-env-prep`，
+   完整读取它的 `SKILL.md`。加载不到时，必须立即在该使用者当前会话报告：
 
    ```text
    ENV_PREP_SKILL=UNAVAILABLE
    BOARD_STAGE=BLOCKED
    请先安装 hs-dev-env-prep：
    https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
-   期望文件：<skill-root>/hs-dev-env-prep/SKILL.md
+   需要能按名称加载 hs-dev-env-prep，并读取其 SKILL.md 和配套资源。
    ```
 
    此时不得假装环境已准备好、不得启动后台 `fbb build`/`fbb flash`，也不得自行下载一份
@@ -93,7 +88,7 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
 - 未安装：先告知用户从与 `hs-dev-env-prep` 相同的地址安装：
   `https://gitcode.com/HiSpark/hibot-skills/tree/master/skills`。
   该目录包含 `hs-dev-env-prep`、`hs-dev-build` 和 `hs-dev-flash`；安装后应重新检查
-  当前使用者自己的 `<skill-root>`，不得只复制 `SKILL.md`；必须保留该 Skill 目录下对应的
+  当前环境能否按名称加载对应 Skill，不得只复制 `SKILL.md`；必须保留该 Skill 目录下对应的
   `references/` 和 `scripts/` 子目录及其中脚本。
 - 用户未安装或当前环境不能加载：workflow 可按两者公开约定直接使用 CLI 回退，构建用
   `fbb --version`、`fbb describe --json` 或 `fbb list-targets --json` 取得真实 target，

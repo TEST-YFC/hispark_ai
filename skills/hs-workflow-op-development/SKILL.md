@@ -18,6 +18,9 @@ description: >-
 步骤不能被一句“完成接线”替代。入口正文只保留始终需要看到的约定，细节按阶段读取直接链接的
 `references/`文件。
 
+跨 Skill 先按名称加载，再读取目标 Skill 内的资源，不推算同级安装目录。
+命令中的 `<hs-...>` 使用按名称找到的实际根目录；本 Skill 自身资源仍用相对链接。
+
 ## 工作流总览
 
 完整成功路径如下：
@@ -214,8 +217,12 @@ Stage2 完整重跑。详细产物和哈希校验见 [`references/stage2-plan.md
 
 进入 `stage3.implementation` 后调用 `hs-dev-op-implement mode=apply`，并传递冻结的
 implementation unit、全部生成文件的哈希和 `HISPARK_ROOT`。只有 `PRE_SOURCE_GATE=PASS` 才能写源码；
-实现 Skill 必须先完整读取其 `references/code-style.md` 和 `references/code-quality-gate.md`，记录
-`CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。该规范是 Skill 自带的，不是用户
+先按名称加载 `hs-dev-op-implement`，由它在实现前完整读取自身的以下文件：
+
+- `references/code-style.md`：团队代码规范。
+- `references/code-quality-gate.md`：代码质量检查要求。
+
+记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。该规范是 Skill 自带的，不是用户
 需要安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别保存，不能代写 Host 或正式文档。
 规范路径必须展开为绝对路径并记录其 SHA-256；它不是用户需要安装的工具。
 `apply` 中不得在源码阶段直接
@@ -253,7 +260,7 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 
 仅 `AUTO_ALL` 进入；`HOST_ONLY` 将 Stage6/Stage7 标记 `NOT_REQUESTED`。读取
 [`references/board-orchestration.md`](references/board-orchestration.md) 和
-`hs-verify-op-board/chips/ws63/references/sdk-integration.md`，按
+`hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`，按
 `framework -> case_id -> mode(fp32,int8)` 逐行准备 Micro 工程、adaptor、Sample、CMake/Kconfig
 和 target，交给 `hs-dev-build`，再由 Board Skill 验收 `FIRMWARE_CONTENT_GATE=PASS`。不得挑代表 case；
 `board_expected_matrix.json` 是唯一分母。
@@ -306,16 +313,15 @@ Stage6/Stage7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN
 | Stage2 prepare、文档和 pre-source | [`references/stage2-plan.md`](references/stage2-plan.md) |
 | Stage4 工具链 | [`references/build-and-toolchain.md`](references/build-and-toolchain.md) |
 | Stage6/Stage7 顶层衔接 | [`references/board-orchestration.md`](references/board-orchestration.md) |
-| Board 构建 handoff | [`../hs-verify-op-board/references/ws63-build-handoff.md`](../hs-verify-op-board/references/ws63-build-handoff.md) |
-| Board 烧录与串口交接 | [`../hs-verify-op-board/references/flash-serial-handoff.md`](../hs-verify-op-board/references/flash-serial-handoff.md) |
-| Board 精度与矩阵规则 | [板端精度与矩阵规则](../hs-verify-op-board/references/board-accuracy-contract.md) |
-| Board 红线与失败分流 | [`../hs-verify-op-board/references/board-guardrails.md`](../hs-verify-op-board/references/board-guardrails.md) |
+| Board 构建 handoff | `hs-verify-op-board` 内的 `references/ws63-build-handoff.md` |
+| Board 烧录与串口交接 | `hs-verify-op-board` 内的 `references/flash-serial-handoff.md` |
+| Board 精度与矩阵规则 | `hs-verify-op-board` 内的 `references/board-accuracy-contract.md` |
+| Board 红线与失败分流 | `hs-verify-op-board` 内的 `references/board-guardrails.md` |
 | 终态报告 | [`references/final-report.md`](references/final-report.md) |
-| WS63 具体接线 | [`../hs-verify-op-board/chips/ws63/references/sdk-integration.md`](../hs-verify-op-board/chips/ws63/references/sdk-integration.md) |
+| WS63 具体接线 | `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md` |
 | 实现/文档/Host/Board 专项 | 对应 Skill 的 `SKILL.md` 和其直接 references |
 
 专项 Skill 缺失时，完整安装地址为：
 `https://gitcode.com/HiSpark/hibot-skills/tree/master/skills`。
-需要 `hs-dev-env-prep`、`hs-dev-build` 或 `hs-dev-flash` 时，期望保留完整子目录：
-`<skill-root>/hs-dev-env-prep/SKILL.md`、`<skill-root>/hs-dev-build/SKILL.md`、
-`<skill-root>/hs-dev-flash/SKILL.md`；不能只复制一个 `SKILL.md`。
+需要 `hs-dev-env-prep`、`hs-dev-build` 或 `hs-dev-flash` 时，按名称检查是否能加载，
+并保留各自的 `SKILL.md` 和全部配套资源；无需安装在同一父目录，不能只复制一个 `SKILL.md`。

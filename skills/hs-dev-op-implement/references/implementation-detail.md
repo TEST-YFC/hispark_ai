@@ -93,7 +93,7 @@ dtype 逐项映射到独立 case，以及生成模型中的真实节点/输入�
 
 任何已有层存在 `FIX_REQUIRED` 都进入 step4 修复范围。禁止因为“这不是本次新增代码”而延期；Host 测试前才首次阅读存量实现，说明 step3 review 没完成。
 
-能力清单从 `hs-verify-op-host/scripts/capability_checklist.template.json` 复制结构，但内容由本 skill 根据规格与实现裁决填写。每条能力保留稳定 ID、可读描述和可机械匹配的 `match`；本 skill 不填写虚假的 PASS，也不为现有测试反向弱化能力。
+按名称定位 `hs-verify-op-host`，从它内部的 `scripts/capability_checklist.template.json` 复制能力清单结构，但内容由本 skill 根据规格与实现裁决填写。每条能力保留稳定 ID、可读描述和可机械匹配的 `match`；本 skill 不填写虚假的 PASS，也不为现有测试反向弱化能力。
 
 同族多 builtin 场景把实际“输入形态 → builtin”解包证据写入 `builtin-probe.md`。缺实际命令输出时不能用“无归一化”代替证据。
 
@@ -103,7 +103,7 @@ dtype 逐项映射到独立 case，以及生成模型中的真实节点/输入�
 边界和采纳理由；该文件是算子项目运行时产物，不是Skill包内置模板。
 
 仍在prepare阶段、尚未修改任何①-⑦源码时，使用
-`hs-verify-op-host/scripts/operator_spec_template.py`作为唯一模板，把能力清单逐项落实到
+`hs-verify-op-host` 内的 `scripts/operator_spec_template.py` 作为唯一模板，把能力清单逐项落实到
 `<opdir>/scripts/op_spec.py`。每条 case 的 `test_point` 必须明确说明验证的行为、边界或缺陷类型；
 每条`covered_by`必须指向计划版中的真实case ID，非平凡能力
 保留可机械核对的`match`，然后运行：
@@ -138,12 +138,14 @@ python3 <skill_root>/scripts/gate_artifacts.py \
 <opdir>/docs/{op}-operator-verify-doc.md
 ```
 
-写任何①-⑦源码前，运行 pre-source 检查：
+写任何①-⑦源码前，运行 pre-source 检查（兼容名称 `pre-code` 使用相同参数）。
+按名称定位 `hs-design-op-manual`，将其 `scripts/audit_manual_inputs.py` 的实际绝对路径传给 `--manual-audit-script`：
 
 ```bash
-python3 <skill_root>/scripts/gate_artifacts.py \
-  --opdir <opdir> --op <Op> --stage pre-source --code-root <code_root> \
-  --plan-run-id "$OP_PLAN_RUN_ID" --framework <framework>
+python3 "<skill_root>/scripts/gate_artifacts.py" \
+  --opdir "<opdir>" --op <Op> --stage pre-source --code-root "<code_root>" \
+  --plan-run-id "$OP_PLAN_RUN_ID" --framework <framework> \
+  --manual-audit-script "<hs-design-op-manual>/scripts/audit_manual_inputs.py"
 ```
 
 只有每个framework都输出`PRE_SOURCE_GATE=PASS`才允许动源码。该检查会自动复算

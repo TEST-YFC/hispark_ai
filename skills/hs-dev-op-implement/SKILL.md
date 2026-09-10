@@ -154,7 +154,7 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 
 链路固定覆盖 Schema、Parser、Populate/Parameter、Infer、Kernel float/量化 int8/原生 dtype、
 OpCoder、Quantizer 和 fusion。每个“已有/复用”项必须有定义与注册/可达证据，并写入
-`existing-capability-review.md`。按 `hs-verify-op-host/scripts/operator_spec_template.py` 生成计划版
+`existing-capability-review.md`。按名称定位 `hs-verify-op-host`，用其内部的 `scripts/operator_spec_template.py` 生成计划版
 `<opdir>/scripts/op_spec.py`；每条 case 必须包含明确说明验证目的的非空 `test_point`，每条
 `covered_by` 指向真实 case，运行：
 
@@ -243,7 +243,7 @@ next_owner=hs-workflow-op-development
 | `scripts/fetch_op_spec.py` | step1/step3 规格存在性和属性摘要（由扫描流程调用，也可按需直接复核） |
 | `scripts/fetch_ref_impl.py` | step2/step4 上游参考实现的镜像链取材 |
 | `scripts/quick_check.sh` | step6 快速预检 |
-| `../hs-verify-op-host/scripts/operator_spec_template.py`、`validate_op_spec.py` | step3 计划版 spec |
+| `hs-verify-op-host` 内的 `scripts/operator_spec_template.py`、`scripts/validate_op_spec.py` | step3 计划版 spec |
 | [`references/implementation-detail.md`](references/implementation-detail.md) | step2/step4 详细规则 |
 | [`references/code-review-and-quality.md`](references/code-review-and-quality.md) | step5/step6 结构化审查和质量检查 |
 | [`references/implementation-guide.md`](references/implementation-guide.md) | step4 七层代码模板 |

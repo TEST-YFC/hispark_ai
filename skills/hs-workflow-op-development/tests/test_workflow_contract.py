@@ -119,7 +119,7 @@ def test_environment_skill_missing_is_reported_before_board_stage():
         "ENV_PREP_SKILL=UNAVAILABLE",
         "BOARD_STAGE=BLOCKED",
         "不得启动后台 `fbb build`/`fbb flash`",
-        "期望文件：<skill-root>/hs-dev-env-prep/SKILL.md",
+        "需要能按名称加载 hs-dev-env-prep，并读取其 SKILL.md 和配套资源。",
     ):
         assert token in workflow, token
 
@@ -129,7 +129,10 @@ def test_environment_build_flash_skills_share_install_source():
     source = "https://gitcode.com/HiSpark/hibot-skills/tree/master/skills"
     assert workflow.count(source) >= 2
     for skill in ("hs-dev-env-prep", "hs-dev-build", "hs-dev-flash"):
-        assert f"<skill-root>/{skill}/SKILL.md" in workflow
+        assert f"`{skill}`" in workflow
+    assert "安装后分别按名称加载" in workflow
+    assert "确认各自的 `SKILL.md` 可读" in workflow
+    assert "无需与本工作流或彼此安装在同一父目录" in workflow
     assert "references/" in workflow
     assert "scripts/" in workflow
 
@@ -387,7 +390,11 @@ def test_operator_workflow_loads_repository_code_style_before_source_changes():
 
     stage3 = workflow.split("## Stage3：", 1)[1].split("## Stage4：", 1)[0]
     stage4 = workflow.split("## Stage4：", 1)[1].split("## Stage5：", 1)[0]
-    assert "references/code-style.md" in stage3
+    assert "按名称加载 `hs-dev-op-implement`" in stage3
+    for name in ("code-style.md", "code-quality-gate.md"):
+        required_reference = SKILLS_ROOT / "hs-dev-op-implement/references" / name
+        assert required_reference.is_file()
+        assert f"`references/{name}`" in stage3, name
     assert "展开后的绝对" in stage3 or "展开为绝对路径" in stage3
     assert "不是用户需要安装的工具" in stage3
     assert "在写任何①-⑦源码前" in stage3
@@ -404,6 +411,38 @@ def test_operator_workflow_loads_repository_code_style_before_source_changes():
     quality_gate = stage4.index("构建前由 workflow")
     build_start = stage4.index("nohup bash <hs-workflow-op-development>/scripts/build_mslite.sh")
     assert quality_gate < build_start
+
+
+def test_operator_documents_do_not_assume_sibling_skill_installations():
+    # Repository layout is only a fixture location, never an installation rule.
+    names = (
+        "hs-workflow-op-development", "hs-dev-op-implement",
+        "hs-design-op-manual", "hs-verify-op-host", "hs-verify-op-board",
+    )
+    for name in names:
+        root = SKILLS_ROOT / name
+        for path in root.rglob("*.md"):
+            text = path.read_text(encoding="utf-8")
+            assert not re.search(r"(?:\.\./)+hs-[\w-]+/", text), path
+            assert "<skill-root>/hs-" not in text, path
+            # A named cross-Skill reference must point to a real bundled resource.
+            for target, resource in re.findall(
+                r"`(hs-[\w-]+)` 内的 `([^`]+)`", text
+            ):
+                assert (SKILLS_ROOT / target / resource).is_file(), (path, target, resource)
+
+
+def test_document_audit_command_examples_receive_explicit_script_path():
+    for name in ("hs-dev-op-implement", "hs-verify-op-host", "hs-workflow-op-development"):
+        for path in (SKILLS_ROOT / name).rglob("*.md"):
+            text = path.read_text(encoding="utf-8")
+            for block in re.findall(r"```(?:bash|sh)\n(.*?)```", text, re.DOTALL):
+                commands = block.replace("\\\n", " ").splitlines()
+                for command in commands:
+                    if "gate_artifacts.py" not in command or "--source-only" in command:
+                        continue
+                    if re.search(r"--stage (?:pre-source|pre-code|pre-verify)\b", command):
+                        assert '--manual-audit-script "<hs-design-op-manual>/scripts/audit_manual_inputs.py"' in command, path
 
 
 def test_individual_skill_trigger_is_explicit_and_board_stage_numbers_match():

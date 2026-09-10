@@ -35,7 +35,8 @@
 3. 对每个framework运行带`--code-root`的`gate_artifacts.py --stage pre-source`，机械复核
    `source-freeze.json`中的源码指纹、计划版`op_spec.py`、facts、两份文档以及facts记录的
    `spec.md`、实现约定文件、能力清单和计划版`op_spec.py`这四份主源文件的哈希，并重新执行facts/content/case
-   三项文档audit。
+   三项文档audit。审计脚本位置通过 `--manual-audit-script` 传入，完整命令见
+   `hs-dev-op-implement` 内的 `references/implementation-detail.md` 的 pre-source 小节。
    只有全部输出`PRE_SOURCE_GATE=PASS`才能进入Stage3。
 
 ## 源码冻结和回流

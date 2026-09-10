@@ -54,10 +54,13 @@ Skill 只能只读对账，发现 case、GT、覆盖映射或源码指纹变化�
 ONNX/TFLite source entry，提供相应 builder、确定性 `make_inputs()`、两套独立 cases 和精确目标身份；
 不得以等价 builtin 顶替、按形状静默切换算子、手填 GT 或余弦值。完整 workflow 启动前依次通过：
 
+下列 `<hs-...>` 使用按名称找到的对应 Skill 实际根目录。
+
 ```bash
-python3 <hs-dev-op-implement>/scripts/gate_artifacts.py \
-  --opdir <absolute-opdir> --op <Op> --stage pre-verify --framework <framework>
-python3 <hs-verify-op-host>/scripts/validate_op_spec.py <absolute-opdir>
+python3 "<hs-dev-op-implement>/scripts/gate_artifacts.py" \
+  --opdir <absolute-opdir> --op <Op> --stage pre-verify --framework <framework> \
+  --manual-audit-script "<hs-design-op-manual>/scripts/audit_manual_inputs.py"
+python3 "<hs-verify-op-host>/scripts/validate_op_spec.py" <absolute-opdir>
 ```
 
 每个激活 framework 都必须得到 `ARTIFACT_GATE=PASS` 且 validator 退出 0。harness 自己还会检查目标节点/
