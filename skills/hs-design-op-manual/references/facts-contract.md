@@ -48,7 +48,7 @@ rg -n "PrimitiveType.*<Op>|<Op>Fusion" <code_root>
 这些父流程提供的路径和目标已经获得授权，不再询问目录或保存路径。仅做只读合法性检查：路径必须为绝对路径，核心产物必须位于给定 `opdir`，输出必须精确落到本模式规定的位置。参数缺失、路径冲突或框架范围冲突时返回父流程修正，不自行猜测。
 
 `integrated-initial`只能在父流程已经完成`hs-dev-op-implement mode=prepare`并取得
-`OP_PLAN_GATE=PASS`后调用。它不负责生成spec、implementation contract、capability checklist
+`OP_PLAN_GATE=PASS`后调用。它不负责生成spec、实现约定、capability checklist
 或计划版op_spec；全新/空opdir缺少任一核心源时必须失败返回，不能为了“文档先行”而自行扫描
 代码或发明输入。父流程在本skill输出draft后还必须通过`PRE_SOURCE_GATE`，才可调用实现Skill的
 `mode=apply`写源码。
@@ -57,7 +57,7 @@ rg -n "PrimitiveType.*<Op>|<Op>Fusion" <code_root>
 或板测。设计文档不得写测试结果，验证文档不得重复完整软件设计；未执行阶段必须在验证文档写
 `NOT_RUN` 及原因。只有父流程给出完整终态时验证文档才写“完整流程通过”。
 `integrated-initial`只表示编码前事实和计划用例已经冻结并通过文档审计，绝不表示源码、构建或验证完成。
-Stage0 尚未完成执行确认时的阻断只允许由父 workflow 做状态收尾，不属于可发布的
+Stage1 尚未完成执行确认时的阻断只允许由父 workflow 做状态收尾，不属于可发布的
 `integrated-final` 场景；此时不得调用本 Skill 或修改两份正式文档。
 
 ## 文件同步模式的数据来源
@@ -97,7 +97,7 @@ facts 顶层固定包含：
 
 每个 `sources` 项记录相对 `path` 和当前文件 `sha256`。每个 `chapter_facts` 项记录 `chapter`、核心源中的逐字 `quote` 和公开 `manual_text`。每个 capability 保留原始 `id`、`description`、规范化 `covered_by`，可另加不改变语义的公开 `manual_text`。`scenario_groups` 只负责把 capability 归并为读者能理解的使用场景，不能删除、重复或改写源 capability；`coverage_principles` 负责验证文档 `1.1 测试覆盖原则` 的白话说明。每个 case 固定记录原始 ID、`test_point`、framework/source entry、模型 dtype、input shape、value domain、属性、逐 case PASS 验证路径、结构化预期输出、公开预期输出文本和预期输出证据。`test_point` 必须逐字来自 `op_spec.py`，用于说明该用例验证什么，不能由文档阶段另行发挥。case 顺序必须等于 `op_spec.py`。
 
-capability 的公开改写不得扩大用例实际覆盖：case 只把属性写成默认值时，必须写“默认值配置”，不能写“省略属性后的默认解析”；只有模型构造确实省略该属性时才能宣称覆盖默认解析。同理，spec/contract 的 opset 策略不能写成另一个 opset 测试覆盖，除非对应验证模型真实使用该 opset。
+capability 的公开改写不得扩大用例实际覆盖：case 只把属性写成默认值时，必须写“默认值配置”，不能写“省略属性后的默认解析”；只有模型构造确实省略该属性时才能宣称覆盖默认解析。同理，spec/实现约定里的 opset 策略不能写成另一个 opset 测试覆盖，除非对应验证模型真实使用该 opset。
 
 case 字段名和形状固定如下；算子特有属性只放在 `attributes`：
 
@@ -160,7 +160,7 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py --opdir <absolute_opd
 | A：可直接同步 | 四个核心源完整、当前 capability schema 可读、最后完整 summary 全绿且能力全覆盖 | facts 内容完整且三项同步 PASS 时生成正式文档；否则只生成证据不足草稿 |
 | B：可兼容读取 | 语义和用例核心源完整，但使用兼容 capability schema、缺少非语义元数据或没有可信全绿 summary | 更新两份文档并在验证文档标注证据不足；不得写成完整通过 |
 | C：已有验证未通过 | 最新完整 summary 含非零 FAIL/ERR、`HARNESS_EXIT!=0` 或能力未覆盖 | 更新验证文档并保留 FAIL/NOT_RUN 原因；设计文档只保留支持限制 |
-| D：事实源不足 | 缺少或无法读取 spec、contract、capability 或 op_spec | 列出缺失/冲突后停止，不写文件 |
+| D：事实源不足 | 缺少或无法读取 spec、实现约定、capability 或 op_spec | 列出缺失/冲突后停止，不写文件 |
 
 兼容 schema 只允许无损读取：
 

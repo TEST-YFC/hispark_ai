@@ -3,7 +3,7 @@
 ## 目录
 
 - [安全红线](#安全红线)
-- [step0-step3 规划](#step0冻结范围)
+- [step0-step3 规划](#step0确定范围)
 - [step4 源码](#step4编写或修复源码)
 
 > 在 `hs-dev-op-implement` 执行对应模式时读取。入口保留模式、检查点和阶段衔接；本文件保留完整的规划与源码规则。
@@ -27,7 +27,7 @@
 | step0 | 确定范围 | 列出 framework × operator source entry；解析语义名；确定 `<opdir>` | 范围声明 |
 | step1 | 查证事实 | 每个 source entry 运行并完整阅读 `scan_op.sh`；归档完整日志 | FOUND/NOT_FOUND/UNREACHABLE 与七层扫描证据 |
 | step2 | 锁定实现决策 | source grouping；decision2 复用/新建；decision3 层集开关 | `docs/decision.md` 与逐层做/跳表 |
-| step3 | 锁定编码前全部输入 | 生成spec、链路分析、能力清单和implementation contract；review已有/复用能力；生成计划版`op_spec.py`并校验 | `OP_PLAN_GATE=PASS`，随后交给workflow生成初版文档 |
+| step3 | 锁定编码前全部输入 | 生成spec、链路分析、能力清单和实现约定；review已有/复用能力；生成计划版`op_spec.py`并校验 | `OP_PLAN_GATE=PASS`，随后交给workflow生成初版文档 |
 | step4 | 实现源码 | 先通过`PRE_SOURCE_GATE`，必要时对比参考实现，再按七层模板最小修改 | 源码diff与能力落点 |
 | step5 | 编码后交叉审查 | 审核注册键、分支可达性、量化归属、折叠/重写和死代码 | `docs/code-review.md` |
 | step6 | 实现质量检查 | 运行快速预检、code style、安全和 diff 审计 | `IMPLEMENT_GATE=PASS` 或结构化 FAIL |
@@ -50,7 +50,7 @@ prepare开始时的真实状态，而不是强迫清理用户改动。prepare和
 从而区分“原本已有改动”和“文档生成前偷跑的源码改动”。
 
 `source-freeze.json`绑定本轮`OP_PLAN_RUN_ID`、算子、框架范围和code root；同一轮禁止覆盖。
-只有上一轮stage1已经结构化终止、workflow明确宣布开始新规划轮次时，才可换新ID并显式传
+只有上一轮Stage2已经结构化终止、workflow明确宣布开始新规划轮次时，才可换新ID并显式传
 `--rotate-source-freeze`，脚本会先把旧receipt归档到`docs/source-freeze-history/`。不得通过
 重新freeze来掩盖本轮prepare期间的源码变化。每个framework都要在首次freeze时列入scope。
 
@@ -84,7 +84,7 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 - `code_findings`：边界检查、rank、内存、返回值、code style、安全红线和已知缺陷模式；
 - `disposition`：每层只能是 `REUSE_REVIEWED`、`FIX_REQUIRED` 或 `N/A`，并映射 capability ID。
 
-复用审查还必须单独核对**规格覆盖矩阵**：把 contract/checklist 中的每个输入形态组合
+复用审查还必须单独核对**规格覆盖矩阵**：把实现约定和 checklist 中的每个输入形态组合
 （dynamic、initializer、optional）、广播形态、索引/边界语义、折叠/重写路径和支持的
 dtype 逐项映射到独立 case，以及生成模型中的真实节点/输入。不能用一个“代表用例”、
 只填写 builder 参数或“以后补测试”推断其它形态；缺少映射就记为 `FIX_REQUIRED`。
@@ -151,8 +151,8 @@ python3 <skill_root>/scripts/gate_artifacts.py \
 四个主源哈希，并重新运行文档Skill的facts/content/case三项audit；仅在对话中声称
 “文档已生成”不算证据。
 
-能力清单、contract、op_spec或初版文档后续发生变化时，立即停止apply并回到workflow
-stage1：重新执行prepare、`integrated-initial`和 pre-source 检查。不能先改源码后补文档。
+能力清单、实现约定、op_spec或初版文档后续发生变化时，立即停止apply并回到workflow
+Stage2：重新执行prepare、`integrated-initial`和 pre-source 检查。不能先改源码后补文档。
 
 `code-style.md` 是随本 Skill 分发的团队统一 C/C++、CMake 和注册接线编程规范，不是用户需要提前
 安装的工具或环境。在本轮首次修改任何①-⑦源码前，必须完整读取
@@ -178,7 +178,7 @@ CODE_STYLE_SOURCE_SHA256=<sha256>
 | 每个opset版本变化 | 仅默认值变化 / 计算语义变化，分别列出，不可合并描述 |
 | 输入顺序 | source entry顺序 → Primitive/Parameter顺序的逐项映射 |
 | optional input | initializer还是dynamic input；缺省时由哪层补默认值 |
-| dtype/layout | Parser是否只搬运，还是需要显式转换/重排；与contract逐字一致 |
+| dtype/layout | Parser是否只搬运，还是需要显式转换/重排；与实现约定逐字一致 |
 
 项目策略是：默认值与语义按最新opset实现，不临时发明opset分支；扫描发现
 版本差异时Parser加入 `Project policy: parse per opset <N> semantics regardless of model
@@ -194,4 +194,4 @@ opset.` 注释，语义差异另写事实注释。属性审计必须落到 `deci
 新增代码完成后，再对“新增/修改代码 + 已复用代码的接口边界”做一次交叉review：逐条沿
 capability从parser输入走到生成代码调用，确认修改侧与复用侧的字段、dtype、shape、默认属性
 和量化参数没有断层。把新增发现更新到`existing-capability-review.md`；如果发现改变了冻结语义、
-能力或计划用例，必须回到stage1重新生成初版文档，不能在apply阶段重跑pre-source后继续。
+能力或计划用例，必须回到Stage2重新生成初版文档，不能在apply阶段重跑pre-source后继续。

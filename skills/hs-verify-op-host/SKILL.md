@@ -13,7 +13,7 @@ description: >-
 
 # 算子 Host 正确性验证
 
-本 Skill 只负责 PC/WSL 上的 Host 测试设计和精度验证。每个算子只写一个 `<opdir>/scripts/op_spec.py`；
+本 Skill 负责 PC/WSL 上的 Host 测试设计和精度验证。每个算子只写一个 `<opdir>/scripts/op_spec.py`；
 模型生成、转换、编译、推理、余弦计算、Excel 和 summary 都由仓内固定 harness 完成。ONNX 与 TFLite
 是两条独立路径，各自维护用例和结果；`riscv_*` 目标仍在 Host 执行，不代表真实板运行。
 
@@ -33,14 +33,14 @@ description: >-
 
 1. [`references/workflow-gates.md`](references/workflow-gates.md)：用户可见 todo、流程地图、harness 内部步骤和 workflow 的 pre-verify 检查。
 2. [`references/host-guardrails.md`](references/host-guardrails.md)：不可变 harness、余弦/INT8 防伪、目录和依赖红线及前置检查。
-3. [`references/host-contract.md`](references/host-contract.md)：`op_spec.py`、能力清单、输入/输出和两框架用例设计的完整规则。
+3. [`references/host-contract.md`](references/host-contract.md)：`op_spec.py`、能力清单、输入/输出和两框架用例设计的规则。
 4. [`references/run-and-results.md`](references/run-and-results.md)：运行命令、长任务等待、结果文件和报告格式。
 5. [`references/failure-triage.md`](references/failure-triage.md)：converter/工具链/实现失败分流、处理方式和范围底线。
 
 ## 调用边界与自动推进
 
 完整 workflow 传入的 `<opdir>`、框架范围、实现约束、能力清单和计划 `op_spec.py` 已在上游确定；本
-Skill 只能只读对账，发现 case、GT、覆盖映射或源码指纹变化就回到 workflow stage1，不能在 Host 阶段
+Skill 只能只读对账，发现 case、GT、覆盖映射或源码指纹变化就回到 workflow Stage2，不能在 Host 阶段
 悄悄改 spec 继续跑。独立 Host 请求在开始时确认一次代码/工具包和目标目录；收到确认后，spec 生成、
 依赖修复、harness 运行、结果读取和失败处理由 agent 自动完成，不逐步询问用户。轻量 Python 依赖可在
 同一解释器的虚拟环境或用户范围自动修复；超出安全边界才报告阻塞。

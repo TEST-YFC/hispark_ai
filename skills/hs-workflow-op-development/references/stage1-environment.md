@@ -1,28 +1,30 @@
-# Stage0 环境探测与确认细则
+# Stage1 环境探测与确认细则
+
+> 本文件对应 Stage1，任务 ID 使用 `stage1.*`。
 
 ## 目录
 
-- [冻结范围和环境](#stage0冻结范围和环境)
-- [自动探测顺序](#stage0-自动探测顺序)
-- [确认模板](#stage0-完成只读探测后必须发出的执行确认模板)
+- [冻结范围和环境](#stage1冻结范围和环境)
+- [自动探测顺序](#stage1-自动探测顺序)
+- [确认模板](#stage1-完成只读探测后必须发出的执行确认模板)
 - [自动化边界与依赖修复](#默认自动化与用户交互边界)
 
-> 仅在 Stage0 需要环境判断、用户确认模板或依赖修复时读取。探测仍必须先由入口状态机初始化并记录。
+> 仅在 Stage1 需要环境判断、用户确认模板或依赖修复时读取。探测仍必须先由入口状态机初始化并记录。
 
-## stage0：冻结范围和环境
+## Stage1：冻结范围和环境
 
-进入Stage0的第一项动作是按 [`workflow-state.md`](workflow-state.md) 中的 `init` 约定运行
+进入Stage1的第一项动作是按 [`workflow-state.md`](workflow-state.md) 中的 `init` 约定运行
 `scripts/workflow_state.py init`，生成本轮待办和临时检查点；
 状态文件本身是控制性记录，不属于算子源码或交付文档写入。随后记录 source entry、
 implementation unit 候选、代码根、`MSLITE_OP_OUTPUT`、板测策略、板卡连接状态，以及各专项
-Skill 的可用性，并在 `stage0.scope_environment` 完成后立即 `finish`。完整workflow默认
+Skill 的可用性，并在 `stage1.scope_environment` 完成后立即 `finish`。完整workflow默认
 `BOARD_POLICY=AUTO_ALL`；只有用户明确说“只做Host/不上板/不烧录”才记录
-`BOARD_POLICY=HOST_ONLY`。Stage0只完成只读探测和计划生成；在`EXECUTION_CONFIRM_GATE=PASS`
-前禁止进入stage1，禁止调用下游生成/实现/验证Skill；禁止创建或修改算子文档、源码、测试模型、Micro工程、SDK接线和固件，
+`BOARD_POLICY=HOST_ONLY`。Stage1只完成只读探测和计划生成；在`EXECUTION_CONFIRM_GATE=PASS`
+前禁止进入Stage2，禁止调用下游生成/实现/验证Skill；禁止创建或修改算子文档、源码、测试模型、Micro工程、SDK接线和固件，
 禁止安装、下载、构建、烧录或启动后台长任务。
-若 `stage0.scope_environment` 以失败或阻断结束且尚未通过确认，状态机会自动将
-`stage5.final_docs` 标为 `BLOCKED`，只允许 `terminal.report` 写入阻断运行的失败原因、恢复命令和状态证据；此例外不得生成或修改
-算子设计/验证交付文档，常规终版文档回填仍须在确认通过且 stage6、stage7 到达终态后执行。
+若 `stage1.scope_environment` 以失败或阻断结束且尚未通过确认，状态机会自动将
+`stage8.final_docs` 标为 `BLOCKED`，只允许 `terminal.report` 写入阻断运行的失败原因、恢复命令和状态证据；此例外不得生成或修改
+算子设计/验证交付文档，常规终版文档回填仍须在确认通过且 Stage6、Stage7 到达终态后执行。
 
 开始前先自动探测代码存储位置和各阶段实际执行环境；可由当前会话、路径存在性和工具实测
 唯一确定的信息不得再次询问用户。路径只直接证明“文件存在哪里”，不能单独证明“命令在哪里
@@ -53,7 +55,7 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 编译器和构建工具；`固件`是编译后生成、用于烧录的`.fwpkg`文件。不得把fbb CLI称为SDK，
 也不得把开发板连接环境或串口称为固件。
 
-### Stage0 自动探测顺序
+### Stage1 自动探测顺序
 
 先执行只读探测并记录每项结论的命令/输出摘要：
 
@@ -80,16 +82,16 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
    只有一个环境能看到唯一 USB-UART 候选且后续 `hs-dev-flash` 返回真实 `success=true` 时，
    才记录 `DEVICE_IO_ENV`和端口；未检测到、多个候选或来源冲突时进入用户交互，不能直接判定“无板”。
 6. 两个环境都能成功构建同一SDK且没有更强证据可唯一选择时，不擅自偏好某一边，在本次
-   Stage0 执行确认预览中向用户询问一次`FIRMWARE_BUILD_ENV`；设备I/O同理。该选择属于
-   Stage0 的唯一人工交互，确认后不得在 Stage6/7 或其他普通阶段再次询问。
+   Stage1 执行确认预览中向用户询问一次`FIRMWARE_BUILD_ENV`；设备I/O同理。该选择属于
+   Stage1 的唯一人工交互，确认后不得在 Stage6/Stage7 或其他普通阶段再次询问。
 
 自动探测只允许读取状态，不能通过扫描磁盘自行挑选一个未由用户提供的可写SDK。完整workflow
 缺少`FIRMWARE_SDK_ROOT`时只询问该绝对路径；收到路径后再自动判断其存储、构建和设备I/O环境，
 不能在尚无SDK路径时要求用户同时填写三个环境字段。
 
-### Stage0 完成只读探测后必须发出的执行确认模板
+### Stage1 完成只读探测后必须发出的执行确认模板
 
-对“生成/实现/适配算子”，工具调用前可以先发简短进度说明；完成上述Stage0只读探测后的
+对“生成/实现/适配算子”，工具调用前可以先发简短进度说明；完成上述Stage1只读探测后的
 第一条环境状态回复必须集中展示算子范围、四类环境、探测依据、完整阶段、预计写入/产物位置
 和仍需人工处理的条件，再等待一次执行确认。`待提供/待确认`部分只列真正无法自动确定的项：
 
@@ -134,14 +136,14 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 ```
 
 如果缺少`FIRMWARE_SDK_ROOT`，先只展示已知的HiSpark存储/运行环境和默认AUTO_ALL范围，在同一条
-Stage0 执行确认预览中索取SDK绝对路径和执行范围确认，不得猜测或自动挑选路径。收到这一条回复后，agent 无需
+Stage1 执行确认预览中索取SDK绝对路径和执行范围确认，不得猜测或自动挑选路径。收到这一条回复后，agent 无需
 再次询问：先用该路径自动完成剩余只读探测，把回执作为
-`stage0.scope_environment` 的 evidence 并 `finish`；只有 stage0 已经 PASS 后，才调用
+`stage1.scope_environment` 的 evidence 并 `finish`；只有 Stage1 已经 PASS 后，才调用
 `confirm --confirmed-mode AUTO_ALL --sdk-root <绝对路径>`，把同一条回复作为唯一确认落盘并进入
-stage1。若某项仍有歧义，只把该项及候选证据列为`待确认`，待用户修正后在新 RUN_ID 重新展示
-最终方案；这仍属于 Stage0 初始确认修正，不是后续阶段的二次确认。
+Stage2。若某项仍有歧义，只把该项及候选证据列为`待确认`，待用户修正后在新 RUN_ID 重新展示
+最终方案；这仍属于 Stage1 初始确认修正，不是后续阶段的二次确认。
 用户明确回复“确认/继续/按上述方案执行”等同意语义后记录`EXECUTION_CONFIRM_GATE=PASS`，才可
-进入stage1。用户要求调整范围或更换 SDK 时废弃当前轮次并新建 `RUN_ID`，重新执行 stage0 和
+进入Stage2。用户要求调整范围或更换 SDK 时废弃当前轮次并新建 `RUN_ID`，重新执行 Stage1 和
 唯一一次确认；如果调整来自这条唯一回复，agent 自动重建 run、完成只读探测并复用该回复，
 不得要求用户再次确认。尤其不能在 AUTO_ALL run 上直接执行
 `confirm --confirmed-mode HOST_ONLY`。不得把最初一句
@@ -156,12 +158,12 @@ fwpkg时核对哈希即可，不为环境组合另建一套状态机。
 
 ### 默认自动化与用户交互边界
 
-- 用户已经给出`FIRMWARE_SDK_ROOT`，表示允许Stage0对该SDK做只读身份和环境探测；只有一次
+- 用户已经给出`FIRMWARE_SDK_ROOT`，表示允许Stage1对该SDK做只读身份和环境探测；只有一次
   总确认通过后才允许在该SDK内完成确定性接线和构建。确认通过后不得再询问“是否要上板”。
 - 总确认已通过、固件位置已给出且设备探测得到唯一兼容板卡/端口时，自动执行全用例固件构建、烧录、串口
   采集和精度判定，直至全矩阵终态。
-- 标准流程只在Stage0进行一次总确认。确认成功后，文档生成、源码编写、代码审查、构建、Host
-  和板端验证均由 agent 按待办自动推进，不再逐阶段询问是否继续。Stage0没有发现、或确认后
+- 标准流程只在Stage1进行一次总确认。确认成功后，文档生成、源码编写、代码审查、构建、Host
+  和板端验证均由 agent 按待办自动推进，不再逐阶段询问是否继续。Stage1没有发现、或确认后
   外部条件发生变化时，自动把缺少的 SDK、设备、端口、权限或工具记录为 `BLOCKED/NOT_RUN`，
   保存首个错误和恢复命令后停止受影响分支；本轮不发起第二次常规确认。用户以后补齐条件并
   显式执行同一 RUN_ID 的 `resume` 时再继续，不能把未执行写成验证完成。
@@ -180,7 +182,7 @@ fwpkg时核对哈希即可，不为环境组合另建一套状态机。
    镜像源失败可再尝试默认源。安装后必须用同一解释器执行真实`import`/`--version`验证，成功后
    自动重新启动失败阶段。构建或长测试环境发生变化时生成新`RUN_ID`，不得读取旧失败状态。
 3. 只有安装需要管理员/root权限、全局系统修改、卸载或降级现有包、解决破坏性版本冲突、接受
-   许可证/登录、下载大型SDK/专有工具链，或写入Stage0未确认的目录时，才把该项记为
+   许可证/登录、下载大型SDK/专有工具链，或写入Stage1未确认的目录时，才把该项记为
    `BLOCKED`，同时写明“需要安装什么、为什么、将修改哪里、预计大小/影响”。不要在后续阶段
    再索取常规确认；把所需授权和恢复命令写入状态，用户随后主动授权并通过同一 RUN_ID 的
    恢复动作继续。
@@ -194,4 +196,4 @@ ONNX Host路径开始前必须同时验证`onnx`（建模/读图）和`onnxrunti
 
 没有可复用稳定 case 时记录 `ENV_BASELINE=UNKNOWN reason=no-known-pass-case`，不得伪称环境已验证；后续若多个无关用例在 converter 启动阶段成片失败，先补跑未改动控制用例或重建工具包，不允许直接修改目标算子源码。基线本身失败时记录 `ENV_BASELINE=FAIL` 并停在环境分支，源码保持未修改。
 
-优先保证 PC/WSL 单元/Host 验证可运行。即使没有开发板，也继续 stage1-stage5；不要因烧录不可用而跳过 Host 测试。
+优先保证 PC/WSL 单元/Host 验证可运行。即使没有开发板，也继续 Stage2-Stage5；不要因烧录不可用而跳过 Host 测试。

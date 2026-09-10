@@ -256,3 +256,26 @@ def test_source_freeze_is_bound_to_plan_operator_and_framework(tmp_path):
     assert any("plan_run_id" in error for error in errors)
     assert any("operator" in error for error in errors)
     assert any("framework_scope" in error for error in errors)
+
+
+def test_source_only_flag_is_restricted_to_source_gates(tmp_path):
+    opdir = tmp_path / "op"
+    opdir.mkdir()
+    result = subprocess.run(
+        [
+            "python",
+            str(GATE_PATH),
+            "--opdir",
+            str(opdir),
+            "--op",
+            "BitShift",
+            "--stage",
+            "prepare",
+            "--source-only",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1
+    assert "--source-only is only valid with stage=pre-source or stage=pre-code" in result.stdout

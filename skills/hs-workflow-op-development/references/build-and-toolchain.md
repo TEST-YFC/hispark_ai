@@ -4,7 +4,7 @@
 > `hs-dev-op-implement` 算子实现专项 Skill 只生成或修复源码并执行实现门禁，不直接启动构建。这里的
 > MindSpore Lite 工具包构建也不同于 `hs-dev-build` 的 fbb 固件构建，二者不能互相替代。
 
-实现完成后，workflow stage3 调用 `scripts/build_mslite.sh` 编译 MindSpore Lite。本文只
+实现完成后，workflow Stage4 调用 `scripts/build_mslite.sh` 编译 MindSpore Lite。本文只
 解释脚本背后的工具链、受控构建、产物校验和故障分诊。
 
 ## 构建身份与源码冻结

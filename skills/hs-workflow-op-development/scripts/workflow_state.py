@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any, Iterator
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$")
 MODES = {"AUTO_ALL", "HOST_ONLY"}
 STATUS_ORDER = ("PENDING", "RUNNING", "PASS", "FAIL", "NOT_RUN", "NOT_REQUESTED", "BLOCKED")
@@ -44,24 +44,21 @@ class TaskDef:
 
 # Keep this order stable: it is the workflow's execution contract.
 TASKS = (
-    TaskDef("stage0.scope_environment", "stage0", "冻结范围并只读探测环境"),
-    TaskDef("stage0.confirm", "stage0-confirm", "展示方案并取得一次执行确认", manual=True),
-    TaskDef("stage1.plan", "stage1", "生成并冻结实现计划、合同和能力清单"),
-    TaskDef("stage1.initial_docs", "stage1", "生成初版设计文档和验证文档"),
-    TaskDef("stage1.pre_source_gate", "stage1", "执行初版文档与源码指纹门禁"),
-    TaskDef("stage2.implementation", "stage2", "自动写入或修复算子源码"),
-    TaskDef("stage2.code_review", "stage2", "执行代码审查和实现质量门禁"),
-    TaskDef("stage3.mslite_build", "stage3", "构建本轮 MindSpore Lite 工具包"),
-    TaskDef("stage4.host_verify", "stage4", "生成并运行 Host 全量验证"),
+    TaskDef("stage1.scope_environment", "stage1", "冻结范围并只读探测环境"),
+    TaskDef("stage1.confirm", "stage1", "展示方案并取得一次执行确认", manual=True),
+    TaskDef("stage2.plan", "stage2", "生成并冻结实现计划、合同和能力清单"),
+    TaskDef("stage2.initial_docs", "stage2", "生成初版设计文档和验证文档"),
+    TaskDef("stage2.pre_source_gate", "stage2", "执行初版文档与源码指纹门禁"),
+    TaskDef("stage3.implementation", "stage3", "自动写入或修复算子源码"),
+    TaskDef("stage3.code_review", "stage3", "执行代码审查和实现质量门禁"),
+    TaskDef("stage4.mslite_build", "stage4", "构建本轮 MindSpore Lite 工具包"),
+    TaskDef("stage5.host_verify", "stage5", "生成并运行 Host 全量验证"),
     TaskDef("stage6.firmware_matrix", "stage6", "按矩阵自动接入并构建全部固件"),
     TaskDef("stage7.board_matrix", "stage7", "逐项烧录、采集串口并验收板端精度"),
-    # The stage5 label is retained for compatibility with the surrounding
-    # skills, but its terminal document backfill runs after board stages.
-    TaskDef("stage5.final_docs", "stage5", "回填终版成对算子文档"),
+    TaskDef("stage8.final_docs", "stage8", "回填终版成对算子文档"),
     TaskDef("terminal.report", "terminal", "生成逐阶段终态报告"),
 )
 TASK_BY_ID = {task.task_id: task for task in TASKS}
-
 
 class StateError(RuntimeError):
     """A user-actionable state transition error."""
@@ -328,9 +325,9 @@ def make_state(
             if record["id"] in {"stage6.firmware_matrix", "stage7.board_matrix"}:
                 record["status"] = "NOT_REQUESTED"
                 record["completed_at"] = utc_now()
-                record["note"] = "用户在 stage0 明确选择仅 Host 范围"
+                record["note"] = "用户在 stage1 明确选择仅 Host 范围"
                 record["evidence"] = ["scope:HOST_ONLY"]
-    # The first task is the read-only stage0 probe. Creating this control
+    # The first task is the read-only stage1 probe. Creating this control
     # record is allowed before confirmation; no operator artifact is touched.
     records[0]["status"] = "RUNNING"
     records[0]["attempts"] = 1
@@ -610,18 +607,18 @@ def validate_state(state: dict[str, Any], expected_run_id: str | None = None) ->
     if state["execution_confirmed"] and confirmation is None:
         raise StateError("confirmed state must contain a confirmation record")
     by_id = task_map(state)
-    if state["execution_confirmed"] != (by_id["stage0.confirm"]["status"] == "PASS"):
+    if state["execution_confirmed"] != (by_id["stage1.confirm"]["status"] == "PASS"):
         raise StateError("execution confirmation flag and task status disagree")
-    stage0_status = by_id["stage0.scope_environment"]["status"]
-    stage5_status = by_id["stage5.final_docs"]["status"]
+    stage1_status = by_id["stage1.scope_environment"]["status"]
+    stage8_status = by_id["stage8.final_docs"]["status"]
     if not state["execution_confirmed"]:
-        if stage5_status not in {"PENDING", "BLOCKED"}:
+        if stage8_status not in {"PENDING", "BLOCKED"}:
             raise StateError(
-                "unconfirmed run cannot start or complete stage5.final_docs; only state closure is allowed"
+                "unconfirmed run cannot start or complete stage8.final_docs; only state closure is allowed"
             )
-        if stage0_status in {"FAIL", "BLOCKED"} and stage5_status != "BLOCKED":
+        if stage1_status in {"FAIL", "BLOCKED"} and stage8_status != "BLOCKED":
             raise StateError(
-                "Stage0 failure must block stage5.final_docs before terminal report finalization"
+                "Stage1 failure must block stage8.final_docs before terminal report finalization"
             )
     if state["mode"] == "HOST_ONLY":
         for task_id in ("stage6.firmware_matrix", "stage7.board_matrix"):
@@ -672,16 +669,16 @@ def recompute_overall(state: dict[str, Any]) -> str:
         if all(by_id[item]["status"] == "NOT_REQUESTED" for item in board) and all(
             by_id[item]["status"] == "PASS"
             for item in (
-                "stage0.scope_environment",
-                "stage0.confirm",
-                "stage1.plan",
-                "stage1.initial_docs",
-                "stage1.pre_source_gate",
-                "stage2.implementation",
-                "stage2.code_review",
-                "stage3.mslite_build",
-                "stage4.host_verify",
-                "stage5.final_docs",
+                "stage1.scope_environment",
+                "stage1.confirm",
+                "stage2.plan",
+                "stage2.initial_docs",
+                "stage2.pre_source_gate",
+                "stage3.implementation",
+                "stage3.code_review",
+                "stage4.mslite_build",
+                "stage5.host_verify",
+                "stage8.final_docs",
             )
         ):
             return "HOST_ONLY_PASS"
@@ -702,7 +699,7 @@ def checkbox(status: str) -> str:
     }[status]
 
 
-def task_row_lines(state: dict[str, Any]) -> list[str]:
+def task_row_lines(state: dict[str, Any], *, display: bool = True) -> list[str]:
     records = task_map(state)
     rows: list[str] = []
     for task in TASKS:
@@ -710,8 +707,14 @@ def task_row_lines(state: dict[str, Any]) -> list[str]:
         suffix = ""
         if record.get("note"):
             suffix = f"；{record['note']}"
+        label = (
+            task.stage.replace("stage", "Stage", 1)
+            if display and task.stage.startswith("stage")
+            else ("收尾" if display else task.stage)
+        )
+        prefix = f"{label} " if display else ""
         rows.append(
-            f"- [{checkbox(record['status'])}] `{task.task_id}` {task.title} "
+            f"- [{checkbox(record['status'])}] {prefix}`{task.task_id}` {task.title} "
             f"（{record['status']}）{suffix}"
         )
     return rows
@@ -754,12 +757,13 @@ def validate_todo_content(content: str, state: dict[str, Any], source: Path) -> 
     if any(header not in content.splitlines() for header in expected_headers):
         raise StateError(f"TODO metadata does not match workflow_state.json: {source}")
     expected_rows = task_row_lines(state)
+    legacy_rows = task_row_lines(state, display=False)
     actual_rows = [
         line
         for line in content.splitlines()
         if line.startswith("- [") and any(f"`{task.task_id}`" in line for task in TASKS)
     ]
-    if actual_rows != expected_rows:
+    if actual_rows not in (expected_rows, legacy_rows):
         raise StateError(f"TODO file does not match workflow_state.json: {source}")
 
 
@@ -906,15 +910,15 @@ def require_current(state: dict[str, Any], task_id: str) -> dict[str, Any]:
 def cmd_start(args: argparse.Namespace) -> int:
     state_dir = ensure_state_dir(args)
     state = load_state(state_dir, args.run_id)
-    if args.task in {"stage0.confirm", "terminal.report"}:
+    if args.task in {"stage1.confirm", "terminal.report"}:
         raise StateError(f"{args.task} is controlled by its dedicated command")
     record = require_current(state, args.task)
     if record["status"] == "PASS":
         raise StateError(f"ALREADY_COMPLETE task={args.task}")
     if record["status"] not in {"PENDING", "NOT_RUN"}:
         raise StateError(f"cannot start task={args.task} from status={record['status']}")
-    if args.task != "stage0.scope_environment" and not state["execution_confirmed"]:
-        raise StateError("EXECUTION_CONFIRM_REQUIRED: only stage0 read-only probing is allowed before confirmation")
+    if args.task != "stage1.scope_environment" and not state["execution_confirmed"]:
+        raise StateError("EXECUTION_CONFIRM_REQUIRED: only stage1 read-only probing is allowed before confirmation")
     record["status"] = "RUNNING"
     record["attempts"] += 1
     record["started_at"] = record["started_at"] or utc_now()
@@ -940,8 +944,8 @@ def cmd_confirm(args: argparse.Namespace) -> int:
     state = load_state(state_dir, args.run_id)
     if state["execution_confirmed"] or state["confirmation_count"]:
         raise StateError("CONFIRMATION_ALREADY_RECORDED: this run accepts exactly one manual confirmation")
-    if task_map(state)["stage0.scope_environment"]["status"] != "PASS":
-        raise StateError("cannot confirm before stage0.scope_environment is PASS")
+    if task_map(state)["stage1.scope_environment"]["status"] != "PASS":
+        raise StateError("cannot confirm before stage1.scope_environment is PASS")
     if not args.phrase.strip():
         raise StateError("a non-empty confirmation phrase is required")
     if args.confirmed_mode != state["mode"]:
@@ -959,7 +963,7 @@ def cmd_confirm(args: argparse.Namespace) -> int:
             "AUTO_ALL confirmation requires the user's absolute firmware SDK path; "
             "pass --sdk-root now or initialize a new run with it"
         )
-    record = require_current(state, "stage0.confirm")
+    record = require_current(state, "stage1.confirm")
     if record["status"] == "PENDING":
         record["status"] = "RUNNING"
         record["attempts"] += 1
@@ -981,7 +985,7 @@ def cmd_confirm(args: argparse.Namespace) -> int:
         "at": confirmed_at,
         "sdk_root": state.get("firmware_sdk_root"),
     }
-    state["artifacts"]["stage0.confirm"] = {
+    state["artifacts"]["stage1.confirm"] = {
         "status": "PASS",
         "evidence": ["manual-confirmation"],
         "updated_at": confirmed_at,
@@ -992,7 +996,7 @@ def cmd_confirm(args: argparse.Namespace) -> int:
         state,
         resolve_template(args),
         "EXECUTION_CONFIRMED",
-        "stage0.confirm",
+        "stage1.confirm",
         confirmed_mode=args.confirmed_mode,
     )
     print("EXECUTION_CONFIRM_GATE=PASS")
@@ -1003,11 +1007,11 @@ def cmd_confirm(args: argparse.Namespace) -> int:
 def cmd_finish(args: argparse.Namespace) -> int:
     state_dir = ensure_state_dir(args)
     state = load_state(state_dir, args.run_id)
-    if args.task in {"stage0.confirm", "terminal.report"}:
+    if args.task in {"stage1.confirm", "terminal.report"}:
         raise StateError(f"{args.task} is controlled by its dedicated command")
-    if args.task == "stage5.final_docs" and not state["execution_confirmed"]:
+    if args.task == "stage8.final_docs" and not state["execution_confirmed"]:
         raise StateError(
-            "EXECUTION_CONFIRM_REQUIRED: final documents cannot be completed before the one-shot Stage0 confirmation"
+            "EXECUTION_CONFIRM_REQUIRED: final documents cannot be completed before the one-shot Stage1 confirmation"
         )
     record = require_current(state, args.task)
     if not args.attempt_token or args.attempt_token != record.get("attempt_token"):
@@ -1039,17 +1043,17 @@ def cmd_finish(args: argparse.Namespace) -> int:
         # Freeze every later executable task. Host-only skips remain explicit.
         index = next(index for index, item in enumerate(state["tasks"]) if item["id"] == args.task)
         for later in state["tasks"][index + 1 :]:
-            # Before the one-shot execution confirmation, a failed Stage0
+            # Before the one-shot execution confirmation, a failed Stage1
             # run may only close its state; it must never leave final-docs
             # startable because that could be mistaken for a publication step.
             # Once confirmation has happened, later final-doc backfill remains
             # available for recording an upstream failure.
-            if later["id"] == "stage5.final_docs":
-                if args.task == "stage0.scope_environment" and not state["execution_confirmed"]:
+            if later["id"] == "stage8.final_docs":
+                if args.task == "stage1.scope_environment" and not state["execution_confirmed"]:
                     later_status = "BLOCKED"
                     later["status"] = later_status
                     later["blocked_by"] = args.task
-                    later["note"] = "Stage0 未确认即阻断；仅 terminal.report 可做状态收尾"
+                    later["note"] = "Stage1 未确认即阻断；仅 terminal.report 可做状态收尾"
                     later["evidence"] = [f"blocked-by:{args.task}"]
                     state["artifacts"][later["id"]] = {
                         "status": later_status,
@@ -1085,29 +1089,29 @@ def cmd_retry(args: argparse.Namespace) -> int:
     records = task_map(state)
     if args.task not in records:
         raise StateError(f"unknown task: {args.task}")
-    if args.task == "stage0.scope_environment" and state["execution_confirmed"]:
+    if args.task == "stage1.scope_environment" and state["execution_confirmed"]:
         raise StateError(
-            "cannot retry stage0.scope_environment after execution confirmation; "
+            "cannot retry stage1.scope_environment after execution confirmation; "
             "start a new RUN_ID for a changed environment or scope"
         )
-    if args.task == "stage5.final_docs" and not state["execution_confirmed"]:
+    if args.task == "stage8.final_docs" and not state["execution_confirmed"]:
         raise StateError(
-            "stage5.final_docs cannot be retried before execution confirmation; "
+            "stage8.final_docs cannot be retried before execution confirmation; "
             "only terminal.report may close the blocked run"
         )
-    if args.task in {"stage0.confirm", "terminal.report"}:
+    if args.task in {"stage1.confirm", "terminal.report"}:
         raise StateError(f"{args.task} is controlled by its dedicated command")
     target = records[args.task]
     if target["status"] not in {"FAIL", "BLOCKED", "NOT_RUN"}:
         raise StateError(f"only a failed/blocked/not-run task can be retried: {args.task}")
-    if args.task == "stage0.confirm":
+    if args.task == "stage1.confirm":
         raise StateError("the manual confirmation cannot be retried or requested twice")
     target_index = next(index for index, item in enumerate(state["tasks"]) if item["id"] == args.task)
     # Final document backfill is deliberately allowed to rerun after an
     # upstream terminal failure: its job is to record that failure, not to
     # pretend the failed stage passed.  All earlier work must still be
     # terminal; executable retries retain the stricter PASS-only gate.
-    predecessor_statuses = TERMINAL_STATUSES if args.task == "stage5.final_docs" else {"PASS", "NOT_REQUESTED"}
+    predecessor_statuses = TERMINAL_STATUSES if args.task == "stage8.final_docs" else {"PASS", "NOT_REQUESTED"}
     unresolved = [
         item["id"]
         for item in state["tasks"][:target_index]
@@ -1326,7 +1330,7 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--template")
     init.set_defaults(func=cmd_init)
 
-    confirm = sub.add_parser("confirm", help="record the single stage0 execution confirmation")
+    confirm = sub.add_parser("confirm", help="record the single stage1 execution confirmation")
     confirm.add_argument("--state-dir", required=True)
     confirm.add_argument("--run-id", required=True)
     confirm.add_argument("--template")

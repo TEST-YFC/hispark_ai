@@ -34,8 +34,8 @@
 5. **死代码与失败路径**：启用编译器 warning（至少 unreachable/dead branch、未使用变量、
    switch 覆盖和隐式 fall-through 的等价检查）并结合静态搜索；所有错误返回、边界守卫和
    `Collect()` 依赖必须可追踪。修复编译错误时禁止删除能力分支；若确需删除，必须同步更新
-   decision、contract、capability checklist 和测试覆盖。
-6. **规格覆盖与测试数据**：逐条对照 contract/checklist 的输入形态、广播、索引/边界、
+   decision、实现约定、capability checklist 和测试覆盖。
+6. **规格覆盖与测试数据**：逐条对照实现约定和 checklist 的输入形态、广播、索引/边界、
    折叠/重写和 dtype 行，确认每行都指向独立且可运行的 case；确认 `make_inputs()` 或等价
    生成器按模型输入顺序返回全部输入，并能表达规格允许的标量、单元素、负值和边界数据。
    只看到 builder 参数、同形 case 或“以后补测试”的说明，均视为覆盖缺失并置
@@ -88,7 +88,7 @@ git -C <code_root> diff --check
 IMPLEMENT_GATE=PASS unit=<implementation_unit>
 ```
 
-- decision、spec、link analysis、contract 和 capability checklist 存在且互相一致；
+- decision、spec、link analysis、实现约定和 capability checklist 存在且互相一致；
 - 计划版 `op_spec.py`已经通过validator，每条 case 都有明确 `test_point`，且每条能力均映射到计划case；
 - `integrated-initial` facts/content/case audit均PASS，编码前草稿存在；
 - 本次源码 diff 的每个文件都能映射到某条能力或必要注册点；

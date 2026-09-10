@@ -5,7 +5,7 @@ description: >-
   Use when the user explicitly names this stage-specific skill or explicitly
   requests source-only analysis/implementation with no testing, documentation,
   build, flash, or board verification. It owns source-entry analysis, reuse
-  decisions, frozen contracts, seven-layer implementation, INT8 paths, code
+  decisions, frozen implementation rules, seven-layer implementation, INT8 paths, code
   review, and implementation gates. Generic operator requests and combined
   workflows belong to hs-workflow-op-development. 中文触发包括“只实现算子”“仅源码”“使用 hs-dev-op-implement”；
   带测试、文档、编译、烧录或板测的请求不触发本 Skill。
@@ -30,11 +30,13 @@ description: >-
 ```
 
 `mode=prepare` 禁止任何源码写入；`mode=apply` 只能在 `PRE_SOURCE_GATE=PASS` 后写入。
-`mode=all` 只供用户明确单独调用：prepare 完成后暂停，取得初版文档和检查证据，再恢复 apply。
+`mode=all` 只供用户明确单独调用：prepare 完成后在内部切换阶段，运行源码写入前检查；
+检查通过后自动进入 apply，不再次向用户询问；
+它不是跳过 `PRE_SOURCE_GATE` 的捷径。
 顶层 workflow 必须分两次调用 prepare/apply，中间调用 `hs-design-op-manual mode=integrated-initial`；
 本 skill 不自行调用文档 Skill。
 
-当顶层 workflow 已在 Stage0 完成唯一环境/SDK/范围确认后，prepare、文档检查衔接、apply、代码审查
+当顶层 workflow 已在 Stage1 完成唯一环境/SDK/范围确认后，prepare、文档检查衔接、apply、代码审查
 和质量检查均由 agent 自动推进，不逐步询问“是否继续”。本 Skill 只有在独立 source-only 调用开始时
 确认输入范围；外部权限、缺失 SDK 或无法判定的事实仍按失败处理规则停下并记录原因。
 
@@ -50,6 +52,18 @@ description: >-
 `hs-workflow-op-development`；带有 WS63、测试、编译、文档、烧录或板测的请求一律交给 workflow。
 只有明确 source-only 请求才在本 Skill 内停止，并说明不会生成测试、构建、烧录或最终文档。
 `explicitly requests source-only work` 是本 Skill 的直接触发边界。
+
+### 最短执行路径
+
+下面只是选择入口的速查，不能跳过已有步骤、门禁或证据：
+
+- 顶层 workflow：`prepare`（step0-step3）→ `integrated-initial` → `PRE_SOURCE_GATE` → `apply`（step4-step6）。
+- 独立 source-only 只做分析：确认范围 → step0-step3 → `OP_PLAN_GATE=PASS`，到此结束，不写源码。
+- 独立 source-only 要写源码：使用 `mode=all`，完成 step0-step3，然后以 `gate_artifacts.py --stage pre-source --source-only`
+  完成源码写入前检查。这些材料只用于源码写入前的检查；检查仍覆盖源码冻结、规格、能力、实现约定和计划用例，
+  只跳过 integrated-initial 的正式文档审计，也不发布正式文档。若检查所需的源文件不齐，只能停在
+  `OP_PLAN_GATE=PASS`，不能继续写源码。
+- `apply` 完成后仍要执行 code review、style/security/quality 检查，再输出 `IMPLEMENT_GATE`；不进入构建、Host、烧录或板测。
 
 ## 职责和任务对象
 
@@ -165,12 +179,15 @@ workflow；`mode=prepare` 必须在此停止，不能调用文档 Skill、step4 
 <opdir>/docs/{op}-operator-verify-doc.md
 ```
 
+独立 source-only 不调用文档 Skill，也不发布上述两份正式文档；它必须改用带 `--source-only` 的
+pre-source 检查，不能把这个例外用于 workflow。
+
 在本轮首次修改任何①-⑦源码前，必须完整读取 Skill 自带的
 `references/code-style.md` 和 `references/code-quality-gate.md`，并将规范路径展开为绝对路径，
 记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`。该规范不是用户需要安装的工具。每一层动笔前完成逐规则审计。之后按
 `references/implementation-guide.md` 的对应小节实施；INT8 和 fusion 另读各自 reference。
 `PRE_SOURCE_GATE=PASS` 前不能写源码；实现约定、能力清单、op_spec 或初版文档变化时停止并回到
-stage1，不能先改代码再补文档。完整属性审计、七层模板和接口检查见
+Stage2，不能先改代码再补文档。完整属性审计、七层模板和接口检查见
 [`references/implementation-detail.md`](references/implementation-detail.md)。
 
 ## step5：编码后交叉代码审查

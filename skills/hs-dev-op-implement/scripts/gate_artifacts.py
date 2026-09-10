@@ -9,7 +9,7 @@
 #
 # gate_artifacts.py --opdir <opdir> --op <Op> \
 #   --stage source-freeze|step3|prepare|pre-source|pre-code|pre-verify \
-#   [--code-root <mindspore-lite-root>] [--framework onnx ...]
+#   [--code-root <mindspore-lite-root>] [--framework onnx ...] [--source-only]
 #
 # Hard gate for hs-dev-op-implement artifacts. This script intentionally checks
 # only mechanical invariants; semantic judgement remains in SKILL.md. In
@@ -313,7 +313,7 @@ def write_source_freeze(
         if not rotate_existing:
             raise ValueError(
                 f"source freeze already exists: {path}; start a new plan run with "
-                "--rotate-source-freeze only after the previous stage1 reaches a terminal state"
+                "--rotate-source-freeze only after the previous stage2 reaches a terminal state"
             )
         try:
             previous = json.loads(path.read_text(encoding="utf-8"))
@@ -579,11 +579,19 @@ def main():
     parser.add_argument("--plan-run-id")
     parser.add_argument("--rotate-source-freeze", action="store_true")
     parser.add_argument("--framework", action="append", default=[])
+    parser.add_argument(
+        "--source-only",
+        action="store_true",
+        help="for standalone source-only apply: keep source gates but skip integrated-initial document audit",
+    )
     args = parser.parse_args()
 
     opdir = args.opdir.resolve()
     frameworks = [fw.lower() for fw in args.framework]
     errors = []
+
+    if args.source_only and args.stage not in {"pre-source", "pre-code"}:
+        errors.append("--source-only is only valid with stage=pre-source or stage=pre-code")
 
     if args.stage == "source-freeze":
         if args.code_root is None:
@@ -648,10 +656,11 @@ def main():
     if args.stage in ["prepare", "pre-source", "pre-code", "pre-verify"]:
         check_op_spec_text(scripts / "op_spec.py", args.op, frameworks, errors)
 
-    # pre-code remains a compatibility alias for pre-source. Both require the
-    # integrated-initial facts and draft, so an older caller cannot bypass the
-    # document-first gate by using the previous stage spelling.
-    if args.stage in ["pre-source", "pre-code", "pre-verify"]:
+    # pre-code remains a compatibility alias for pre-source. The normal
+    # workflow requires integrated-initial facts and drafts. Standalone
+    # source-only keeps every source/spec/capability gate but has no formal
+    # document Skill to audit, so it opts out explicitly at the command line.
+    if args.stage in ["pre-source", "pre-code", "pre-verify"] and not args.source_only:
         check_initial_manual(opdir, args.op, errors)
 
     if args.stage == "pre-verify":
