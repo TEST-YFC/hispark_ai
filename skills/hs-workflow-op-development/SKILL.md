@@ -222,8 +222,8 @@ implementation unit、全部生成文件的哈希和 `HISPARK_ROOT`。只有 `PR
 - `references/code-style.md`：团队代码规范。
 - `references/code-quality-gate.md`：代码质量检查要求。
 
-记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。该规范是 Skill 自带的，不是用户
-需要安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别保存，不能代写 Host 或正式文档。
+记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。这两份规范属于
+`hs-dev-op-implement`，不是用户需要单独安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别保存，不能代写 Host 或正式文档。
 规范路径必须展开为绝对路径并记录其 SHA-256；它不是用户需要安装的工具。
 `apply` 中不得在源码阶段直接
 修改已锁定的实现约定；若实现约定、能力清单、计划 `op_spec.py` 或初版文档变化，必须返回 Stage2 重新确定，不能先改代码再更新草稿。

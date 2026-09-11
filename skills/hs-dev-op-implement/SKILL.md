@@ -182,7 +182,7 @@ workflow；`mode=prepare` 必须在此停止，不能调用文档 Skill、step4 
 独立 source-only 不调用文档 Skill，也不发布上述两份正式文档；它必须改用带 `--source-only` 的
 pre-source 检查，不能把这个例外用于 workflow。
 
-在本轮首次修改任何①-⑦源码前，必须完整读取 Skill 自带的
+在本轮首次修改任何①-⑦源码前，必须完整读取本 Skill 内的
 `references/code-style.md` 和 `references/code-quality-gate.md`，并将规范路径展开为绝对路径，
 记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`。该规范不是用户需要安装的工具。每一层动笔前完成逐规则审计。之后按
 `references/implementation-guide.md` 的对应小节实施；INT8 和 fusion 另读各自 reference。
