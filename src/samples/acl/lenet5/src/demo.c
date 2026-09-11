@@ -25,8 +25,8 @@
 #define TASKS_NPU_AI_STACK_SIZE 0x1000       /* Max Stack Size in this task */
 #define TASKS_NPU_AI_PRIO (osPriority_t)(17) /* Task Priority in LiteOS */
 
-static const char *modelFileName = "/user/mnist.exeom";
-static const char *modelInputFile = "/user/sample_mnist.bin";
+static const char *g_modelFileName = "/user/mnist.exeom";
+static const char *g_modelInputFile = "/user/sample_mnist.bin";
 
 int32_t Lenet5Run()
 {
@@ -38,7 +38,7 @@ int32_t Lenet5Run()
     }
 
     // 加载模型文件
-    if (LoadModel(&modelInfo, modelFileName, modelInputFile)) {
+    if (LoadModel(&modelInfo, g_modelFileName, g_modelInputFile)) {
         goto DESTROY;
     }
 

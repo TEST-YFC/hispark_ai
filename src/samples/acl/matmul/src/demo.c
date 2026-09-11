@@ -25,9 +25,9 @@
 #define TASKS_NPU_AI_STACK_SIZE 0x1000       /* Max Stack Size in this task */
 #define TASKS_NPU_AI_PRIO (osPriority_t)(17) /* Task Priority in LiteOS */
 
-static const char *modelFileName = "/user/ai/matmul/matmul.exeom";
-static const char *modelInputFile = "/user/ai/matmul/input.bin";
-static const char *modelOutputFile = "/user/ai/matmul/output.bin";
+static const char *g_modelFileName = "/user/ai/matmul/matmul.exeom";
+static const char *g_modelInputFile = "/user/ai/matmul/input.bin";
+static const char *g_modelOutputFile = "/user/ai/matmul/output.bin";
 
 int32_t MatmulRun()
 {
@@ -39,7 +39,7 @@ int32_t MatmulRun()
     }
 
     // 加载模型文件
-    if (LoadModel(&modelInfo, modelFileName, modelInputFile, modelOutputFile)) {
+    if (LoadModel(&modelInfo, g_modelFileName, g_modelInputFile, g_modelOutputFile)) {
         goto DESTROY;
     }
 
