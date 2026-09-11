@@ -495,6 +495,20 @@ MS_API void *MSTensorGetMutableData(const MSTensorHandle tensor);
 
 /**
  * @if Eng
+ * @brief  Set the mutable data pointer of the tensor.
+ * @param  [in]  tensor                   Model object handle.
+ * @retval void*                   Success.
+ * @retval NULL                    Nullptr Failed.
+ * @else
+ * @brief  设置张量数据指针。如果数据为空，也会分配内存。
+ * @param  [in]  tensor                    输入的张量对象。
+ * @param  [in]  data                      待设置的数据指针。
+ * @endif
+ */
+MS_API void MSTensorSetMutableData(const MSTensorHandle tensor, void *data);
+
+/**
+ * @if Eng
  * @brief  Build the model from model file buffer so that it can run on a device.
  * @param  [in]  model                    Model object handle.
  * @param  [in]  model_data               Define the buffer read from a model file.
