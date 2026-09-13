@@ -17,6 +17,8 @@ description: >-
 模型生成、转换、编译、推理、余弦计算、Excel 和 summary 都由仓内固定 harness 完成。ONNX 与 TFLite
 是两条独立路径，各自维护用例和结果；`riscv_*` 目标仍在 Host 执行，不代表真实板运行。
 
+下文 Step 表示本 Skill 的内部步骤，不对应顶层 workflow 的 Stage；harness 的 step1-step5 是每条用例内部的执行步骤。
+
 ## 固定工作流
 
 先创建下面的 todo。每一步完成后把证据保存到状态目录，再进入下一步：
@@ -40,7 +42,7 @@ description: >-
 ## 调用边界与自动推进
 
 完整 workflow 传入的 `<opdir>`、框架范围、实现约束、能力清单和计划 `op_spec.py` 已在上游确定；本
-Skill 只能只读对账，发现 case、GT、覆盖映射或源码指纹变化就回到 workflow Stage2，不能在 Host 阶段
+Skill 只能只读对账，发现 case、GT、覆盖映射或源码指纹变化就回到 workflow Stage1，不能在 Host 阶段
 悄悄改 spec 继续跑。独立 Host 请求在开始时确认一次代码/工具包和目标目录；收到确认后，spec 生成、
 依赖修复、harness 运行、结果读取和失败处理由 agent 自动完成，不逐步询问用户。轻量 Python 依赖可在
 同一解释器的虚拟环境或用户范围自动修复；超出安全边界才报告阻塞。

@@ -14,7 +14,7 @@
 
 {{TASK_ROWS}}
 
-任务行前的 `Stage1` 到 `Stage8` 是工作流唯一的阶段编号；`terminal.report` 是 Stage8 的收尾子步骤。任务 ID 与阶段编号一致，不能手工改名。
+任务行前的 `Stage0` 到 `Stage7` 是工作流唯一的阶段编号；`terminal.report` 是 Stage7 的收尾子步骤。任务 ID 与阶段编号一致，不能手工改名。
 
 ## 状态约定
 

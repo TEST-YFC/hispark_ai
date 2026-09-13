@@ -83,7 +83,7 @@ def confirm_run(
 
 
 def finish_current(state_dir: Path, task_id: str, status: str = "PASS", *evidence: str) -> None:
-    if task_id != "stage1.scope_environment":
+    if task_id != "stage0.scope_environment":
         invoke(state_dir, "start", "--run-id", state_dir.name, "--task", task_id)
     args = [
         "finish",
@@ -106,21 +106,21 @@ def finish_current(state_dir: Path, task_id: str, status: str = "PASS", *evidenc
 def pass_to_host_or_board(
     state_dir: Path, *, board_status: str = "PASS", firmware_status: str = "PASS"
 ) -> None:
-    finish_current(state_dir, "stage1.scope_environment", "PASS", "env-probe.json")
+    finish_current(state_dir, "stage0.scope_environment", "PASS", "env-probe.json")
     confirm_run(state_dir)
     for task in (
-        "stage2.plan",
-        "stage2.initial_docs",
-        "stage2.pre_source_gate",
-        "stage3.implementation",
-        "stage3.code_review",
-        "stage4.mslite_build",
-        "stage5.host_verify",
+        "stage1.plan",
+        "stage1.initial_docs",
+        "stage1.pre_source_gate",
+        "stage2.implementation",
+        "stage2.code_review",
+        "stage3.mslite_build",
+        "stage4.host_verify",
     ):
         finish_current(state_dir, task, "PASS", f"{task}.json")
     finish_current(
         state_dir,
-        "stage6.firmware_matrix",
+        "stage5.firmware_matrix",
         firmware_status,
         *[f"board/tc{i}/{mode}.fwpkg" for i in range(1, 13) for mode in ("fp32", "int8")],
     )
@@ -128,14 +128,14 @@ def pass_to_host_or_board(
         return
     finish_current(
         state_dir,
-        "stage7.board_matrix",
+        "stage6.board_matrix",
         board_status,
         *[f"board/tc{i}/{mode}.json" for i in range(1, 13) for mode in ("fp32", "int8")],
     )
 
 
 def finish_terminal_docs_and_report(state_dir: Path) -> None:
-    finish_current(state_dir, "stage8.final_docs", "PASS", "docs/design.md", "docs/verify.md")
+    finish_current(state_dir, "stage7.final_docs", "PASS", "docs/design.md", "docs/verify.md")
     invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
 
 
@@ -152,34 +152,53 @@ def test_init_generates_todo_checkpoint_and_event_log(tmp_path):
     state_dir = init_run(tmp_path)
     state = read_state(state_dir)
     WORKFLOW.validate_task_manifest()
-    assert state["schema_version"] == 2
+    assert state["schema_version"] == 3
     assert [task.task_id for task in WORKFLOW.TASKS] == [
-        "stage1.scope_environment",
-        "stage1.confirm",
-        "stage2.plan",
-        "stage2.initial_docs",
-        "stage2.pre_source_gate",
-        "stage3.implementation",
-        "stage3.code_review",
-        "stage4.mslite_build",
-        "stage5.host_verify",
-        "stage6.firmware_matrix",
-        "stage7.board_matrix",
-        "stage8.final_docs",
+        "stage0.scope_environment",
+        "stage0.confirm",
+        "stage1.plan",
+        "stage1.initial_docs",
+        "stage1.pre_source_gate",
+        "stage2.implementation",
+        "stage2.code_review",
+        "stage3.mslite_build",
+        "stage4.host_verify",
+        "stage5.firmware_matrix",
+        "stage6.board_matrix",
+        "stage7.final_docs",
         "terminal.report",
     ]
     assert not hasattr(WORKFLOW, "DISPLAY_STAGE_BY_TASK")
     assert state["run_id"] == "bitshift-test"
-    assert state["current_task"] == "stage1.scope_environment"
+    assert state["current_task"] == "stage0.scope_environment"
     assert state["tasks"][0]["status"] == "RUNNING"
     assert (state_dir / "workflow_todo.md").is_file()
     assert (state_dir / "workflow_events.jsonl").is_file()
     todo = (state_dir / "workflow_todo.md").read_text(encoding="utf-8")
     assert "{{" not in todo
-    assert "stage7.board_matrix" in todo
+    assert "stage6.board_matrix" in todo
     assert "[~]" in todo
     assert str(tmp_path / "firmware-sdk") in todo
     assert list(state_dir.glob("*.tmp")) == []
+
+
+def test_old_schema_is_rejected_without_rewriting_checkpoint(tmp_path):
+    for old_schema in (1, 2):
+        state_dir = init_run(tmp_path, run_id=f"old-schema-{old_schema}")
+        state_file = state_dir / "workflow_state.json"
+        state = read_state(state_dir)
+        state["schema_version"] = old_schema
+        state_file.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+        originals = {
+            name: (state_dir / name).read_bytes()
+            for name in ("workflow_state.json", "workflow_todo.md", "workflow_events.jsonl")
+        }
+        result = invoke(state_dir, "resume", "--run-id", state_dir.name, expected=2)
+        assert "unsupported state schema" in result.stderr
+        assert "new RUN_ID" in result.stderr
+        assert "do not renumber task IDs in place" in result.stderr
+        for name, content in originals.items():
+            assert (state_dir / name).read_bytes() == content
 
 
 def test_bitshift_auto_all_stub_completes_12_case_two_mode_matrix(tmp_path):
@@ -190,8 +209,8 @@ def test_bitshift_auto_all_stub_completes_12_case_two_mode_matrix(tmp_path):
     assert state["overall_status"] == "PASS"
     assert state["current_task"] is None
     assert all(item["status"] == "PASS" for item in state["tasks"])
-    firmware = next(item for item in state["tasks"] if item["id"] == "stage6.firmware_matrix")
-    board = next(item for item in state["tasks"] if item["id"] == "stage7.board_matrix")
+    firmware = next(item for item in state["tasks"] if item["id"] == "stage5.firmware_matrix")
+    board = next(item for item in state["tasks"] if item["id"] == "stage6.board_matrix")
     assert len(firmware["evidence"]) == 24
     assert len(board["evidence"]) == 24
     assert state["confirmation_count"] == 1
@@ -203,11 +222,11 @@ def test_bitshift_auto_all_stub_completes_12_case_two_mode_matrix(tmp_path):
             if line.startswith("- [x]") and any(f"`{task.task_id}`" in line for task in WORKFLOW.TASKS)
     ]
     assert len(completed_task_rows) == len(WORKFLOW.TASKS)
-    for display_stage in ("Stage1", "Stage2", "Stage3", "Stage4", "Stage5", "Stage6", "Stage7", "Stage8"):
+    for display_stage in ("Stage0", "Stage1", "Stage2", "Stage3", "Stage4", "Stage5", "Stage6", "Stage7"):
         assert display_stage in todo
     assert "（PASS）" in todo
     # Every executable task has a start/finish pair except the implicit
-    # stage1 probe and the one-shot confirmation; finalization adds its own
+    # stage0 probe and the one-shot confirmation; finalization adds its own
     # event.  The exact count is intentionally allowed to grow with retries.
     assert len(state["events"]) >= len(WORKFLOW.TASKS) + 9
 
@@ -218,16 +237,16 @@ def test_auto_all_board_not_run_is_incomplete_but_final_docs_still_run(tmp_path)
     finish_terminal_docs_and_report(state_dir)
     state = read_state(state_dir)
     statuses = {item["id"]: item["status"] for item in state["tasks"]}
-    assert statuses["stage6.firmware_matrix"] == "PASS"
-    assert statuses["stage7.board_matrix"] == "NOT_RUN"
-    assert statuses["stage8.final_docs"] == "PASS"
+    assert statuses["stage5.firmware_matrix"] == "PASS"
+    assert statuses["stage6.board_matrix"] == "NOT_RUN"
+    assert statuses["stage7.final_docs"] == "PASS"
     assert state["overall_status"] == "INCOMPLETE"
 
 
 def test_terminal_report_is_required_before_any_success_status(tmp_path):
     state_dir = init_run(tmp_path)
     pass_to_host_or_board(state_dir)
-    finish_current(state_dir, "stage8.final_docs", "PASS")
+    finish_current(state_dir, "stage7.final_docs", "PASS")
     state = read_state(state_dir)
     assert state["current_task"] == "terminal.report"
     assert state["overall_status"] == "INCOMPLETE"
@@ -239,7 +258,7 @@ def test_terminal_report_is_required_before_any_success_status(tmp_path):
 
 def test_confirmation_is_one_shot_and_subsequent_steps_need_no_prompt(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
     duplicate = invoke(
         state_dir,
@@ -254,12 +273,12 @@ def test_confirmation_is_one_shot_and_subsequent_steps_need_no_prompt(tmp_path):
     )
     assert "CONFIRMATION_ALREADY_RECORDED" in duplicate.stderr
     # No interactive input is supplied; the next task starts directly.
-    invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage2.plan")
+    invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage1.plan")
 
 
 def test_auto_all_confirmation_requires_user_sdk_and_matching_mode(tmp_path):
     state_dir = init_run(tmp_path, run_id="sdk-confirm", with_sdk=False)
-    finish_current(state_dir, "stage1.scope_environment", "PASS", "env-probe.json")
+    finish_current(state_dir, "stage0.scope_environment", "PASS", "env-probe.json")
     missing = confirm_run(state_dir, expected=2)
     assert "requires the user's absolute firmware SDK path" in missing.stderr
     conflict = confirm_run(
@@ -282,23 +301,23 @@ def test_auto_all_confirmation_requires_user_sdk_and_matching_mode(tmp_path):
 
 def test_confirmation_mode_is_explicit_and_phrase_is_audit_only(tmp_path):
     state_dir = init_run(tmp_path, run_id="host-confirm", mode="HOST_ONLY")
-    finish_current(state_dir, "stage1.scope_environment", "PASS", "env-probe.json")
+    finish_current(state_dir, "stage0.scope_environment", "PASS", "env-probe.json")
     confirm_run(state_dir, phrase="确认，只做 Host，不需要烧录")
     state = read_state(state_dir)
     assert state["confirmation"]["phrase"] == "确认，只做 Host，不需要烧录"
     assert state["confirmation"]["mode"] == "HOST_ONLY"
 
     mismatch_dir = init_run(tmp_path, run_id="host-confirm-mismatch", mode="HOST_ONLY")
-    finish_current(mismatch_dir, "stage1.scope_environment", "PASS", "env-probe.json")
+    finish_current(mismatch_dir, "stage0.scope_environment", "PASS", "env-probe.json")
     mismatch = confirm_run(mismatch_dir, confirmed_mode="AUTO_ALL", expected=2)
     assert "CONFIRMED_MODE_MISMATCH" in mismatch.stderr
 
 
 def test_finish_requires_evidence_for_terminal_result(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
-    started = invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage2.plan")
+    started = invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage1.plan")
     token = next(line.split("=", 1)[1] for line in started.stdout.splitlines() if line.startswith("ATTEMPT_TOKEN="))
     missing = invoke(
         state_dir,
@@ -306,7 +325,7 @@ def test_finish_requires_evidence_for_terminal_result(tmp_path):
         "--run-id",
         state_dir.name,
         "--task",
-        "stage2.plan",
+        "stage1.plan",
         "--status",
         "PASS",
         "--attempt-token",
@@ -336,62 +355,62 @@ def test_todo_projection_metadata_tampering_fails_closed(tmp_path):
 
 def test_host_only_marks_board_not_requested_and_has_scoped_terminal_status(tmp_path):
     state_dir = init_run(tmp_path, run_id="bitshift-host-only", mode="HOST_ONLY")
-    finish_current(state_dir, "stage1.scope_environment", "PASS", "env-probe.json")
+    finish_current(state_dir, "stage0.scope_environment", "PASS", "env-probe.json")
     confirm_run(state_dir, phrase="只做电脑端验证")
     for task in (
-        "stage2.plan",
-        "stage2.initial_docs",
-        "stage2.pre_source_gate",
-        "stage3.implementation",
-        "stage3.code_review",
-        "stage4.mslite_build",
-        "stage5.host_verify",
-        "stage8.final_docs",
+        "stage1.plan",
+        "stage1.initial_docs",
+        "stage1.pre_source_gate",
+        "stage2.implementation",
+        "stage2.code_review",
+        "stage3.mslite_build",
+        "stage4.host_verify",
+        "stage7.final_docs",
     ):
         finish_current(state_dir, task, "PASS", f"{task}.json")
     invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
     state = read_state(state_dir)
     statuses = {item["id"]: item["status"] for item in state["tasks"]}
-    assert statuses["stage6.firmware_matrix"] == "NOT_REQUESTED"
-    assert statuses["stage7.board_matrix"] == "NOT_REQUESTED"
+    assert statuses["stage5.firmware_matrix"] == "NOT_REQUESTED"
+    assert statuses["stage6.board_matrix"] == "NOT_REQUESTED"
     assert state["overall_status"] == "HOST_ONLY_PASS"
 
 
 def test_failure_freezes_execution_tasks_but_allows_terminal_docs_and_retry(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
-    for task in ("stage2.plan", "stage2.initial_docs", "stage2.pre_source_gate", "stage3.implementation", "stage3.code_review"):
+    for task in ("stage1.plan", "stage1.initial_docs", "stage1.pre_source_gate", "stage2.implementation", "stage2.code_review"):
         finish_current(state_dir, task, "PASS")
-    finish_current(state_dir, "stage4.mslite_build", "FAIL", "first-error.log")
+    finish_current(state_dir, "stage3.mslite_build", "FAIL", "first-error.log")
     failed = read_state(state_dir)
     statuses = {item["id"]: item["status"] for item in failed["tasks"]}
-    assert statuses["stage5.host_verify"] == "BLOCKED"
-    assert statuses["stage6.firmware_matrix"] == "BLOCKED"
-    assert statuses["stage8.final_docs"] == "PENDING"
+    assert statuses["stage4.host_verify"] == "BLOCKED"
+    assert statuses["stage5.firmware_matrix"] == "BLOCKED"
+    assert statuses["stage7.final_docs"] == "PENDING"
     assert statuses["terminal.report"] == "PENDING"
     assert failed["overall_status"] == "FAIL"
-    invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage4.mslite_build")
+    invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage3.mslite_build")
     retried = read_state(state_dir)
-    assert retried["current_task"] == "stage4.mslite_build"
+    assert retried["current_task"] == "stage3.mslite_build"
     assert retried["tasks"][7]["status"] == "PENDING"
 
 
 def test_retry_cannot_skip_an_earlier_failed_predecessor(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
-    finish_current(state_dir, "stage2.plan", "PASS")
-    finish_current(state_dir, "stage2.initial_docs", "PASS")
-    finish_current(state_dir, "stage2.pre_source_gate", "PASS")
-    finish_current(state_dir, "stage3.implementation", "FAIL", "implementation-error.log")
+    finish_current(state_dir, "stage1.plan", "PASS")
+    finish_current(state_dir, "stage1.initial_docs", "PASS")
+    finish_current(state_dir, "stage1.pre_source_gate", "PASS")
+    finish_current(state_dir, "stage2.implementation", "FAIL", "implementation-error.log")
     skipped = invoke(
         state_dir,
         "retry",
         "--run-id",
         state_dir.name,
         "--task",
-        "stage4.mslite_build",
+        "stage3.mslite_build",
         expected=2,
     )
     assert "RETRY_PRECONDITION" in skipped.stderr
@@ -426,7 +445,7 @@ def test_schema_tampering_and_orphaned_init_fail_closed(tmp_path):
 def test_non_board_skip_status_tampering_fails_closed(tmp_path):
     for skipped_status in ("NOT_REQUESTED", "NOT_RUN"):
         state_dir = init_run(tmp_path, run_id=f"tampered-{skipped_status.lower()}")
-        finish_current(state_dir, "stage1.scope_environment", "PASS")
+        finish_current(state_dir, "stage0.scope_environment", "PASS")
         confirm_run(state_dir)
         tampered = read_state(state_dir)
         # Keep all predecessors terminal so the edited implementation task is
@@ -438,7 +457,7 @@ def test_non_board_skip_status_tampering_fails_closed(tmp_path):
         target["heartbeat_at"] = None
         target["owner_pid"] = None
         target["attempt_token"] = None
-        tampered["current_task"] = "stage2.initial_docs"
+        tampered["current_task"] = "stage1.initial_docs"
         (state_dir / "workflow_state.json").write_text(
             json.dumps(tampered, ensure_ascii=False), encoding="utf-8"
         )
@@ -446,9 +465,9 @@ def test_non_board_skip_status_tampering_fails_closed(tmp_path):
         assert f"{skipped_status} is only valid for board tasks" in result.stderr
 
 
-def test_confirmed_run_cannot_retry_stage1_scope(tmp_path):
-    state_dir = init_run(tmp_path, run_id="confirmed-stage1-retry")
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+def test_confirmed_run_cannot_retry_stage0_scope(tmp_path):
+    state_dir = init_run(tmp_path, run_id="confirmed-stage0-retry")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
     result = invoke(
         state_dir,
@@ -456,10 +475,10 @@ def test_confirmed_run_cannot_retry_stage1_scope(tmp_path):
         "--run-id",
         state_dir.name,
         "--task",
-        "stage1.scope_environment",
+        "stage0.scope_environment",
         expected=2,
     )
-    assert "cannot retry stage1.scope_environment after execution confirmation" in result.stderr
+    assert "cannot retry stage0.scope_environment after execution confirmation" in result.stderr
 
 
 def test_resume_rejects_malformed_timezone_timestamp(tmp_path):
@@ -475,7 +494,7 @@ def test_resume_rejects_malformed_timezone_timestamp(tmp_path):
 
 def test_status_rejects_malformed_confirmation_timestamp(tmp_path):
     state_dir = init_run(tmp_path, run_id="bad-confirmation-timestamp")
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
     tampered = read_state(state_dir)
     tampered["confirmation"]["at"] = "2026-09-02T12:00:00"
@@ -522,7 +541,7 @@ def test_retry_board_stage_requires_successful_firmware_predecessor(tmp_path):
         "--run-id",
         state_dir.name,
         "--task",
-        "stage7.board_matrix",
+        "stage6.board_matrix",
         expected=2,
     )
     assert "RETRY_PRECONDITION" in skipped.stderr
@@ -530,56 +549,56 @@ def test_retry_board_stage_requires_successful_firmware_predecessor(tmp_path):
 
 def test_final_docs_can_retry_after_recording_upstream_failure(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
     for task in (
-        "stage2.plan",
-        "stage2.initial_docs",
-        "stage2.pre_source_gate",
-        "stage3.implementation",
-        "stage3.code_review",
+        "stage1.plan",
+        "stage1.initial_docs",
+        "stage1.pre_source_gate",
+        "stage2.implementation",
+        "stage2.code_review",
     ):
         finish_current(state_dir, task, "PASS")
-    finish_current(state_dir, "stage4.mslite_build", "FAIL", "build-error.log")
-    finish_current(state_dir, "stage8.final_docs", "FAIL", "doc-error.log")
-    invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage8.final_docs")
-    assert read_state(state_dir)["current_task"] == "stage8.final_docs"
+    finish_current(state_dir, "stage3.mslite_build", "FAIL", "build-error.log")
+    finish_current(state_dir, "stage7.final_docs", "FAIL", "doc-error.log")
+    invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage7.final_docs")
+    assert read_state(state_dir)["current_task"] == "stage7.final_docs"
 
 
 def test_upstream_retry_invalidates_previously_finalized_downstream_results(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
     for task in (
-        "stage2.plan",
-        "stage2.initial_docs",
-        "stage2.pre_source_gate",
-        "stage3.implementation",
-        "stage3.code_review",
+        "stage1.plan",
+        "stage1.initial_docs",
+        "stage1.pre_source_gate",
+        "stage2.implementation",
+        "stage2.code_review",
     ):
         finish_current(state_dir, task, "PASS")
-    finish_current(state_dir, "stage4.mslite_build", "FAIL")
-    finish_current(state_dir, "stage8.final_docs", "PASS")
+    finish_current(state_dir, "stage3.mslite_build", "FAIL")
+    finish_current(state_dir, "stage7.final_docs", "PASS")
     invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
-    invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage4.mslite_build")
+    invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage3.mslite_build")
     state = read_state(state_dir)
-    assert state["current_task"] == "stage4.mslite_build"
-    assert next(item for item in state["tasks"] if item["id"] == "stage8.final_docs")["status"] == "PENDING"
+    assert state["current_task"] == "stage3.mslite_build"
+    assert next(item for item in state["tasks"] if item["id"] == "stage7.final_docs")["status"] == "PENDING"
     assert next(item for item in state["tasks"] if item["id"] == "terminal.report")["status"] == "PENDING"
-    assert next(item for item in state["tasks"] if item["id"] == "stage4.mslite_build")["evidence"] == []
-    assert next(item for item in state["tasks"] if item["id"] == "stage8.final_docs")["evidence"] == []
+    assert next(item for item in state["tasks"] if item["id"] == "stage3.mslite_build")["evidence"] == []
+    assert next(item for item in state["tasks"] if item["id"] == "stage7.final_docs")["evidence"] == []
     retry_event = next(event for event in reversed(state["events"]) if event["event"] == "TASK_RETRY_SCHEDULED")
-    assert "stage4.mslite_build" in retry_event["invalidated_evidence"]
+    assert "stage3.mslite_build" in retry_event["invalidated_evidence"]
 
 
 def test_stale_attempt_token_cannot_finish_a_restarted_task(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
-    first_start = invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage2.plan")
+    first_start = invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage1.plan")
     first_token = next(line.split("=", 1)[1] for line in first_start.stdout.splitlines() if line.startswith("ATTEMPT_TOKEN="))
     invoke(state_dir, "resume", "--run-id", state_dir.name, "--force")
-    second_start = invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage2.plan")
+    second_start = invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage1.plan")
     second_token = next(line.split("=", 1)[1] for line in second_start.stdout.splitlines() if line.startswith("ATTEMPT_TOKEN="))
     assert first_token != second_token
     stale = invoke(
@@ -588,7 +607,7 @@ def test_stale_attempt_token_cannot_finish_a_restarted_task(tmp_path):
         "--run-id",
         state_dir.name,
         "--task",
-        "stage2.plan",
+        "stage1.plan",
         "--status",
         "PASS",
         "--attempt-token",
@@ -604,7 +623,7 @@ def test_stale_attempt_token_cannot_finish_a_restarted_task(tmp_path):
         "--run-id",
         state_dir.name,
         "--task",
-        "stage2.plan",
+        "stage1.plan",
         "--status",
         "PASS",
         "--attempt-token",
@@ -616,19 +635,19 @@ def test_stale_attempt_token_cannot_finish_a_restarted_task(tmp_path):
 
 def test_environment_failure_blocks_document_backfill_and_allows_state_finalize(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "FAIL", "env-error.log")
+    finish_current(state_dir, "stage0.scope_environment", "FAIL", "env-error.log")
     state_after_failure = read_state(state_dir)
     assert state_after_failure["current_task"] == "terminal.report"
-    stage8 = next(item for item in state_after_failure["tasks"] if item["id"] == "stage8.final_docs")
-    assert stage8["status"] == "BLOCKED"
-    assert "仅 terminal.report" in stage8["note"]
+    stage7 = next(item for item in state_after_failure["tasks"] if item["id"] == "stage7.final_docs")
+    assert stage7["status"] == "BLOCKED"
+    assert "仅 terminal.report" in stage7["note"]
     cannot_retry_docs = invoke(
         state_dir,
         "retry",
         "--run-id",
         state_dir.name,
         "--task",
-        "stage8.final_docs",
+        "stage7.final_docs",
         expected=2,
     )
     assert "cannot be retried before" in cannot_retry_docs.stderr
@@ -638,7 +657,7 @@ def test_environment_failure_blocks_document_backfill_and_allows_state_finalize(
         "--run-id",
         state_dir.name,
         "--task",
-        "stage8.final_docs",
+        "stage7.final_docs",
         expected=2,
     )
     assert "OUT_OF_ORDER" in cannot_start_docs.stderr
@@ -685,10 +704,10 @@ def test_revision_rejects_concurrent_stale_writer(tmp_path):
     first = WORKFLOW.load_state(state_dir, state_dir.name)
     second = WORKFLOW.load_state(state_dir, state_dir.name)
     first["tasks"][0]["note"] = "writer-A"
-    WORKFLOW.persist(state_dir, first, TEMPLATE, "TEST_WRITER_A", "stage1.scope_environment")
+    WORKFLOW.persist(state_dir, first, TEMPLATE, "TEST_WRITER_A", "stage0.scope_environment")
     second["tasks"][0]["note"] = "writer-B"
     try:
-        WORKFLOW.persist(state_dir, second, TEMPLATE, "TEST_WRITER_B", "stage1.scope_environment")
+        WORKFLOW.persist(state_dir, second, TEMPLATE, "TEST_WRITER_B", "stage0.scope_environment")
     except WORKFLOW.StateError as exc:
         assert "CONCURRENT_STATE_UPDATE" in str(exc)
     else:
@@ -700,17 +719,17 @@ def test_revision_rejects_concurrent_stale_writer(tmp_path):
 
 def test_resume_recovers_interrupted_task_and_rejects_stale_run_id(tmp_path):
     state_dir = init_run(tmp_path)
-    finish_current(state_dir, "stage1.scope_environment", "PASS")
+    finish_current(state_dir, "stage0.scope_environment", "PASS")
     confirm_run(state_dir)
-    invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage2.plan")
+    invoke(state_dir, "start", "--run-id", state_dir.name, "--task", "stage1.plan")
     # A short-lived `start` CLI does not own the downstream worker.  A fresh
     # checkpoint with no registered owner therefore needs explicit recovery.
     fresh = invoke(state_dir, "resume", "--run-id", state_dir.name, expected=2)
     assert "no registered owner" in fresh.stderr
     invoke(state_dir, "resume", "--run-id", state_dir.name, "--force")
     state = read_state(state_dir)
-    assert state["current_task"] == "stage2.plan"
-    recovered = next(item for item in state["tasks"] if item["id"] == "stage2.plan")
+    assert state["current_task"] == "stage1.plan"
+    recovered = next(item for item in state["tasks"] if item["id"] == "stage1.plan")
     assert recovered["status"] == "PENDING"
     assert recovered["started_at"] is None
     stale = invoke(state_dir, "status", "--run-id", "another-run", expected=2)
@@ -723,7 +742,7 @@ def test_resume_recovers_interrupted_task_and_rejects_stale_run_id(tmp_path):
 def test_terminal_report_is_finalize_only(tmp_path):
     state_dir = init_run(tmp_path)
     pass_to_host_or_board(state_dir)
-    finish_current(state_dir, "stage8.final_docs", "PASS")
+    finish_current(state_dir, "stage7.final_docs", "PASS")
     started = invoke(
         state_dir,
         "start",

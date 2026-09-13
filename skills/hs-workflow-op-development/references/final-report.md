@@ -7,7 +7,7 @@
 - [资源索引](#资源索引)
 
 > 只有所有阶段进入终态后读取。这里是用户可见状态和证据格式的唯一详细定义；入口只保留摘要和链接。
-> Stage1 尚未完成执行确认而阻断时，状态机会将 `stage8.final_docs` 标为 `BLOCKED`，由
+> Stage0 尚未完成执行确认而阻断时，状态机会将 `stage7.final_docs` 标为 `BLOCKED`，由
 > `terminal.report` 写状态收尾证据，`OP_MANUAL_SYNC=NOT_RUN`，且不生成或覆盖正式设计/验证文档；
 > 本文件的终态文档条款适用于确认已通过的运行。
 
@@ -80,7 +80,7 @@ ACCURACY_VERDICT=<PASS|FAIL|NOT_REQUESTED|NOT_RUN>
 
 `OP_WORKFLOW=PASS`只用于`AUTO_ALL`的全部阶段和板端全矩阵PASS；默认流程有任何
 `NOT_RUN/PENDING/RUNNING`时使用`INCOMPLETE`，有任何必需阶段或case失败时使用`FAIL`。用户明确
-选择`HOST_ONLY`且Stage1-Stage5全部PASS、板端字段均为`NOT_REQUESTED`时使用
+选择`HOST_ONLY`且Stage0-Stage4全部PASS、板端字段均为`NOT_REQUESTED`时使用
 `HOST_ONLY_PASS`，不能缩写成无范围的PASS。
 
 收尾消息在整体状态后必须输出逐阶段表，至少包含：

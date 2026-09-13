@@ -16,6 +16,8 @@ description: >-
 本 skill 负责确定实现约束并编写算子源码；正式文档、Host/板端验证、固件构建和烧录由对应 Skill 处理。
 本 skill 不调用这些下游 Skill；完整适配由 `hs-workflow-op-development` 编排。
 
+下文 step 是本 Skill 的内部步骤，不对应顶层 workflow 的 Stage 编号。
+
 ## 工作流总览
 
 ```text
@@ -36,7 +38,7 @@ description: >-
 顶层 workflow 必须分两次调用 prepare/apply，中间调用 `hs-design-op-manual mode=integrated-initial`；
 本 skill 不自行调用文档 Skill。
 
-当顶层 workflow 已在 Stage1 完成唯一环境/SDK/范围确认后，prepare、文档检查衔接、apply、代码审查
+当顶层 workflow 已在 Stage0 完成唯一环境/SDK/范围确认后，prepare、文档检查衔接、apply、代码审查
 和质量检查均由 agent 自动推进，不逐步询问“是否继续”。本 Skill 只有在独立 source-only 调用开始时
 确认输入范围；外部权限、缺失 SDK 或无法判定的事实仍按失败处理规则停下并记录原因。
 
@@ -187,7 +189,7 @@ pre-source 检查，不能把这个例外用于 workflow。
 记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`。该规范不是用户需要安装的工具。每一层动笔前完成逐规则审计。之后按
 `references/implementation-guide.md` 的对应小节实施；INT8 和 fusion 另读各自 reference。
 `PRE_SOURCE_GATE=PASS` 前不能写源码；实现约定、能力清单、op_spec 或初版文档变化时停止并回到
-Stage2，不能先改代码再补文档。完整属性审计、七层模板和接口检查见
+Stage1，不能先改代码再补文档。完整属性审计、七层模板和接口检查见
 [`references/implementation-detail.md`](references/implementation-detail.md)。
 
 ## step5：编码后交叉代码审查

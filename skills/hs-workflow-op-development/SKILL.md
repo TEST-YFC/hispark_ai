@@ -26,29 +26,32 @@ description: >-
 完整成功路径如下：
 
 ```text
-1. Stage1 范围和环境（只读） -> 一次 EXECUTION_CONFIRM_GATE
-2. Stage2 prepare -> integrated-initial -> PRE_SOURCE_GATE
-3. Stage3 apply -> IMPLEMENT_GATE
-4. Stage4 构建 MindSpore Lite 工具包 -> MSLITE_PKG
-5. Stage5 Host 全量验证 -> HOST_VERIFY_GATE
-6. Stage6 AUTO_ALL 固件矩阵 -> FIRMWARE_CONTENT_GATE
-7. Stage7 AUTO_ALL 烧录、串口和板端精度 -> BOARD_MATRIX_GATE
-8. Stage8 终态文档回填 -> terminal.report/finalize
+Stage0 范围和环境（只读） -> 一次 EXECUTION_CONFIRM_GATE
+Stage1 prepare -> integrated-initial -> PRE_SOURCE_GATE
+Stage2 apply -> IMPLEMENT_GATE
+Stage3 构建 MindSpore Lite 工具包 -> MSLITE_PKG
+Stage4 Host 全量验证 -> HOST_VERIFY_GATE
+Stage5 AUTO_ALL 固件矩阵 -> FIRMWARE_CONTENT_GATE
+Stage6 AUTO_ALL 烧录、串口和板端精度 -> BOARD_MATRIX_GATE
+Stage7 终态文档回填 -> terminal.report/finalize
 ```
 
-状态机任务 ID 与对外阶段编号一致，统一使用 `stage1` 到 `stage8`。Stage8 包含终态文档回填和最终报告，
-必须等 Stage6、Stage7 到达终态后才启动。编号只保留一套，命令、待办、状态文件和文档使用同一名称。
-本次编号统一后状态 schema 为 2；已有 schema=1 的运行记录不能直接恢复，请用新的 `RUN_ID` 重新开始。
-Stage8 在主流程中排在 Stage6 和 Stage7 之后，必须等这两个阶段到达终态后才启动。`HOST_ONLY` 时，Stage6/Stage7 记为
+状态机任务 ID 与对外阶段编号一致，统一使用 `stage0` 到 `stage7`。Stage7 包含终态文档回填和最终报告，
+必须等 Stage5、Stage6 到达终态后才启动。编号只保留一套，命令、待办、状态文件和文档使用同一名称。
+当前状态 schema 为 3；schema=1/2 的运行记录不能直接恢复，请保留原记录并用新的 `RUN_ID` 重新开始，不要手工替换状态文件中的编号。
+`HOST_ONLY` 时，Stage5/Stage6 记为
 `NOT_REQUESTED`，然后同样进入终态文档和报告。
 
 下面是入口速查，不改变任何步骤、门禁或证据要求：
 
 ```text
-init -> Stage1 只读探测/一次确认 -> Stage2 -> Stage3 -> Stage4 -> Stage5
-AUTO_ALL -> Stage6 -> Stage7 -> Stage8 -> terminal.report/finalize
-HOST_ONLY -> Stage6/Stage7=NOT_REQUESTED -> Stage8 -> terminal.report/finalize
+init -> Stage0 只读探测/一次确认 -> Stage1 -> Stage2 -> Stage3 -> Stage4
+AUTO_ALL -> Stage5 -> Stage6 -> Stage7 -> terminal.report/finalize
+HOST_ONLY -> Stage5/Stage6=NOT_REQUESTED -> Stage7 -> terminal.report/finalize
 ```
+
+Stage 表示顶层阶段；`stage1.plan`、`stage1.initial_docs` 等是同一阶段内按顺序完成、分别保存证据的任务，不能合并或跳过。
+专项 Skill 的 `step0`、`step1` 等只表示其内部步骤，数字不对应顶层 Stage；跨 Skill 提到 step 时写明所属 Skill。
 
 固定顺序不能交换：`hs-dev-op-implement mode=prepare` 必须先于
 `hs-design-op-manual mode=integrated-initial`，后者必须先于
@@ -75,7 +78,7 @@ HOST_ONLY -> Stage6/Stage7=NOT_REQUESTED -> Stage8 -> terminal.report/finalize
 | “只生成 X 的文档”或“用本 workflow 新生成 X 文档” | `hs-design-op-manual` | 已有算子产物使用 `artifact-sync`；不实现、不构建、不运行板测 |
 
 若请求同时包含“实现/适配”与任意测试、编译、文档、WS63、烧录或板测，不得降级为
-`hs-dev-op-implement`。只说“实现算子”且范围不清时先按完整 workflow 进入 Stage1，用户可在
+`hs-dev-op-implement`。只说“实现算子”且范围不清时先按完整 workflow 进入 Stage0，用户可在
 唯一确认回复中改为明确的专项范围。
 
 ## 用户可见阶段
@@ -85,16 +88,16 @@ HOST_ONLY -> Stage6/Stage7=NOT_REQUESTED -> Stage8 -> terminal.report/finalize
 ```markdown
 状态: stage<n> 进行中
 待办:
-- [ ] Stage1 确定范围、模式和环境（内部任务：`stage1.*`）
-- [ ] Stage2 prepare、初版文档和 PRE_SOURCE_GATE（内部任务：`stage2.*`）
-- [ ] Stage3 源码实现、代码审查和 IMPLEMENT_GATE（内部任务：`stage3.*`）
-- [ ] Stage4 MSLITE_PKG（内部任务：`stage4.*`）
-- [ ] Stage5 Host 全量验证（内部任务：`stage5.*`）
-- [ ] Stage6 默认固件矩阵；Stage7 默认烧录、串口和板端精度
-- [ ] Stage8 终态文档和最终报告（任务：`stage8.final_docs`、`terminal.report`）
+- [ ] Stage0 确定范围、模式和环境（内部任务：`stage0.*`）
+- [ ] Stage1 prepare、初版文档和 PRE_SOURCE_GATE（内部任务：`stage1.*`）
+- [ ] Stage2 源码实现、代码审查和 IMPLEMENT_GATE（内部任务：`stage2.*`）
+- [ ] Stage3 MSLITE_PKG（内部任务：`stage3.*`）
+- [ ] Stage4 Host 全量验证（内部任务：`stage4.*`）
+- [ ] Stage5 默认固件矩阵；Stage6 默认烧录、串口和板端精度
+- [ ] Stage7 终态文档和最终报告（任务：`stage7.final_docs`、`terminal.report`）
 ```
 
-`terminal.report` 是 Stage8 的收尾子步骤，使用 `finalize` 命令写入。
+`terminal.report` 是 Stage7 的收尾子步骤，使用 `finalize` 命令写入。
 
 ## 待办、状态和证据
 
@@ -114,9 +117,9 @@ python <skill>/scripts/workflow_state.py init \
   --state-dir <opdir>/.workflow-state/<RUN_ID> \
   --operator <算子名> --run-id <RUN_ID> --mode AUTO_ALL \
   --sdk-root <用户明确提供的固件SDK绝对路径>
-# init 输出 stage1.scope_environment 的 ATTEMPT_TOKEN
+# init 输出 stage0.scope_environment 的 ATTEMPT_TOKEN
 python <skill>/scripts/workflow_state.py finish \
-  --state-dir <STATE_DIR> --run-id <RUN_ID> --task stage1.scope_environment \
+  --state-dir <STATE_DIR> --run-id <RUN_ID> --task stage0.scope_environment \
   --attempt-token <INIT_TOKEN> --status PASS --evidence <本轮只读探测绝对路径>
 python <skill>/scripts/workflow_state.py confirm \
   --state-dir <STATE_DIR> --run-id <RUN_ID> --phrase "确认执行" \
@@ -130,12 +133,12 @@ python <skill>/scripts/workflow_state.py finalize --state-dir <STATE_DIR> --run-
 
 状态机拒绝空证据、乱序、损坏文件、模板占位符、锁超时、run ID 不一致和陈旧 token；
 失败会阻止后续任务，`retry`/`resume` 会使旧证据失效。只要有 `RUNNING/PENDING/NOT_RUN`，
-整体就不能判 PASS；先把 `terminal.report` 保存到文件。`stage1.confirm` 是本轮唯一确认，
+整体就不能判 PASS；先把 `terminal.report` 保存到文件。`stage0.confirm` 是本轮唯一确认，
 确认后不再询问普通阶段。
 
-## Stage1：确定范围、环境并完成一次确认
+## Stage0：确定范围、环境并完成一次确认
 
-Stage1 只读探测，不生成文档、源码、测试模型、Micro 工程或固件，不安装、下载、构建、烧录，
+Stage0 只读探测，不生成文档、源码、测试模型、Micro 工程或固件，不安装、下载、构建、烧录，
 也不启动后台长任务。必须区分代码存储、MSLite 执行、固件编译和设备 I/O 环境；字段包括：
 
 ```text
@@ -154,25 +157,25 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 在哪里执行。版本不足的
 候选环境标记`BLOCKED`。Windows 串口要用 `.NET SerialPort.GetPortNames()`、注册表和有界
 `pnputil` 交叉检查，不能只依赖 WMI。完整顺序和用户预览模板见
-[`references/stage1-environment.md`](references/stage1-environment.md)。
+[`references/stage0-environment.md`](references/stage0-environment.md)。
 
 默认完整流程必须由用户提供 `FIRMWARE_SDK_ROOT`；缺少`FIRMWARE_SDK_ROOT`时只询问该绝对路径，
 不得搜索磁盘、环境变量或历史记录替用户选择。收到路径后再自动判断其存储、构建和设备 I/O 环境。
 只有用户明确说“只做Host/不上板/不烧录”时才用 `HOST_ONLY`。
 
-唯一确认规则（Stage1）：
+唯一确认规则（Stage0）：
 
-- 人工只在 Stage1 确认范围、用户 SDK 绝对路径和执行模式；确认前只读。
+- 人工只在 Stage0 确认范围、用户 SDK 绝对路径和执行模式；确认前只读。
 - AUTO_ALL 缺 SDK 时，同一条用户回复同时给路径和确认；agent 先完成剩余只读探测并用 init token
-  `finish stage1.scope_environment`，再调用 `confirm --confirmed-mode AUTO_ALL --sdk-root ...`。
+  `finish stage0.scope_environment`，再调用 `confirm --confirmed-mode AUTO_ALL --sdk-root ...`。
 - 初始 AUTO_ALL 回复改选 HOST_ONLY 时，废弃未确认 run，以新 `RUN_ID` 初始化 HOST_ONLY、完成
-  Stage1，再复用同一回复确认；不得在 AUTO_ALL run 上直接切换模式，也不得二次询问。
+  Stage0，再复用同一回复确认；不得在 AUTO_ALL run 上直接切换模式，也不得二次询问。
 - `EXECUTION_CONFIRM_GATE（一次总确认；确认前只读）` 在确认前为 `EXECUTION_CONFIRM_GATE=PENDING`，
   成功后为 `EXECUTION_CONFIRM_GATE=PASS`；`--confirmed-mode` 必须与 `mode` 一致，
   `confirmation_count=1`。不得把“生成某算子”或仅提供 SDK 路径当成确认。
 - 确认后文档、代码、审查、构建、Host、固件、烧录、串口和回填全部由 agent 自动完成，不再逐阶段询问。
 
-Stage1 的完整探测、环境准备分流、依赖自动修复和安装/CLI 回退见
+Stage0 的完整探测、环境准备分流、依赖自动修复和安装/CLI 回退见
 [`references/environment-prep.md`](references/environment-prep.md)。若环境或端口仍需要人工决定，只记录
 `BLOCKED/NOT_RUN` 和恢复条件，不把未执行写成 PASS。`缺失依赖自动修复`遵循该 reference：
 不能只
@@ -180,7 +183,7 @@ Stage1 的完整探测、环境准备分流、依赖自动修复和安装/CLI �
 自动安装和验证均失败时才阻塞。构建或长测试环境身份变化时生成新`RUN_ID`。ONNX必须同时具备
 `onnx`和`onnxruntime`。
 
-执行确认预览必须先用普通中文展示以下内容，再放技术记录；模板完整版本在 Stage1 reference：
+执行确认预览必须先用普通中文展示以下内容，再放技术记录；模板完整版本在 Stage0 reference：
 
 ```text
 执行方式：完整开发和验证（默认）
@@ -195,7 +198,7 @@ Stage1 的完整探测、环境准备分流、依赖自动修复和安装/CLI �
 技术记录：STAGE0_PREVIEW=READY；BOARD_POLICY=AUTO_ALL；EXECUTION_CONFIRM_GATE=PENDING
 ```
 
-## Stage2：文档先行的规划检查
+## Stage1：文档先行的规划检查
 
 只有 `EXECUTION_CONFIRM_GATE=PASS` 才进入。严格执行：
 
@@ -211,11 +214,11 @@ gate_artifacts.py --stage pre-source
 prepare 期间禁止源码写入；初版设计/验证文档、facts、实现约定、能力清单和计划版
 `op_spec.py` 必须来自同一冻结输入；每条计划 case 必须包含明确且非空的 `test_point`。`PRE_SOURCE_GATE=PASS` 前不能调用
 `hs-dev-op-implement mode=apply`。不能先改代码再更新草稿；规格、实现约定、能力或计划用例变化时返回
-Stage2 完整重跑。详细产物和哈希校验见 [`references/stage2-plan.md`](references/stage2-plan.md)。
+Stage1 完整重跑。详细产物和哈希校验见 [`references/stage1-plan.md`](references/stage1-plan.md)。
 
-## Stage3：实现源码
+## Stage2：实现源码
 
-进入 `stage3.implementation` 后调用 `hs-dev-op-implement mode=apply`，并传递冻结的
+进入 `stage2.implementation` 后调用 `hs-dev-op-implement mode=apply`，并传递冻结的
 implementation unit、全部生成文件的哈希和 `HISPARK_ROOT`。只有 `PRE_SOURCE_GATE=PASS` 才能写源码；
 先按名称加载 `hs-dev-op-implement`，由它在实现前完整读取自身的以下文件：
 
@@ -226,11 +229,11 @@ implementation unit、全部生成文件的哈希和 `HISPARK_ROOT`。只有 `PR
 `hs-dev-op-implement`，不是用户需要单独安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别保存，不能代写 Host 或正式文档。
 规范路径必须展开为绝对路径并记录其 SHA-256；它不是用户需要安装的工具。
 `apply` 中不得在源码阶段直接
-修改已锁定的实现约定；若实现约定、能力清单、计划 `op_spec.py` 或初版文档变化，必须返回 Stage2 重新确定，不能先改代码再更新草稿。
+修改已锁定的实现约定；若实现约定、能力清单、计划 `op_spec.py` 或初版文档变化，必须返回 Stage1 重新确定，不能先改代码再更新草稿。
 
-## Stage4：构建 MindSpore Lite 工具包
+## Stage3：构建 MindSpore Lite 工具包
 
-启动 `stage4.mslite_build` 后读取
+启动 `stage3.mslite_build` 后读取
 [`references/build-and-toolchain.md`](references/build-and-toolchain.md)。它负责
 `converter_lite`、RISC-V Micro 库、受控构建、后台 `--wait`、构建新鲜度和失败分诊；这一步不同于
 `hs-dev-build` 的 fbb 固件构建。构建前 workflow 必须用同一`CODE_STYLE_SOURCE`重跑
@@ -248,38 +251,38 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 `libmindspore_converter.so` 缺失、其他MSLite包路径污染或环境身份变化时，在同一子进程自动修复；
 不能让用户手工`export`，不修改`.bashrc`；需要重新构建/下载时使用新`RUN_ID`。
 
-## Stage5：Host 全量验证
+## Stage4：Host 全量验证
 
-进入 `stage5.host_verify` 后调用 `hs-verify-op-host`，读取并执行 Stage2 已锁定的完整
+进入 `stage4.host_verify` 后调用 `hs-verify-op-host`，读取并执行 Stage1 已锁定的完整
 `op_spec.py`；不把Host阶段当成正常改写计划用例的阶段。必须先通过 `pre-verify`/validator，
 再用 `--target all` 运行固定 harness，生成含逐 case 测试点的 `verify_summary.txt`、
 `board_expected_matrix.json`、两份 Excel 和逐 case 证据。Host 失败时，按实现、模型/spec 或工具链类别返回对应阶段，
 不能用部分 PASS 缩小分母。细节按 Host Skill 的 references 按需读取。
 
-## Stage6：AUTO_ALL 固件矩阵
+## Stage5：AUTO_ALL 固件矩阵
 
-仅 `AUTO_ALL` 进入；`HOST_ONLY` 将 Stage6/Stage7 标记 `NOT_REQUESTED`。读取
+仅 `AUTO_ALL` 进入；`HOST_ONLY` 将 Stage5/Stage6 标记 `NOT_REQUESTED`。读取
 [`references/board-orchestration.md`](references/board-orchestration.md) 和
 `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`，按
 `framework -> case_id -> mode(fp32,int8)` 逐行准备 Micro 工程、adaptor、Sample、CMake/Kconfig
 和 target，交给 `hs-dev-build`，再由 Board Skill 验收 `FIRMWARE_CONTENT_GATE=PASS`。不得挑代表 case；
 `board_expected_matrix.json` 是唯一分母。
 
-## Stage7：烧录、串口和板端精度
+## Stage6：烧录、串口和板端精度
 
-每个 Stage6 新鲜 fwpkg 交给 `hs-dev-flash`，再由 `hs-verify-op-board` 采集完整 Tensor 并运行
+每个 Stage5 新鲜 fwpkg 交给 `hs-dev-flash`，再由 `hs-verify-op-board` 采集完整 Tensor 并运行
 `board_accuracy.py`。端口探测、flash JSON、串口时间、shape/元素数、余弦和
 `board_matrix_report.py` 的逐行规则由 [`references/board-orchestration.md`](references/board-orchestration.md)
 及 Board Skill 持有；不得以启动日志、标签、少数 case 或单一 PASS 代表完整验证。
 确认后默认自动执行，不再询问“是否要上板”；只有端口歧义、设备 RESET 或其他外部条件异常时，
 才按对应 Skill 记录 `NOT_RUN/BLOCKED` 和恢复动作。
 
-## Stage8：终态文档回填和最终报告
+## Stage7：终态文档回填和最终报告
 
-Stage6/Stage7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 终态后，进入
-这个任务。若 Stage1 在执行确认前阻断，状态机会自动将它标为
+Stage5/Stage6 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 终态后，进入
+这个任务。若 Stage0 在执行确认前阻断，状态机会自动将它标为
 `BLOCKED`，只让 `terminal.report` 做状态收尾：记录阻断原因、恢复条件和状态证据，不调用
-`hs-design-op-manual`，也不生成或覆盖正式交付文档。只有 Stage1 已完成
+`hs-design-op-manual`，也不生成或覆盖正式交付文档。只有 Stage0 已完成
 确认后，才调用 `hs-design-op-manual mode=integrated-final`：所有必需阶段通过（HOST_ONLY 的板端为
 `NOT_REQUESTED`）使用 `terminal_state=completed`；任一后续阶段为 `FAIL|BLOCKED|NOT_RUN` 时使用
 `terminal_state=blocked|hard-stop`，并在验证文档明确原因。记录性文档不能宣称完整通过。两份文档
@@ -308,11 +311,11 @@ Stage6/Stage7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN
 |---|---|
 | 状态初始化、恢复、重试 | [`references/workflow-state.md`](references/workflow-state.md) |
 | 待办模板（Markdown/JSON） | [`references/workflow-todo.template.md`](references/workflow-todo.template.md)、[`references/workflow-todo.template.json`](references/workflow-todo.template.json) |
-| Stage1 探测、确认模板 | [`references/stage1-environment.md`](references/stage1-environment.md) |
+| Stage0 探测、确认模板 | [`references/stage0-environment.md`](references/stage0-environment.md) |
 | 固件环境准备和 CLI 回退 | [`references/environment-prep.md`](references/environment-prep.md) |
-| Stage2 prepare、文档和 pre-source | [`references/stage2-plan.md`](references/stage2-plan.md) |
-| Stage4 工具链 | [`references/build-and-toolchain.md`](references/build-and-toolchain.md) |
-| Stage6/Stage7 顶层衔接 | [`references/board-orchestration.md`](references/board-orchestration.md) |
+| Stage1 prepare、文档和 pre-source | [`references/stage1-plan.md`](references/stage1-plan.md) |
+| Stage3 工具链 | [`references/build-and-toolchain.md`](references/build-and-toolchain.md) |
+| Stage5/Stage6 顶层衔接 | [`references/board-orchestration.md`](references/board-orchestration.md) |
 | Board 构建 handoff | `hs-verify-op-board` 内的 `references/ws63-build-handoff.md` |
 | Board 烧录与串口交接 | `hs-verify-op-board` 内的 `references/flash-serial-handoff.md` |
 | Board 精度与矩阵规则 | `hs-verify-op-board` 内的 `references/board-accuracy-contract.md` |

@@ -8,7 +8,7 @@
 
 > 本文件由 `hs-workflow-op-development` 按需读取。入口 Skill 只保留最小调用约定；本文件保留完整的状态、证据和恢复规则。
 
-当前状态 schema 为 2，任务 ID 直接对应 `stage1` 到 `stage8`。schema=1 的旧状态使用旧编号，不能直接恢复；需要新建 `RUN_ID`。
+当前状态 schema 为 3，任务 ID 直接对应 `stage0` 到 `stage7`。旧版状态使用旧编号，不能直接恢复；保留旧记录并新建 `RUN_ID`，不要手工替换状态文件中的编号。
 
 ## 本轮待办、检查点和自动续跑
 
@@ -19,7 +19,7 @@
 状态目录应放在本轮算子输出目录的临时子目录（例如
 `<opdir>/.workflow-state/<RUN_ID>/`），不能放在 skill 源目录或其他算子的目录中。
 
-初始化只创建控制性文件，不代表算子产物已经生成，也不绕过 Stage1 的只读限制。用确认的
+初始化只创建控制性文件，不代表算子产物已经生成，也不绕过 Stage0 的只读限制。用确认的
 算子输出根目录生成一个本轮唯一 ID（不能复用历史 ID），并立即执行：
 
 ```text
@@ -29,26 +29,26 @@ python <hs-workflow-op-development>/scripts/workflow_state.py init \
   --sdk-root <用户明确提供的固件SDK绝对路径>
 ```
 
-如果 SDK 路径尚未在用户请求中给出，仍先用 `init` 生成待办，但不要猜测路径；在 Stage1 的
+如果 SDK 路径尚未在用户请求中给出，仍先用 `init` 生成待办，但不要猜测路径；在 Stage0 的
 唯一一次人工交互中同时索取 SDK 绝对路径和执行范围确认。收到这一条回复后，agent 先用该路径
-自动完成剩余只读探测并 `finish` Stage1，再立即把同一条回复写入 `confirm`，不得二次询问。
+自动完成剩余只读探测并 `finish` Stage0，再立即把同一条回复写入 `confirm`，不得二次询问。
 AUTO_ALL 没有用户 SDK 路径时，状态机拒绝确认，不能以缺失路径继续。若用户在最初请求中已经
 明确选择仅电脑端，直接以 `--mode HOST_ONLY` 初始化；若是在默认 AUTO_ALL 预览的唯一回复中
 改选仅电脑端，则自动废弃尚未确认的 run，以新 `RUN_ID` 和 `HOST_ONLY` 重新 `init`、完成并
-`finish` Stage1，再用同一条回复执行 `confirm --confirmed-mode HOST_ONLY`，不得二次询问，也不得
+`finish` Stage0，再用同一条回复执行 `confirm --confirmed-mode HOST_ONLY`，不得二次询问，也不得
 在 AUTO_ALL run 上直接切换模式。不能因为没有板卡就自行切换该模式。`init` 必须同时生成
 `workflow_state.json`、`workflow_todo.md` 和
-`workflow_events.jsonl`，并把 Stage1 只读探测标为 `RUNNING`。这三个文件均由脚本在同一目录
+`workflow_events.jsonl`，并把 Stage0 只读探测标为 `RUNNING`。这三个文件均由脚本在同一目录
 用临时文件写入后原子替换；状态文件损坏、模板占位符未展开、锁超时或 run ID 不一致时必须
 fail-closed，停止流程并报告原因，不能用旧文件猜测进度。
-`init` 同时输出 Stage1 探测的 `ATTEMPT_TOKEN`；完成该探测时必须原样传回，不能从别的运行取值。
+`init` 同时输出 Stage0 探测的 `ATTEMPT_TOKEN`；完成该探测时必须原样传回，不能从别的运行取值。
 SDK 未在 `init` 时提供时，收到用户唯一一次回复后使用同一轮 ID，严格按下面顺序执行：
 
 ```text
 <使用回复中的 SDK 路径自动完成 fbb/SDK/目标/端口等剩余只读探测>
 python <skill>/scripts/workflow_state.py finish \
-  --state-dir <STATE_DIR> --run-id <RUN_ID> --task stage1.scope_environment \
-  --attempt-token <INIT输出的ATTEMPT_TOKEN> --status PASS --evidence <本轮Stage1探测回执绝对路径>
+  --state-dir <STATE_DIR> --run-id <RUN_ID> --task stage0.scope_environment \
+  --attempt-token <INIT输出的ATTEMPT_TOKEN> --status PASS --evidence <本轮Stage0探测回执绝对路径>
 python <skill>/scripts/workflow_state.py confirm \
   --state-dir <STATE_DIR> --run-id <RUN_ID> \
   --phrase "确认执行" --confirmed-mode AUTO_ALL \
@@ -61,21 +61,21 @@ python <skill>/scripts/workflow_state.py confirm \
 
 ### 固定任务顺序和逐步检查
 
-状态机只允许按下面的任务 ID 前进。`stage1.scope_environment` 由 `init` 隐式启动；除它、
-`stage1.confirm`（使用 `confirm`）和 `terminal.report`（使用 `finalize`）外，每一项都必须先 `start`，执行该项的专项 Skill 或确定性
+状态机只允许按下面的任务 ID 前进。`stage0.scope_environment` 由 `init` 隐式启动；除它、
+`stage0.confirm`（使用 `confirm`）和 `terminal.report`（使用 `finalize`）外，每一项都必须先 `start`，执行该项的专项 Skill 或确定性
 脚本，再用 `finish --status PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 写回至少一条本次运行的证据引用；完成一项立即保存，
-不能把多个阶段做完后批量补记。`stage8.final_docs` 在 Stage6、Stage7 到达终态后执行，确保终版文档能记录真实的板端结果。
+不能把多个阶段做完后批量补记。`stage7.final_docs` 在 Stage5、Stage6 到达终态后执行，确保终版文档能记录真实的板端结果。
 
 | 对外阶段 | 任务 ID | 主要检查和最小证据 |
 |---|---|---|
-| Stage1 | `stage1.scope_environment`、`stage1.confirm` | 范围和环境只读探测回执；一次总确认和 `EXECUTION_CONFIRM_GATE=PASS` |
-| Stage2 | `stage2.plan`、`stage2.initial_docs`、`stage2.pre_source_gate` | 实现约定、能力清单、计划 `op_spec.py`、初版文档、facts 和 `PRE_SOURCE_GATE=PASS` |
-| Stage3 | `stage3.implementation`、`stage3.code_review` | 源码 diff、`code-review.md`、质量/安全检查均 PASS |
-| Stage4 | `stage4.mslite_build` | 本轮 `MSLITE_PKG`、构建日志和新鲜度回执 |
-| Stage5 | `stage5.host_verify` | 全量 Host summary、`board_expected_matrix.json`、`HOST_VERIFY_GATE=PASS` |
-| Stage6 | `stage6.firmware_matrix` | 每个 framework/case/mode 独立 fwpkg、接线和固件内容检查 |
-| Stage7 | `stage7.board_matrix` | 每行 flash JSON、串口 Tensor、accuracy 结果和矩阵报告 |
-| Stage8 | `stage8.final_docs`、`terminal.report` | 终版成对文档、facts/content/case audit、逐任务状态和最终报告 |
+| Stage0 | `stage0.scope_environment`、`stage0.confirm` | 范围和环境只读探测回执；一次总确认和 `EXECUTION_CONFIRM_GATE=PASS` |
+| Stage1 | `stage1.plan`、`stage1.initial_docs`、`stage1.pre_source_gate` | 实现约定、能力清单、计划 `op_spec.py`、初版文档、facts 和 `PRE_SOURCE_GATE=PASS` |
+| Stage2 | `stage2.implementation`、`stage2.code_review` | 源码 diff、`code-review.md`、质量/安全检查均 PASS |
+| Stage3 | `stage3.mslite_build` | 本轮 `MSLITE_PKG`、构建日志和新鲜度回执 |
+| Stage4 | `stage4.host_verify` | 全量 Host summary、`board_expected_matrix.json`、`HOST_VERIFY_GATE=PASS` |
+| Stage5 | `stage5.firmware_matrix` | 每个 framework/case/mode 独立 fwpkg、接线和固件内容检查 |
+| Stage6 | `stage6.board_matrix` | 每行 flash JSON、串口 Tensor、accuracy 结果和矩阵报告 |
+| Stage7 | `stage7.final_docs`、`terminal.report` | 终版成对文档、facts/content/case audit、逐任务状态和最终报告 |
 
 推荐的机械调用形态如下（每次调用都必须携带同一个 `RUN_ID`）：
 
@@ -91,8 +91,8 @@ python <skill>/scripts/workflow_state.py finish --state-dir <STATE_DIR> --run-id
 必须带终态报告证据。状态脚本会拒绝损坏、空白或多行证据，避免无产物的 PASS。
 
 `finish` 会自动推进到下一个未完成任务；失败会冻结后续执行任务为 `BLOCKED`（板端不可用的
-级联任务明确记 `NOT_RUN`）。若 Stage1 尚未通过执行确认，状态机会同时将
-`stage8.final_docs` 标为 `BLOCKED`，只允许 `terminal.report` 做状态收尾；此时不调用文档 Skill
+级联任务明确记 `NOT_RUN`）。若 Stage0 尚未通过执行确认，状态机会同时将
+`stage7.final_docs` 标为 `BLOCKED`，只允许 `terminal.report` 做状态收尾；此时不调用文档 Skill
 或修改正式文档。确认后的后续失败才按 `integrated-final` 生成记录性文档。
 每次 `start` 都生成新的 `ATTEMPT_TOKEN`；`finish`/`heartbeat` 必须携带同一 token，`retry` 或
 `resume` 会使旧 token 失效，防止旧 worker 覆盖新尝试。短命令行进程不要被误认为长任务 owner；若能取得实际 worker PID，可在 `start` 或 `heartbeat` 时
@@ -109,25 +109,25 @@ python <skill>/scripts/workflow_state.py finish --state-dir <STATE_DIR> --run-id
 
 ### 人工确认边界
 
-人工交互只发生在 Stage1：确认算子范围、运行环境、用户提供的固件 SDK 绝对路径以及一次
+人工交互只发生在 Stage0：确认算子范围、运行环境、用户提供的固件 SDK 绝对路径以及一次
 执行范围（完整流程或明确 Host-only）。调用 `confirm` 时必须显式传入与本轮相同的
 `--confirmed-mode`；状态中的
 `confirmation_count` 固定为 1；任何再次确认都直接报错。之后 agent 必须自动生成两份文档、
 写代码、审查、构建、生成并运行 Host 用例、生成固件、逐项验证并回填文档，不得逐阶段询问
 “是否继续/是否写文档/是否运行验证”。
 确认命令的 `--confirmed-mode` 必须与本轮 `mode` 一致；AUTO_ALL 缺少用户 SDK 路径时，先用
-用户同一条确认回复中的路径完成并落盘 Stage1 只读探测，再在 `confirm` 命令补入
+用户同一条确认回复中的路径完成并落盘 Stage0 只读探测，再在 `confirm` 命令补入
 `--sdk-root`。状态机不会接受无路径的完整流程确认。用户确认原文保存在状态中供审计，不用
 易误判的关键词解析替代结构化范围字段。
 若这条唯一回复把默认 AUTO_ALL 改为 HOST_ONLY，自动用新 `RUN_ID` 重新初始化 HOST_ONLY 并完成
-Stage1，再以同一回复确认；这仍是一次人工交互，不得在旧 run 上调用不匹配的确认模式。
+Stage0，再以同一回复确认；这仍是一次人工交互，不得在旧 run 上调用不匹配的确认模式。
 
 只有安全或外部条件确实无法由 agent 决定时才暂停并记录 `BLOCKED/NOT_RUN`，例如缺少用户
 SDK 路径、环境候选无法唯一选择、端口歧义、设备需要人工 RESET、需要管理员权限或用户明确
 改变范围；这类暂停不是常规阶段确认，也不能把未执行写成 PASS。自动恢复时继续使用同一个
 状态文件和 RUN_ID，不得重新开一轮或读取历史日志冒充证据。
 
-只有用户明确要求Host-only时，Stage6/Stage7标记`NOT_REQUESTED`。默认完整工作流中没有连接
+只有用户明确要求Host-only时，Stage5/Stage6标记`NOT_REQUESTED`。默认完整工作流中没有连接
 板卡、缺少SDK或设备I/O不可用时标记`NOT_RUN`并说明原因，不把它们伪装成PASS，也不否定
 已经完成的Host交付。只要默认流程存在一个`NOT_RUN/PENDING/RUNNING`阶段，整体状态就是
 `INCOMPLETE`，不是PASS；任何必需阶段FAIL时整体状态是FAIL。

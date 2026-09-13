@@ -308,7 +308,7 @@ def write_source_freeze(
         if not rotate_existing:
             raise ValueError(
                 f"source freeze already exists: {path}; start a new plan run with "
-                "--rotate-source-freeze only after the previous stage2 reaches a terminal state"
+                "--rotate-source-freeze only after the previous stage1 reaches a terminal state"
             )
         try:
             previous = json.loads(path.read_text(encoding="utf-8"))

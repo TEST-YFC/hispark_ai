@@ -22,7 +22,7 @@ workflow 返回实现缺陷时，必须持续执行以下根因修复循环：
     ↓
 定位最小根因并修复源码
     ↓
-重跑质量门禁、workflow Stage4重建、Stage5同case及回归矩阵
+重跑质量门禁、workflow Stage3重建、Stage4同case及回归矩阵
 ```
 
 每次循环必须保存本轮 `RUN_ID`、首个真实 `stderr` 和归属阶段；创建新的 `RUN_ID`

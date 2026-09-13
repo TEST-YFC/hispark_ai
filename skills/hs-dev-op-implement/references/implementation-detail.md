@@ -50,7 +50,7 @@ prepare开始时的真实状态，而不是强迫清理用户改动。prepare和
 从而区分“原本已有改动”和“文档生成前偷跑的源码改动”。
 
 `source-freeze.json`绑定本轮`OP_PLAN_RUN_ID`、算子、框架范围和code root；同一轮禁止覆盖。
-只有上一轮Stage2已经结构化终止、workflow明确宣布开始新规划轮次时，才可换新ID并显式传
+只有上一轮Stage1已经结构化终止、workflow明确宣布开始新规划轮次时，才可换新ID并显式传
 `--rotate-source-freeze`，脚本会先把旧receipt归档到`docs/source-freeze-history/`。不得通过
 重新freeze来掩盖本轮prepare期间的源码变化。每个framework都要在首次freeze时列入scope。
 
@@ -154,7 +154,7 @@ python3 "<skill_root>/scripts/gate_artifacts.py" \
 “文档已生成”不算证据。
 
 能力清单、实现约定、op_spec或初版文档后续发生变化时，立即停止apply并回到workflow
-Stage2：重新执行prepare、`integrated-initial`和 pre-source 检查。不能先改源码后补文档。
+Stage1：重新执行prepare、`integrated-initial`和 pre-source 检查。不能先改源码后补文档。
 
 `code-style.md` 是随本 Skill 分发的团队统一 C/C++、CMake 和注册接线编程规范，不是用户需要提前
 安装的工具或环境。在本轮首次修改任何①-⑦源码前，必须完整读取
@@ -196,4 +196,4 @@ opset.` 注释，语义差异另写事实注释。属性审计必须落到 `deci
 新增代码完成后，再对“新增/修改代码 + 已复用代码的接口边界”做一次交叉review：逐条沿
 capability从parser输入走到生成代码调用，确认修改侧与复用侧的字段、dtype、shape、默认属性
 和量化参数没有断层。把新增发现更新到`existing-capability-review.md`；如果发现改变了冻结语义、
-能力或计划用例，必须回到Stage2重新生成初版文档，不能在apply阶段重跑pre-source后继续。
+能力或计划用例，必须回到Stage1重新生成初版文档，不能在apply阶段重跑pre-source后继续。

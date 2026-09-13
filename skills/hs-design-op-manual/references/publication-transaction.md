@@ -77,9 +77,9 @@ python3 <manual_skill_root>/scripts/audit_manual_inputs.py \
 不得残留。不得为取得 PASS 修改 op_spec、capability 或 summary。独立模式不执行 facts audit，
 但也必须先完成 step4 自检，再按同一成对发布与回滚规则更新 `<opdir>/docs/` 中的两个目标。
 
-Stage1 尚未完成执行确认时，父 workflow 的 `stage8.final_docs` 只记录阻断原因、恢复条件和状态证据，
+Stage0 尚未完成执行确认时，父 workflow 的 `stage7.final_docs` 只记录阻断原因、恢复条件和状态证据，
 不调用本 Skill，也不生成或覆盖正式文档；本节 `integrated-final` 的 `record` 发布规则仅适用于
-已经完成 Stage1 确认的运行。
+已经完成 Stage0 确认的运行。
 
 产物集成模式的正式发布必须同时满足：父终态允许发布、产物等级允许发布、facts `provenance=production`、`production_eligible=true`，以及 facts/content/case 三项同步 PASS。
 
