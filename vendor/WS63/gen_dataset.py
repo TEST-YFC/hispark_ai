@@ -314,6 +314,31 @@ def _onnx_infer(ort_session, input_data_dict):
     outputs = ort_session.run(None, input_data_dict)
     return outputs
 
+def _make_matmulinteger_ort_compatible(model):
+    changed = False
+    new_nodes = []
+    for node in model.graph.node:
+        if node.op_type == 'MatMulInteger' and len(node.input) == 2:
+            a, b, y = node.input[0], node.input[1], node.output[0]
+            a_f, b_f, y_f = a + '_mi_af', b + '_mi_bf', y + '_mi_yf'
+            new_nodes.append(onnx.helper.make_node(
+                'Cast', [a], [a_f], to=onnx.TensorProto.FLOAT))
+            new_nodes.append(onnx.helper.make_node(
+                'Cast', [b], [b_f], to=onnx.TensorProto.FLOAT))
+            new_nodes.append(onnx.helper.make_node(
+                'MatMul', [a_f, b_f], [y_f]))
+            new_nodes.append(onnx.helper.make_node(
+                'Cast', [y_f], [y], to=onnx.TensorProto.INT32))
+            changed = True
+        else:
+            new_nodes.append(node)
+    if changed:
+        print("检测到ORT不支持的MatmulInteger, "
+              "已在临时副本中替换为等效浮点子图(Cast->MatMul->Cast)")
+        del model.graph.node[:]
+        model.graph.node.extend(new_nodes)
+    return model
+
 def load_onnx_model(onnx_file_path):
     try:
         # Attempt to load the ONNX model directly
@@ -324,6 +349,8 @@ def load_onnx_model(onnx_file_path):
         print("尝试转换 ONNX 模型版本...")
         # Load the original model
         model = onnx.load(onnx_file_path)
+        # 若含ORT未注册的MatmulInteger, 在临时副本中替换为等效浮点子图
+        model = _make_matmulinteger_ort_compatible(model)
         # Check and adjust the IR version (if it is too high)
         if model.ir_version > 11:
             print(f"原始模型 IR 版本: {model.ir_version}, 降级到 11")

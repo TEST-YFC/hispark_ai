@@ -488,7 +488,7 @@ main_build() {
         if [ -d "$model_dir" ]; then
             model=$(basename "$model_dir")
             echo "Found model: $model"
-            if ! [[ "$model" =~ ^(NeuralNetwork|MathModel)(_tf)?$ ]]; then
+            if ! [[ "$model" =~ ^(NeuralNetwork|MathModel|CascadeModel)(_tf)?$ ]]; then
                 echo "Skipping model: $model (not in allowed list)"
                 continue
             fi
