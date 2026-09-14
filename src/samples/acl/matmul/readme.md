@@ -521,7 +521,7 @@ bash ${SAMPLE_PATH}/acl/matmul/build_npu.sh 3322
 
 使用BurnTool工具将fwpkg镜像文件烧录到HiDiTing单板，以端口烧录为例
 
-1. 在Debugkits中依次选择 Option / Change chip，选择HiDiTing
+1. 在Debugkits中依次选择 Option / Change chip，选择Hi3322
 
 2. 在COM中选择烧录用的端口，点击Select file按钮，选择fwpkg镜像文件
 
