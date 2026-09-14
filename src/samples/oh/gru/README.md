@@ -4,9 +4,9 @@
 Gru固定词识别Sample基于Google开源的Open-Speech数据集以及ARM Softmax开源的KWS-MCU Benchmark的开源GRU模型，为海思智能终端芯片提供适配的量化，模型转换以及端侧部署的Sample。客户可以基于此Sample为范式迁移部署相应的固定词识别模型。
 
 支持的芯片列表如下：
-- **Hi3863**: 基于MSLite-Micro平台进行模型部署，依靠RISC-V CPU核进行AI推理。
-- **Hi3322**: 基于CANN平台进行模型部署，依靠Nano NPU核进行AI推理。
-- **Hi1156**: 基于CANN平台进行模型部署，依靠Tiny NPU核进行AI推理。
+- **WS63**: 基于 MindSpore Lite 工具链（CPU 平台）部署，依靠 RISC-V CPU 核进行 AI 推理。
+- **HiDiTing**: 基于 CANN 工具链（NPU 平台）部署，依靠 Nano NPU 核进行 AI 推理。
+- **Hi1156**: 基于 CANN 工具链（NPU 平台）部署，依靠 Tiny NPU 核进行 AI 推理。
 
 ## 数据处理 & 量化指南
 ### 预处理
@@ -22,12 +22,12 @@ python scripts/preproc_wav_data.py --data_root_dir ./data/origin_data --quant_da
 Tips:
 1. 如果为Nano、Tiny平台需要在之后加上 [--fp16 true] 选项，RISC-V平台则不需要。
 2. 网络问题导致下载出现问题，可以手动创建./data/origin_data文件夹，并下载数据包 [speech_commands_v0.02.tar.gz](http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz)到origin_data下，再执行脚本。
-3. 由于MSLite Micro平台限制，最大处理65535组数据，因此在MSLite Micro平台上对sample_num进行裁剪，指定为2593。(共25个timestamp，每个timestamp产生一组输入数据)
+3. 由于MindSpore Lite平台限制，最大处理65535组数据，因此在MindSpore Lite平台上对sample_num进行裁剪，指定为2593。(共25个timestamp，每个timestamp产生一组输入数据)
 
 ### 模型量化
 
 - **RISC-V平台量化指南**
-1. 准备MindSpore资源包
+1. 准备 MindSpore Lite 资源包
 2. 准备micro_quant.cfg文件：
 ```
 [micro_param]
@@ -137,7 +137,7 @@ atc --model=./model/GRU_S_STREAM.onnx --framework=5 --output=./output/GRU_S --in
 - ./output/GRU_S.om
 
 ## RISC-V平台编译指南
-1. 获取Hi3863 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
+1. 获取WS63 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
     路径如下表示解压成功，且目录正确：
     {SDK_PATH}
         |---- application
@@ -154,7 +154,7 @@ atc --model=./model/GRU_S_STREAM.onnx --framework=5 --output=./output/GRU_S --in
         |---- include
 3. 获取此HiSpark.AI Samples包
 4. 根据业务修改Sample包，根据下方新版本Sample的说明
-5. 将HiSpark.AI MSLite Micro工具链编译出的libmicro_runtime.a libnet.a复制到SDK的路径下
+5. 将HiSpark.AI MindSpore Lite工具链编译出的libmicro_runtime.a libnet.a复制到SDK的路径下
         即${SDK_PATH}/middleware/utils/ai_mcu/lib目录下，若目录不存在则需要创建此目录
 6. 在命令行输入：
 ```
@@ -164,10 +164,20 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 ```
 7. 获取编译成功的fwpkg文件，在${SDK_PATH}/output/ws63/fwpkg/ws63-liteos-app/ws63-liteos-app_all.fwpkg路径下
 
-## 成功运行信息
+**烧录调试**
+1. 使用[BurnTool工具](https://developers.hisilicon.com/cn/developerTool)将编译生成的fwpkg镜像烧录到WS63单板
+2. 烧录成功运行后，会看到串口打印的推理结果信息，Gru打印如下：
+    ```
+    [AI_MCU] Get Tcxo Time 115 ms
+    [AI_MCU] Data size: [48]
+    Shape: [1 12 ]
+    DataType: 43
+    [AI_MCU] Data: [0.95731][0.00266][0.00294][0.00590][0.00286][0.00374][0.00285][0.00685][0.00231][0.00307][0.00654][0.00292]
+    [AI_MCU] ai_mcu_sample_process
+    ```
 
 ## Nano平台编译指南
-1. 获取Hi3322 SDK的代码，保存在用户指定路径
+1. 获取HiDiTing SDK的代码，保存在用户指定路径
     路径如下表示解压成功，且目录正确：
     {SDK_PATH}
         |---- application
@@ -200,7 +210,7 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 3322
 5. 获取编译成功的fwpkg文件，在{SAMPLE_PATH}/oh/gru/output路径下
 
 **烧录指南**
-1. 使用burntool工具将fwpkg镜像烧录到3322单板
+1. 使用burntool工具将fwpkg镜像烧录到HiDiTing单板
 
 **文件上传指南**
 1. 使用Debugkits工具将输入数据上传到板端如下路径/user/sample_mfcc.bin
@@ -296,14 +306,12 @@ samples
 │   │       └── CMakeLists.txt
 │   └── ......
 └── README.md
-- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。Hi3863 以及 Hi3322的SDK下载链接为(https://xxx)。
+- **build.sh脚本**: 用于编译Sample模型。需要配置对应的SDK_PATH 以及 ADAPTOR_PATH。
 - **CMakeLists.txt**: Sample的编译框架，C代码实现。
 - **model目录**: 用于存放对应的onnx原始模型。
 - **scripts目录**: 用于存放对应的数据处理脚本，自动生成量化以及验证数据。
 - **src文件夹**: 用于存放板端推理源文件源码。
 - **README**: 此Sample的介绍。
-
-## 资源下载链接
 
 ## 常见问题
 若出现GLIBC环境不符，或者python环境不符，依次配置gcc环境，python3.11环境，将libstdc++ / libpython的动态链接库添加到LD_LIBRARY_PATH中
