@@ -247,14 +247,16 @@ static Result CreateOutputDataset(MemInfo *memInfo, void **outputAddr)
 static void GetInputAddr(void **inputAddr)
 {
     inputAddr[GRU_MODEL_INPUT] = g_modelInput;
-    inputAddr[GRU_MODEL_INPUT_HIDDEN] = (char *)g_modelHidden + g_inputSize[GRU_MODEL_INPUT_HIDDEN] * (g_memSwitch ? 1 : 0);
+    inputAddr[GRU_MODEL_INPUT_HIDDEN] = (char *)g_modelHidden + \
+        g_inputSize[GRU_MODEL_INPUT_HIDDEN] * (g_memSwitch ? 1 : 0);
 }
 
 // 获取输出数据地址
 static void GetOutputAddr(void **outputAddr)
 {
     outputAddr[GRU_MODEL_OUTPUT] = g_modelOutput;
-    outputAddr[GRU_MODEL_OUTPUT_HIDDEN] = (char *)g_modelHidden + g_outputSize[GRU_MODEL_OUTPUT_HIDDEN] * (g_memSwitch ? 0 : 1);
+    outputAddr[GRU_MODEL_OUTPUT_HIDDEN] = (char *)g_modelHidden + \
+        g_outputSize[GRU_MODEL_OUTPUT_HIDDEN] * (g_memSwitch ? 0 : 1);
 }
 
 // 从文件中读取输入数据

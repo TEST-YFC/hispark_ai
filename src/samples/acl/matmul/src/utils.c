@@ -64,7 +64,8 @@ Result LoadModel(ModelInfo *modelInfo, const char *modelPath, const char *modelI
 {
     aclError ret;
     MemInfo *memInfo = &modelInfo->memInfo;
-    if (strlen(modelPath) >= MAX_FILE_NAME_LEN || strlen(modelInputFile) >= MAX_FILE_NAME_LEN || strlen(modelOutputFile) >= MAX_FILE_NAME_LEN) {
+    if (strlen(modelPath) >= MAX_FILE_NAME_LEN || strlen(modelInputFile) >= MAX_FILE_NAME_LEN ||
+        strlen(modelOutputFile) >= MAX_FILE_NAME_LEN) {
         osal_printk("File path is too long\n");
         return FAILED;
     }
