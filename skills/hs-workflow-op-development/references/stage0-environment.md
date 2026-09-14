@@ -1,5 +1,7 @@
 # Stage0 环境探测与确认细则
 
+> 本文件对应 Stage0，任务 ID 使用 `stage0.*`。
+
 ## 目录
 
 - [冻结范围和环境](#stage0冻结范围和环境)
@@ -9,7 +11,7 @@
 
 > 仅在 Stage0 需要环境判断、用户确认模板或依赖修复时读取。探测仍必须先由入口状态机初始化并记录。
 
-## stage0：冻结范围和环境
+## Stage0：冻结范围和环境
 
 进入Stage0的第一项动作是按 [`workflow-state.md`](workflow-state.md) 中的 `init` 约定运行
 `scripts/workflow_state.py init`，生成本轮待办和临时检查点；
@@ -18,11 +20,11 @@ implementation unit 候选、代码根、`MSLITE_OP_OUTPUT`、板测策略、板
 Skill 的可用性，并在 `stage0.scope_environment` 完成后立即 `finish`。完整workflow默认
 `BOARD_POLICY=AUTO_ALL`；只有用户明确说“只做Host/不上板/不烧录”才记录
 `BOARD_POLICY=HOST_ONLY`。Stage0只完成只读探测和计划生成；在`EXECUTION_CONFIRM_GATE=PASS`
-前禁止进入stage1，禁止调用下游生成/实现/验证Skill；禁止创建或修改算子文档、源码、测试模型、Micro工程、SDK接线和固件，
+前禁止进入Stage1，禁止调用下游生成/实现/验证Skill；禁止创建或修改算子文档、源码、测试模型、Micro工程、SDK接线和固件，
 禁止安装、下载、构建、烧录或启动后台长任务。
 若 `stage0.scope_environment` 以失败或阻断结束且尚未通过确认，状态机会自动将
-`stage5.final_docs` 标为 `BLOCKED`，只允许 `terminal.report` 写入阻断运行的失败原因、恢复命令和状态证据；此例外不得生成或修改
-算子设计/验证交付文档，常规终版文档回填仍须在确认通过且 stage6、stage7 到达终态后执行。
+`stage7.final_docs` 标为 `BLOCKED`，只允许 `terminal.report` 写入阻断运行的失败原因、恢复命令和状态证据；此例外不得生成或修改
+算子设计/验证交付文档，常规终版文档回填仍须在确认通过且 Stage5、Stage6 到达终态后执行。
 
 开始前先自动探测代码存储位置和各阶段实际执行环境；可由当前会话、路径存在性和工具实测
 唯一确定的信息不得再次询问用户。路径只直接证明“文件存在哪里”，不能单独证明“命令在哪里
@@ -69,8 +71,8 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
    系统且对应环境检查成功时优先该环境；只有一个候选通过时自动选择它。
 4. 从SDK身份、芯片参考和`fbb describe --json`记录`TARGET_RUNTIME`；不能把Host或固件编译
    环境误写成MCU实际运行环境。
-5. 分别探测候选环境中的兼容设备/串口可见性。Windows 必须运行
-   `hs-verify-op-board/scripts/probe_serial_ports.py`，交叉记录 `.NET SerialPort.GetPortNames()`、
+5. 分别探测候选环境中的兼容设备/串口可见性。Windows 必须
+   按名称定位 `hs-verify-op-board` 并运行其内部的 `scripts/probe_serial_ports.py`，交叉记录 `.NET SerialPort.GetPortNames()`、
    `HKLM:\\HARDWARE\\DEVICEMAP\\SERIALCOMM` 和有界的 `pnputil` 结果；不得只依赖
    `Win32_SerialPort`/WMI。WSL/Linux 记录 `/dev/serial/by-id`、`/dev/serial/by-path` 及
    `ttyUSB/ttyACM`。串口探测必须在 `DEVICE_IO_ENV` 执行：Windows 设备用 Windows Python/PowerShell
@@ -81,7 +83,7 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
    才记录 `DEVICE_IO_ENV`和端口；未检测到、多个候选或来源冲突时进入用户交互，不能直接判定“无板”。
 6. 两个环境都能成功构建同一SDK且没有更强证据可唯一选择时，不擅自偏好某一边，在本次
    Stage0 执行确认预览中向用户询问一次`FIRMWARE_BUILD_ENV`；设备I/O同理。该选择属于
-   Stage0 的唯一人工交互，确认后不得在 Stage6/7 或其他普通阶段再次询问。
+   Stage0 的唯一人工交互，确认后不得在 Stage5/Stage6 或其他普通阶段再次询问。
 
 自动探测只允许读取状态，不能通过扫描磁盘自行挑选一个未由用户提供的可写SDK。完整workflow
 缺少`FIRMWARE_SDK_ROOT`时只询问该绝对路径；收到路径后再自动判断其存储、构建和设备I/O环境，
@@ -136,12 +138,12 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 如果缺少`FIRMWARE_SDK_ROOT`，先只展示已知的HiSpark存储/运行环境和默认AUTO_ALL范围，在同一条
 Stage0 执行确认预览中索取SDK绝对路径和执行范围确认，不得猜测或自动挑选路径。收到这一条回复后，agent 无需
 再次询问：先用该路径自动完成剩余只读探测，把回执作为
-`stage0.scope_environment` 的 evidence 并 `finish`；只有 stage0 已经 PASS 后，才调用
+`stage0.scope_environment` 的 evidence 并 `finish`；只有 Stage0 已经 PASS 后，才调用
 `confirm --confirmed-mode AUTO_ALL --sdk-root <绝对路径>`，把同一条回复作为唯一确认落盘并进入
-stage1。若某项仍有歧义，只把该项及候选证据列为`待确认`，待用户修正后在新 RUN_ID 重新展示
+Stage1。若某项仍有歧义，只把该项及候选证据列为`待确认`，待用户修正后在新 RUN_ID 重新展示
 最终方案；这仍属于 Stage0 初始确认修正，不是后续阶段的二次确认。
 用户明确回复“确认/继续/按上述方案执行”等同意语义后记录`EXECUTION_CONFIRM_GATE=PASS`，才可
-进入stage1。用户要求调整范围或更换 SDK 时废弃当前轮次并新建 `RUN_ID`，重新执行 stage0 和
+进入Stage1。用户要求调整范围或更换 SDK 时废弃当前轮次并新建 `RUN_ID`，重新执行 Stage0 和
 唯一一次确认；如果调整来自这条唯一回复，agent 自动重建 run、完成只读探测并复用该回复，
 不得要求用户再次确认。尤其不能在 AUTO_ALL run 上直接执行
 `confirm --confirmed-mode HOST_ONLY`。不得把最初一句
@@ -194,4 +196,4 @@ ONNX Host路径开始前必须同时验证`onnx`（建模/读图）和`onnxrunti
 
 没有可复用稳定 case 时记录 `ENV_BASELINE=UNKNOWN reason=no-known-pass-case`，不得伪称环境已验证；后续若多个无关用例在 converter 启动阶段成片失败，先补跑未改动控制用例或重建工具包，不允许直接修改目标算子源码。基线本身失败时记录 `ENV_BASELINE=FAIL` 并停在环境分支，源码保持未修改。
 
-优先保证 PC/WSL 单元/Host 验证可运行。即使没有开发板，也继续 stage1-stage5；不要因烧录不可用而跳过 Host 测试。
+优先保证 PC/WSL 单元/Host 验证可运行。即使没有开发板，也继续 Stage1-Stage4；不要因烧录不可用而跳过 Host 测试。

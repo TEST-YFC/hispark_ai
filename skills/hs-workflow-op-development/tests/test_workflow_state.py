@@ -120,7 +120,7 @@ def pass_to_host_or_board(
         finish_current(state_dir, task, "PASS", f"{task}.json")
     finish_current(
         state_dir,
-        "stage6.firmware_matrix",
+        "stage5.firmware_matrix",
         firmware_status,
         *[f"board/tc{i}/{mode}.fwpkg" for i in range(1, 13) for mode in ("fp32", "int8")],
     )
@@ -128,14 +128,14 @@ def pass_to_host_or_board(
         return
     finish_current(
         state_dir,
-        "stage7.board_matrix",
+        "stage6.board_matrix",
         board_status,
         *[f"board/tc{i}/{mode}.json" for i in range(1, 13) for mode in ("fp32", "int8")],
     )
 
 
 def finish_terminal_docs_and_report(state_dir: Path) -> None:
-    finish_current(state_dir, "stage5.final_docs", "PASS", "docs/design.md", "docs/verify.md")
+    finish_current(state_dir, "stage7.final_docs", "PASS", "docs/design.md", "docs/verify.md")
     invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
 
 
@@ -152,7 +152,23 @@ def test_init_generates_todo_checkpoint_and_event_log(tmp_path):
     state_dir = init_run(tmp_path)
     state = read_state(state_dir)
     WORKFLOW.validate_task_manifest()
-    assert state["schema_version"] == 1
+    assert state["schema_version"] == 3
+    assert [task.task_id for task in WORKFLOW.TASKS] == [
+        "stage0.scope_environment",
+        "stage0.confirm",
+        "stage1.plan",
+        "stage1.initial_docs",
+        "stage1.pre_source_gate",
+        "stage2.implementation",
+        "stage2.code_review",
+        "stage3.mslite_build",
+        "stage4.host_verify",
+        "stage5.firmware_matrix",
+        "stage6.board_matrix",
+        "stage7.final_docs",
+        "terminal.report",
+    ]
+    assert not hasattr(WORKFLOW, "DISPLAY_STAGE_BY_TASK")
     assert state["run_id"] == "bitshift-test"
     assert state["current_task"] == "stage0.scope_environment"
     assert state["tasks"][0]["status"] == "RUNNING"
@@ -160,10 +176,29 @@ def test_init_generates_todo_checkpoint_and_event_log(tmp_path):
     assert (state_dir / "workflow_events.jsonl").is_file()
     todo = (state_dir / "workflow_todo.md").read_text(encoding="utf-8")
     assert "{{" not in todo
-    assert "stage7.board_matrix" in todo
+    assert "stage6.board_matrix" in todo
     assert "[~]" in todo
     assert str(tmp_path / "firmware-sdk") in todo
     assert list(state_dir.glob("*.tmp")) == []
+
+
+def test_old_schema_is_rejected_without_rewriting_checkpoint(tmp_path):
+    for old_schema in (1, 2):
+        state_dir = init_run(tmp_path, run_id=f"old-schema-{old_schema}")
+        state_file = state_dir / "workflow_state.json"
+        state = read_state(state_dir)
+        state["schema_version"] = old_schema
+        state_file.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+        originals = {
+            name: (state_dir / name).read_bytes()
+            for name in ("workflow_state.json", "workflow_todo.md", "workflow_events.jsonl")
+        }
+        result = invoke(state_dir, "resume", "--run-id", state_dir.name, expected=2)
+        assert "unsupported state schema" in result.stderr
+        assert "new RUN_ID" in result.stderr
+        assert "do not renumber task IDs in place" in result.stderr
+        for name, content in originals.items():
+            assert (state_dir / name).read_bytes() == content
 
 
 def test_bitshift_auto_all_stub_completes_12_case_two_mode_matrix(tmp_path):
@@ -174,8 +209,8 @@ def test_bitshift_auto_all_stub_completes_12_case_two_mode_matrix(tmp_path):
     assert state["overall_status"] == "PASS"
     assert state["current_task"] is None
     assert all(item["status"] == "PASS" for item in state["tasks"])
-    firmware = next(item for item in state["tasks"] if item["id"] == "stage6.firmware_matrix")
-    board = next(item for item in state["tasks"] if item["id"] == "stage7.board_matrix")
+    firmware = next(item for item in state["tasks"] if item["id"] == "stage5.firmware_matrix")
+    board = next(item for item in state["tasks"] if item["id"] == "stage6.board_matrix")
     assert len(firmware["evidence"]) == 24
     assert len(board["evidence"]) == 24
     assert state["confirmation_count"] == 1
@@ -184,9 +219,11 @@ def test_bitshift_auto_all_stub_completes_12_case_two_mode_matrix(tmp_path):
     completed_task_rows = [
         line
         for line in todo.splitlines()
-        if line.startswith("- [x] `stage") or line.startswith("- [x] `terminal.report`")
+            if line.startswith("- [x]") and any(f"`{task.task_id}`" in line for task in WORKFLOW.TASKS)
     ]
     assert len(completed_task_rows) == len(WORKFLOW.TASKS)
+    for display_stage in ("Stage0", "Stage1", "Stage2", "Stage3", "Stage4", "Stage5", "Stage6", "Stage7"):
+        assert display_stage in todo
     assert "（PASS）" in todo
     # Every executable task has a start/finish pair except the implicit
     # stage0 probe and the one-shot confirmation; finalization adds its own
@@ -200,16 +237,16 @@ def test_auto_all_board_not_run_is_incomplete_but_final_docs_still_run(tmp_path)
     finish_terminal_docs_and_report(state_dir)
     state = read_state(state_dir)
     statuses = {item["id"]: item["status"] for item in state["tasks"]}
-    assert statuses["stage6.firmware_matrix"] == "PASS"
-    assert statuses["stage7.board_matrix"] == "NOT_RUN"
-    assert statuses["stage5.final_docs"] == "PASS"
+    assert statuses["stage5.firmware_matrix"] == "PASS"
+    assert statuses["stage6.board_matrix"] == "NOT_RUN"
+    assert statuses["stage7.final_docs"] == "PASS"
     assert state["overall_status"] == "INCOMPLETE"
 
 
 def test_terminal_report_is_required_before_any_success_status(tmp_path):
     state_dir = init_run(tmp_path)
     pass_to_host_or_board(state_dir)
-    finish_current(state_dir, "stage5.final_docs", "PASS")
+    finish_current(state_dir, "stage7.final_docs", "PASS")
     state = read_state(state_dir)
     assert state["current_task"] == "terminal.report"
     assert state["overall_status"] == "INCOMPLETE"
@@ -328,14 +365,14 @@ def test_host_only_marks_board_not_requested_and_has_scoped_terminal_status(tmp_
         "stage2.code_review",
         "stage3.mslite_build",
         "stage4.host_verify",
-        "stage5.final_docs",
+        "stage7.final_docs",
     ):
         finish_current(state_dir, task, "PASS", f"{task}.json")
     invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
     state = read_state(state_dir)
     statuses = {item["id"]: item["status"] for item in state["tasks"]}
-    assert statuses["stage6.firmware_matrix"] == "NOT_REQUESTED"
-    assert statuses["stage7.board_matrix"] == "NOT_REQUESTED"
+    assert statuses["stage5.firmware_matrix"] == "NOT_REQUESTED"
+    assert statuses["stage6.board_matrix"] == "NOT_REQUESTED"
     assert state["overall_status"] == "HOST_ONLY_PASS"
 
 
@@ -349,8 +386,8 @@ def test_failure_freezes_execution_tasks_but_allows_terminal_docs_and_retry(tmp_
     failed = read_state(state_dir)
     statuses = {item["id"]: item["status"] for item in failed["tasks"]}
     assert statuses["stage4.host_verify"] == "BLOCKED"
-    assert statuses["stage6.firmware_matrix"] == "BLOCKED"
-    assert statuses["stage5.final_docs"] == "PENDING"
+    assert statuses["stage5.firmware_matrix"] == "BLOCKED"
+    assert statuses["stage7.final_docs"] == "PENDING"
     assert statuses["terminal.report"] == "PENDING"
     assert failed["overall_status"] == "FAIL"
     invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage3.mslite_build")
@@ -504,7 +541,7 @@ def test_retry_board_stage_requires_successful_firmware_predecessor(tmp_path):
         "--run-id",
         state_dir.name,
         "--task",
-        "stage7.board_matrix",
+        "stage6.board_matrix",
         expected=2,
     )
     assert "RETRY_PRECONDITION" in skipped.stderr
@@ -523,9 +560,9 @@ def test_final_docs_can_retry_after_recording_upstream_failure(tmp_path):
     ):
         finish_current(state_dir, task, "PASS")
     finish_current(state_dir, "stage3.mslite_build", "FAIL", "build-error.log")
-    finish_current(state_dir, "stage5.final_docs", "FAIL", "doc-error.log")
-    invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage5.final_docs")
-    assert read_state(state_dir)["current_task"] == "stage5.final_docs"
+    finish_current(state_dir, "stage7.final_docs", "FAIL", "doc-error.log")
+    invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage7.final_docs")
+    assert read_state(state_dir)["current_task"] == "stage7.final_docs"
 
 
 def test_upstream_retry_invalidates_previously_finalized_downstream_results(tmp_path):
@@ -541,15 +578,15 @@ def test_upstream_retry_invalidates_previously_finalized_downstream_results(tmp_
     ):
         finish_current(state_dir, task, "PASS")
     finish_current(state_dir, "stage3.mslite_build", "FAIL")
-    finish_current(state_dir, "stage5.final_docs", "PASS")
+    finish_current(state_dir, "stage7.final_docs", "PASS")
     invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
     invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage3.mslite_build")
     state = read_state(state_dir)
     assert state["current_task"] == "stage3.mslite_build"
-    assert next(item for item in state["tasks"] if item["id"] == "stage5.final_docs")["status"] == "PENDING"
+    assert next(item for item in state["tasks"] if item["id"] == "stage7.final_docs")["status"] == "PENDING"
     assert next(item for item in state["tasks"] if item["id"] == "terminal.report")["status"] == "PENDING"
     assert next(item for item in state["tasks"] if item["id"] == "stage3.mslite_build")["evidence"] == []
-    assert next(item for item in state["tasks"] if item["id"] == "stage5.final_docs")["evidence"] == []
+    assert next(item for item in state["tasks"] if item["id"] == "stage7.final_docs")["evidence"] == []
     retry_event = next(event for event in reversed(state["events"]) if event["event"] == "TASK_RETRY_SCHEDULED")
     assert "stage3.mslite_build" in retry_event["invalidated_evidence"]
 
@@ -601,16 +638,16 @@ def test_environment_failure_blocks_document_backfill_and_allows_state_finalize(
     finish_current(state_dir, "stage0.scope_environment", "FAIL", "env-error.log")
     state_after_failure = read_state(state_dir)
     assert state_after_failure["current_task"] == "terminal.report"
-    stage5 = next(item for item in state_after_failure["tasks"] if item["id"] == "stage5.final_docs")
-    assert stage5["status"] == "BLOCKED"
-    assert "仅 terminal.report" in stage5["note"]
+    stage7 = next(item for item in state_after_failure["tasks"] if item["id"] == "stage7.final_docs")
+    assert stage7["status"] == "BLOCKED"
+    assert "仅 terminal.report" in stage7["note"]
     cannot_retry_docs = invoke(
         state_dir,
         "retry",
         "--run-id",
         state_dir.name,
         "--task",
-        "stage5.final_docs",
+        "stage7.final_docs",
         expected=2,
     )
     assert "cannot be retried before" in cannot_retry_docs.stderr
@@ -620,7 +657,7 @@ def test_environment_failure_blocks_document_backfill_and_allows_state_finalize(
         "--run-id",
         state_dir.name,
         "--task",
-        "stage5.final_docs",
+        "stage7.final_docs",
         expected=2,
     )
     assert "OUT_OF_ORDER" in cannot_start_docs.stderr
@@ -705,7 +742,7 @@ def test_resume_recovers_interrupted_task_and_rejects_stale_run_id(tmp_path):
 def test_terminal_report_is_finalize_only(tmp_path):
     state_dir = init_run(tmp_path)
     pass_to_host_or_board(state_dir)
-    finish_current(state_dir, "stage5.final_docs", "PASS")
+    finish_current(state_dir, "stage7.final_docs", "PASS")
     started = invoke(
         state_dir,
         "start",

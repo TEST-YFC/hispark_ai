@@ -84,7 +84,7 @@
 source entry 重复 `2.1` 小节。无属性时写 `| — | — | — | — | 无属性 |`。spec 或独立模式
 证据明确 NOT_FOUND/无转换入口时写“不支持转换”，不编造属性、类型或布局。
 
-产物集成模式完全投影 implementation contract 的输入、dtype、属性、输出、shape/layout、
+产物集成模式完全投影实现约定的输入、dtype、属性、输出、shape/layout、
 量化语义和功能限制；独立模式从已查证支持链路构建。模型 dtype 与验证路径是两个概念，不能
 把 full-quant int8 验证路径改写成原生 int8 模型支持。本章不写用例数量、运行结果、烧录状态
 或验证任务名；这些内容全部放入验证文档。
@@ -146,7 +146,7 @@ Parameter、Infer、OpCoder、生成入口、Kernel 和应用模型 API；不适
 2. 保留原始 case ID。数字 `1` 显示为 `TC-001`，`101` 显示为 `TC-101`；不得按表格位置重新编号。
 3. framework、shape、K/属性、模型 dtype 和 `value_domain` 从 op_spec case 规范化进 facts；Markdown 逐字段按 facts 的规范格式渲染，不能把 `value_domain` 丢进泛化描述。
 4. “模型 dtype”和“已覆盖运行通路”分列。模型 dtype 只来自 op_spec case；内部验证记录只来自最后可信 summary 的同 case 明确 PASS 行，再结合模型 dtype 和生成代码证据转换为读者语言。不得从聚合路径、dtype 名称或经验规则推导覆盖。
-5. 预期输出必须有结构化 `expected_outputs`、公开 `expected_outputs_text` 和逐字证据。输出名称/dtype 来自 op_spec 模型构造或 implementation contract；shape 只有在上述来源明确写出 shape 规则时才可把规则应用到 case 参数。final 不允许任何必需字段写“未记录”“待确认”或“尚未执行验证”。
+5. 预期输出必须有结构化 `expected_outputs`、公开 `expected_outputs_text` 和逐字证据。输出名称/dtype 来自 op_spec 模型构造或实现约定；shape 只有在上述来源明确写出 shape 规则时才可把规则应用到 case 参数。final 不允许任何必需字段写“未记录”“待确认”或“尚未执行验证”。
 6. `integrated-initial`尚未产生验证证据时，验证路径单元格固定写“尚未执行验证”，且facts的 `production_eligible=false`；该措辞只允许draft。
 7. `integrated-final`和`artifact-sync` A不增量修补已有表，而是从最新facts重建整表，删除已移除case并加入新增case。
 8. 不支持的framework/type/spec不生成额外正向case；C级失败路径不得标成PASS或supported。

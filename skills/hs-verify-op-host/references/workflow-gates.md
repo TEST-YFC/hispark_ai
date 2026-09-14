@@ -39,7 +39,7 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 | 阶段 | 做什么 | 成功证据 |
 |---|---|---|
 | step0 准备工具链与项目目录 | 确认 `MSLITE_PKG` 指向已解压构建产物,算子项目位于 `$MSLITE_OP_OUTPUT/<op>` | `converter_lite` 可执行,`op_spec.py` 不在 MindSpore Lite 源码/构建树内 |
-| step1 准备 spec | standalone任务按规格编写`<proj>/scripts/op_spec.py`；完整workflow只读对账stage1已锁定文件并运行pre-verify两道自动检查 | `OP_NAME`、两套`*_TEST_CASES`、逐 case `test_point`、builder、`make_inputs()`齐全且检查通过 |
+| step1 准备 spec | standalone任务按规格编写`<proj>/scripts/op_spec.py`；完整workflow只读对账Stage1已锁定文件并运行pre-verify两道自动检查 | `OP_NAME`、两套`*_TEST_CASES`、逐 case `test_point`、builder、`make_inputs()`齐全且检查通过 |
 | step2 运行 harness | 用 `run_all_cases.py --spec <abs path>` 执行 | 日志出现 `VERDICT` 和紧随其后的 `HARNESS_EXIT=N` |
 | step3 读取结果 | 只读取 harness 产物,不要自行判定 | `verify_summary.txt`、每框架 Excel、`output/<framework>/tc*/output/<path>/stderr.log` |
 | step4 排查并报告 | 非零退出按失败类型排查；全绿才报告 PASS | 向用户照抄 VERDICT/退出码，列出 FAIL 证据或 PASS 报告 |
@@ -59,14 +59,17 @@ MindSpore Lite、比对真实输出,最后只按 harness 的 `VERDICT`、`HARNES
 
 ### workflow 模式的 pre-verify 检查
 
-当`<proj>`来自完整算子workflow时，读取stage1已冻结的`op_spec.py`并与capability checklist
+当`<proj>`来自完整算子workflow时，读取Stage1已冻结的`op_spec.py`并与capability checklist
 只读对账；启动harness前必须执行：
 
 ```bash
-python3 <hs-dev-op-implement skill root>/scripts/gate_artifacts.py \
-  --opdir <absolute proj> --op <Op> --stage pre-verify --framework <framework>
-python3 <hs-verify-op-host skill root>/scripts/validate_op_spec.py <absolute proj>
+python3 "<hs-dev-op-implement>/scripts/gate_artifacts.py" \
+  --opdir <absolute proj> --op <Op> --stage pre-verify --framework <framework> \
+  --manual-audit-script "<hs-design-op-manual>/scripts/audit_manual_inputs.py"
+python3 "<hs-verify-op-host>/scripts/validate_op_spec.py" <absolute proj>
 ```
+
+`<hs-...>` 使用按名称找到的对应 Skill 实际根目录。
 
 每个激活 framework 都要得到 `ARTIFACT_GATE=PASS`，且 validator 退出码为 0。前者确认实现约束、已有能力 review、能力清单和测试 spec 没有断链；后者在长转换前拦截动态输入数量、initializer 声明、capability case ID 及 ONNX `auto_pad/pads` 冲突。独立 Host 任务没有实现工作区时不伪造这些文件，但仍执行 harness 内建的 spec、目标算子身份和能力覆盖检查。
 
@@ -76,7 +79,7 @@ harness 只要求所选 framework 的模型 builder：`--framework onnx` 必须�
 仍是固定 spec 规则，范围外框架的 case 容器应为空。
 
 完整workflow的Host阶段不得直接新增、删除或改写case。若对账发现模型构造、输入/GT、case或
-覆盖映射必须变化，返回顶层workflow的stage1，重新prepare、生成初版文档、通过pre-source并
+覆盖映射必须变化，返回顶层workflow的Stage1，重新prepare、生成初版文档、通过pre-source并
 重跑apply/build；不能在Host阶段改完`op_spec.py`后继续使用旧facts哈希。
 
 `ARTIFACT_GATE=PASS` 还要求实现工作区存在编码后 `docs/code-review.md`。该审查必须覆盖注册

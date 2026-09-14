@@ -12,7 +12,7 @@
 # build_mslite.sh --status <id>             只报告指定构建轮次
 # build_mslite.sh --stop                    终止当前构建（杀整个进程组，含 make/编译器子进程）
 #
-# hs-workflow-op-development stage3 标准工具包重建入口，一条命令完成：
+# hs-workflow-op-development Stage3 标准工具包重建入口，一条命令完成：
 #   并发锁（同一时刻只允许一个构建）→ 固定 env 开关 → 定位 RISC-V 工具链
 #   → bash build.sh（默认增量 -i，--full 全量）→ 断言交叉库产出 → 解压产物
 #   → 断言改动的 parser 注册符号已真正链入产物（堵「假编译成功」，exit 6）→ 打印 MSLITE_PKG

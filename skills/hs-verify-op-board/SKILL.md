@@ -5,8 +5,8 @@ description: >-
   real-board case matrix. Use when the user explicitly names hs-verify-op-board, asks only for WS63
   operator board preparation/accuracy, or hs-workflow-op-development routes its board stages here.
   Require the user-provided firmware SDK source location, replay every Host-PASS framework/case/mode,
-  generate and cross-compile each Micro model, generate the OH_AI sample, verify wiring, hand build/flash
-  execution and results back to the top-level workflow, collect complete serial tensors, and report per-case plus
+  generate and cross-compile each Micro model, generate the OH_AI sample, verify wiring, delegate build/flash
+  execution, return the results to the top-level workflow, collect complete serial tensors, and report per-case plus
   aggregate accuracy. Other chips require their own chip-specific integration reference; never reuse
   WS63 paths by analogy. Do not use this skill for source implementation or Host test design. 中文触发包括“只做板端精度”“板端精度”“真板验证”“烧录并验证”“使用 hs-verify-op-board”；
   仅源码或仅 Host 请求不触发本 Skill。
@@ -14,11 +14,13 @@ description: >-
 
 # 算子真板精度验证
 
-本 Skill 负责把本轮 Host 已通过的板端适用矩阵逐行接入固件并核对真实板输出。它不修改算子源码、
+本 Skill 负责把本轮 Host 已通过的板端适用矩阵逐行接入固件，并核对真实板输出。它不修改算子源码、
 不重新设计 `op_spec.py`，也不自行实现固件构建或烧录；构建交给 `hs-dev-build`，烧录交给
-`hs-dev-flash`，本 Skill 在同一行、同一 receipt 返回后继续验收。
-本 skill step0-3 负责模型、adaptor、Sample 和固件接线；workflow stage6 的 sample/adaptor/固件接线
+`hs-dev-flash`；收到同一行的 receipt 后，本 Skill 继续验收。
+本 skill step0-3 负责模型、adaptor、Sample 和固件接线；workflow Stage5 的 sample/adaptor/固件接线
 必须完成后才能交给构建 Skill。
+
+下文 step 是本 Skill 的内部步骤，不对应顶层 workflow 的 Stage 编号。
 
 ## 模式与固定流程
 
@@ -78,7 +80,7 @@ step3 完成后暂停当前矩阵行并把接线 receipt、target、模型库和
 1. [`references/workflow-gates.md`](references/workflow-gates.md)：职责边界、step0/0a、矩阵锁定和进度模板。
 2. [`references/ws63-build-handoff.md`](references/ws63-build-handoff.md)：WS63 step2-step4 的 Micro、adaptor、Sample、SDK、构建接线和固件内容核对。
 3. [`references/flash-serial-handoff.md`](references/flash-serial-handoff.md)：step5 的 flash 委托、串口交叉探测、重插重试和 monitor 证据。
-4. [`references/board-accuracy-contract.md`](references/board-accuracy-contract.md)：step6 的 Tensor 解析、阈值、逐行结果和矩阵统计。
+4. [板端精度与矩阵规则](references/board-accuracy-contract.md)：step6 的 Tensor 解析、阈值、逐行结果和矩阵统计规则。
 5. [`references/board-guardrails.md`](references/board-guardrails.md)：禁止事项、完成判据、失败措辞和资源所有权。
 
 ## 结果与完成语义
@@ -116,7 +118,7 @@ fp32 `cos >= 0.999` 或 INT8 `cos >= 0.99`，才可输出 `ACCURACY_VERDICT=PASS
 | [`references/workflow-gates.md`](references/workflow-gates.md) | 入口、授权、矩阵和进度 |
 | [`references/ws63-build-handoff.md`](references/ws63-build-handoff.md) | WS63 模型库、Sample、SDK 接线和构建 handoff |
 | [`references/flash-serial-handoff.md`](references/flash-serial-handoff.md) | flash/串口/端口重探和重试 |
-| [`references/board-accuracy-contract.md`](references/board-accuracy-contract.md) | Tensor 精度和矩阵报告 |
+| [板端精度与矩阵规则](references/board-accuracy-contract.md) | Tensor 精度和矩阵报告 |
 | [`references/board-guardrails.md`](references/board-guardrails.md) | 禁止事项、完成判据和分流 |
 | [`chips/ws63/references/sdk-integration.md`](chips/ws63/references/sdk-integration.md) | WS63 必读的具体 SDK 接线规范 |
 | [`chips/ws63/references/device.md`](chips/ws63/references/device.md) | WS63 设备、端口和 I/O 环境事实 |

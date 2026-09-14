@@ -28,7 +28,7 @@
 | 没有 SDK，且明确要求编译/上板 | 停在 Stage0，要求用户提供 SDK 绝对路径；需要下载时先单独完成环境准备请求，再以实际路径开始新 run | 不在本算子 run 内调用 |
 | 只做算子源码、MindSpore Lite 构建或 Host 验证 | 不检查或下载固件 SDK；只使用对应阶段自己的依赖 | 不调用 |
 
-一次总确认同时覆盖对已提供 SDK 补齐工具链的授权；Stage6 只读取该确认和冻结的状态，
+一次总确认同时覆盖对已提供 SDK 补齐工具链的授权；Stage5 只读取该确认和冻结的状态，
 不再发起工具链安装询问。若环境准备 Skill 或工具链不可用，直接记录 `BLOCKED` 及恢复命令，
 等待用户补齐外部条件后用同一 `RUN_ID` 恢复。
 
@@ -46,20 +46,15 @@
 https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
 ```
 
-期望的文件分别是：
+安装后分别按名称加载 `hs-dev-env-prep`、`hs-dev-build`、`hs-dev-flash`，确认各自的 `SKILL.md` 可读。
+它们无需与本工作流或彼此安装在同一父目录。
 
-```text
-<skill-root>/hs-dev-env-prep/SKILL.md
-<skill-root>/hs-dev-build/SKILL.md
-<skill-root>/hs-dev-flash/SKILL.md
-```
-
-安装后必须重新检查当前使用者的 `<skill-root>`，并保留各 Skill 的 `references/`、
+必须通过当前环境提供的实际位置或资源读取方式检查，并保留各 Skill 的 `references/`、
 `scripts/` 等配套资源；不能只下载一个 `SKILL.md` 作为已安装判据。
 
 ### 环境准备 Skill 的可用性门禁
 
-该门禁针对每一位使用者自己的 Codex/Skill 环境在 stage0 执行。通知发生在该使用者
+该门禁针对每一位使用者自己的 Codex/Skill 环境在 Stage0 执行。通知发生在该使用者
 发起本次算子工作流的当前对话中，而不是串口、WSL 后台任务或开发板上。分发本 workflow
 不会自动分发外部 `hs-dev-env-prep`；每位使用者需要在自己的 Skill 集合中安装它，或在
 已有 `fbb CLI` 环境满足检查时直接使用 CLI/构建专项 Skill。
@@ -69,31 +64,31 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
 2. 若用户要求固件编译/烧录，先执行 `fbb --version` 和 `fbb describe --json`，并核对用户给出的
    `FIRMWARE_SDK_ROOT`以及SDK全局/目标芯片的`min_cli_version`。命令成功且CLI版本满足要求时，输出 `ENV_PREP_SKILL=NOT_REQUIRED`，直接进入
    `hs-dev-build`/`hs-dev-flash`；“已安装并可用的 fbb CLI 环境”已经满足其前置条件。
-3. 若固件阶段需要补环境，尝试加载用户提供或已安装的
-   `hs-dev-env-prep/SKILL.md`。加载不到时，必须立即在该使用者当前会话报告：
+3. 若固件阶段需要补环境，按名称加载用户提供或已安装的 `hs-dev-env-prep`，
+   完整读取它的 `SKILL.md`。加载不到时，必须立即在该使用者当前会话报告：
 
    ```text
    ENV_PREP_SKILL=UNAVAILABLE
    BOARD_STAGE=BLOCKED
    请先安装 hs-dev-env-prep：
    https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
-   期望文件：<skill-root>/hs-dev-env-prep/SKILL.md
+   需要能按名称加载 hs-dev-env-prep，并读取其 SKILL.md 和配套资源。
    ```
 
    此时不得假装环境已准备好、不得启动后台 `fbb build`/`fbb flash`，也不得自行下载一份
-   外部 Skill；将安装路径和恢复命令写入状态。用户安装或提供该 Skill 后，从 stage0 重新检查；
+   外部 Skill；将安装路径和恢复命令写入状态。用户安装或提供该 Skill 后，从 Stage0 重新检查；
    不需要重做已通过的 Host 阶段。
 4. 若 `hs-dev-env-prep` 可加载且用户已经给出 SDK 路径，确认通过后自动调用，并明确“只补环境和
    工具链，使用该 SDK，禁止执行 `fbb sdk install`”。如果该 Skill 不能遵守已有 SDK 约束，
-   记录 `BOARD_STAGE=BLOCKED`，等待外部条件修复，不在 Stage1 之后发起新确认。
+   记录 `BOARD_STAGE=BLOCKED`，等待外部条件修复，不在 Stage0 之后发起新确认。
 
 检查 `hs-dev-build` 和 `hs-dev-flash` 是否已安装：
 
-- 已安装：stage6、stage7 分别调用它们。
+- 已安装：Stage5、Stage6 分别调用它们。
 - 未安装：先告知用户从与 `hs-dev-env-prep` 相同的地址安装：
   `https://gitcode.com/HiSpark/hibot-skills/tree/master/skills`。
   该目录包含 `hs-dev-env-prep`、`hs-dev-build` 和 `hs-dev-flash`；安装后应重新检查
-  当前使用者自己的 `<skill-root>`，不得只复制 `SKILL.md`；必须保留该 Skill 目录下对应的
+  当前环境能否按名称加载对应 Skill，不得只复制 `SKILL.md`；必须保留该 Skill 目录下对应的
   `references/` 和 `scripts/` 子目录及其中脚本。
 - 用户未安装或当前环境不能加载：workflow 可按两者公开约定直接使用 CLI 回退，构建用
   `fbb --version`、`fbb describe --json` 或 `fbb list-targets --json` 取得真实 target，
@@ -106,10 +101,10 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
 
 默认`BOARD_POLICY=AUTO_ALL`在Stage0必须检查用户本次请求或当前会话是否已经明确提供
 `FIRMWARE_SDK_ROOT=<固件SDK仓库绝对路径>`。没有时必须向用户询问并停在Stage0，不能通过
-`EXECUTION_CONFIRM_GATE`或进入stage1；禁止通过搜索磁盘、其他任务记录、环境变量或fbb自动
+`EXECUTION_CONFIRM_GATE`或进入Stage1；禁止通过搜索磁盘、其他任务记录、环境变量或fbb自动
 选择一个可写SDK。只有用户明确切换为`BOARD_POLICY=HOST_ONLY`时，才可不提供SDK并继续
-stage1-stage5，同时将板端阶段记为`NOT_REQUESTED`。用户提供后，记录对应 `FIRMWARE_SDK_SRC`，再检查
+Stage1-Stage4，同时将 Stage5/Stage6 记为`NOT_REQUESTED`。用户提供后，记录对应 `FIRMWARE_SDK_SRC`，再检查
 对应专项 Skill 是否安装，并执行 `fbb --version` 和 `fbb describe --json`（使用真实 target 时传入
-target）。任一命令不可用、路径身份不符或SDK描述失败时，stage6、stage7标为环境阻塞，
+target）。任一命令不可用、路径身份不符或SDK描述失败时，Stage5、Stage6标为环境阻塞，
 并提示用户安装/运行 `hs-dev-env-prep`；不能因为build/flash skill文件存在就假定其隐含
 环境已经准备好。

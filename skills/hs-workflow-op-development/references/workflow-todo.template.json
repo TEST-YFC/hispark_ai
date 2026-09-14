@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 3,
   "status_values": [
     "PENDING",
     "RUNNING",
@@ -18,14 +18,14 @@
     },
     {
       "id": "stage0.confirm",
-      "stage": "stage0-confirm",
+      "stage": "stage0",
       "title": "展示方案并取得一次执行确认",
       "manual": true
     },
     {
       "id": "stage1.plan",
       "stage": "stage1",
-      "title": "生成并冻结实现计划、合同和能力清单",
+      "title": "生成并冻结实现计划、实现约定和能力清单",
       "manual": false
     },
     {
@@ -65,20 +65,20 @@
       "manual": false
     },
     {
-      "id": "stage6.firmware_matrix",
-      "stage": "stage6",
+      "id": "stage5.firmware_matrix",
+      "stage": "stage5",
       "title": "按矩阵自动接入并构建全部固件",
       "manual": false
     },
     {
-      "id": "stage7.board_matrix",
-      "stage": "stage7",
+      "id": "stage6.board_matrix",
+      "stage": "stage6",
       "title": "逐项烧录、采集串口并验收板端精度",
       "manual": false
     },
     {
-      "id": "stage5.final_docs",
-      "stage": "stage5",
+      "id": "stage7.final_docs",
+      "stage": "stage7",
       "title": "回填终版成对算子文档",
       "manual": false
     },

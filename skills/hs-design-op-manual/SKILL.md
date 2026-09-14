@@ -12,9 +12,11 @@ description: >-
 
 # 单算子设计文档生成器
 
-本 Skill 只维护两份人读主文档，不实现源码、不运行构建或验证、不烧录。设计文档只写规格、支持范围、
+本 Skill 只负责维护两份供人阅读的主文档，不实现源码、不运行构建或验证、不烧录。设计文档只写规格、支持范围、
 七类能力复用裁决、关键场景和软件调用链；验证文档只写测试设计、用例矩阵、各阶段结果和证据索引。
 机器 facts、日志、summary 和二进制文件是证据，不能替代主文档。
+
+下文 step 是本 Skill 的内部步骤，不对应顶层 workflow 的 Stage 编号。
 
 ## 模式与边界
 
@@ -45,9 +47,20 @@ description: >-
 | 5 | 在 `<opdir>/docs/` 写临时候选，执行 facts/content/case audit | `OP_MANUAL_FACTS_SYNC=PASS`、`OP_MANUAL_CONTENT_SYNC=PASS`、`OP_MANUAL_CASE_SYNC=PASS` |
 | 6 | 通过检查后成对发布，重新读取并核对；任一步失败就把两份文档恢复到发布前状态 | `OP_MANUAL_SYNC=PASS` 或明确 FAIL |
 
+### 最短执行路径
+
+下面是入口速查，不改变七步、事实来源、审计或成对发布：
+
+- `standalone-generate/update`：确认目标 → 查证事实 → 生成设计和验证候选 → 自检/audit → 成对发布并回读。
+- `template-analysis`：确认分析范围 → 读取模板 → 只输出分析，不写 facts、候选或正式文档。
+- `integrated-initial`、`integrated-final`、`artifact-sync`：接收父流程已确定的路径和参数 → facts/audit → 候选 →
+  按 A/B/C/D 证据等级发布、记录或不写文件；不重新确认环境。
+
+文档请求默认产出设计文档和验证文档各一份。用户如果只要其中一份，先说明这项交付规则，不能悄悄补写另一份，也不能因此跳过审计。
+
 进入对应阶段时读取完整规则：
 
-1. 先读 [`references/facts-contract.md`](references/facts-contract.md)，了解模式参数、唯一事实源、facts schema、输入审计和 A/B/C/D 分级。
+1. 先读 [事实来源与文件分级](references/facts-contract.md)，了解模式参数、事实来源、facts schema、输入审计和 A/B/C/D 分级。
 2. 生成正文前读 [`references/document-rendering.md`](references/document-rendering.md)，并按需读两个文档模板。
 3. 写入/发布前读 [`references/publication-transaction.md`](references/publication-transaction.md)，执行敏感信息检查、候选审计、成对事务发布和最终复核。
 
@@ -55,12 +68,12 @@ description: >-
 
 文件同步模式只接受父流程已确定的：`code_root`、`opdir`、`op`/`Op`、`implementation_unit`、
 `framework_scope`，以及 `integrated-final` 的 `terminal_state=completed|blocked|hard-stop`。父流程已经完成
-环境和 SDK 完成一次人工确认后，本 Skill 自动读取文件、生成 facts、渲染候选并运行审计，不再逐步询问用户。
+环境和 SDK 经一次人工确认后，本 Skill 自动读取文件、生成 facts、渲染候选并运行审计，不再逐步询问用户。
 独立模式仅在开始确认输入/目标路径；确认后生成和更新由 agent 自动完成。
 
 facts 的四个主源固定为：
 
-- 设计规格和软件设计：`<opdir>/docs/spec.md`、`implementation-contract.md`；
+- 设计规格文件 `<opdir>/docs/spec.md` 和实现约定文件 `<opdir>/docs/implementation-contract.md`；
 - 场景和能力：`<opdir>/scripts/capability_checklist.json`；
 - 验证用例：`<opdir>/scripts/op_spec.py`；
 - 结果：本轮可信 `verify_summary.txt`、板端矩阵及其证据。
@@ -90,7 +103,7 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NO
 
 | 资源 | 何时读取 |
 |---|---|
-| [`references/facts-contract.md`](references/facts-contract.md) | step0-step2、输入审计、facts 和分级 |
+| [事实来源与文件分级](references/facts-contract.md) | step0-step2、输入审计、facts 和分级 |
 | [`references/document-rendering.md`](references/document-rendering.md) | step3、章节和逐 case 渲染 |
 | [`references/publication-transaction.md`](references/publication-transaction.md) | step4-step6、公开边界、回滚和自检 |
 | [`references/operator-design-doc-template.md`](references/operator-design-doc-template.md) | 设计文档候选 |

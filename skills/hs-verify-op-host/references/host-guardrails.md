@@ -39,7 +39,7 @@
 - **多条互不相关的用例同时 converter 报错 / 全 FAIL / converter 一启动就崩 ≠ 单个算子缺陷,先疑构建环境。**
   失败面远超本算子改动可能影响的范围(多框架、多形态、连之前 PASS 的用例一起塌)时,八成是工具链包陈旧或
   `mindspore` 子模块被构建脚本 `--remote` 推进到别的 commit(converter 行为整体漂移)。处置:回
-  hs-workflow-op-development stage3 核对**构建新鲜度**与**子模块 SHA 未漂移**（`build_mslite.sh` 的 `[SUBMOD-LOCK]` 守卫），
+  hs-workflow-op-development Stage3 核对**构建新鲜度**与**子模块 SHA 未漂移**（`build_mslite.sh` 的 `[SUBMOD-LOCK]` 守卫），
   **不要逐用例去改算子代码,更不要 `git checkout` 子模块/`git stash` 反复试**——那只会越改越乱。
 - **轻量Python运行包缺失时先自动修复，不得直接停下。** 使用当前Host任务的同一Python解释器，
   在虚拟环境或用户范围安装并验证后继续；ONNX必须同时具备`onnx`和`onnxruntime`。只有管理员

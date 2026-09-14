@@ -95,7 +95,7 @@
 
 ### 验证
 
-算子实现专项 Skill 只冻结 capability checklist 和 implementation contract；随后交回 `hs-workflow-op-development`，由其调用
+算子实现专项 Skill 只冻结 capability checklist 和实现约定；随后交回 `hs-workflow-op-development`，由其调用
 `hs-verify-op-host` 按算子属性、值域和形状编写并运行用例。细则见 Host skill。
 
 ---

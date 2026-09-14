@@ -1,7 +1,7 @@
 # 已知故障与处置规则（按症状索引）
 
 这些已知故障是实现决策和失败回流的证据库。工具包构建与 Host 验证分别由
-`hs-workflow-op-development` stage3/stage4 持有，只有源码根因才回流 `hs-dev-op-implement`。
+`hs-workflow-op-development` Stage3/Stage4 持有，只有源码根因才回流 `hs-dev-op-implement`。
 
 本文承接 SKILL.md 正文撤下的全部"实证"事故：每条 = 症状 → 根因 → 规则。**用法：卡住、报错、或想走捷径时，先按当前阶段在这里查症状**；命中就照"规则"列执行，不要重新发明绕过方案——下面每条都是某次会话真实烧掉数小时后总结的。
 
@@ -40,7 +40,7 @@
 | 用图层 pass 插 `BroadcastTo`/`Reshape` 节点实现广播 | 两次走该方案（挂存量 pass 进 CPU 列表、新写 pass）：converter 能过，micro codegen 缺被插算子的 coder（尤其 bool dtype），全部用例 ERR，整体回滚，净烧 3 轮构建 + 2 轮验证 | ⑤⁗ 歧路条目：被插算子 × dtype 有 coder + 全局回归面评估，两条查实前不得选图层方案；默认在 kernel/coder 内部处理 |
 | condition/index 首输入算子的 runtime kernel 按 `where->data_type_ == kNumberTypeInt8` 分 int8 分支 | 该 struct 的 `data_type_` 装的是**注册派发键 = 首输入（condition）的 dtype = bool**，不是数据张量 dtype；int8 分支恒假成死代码，int8 数据落进 fp32 通路被按 float 重解释 → 4× 字节越界，converter "转换成功"后在 bias_correction 执行该 kernel 时野指针崩溃（被误报成"TF converter 慢"，假结论又误导下一会话） | 首输入是 condition/index 的算子，runtime kernel 内分 fp32/int8 **必须读 `in_[<数据输入下标>]->data_type_`**（如 Where 读 `in_[Index1]`），不是 struct 的 `data_type_` 字段；`quick_check.sh` 的 dtype-dispatch advisory 已对"bool 注册键 + `data_type_==kNumberTypeInt8`"组合秒级告警。**转换期崩溃/卡死一律先读 stderr 首行定位层（parser/quant/bias_correction/codegen），禁止归因环境慢**——一条 int8 用例在校准期即可秒级复现 |
 
-## 实现检查与工具包构建期（hs-dev-op-implement step5-step6、workflow stage3）
+## 实现检查与工具包构建期（hs-dev-op-implement step5-step6、workflow Stage3）
 
 | 症状 / 想做的事 | 真实事故 | 规则 |
 |---|---|---|
@@ -57,7 +57,7 @@
 | 新建 `nnacl_c/{base,fp32,int8}/*.c` 后直接增量 build | nnacl_c 的 CMake 用 `file(GLOB ...)` 收集源文件，GLOB 只在 **configure 期**展开；增量 `make` 不重配 → 新 `.c` 静默不参与编译，链接期缺符号、或更糟用到旧对象得假结论 | 新增源文件后先 `touch` 对应目录的 `CMakeLists.txt`（强制 re-glob/重配）再 `build_mslite.sh`；新 `.c` 用 `NNACL_OK/ERR` 记得 `#include "nnacl_c/errorcode.h"`（op_base.h 不含，quick_check 秒级抓） |
 | 构建后之前全绿的用例成片 converter 报错 / 报 `gen_lite_ops.h: No such file` / converter 一启动就崩，于是去改算子代码 | `build.sh` 的 `update_submodule` 跑 `git submodule update --init --remote`，把受管 `mindspore` 子模块从基线 commit 静默推进到上游最新（如 `2365375a→0487e01a`）：converter 行为漂移、之前全绿用例成片失败，新 commit 还与已 configure 的 `build/` 不兼容报缺生成头。一次会话误判成算子 bug——先改 INT8/fp32 coder，再 `git checkout` 子模块到不同 commit、`git stash`、改 `build.sh`、反复清 `build/` 重建，越陷越深、数小时无果 | **成片回归先查环境不查算子。** `build_mslite.sh` 已在构建前记录子模块 SHA，漂移即 `[SUBMOD-LOCK] exit 7` 硬停；命中即按提示把子模块 `checkout` 回构建前 SHA、注释 `build.sh` 第一处 `update_submodule` 调用后经本脚本重建（红线 4）。**禁止** `git checkout` 子模块到别的 commit / `git stash` / 反复重建试错；改码前先用一个已知用例确认基线可过 |
 
-## 验证期（workflow stage4 Host / stage7 Board）
+## 验证期（workflow Stage4 Host / Stage6 Board）
 
 | 症状 / 想做的事 | 真实事故 | 规则 |
 |---|---|---|

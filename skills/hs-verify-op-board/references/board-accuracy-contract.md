@@ -55,7 +55,7 @@ python3 <skill_root>/scripts/board_matrix_report.py \
 
 | 证据 | owner |
 |---|---|
-| 串口无输出、启动失败、模型/输入未接入 | workflow stage6 的 sample/adaptor/固件接线 |
+| 串口无输出、启动失败、模型/输入未接入 | workflow Stage5 的 sample/adaptor/固件接线 |
 | 固件未烧录或烧录 JSON 失败 | `hs-dev-flash` |
 | Host 同 case PASS、板端 Tensor 可解析但精度 FAIL | 本 skill 输出对比证据，由 workflow 返回实现或板端接入阶段 |
 | GT、模型、输入跨轮或 case 不一致 | 回 step0 重新选择，不运行比较 |

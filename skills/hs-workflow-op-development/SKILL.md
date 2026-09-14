@@ -18,18 +18,40 @@ description: >-
 步骤不能被一句“完成接线”替代。入口正文只保留始终需要看到的约定，细节按阶段读取直接链接的
 `references/`文件。
 
+跨 Skill 先按名称加载，再读取目标 Skill 内的资源，不推算同级安装目录。
+命令中的 `<hs-...>` 使用按名称找到的实际根目录；本 Skill 自身资源仍用相对链接。
+
 ## 工作流总览
 
+完整成功路径如下：
+
 ```text
-stage0 确定范围和环境（只读）
-  -> 一次 EXECUTION_CONFIRM_GATE
-stage1 prepare -> integrated-initial -> PRE_SOURCE_GATE
-  -> stage2 apply -> IMPLEMENT_GATE
-  -> stage3 MSLITE_PKG -> stage4 HOST_VERIFY_GATE
-  -> AUTO_ALL: stage6 firmware -> stage7 flash/serial/accuracy
-  -> stage5 integrated-final -> terminal.report/finalize
-  -> HOST_ONLY: stage6/7 = NOT_REQUESTED
+Stage0 范围和环境（只读） -> 一次 EXECUTION_CONFIRM_GATE
+Stage1 prepare -> integrated-initial -> PRE_SOURCE_GATE
+Stage2 apply -> IMPLEMENT_GATE
+Stage3 构建 MindSpore Lite 工具包 -> MSLITE_PKG
+Stage4 Host 全量验证 -> HOST_VERIFY_GATE
+Stage5 AUTO_ALL 固件矩阵 -> FIRMWARE_CONTENT_GATE
+Stage6 AUTO_ALL 烧录、串口和板端精度 -> BOARD_MATRIX_GATE
+Stage7 终态文档回填 -> terminal.report/finalize
 ```
+
+状态机任务 ID 与对外阶段编号一致，统一使用 `stage0` 到 `stage7`。Stage7 包含终态文档回填和最终报告，
+必须等 Stage5、Stage6 到达终态后才启动。编号只保留一套，命令、待办、状态文件和文档使用同一名称。
+当前状态 schema 为 3；schema=1/2 的运行记录不能直接恢复，请保留原记录并用新的 `RUN_ID` 重新开始，不要手工替换状态文件中的编号。
+`HOST_ONLY` 时，Stage5/Stage6 记为
+`NOT_REQUESTED`，然后同样进入终态文档和报告。
+
+下面是入口速查，不改变任何步骤、门禁或证据要求：
+
+```text
+init -> Stage0 只读探测/一次确认 -> Stage1 -> Stage2 -> Stage3 -> Stage4
+AUTO_ALL -> Stage5 -> Stage6 -> Stage7 -> terminal.report/finalize
+HOST_ONLY -> Stage5/Stage6=NOT_REQUESTED -> Stage7 -> terminal.report/finalize
+```
+
+Stage 表示顶层阶段；`stage1.plan`、`stage1.initial_docs` 等是同一阶段内按顺序完成、分别保存证据的任务，不能合并或跳过。
+专项 Skill 的 `step0`、`step1` 等只表示其内部步骤，数字不对应顶层 Stage；跨 Skill 提到 step 时写明所属 Skill。
 
 固定顺序不能交换：`hs-dev-op-implement mode=prepare` 必须先于
 `hs-design-op-manual mode=integrated-initial`，后者必须先于
@@ -66,14 +88,16 @@ stage1 prepare -> integrated-initial -> PRE_SOURCE_GATE
 ```markdown
 状态: stage<n> 进行中
 待办:
-- [ ] stage0 确定范围、模式和环境
-- [ ] stage0-confirm 展示环境和影响范围，等待一次执行确认
-- [ ] stage1 prepare、初版文档和 PRE_SOURCE_GATE
-- [ ] stage2 源码实现、代码审查和 IMPLEMENT_GATE
-- [ ] stage3 MSLITE_PKG；stage4 Host 全量验证
-- [ ] stage6 默认固件矩阵；stage7 默认烧录、串口和板端精度
-- [ ] stage5 终态文档；terminal.report
+- [ ] Stage0 确定范围、模式和环境（内部任务：`stage0.*`）
+- [ ] Stage1 prepare、初版文档和 PRE_SOURCE_GATE（内部任务：`stage1.*`）
+- [ ] Stage2 源码实现、代码审查和 IMPLEMENT_GATE（内部任务：`stage2.*`）
+- [ ] Stage3 MSLITE_PKG（内部任务：`stage3.*`）
+- [ ] Stage4 Host 全量验证（内部任务：`stage4.*`）
+- [ ] Stage5 默认固件矩阵；Stage6 默认烧录、串口和板端精度
+- [ ] Stage7 终态文档和最终报告（任务：`stage7.final_docs`、`terminal.report`）
 ```
+
+`terminal.report` 是 Stage7 的收尾子步骤，使用 `finalize` 命令写入。
 
 ## 待办、状态和证据
 
@@ -112,7 +136,7 @@ python <skill>/scripts/workflow_state.py finalize --state-dir <STATE_DIR> --run-
 整体就不能判 PASS；先把 `terminal.report` 保存到文件。`stage0.confirm` 是本轮唯一确认，
 确认后不再询问普通阶段。
 
-## stage0：确定范围、环境并完成一次确认
+## Stage0：确定范围、环境并完成一次确认
 
 Stage0 只读探测，不生成文档、源码、测试模型、Micro 工程或固件，不安装、下载、构建、烧录，
 也不启动后台长任务。必须区分代码存储、MSLite 执行、固件编译和设备 I/O 环境；字段包括：
@@ -139,13 +163,13 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 不得搜索磁盘、环境变量或历史记录替用户选择。收到路径后再自动判断其存储、构建和设备 I/O 环境。
 只有用户明确说“只做Host/不上板/不烧录”时才用 `HOST_ONLY`。
 
-唯一确认规则：
+唯一确认规则（Stage0）：
 
 - 人工只在 Stage0 确认范围、用户 SDK 绝对路径和执行模式；确认前只读。
 - AUTO_ALL 缺 SDK 时，同一条用户回复同时给路径和确认；agent 先完成剩余只读探测并用 init token
   `finish stage0.scope_environment`，再调用 `confirm --confirmed-mode AUTO_ALL --sdk-root ...`。
 - 初始 AUTO_ALL 回复改选 HOST_ONLY 时，废弃未确认 run，以新 `RUN_ID` 初始化 HOST_ONLY、完成
-  stage0，再复用同一回复确认；不得在 AUTO_ALL run 上直接切换模式，也不得二次询问。
+  Stage0，再复用同一回复确认；不得在 AUTO_ALL run 上直接切换模式，也不得二次询问。
 - `EXECUTION_CONFIRM_GATE（一次总确认；确认前只读）` 在确认前为 `EXECUTION_CONFIRM_GATE=PENDING`，
   成功后为 `EXECUTION_CONFIRM_GATE=PASS`；`--confirmed-mode` 必须与 `mode` 一致，
   `confirmation_count=1`。不得把“生成某算子”或仅提供 SDK 路径当成确认。
@@ -174,7 +198,7 @@ Stage0 的完整探测、环境准备分流、依赖自动修复和安装/CLI �
 技术记录：STAGE0_PREVIEW=READY；BOARD_POLICY=AUTO_ALL；EXECUTION_CONFIRM_GATE=PENDING
 ```
 
-## stage1：文档先行的规划检查
+## Stage1：文档先行的规划检查
 
 只有 `EXECUTION_CONFIRM_GATE=PASS` 才进入。严格执行：
 
@@ -187,23 +211,27 @@ gate_artifacts.py --stage pre-source
   -> PRE_SOURCE_GATE=PASS
 ```
 
-prepare 期间禁止源码写入；初版设计/验证文档、facts、implementation contract、能力清单和计划版
+prepare 期间禁止源码写入；初版设计/验证文档、facts、实现约定、能力清单和计划版
 `op_spec.py` 必须来自同一冻结输入；每条计划 case 必须包含明确且非空的 `test_point`。`PRE_SOURCE_GATE=PASS` 前不能调用
 `hs-dev-op-implement mode=apply`。不能先改代码再更新草稿；规格、实现约定、能力或计划用例变化时返回
-stage1 完整重跑。详细产物和哈希校验见 [`references/stage1-plan.md`](references/stage1-plan.md)。
+Stage1 完整重跑。详细产物和哈希校验见 [`references/stage1-plan.md`](references/stage1-plan.md)。
 
-## stage2：实现源码
+## Stage2：实现源码
 
 进入 `stage2.implementation` 后调用 `hs-dev-op-implement mode=apply`，并传递冻结的
 implementation unit、全部生成文件的哈希和 `HISPARK_ROOT`。只有 `PRE_SOURCE_GATE=PASS` 才能写源码；
-实现 Skill 必须先完整读取其 `references/code-style.md` 和 `references/code-quality-gate.md`，记录
-`CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。该规范是 Skill 自带的，不是用户
-需要安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别保存，不能代写 Host 或正式文档。
+先按名称加载 `hs-dev-op-implement`，由它在实现前完整读取自身的以下文件：
+
+- `references/code-style.md`：团队代码规范。
+- `references/code-quality-gate.md`：代码质量检查要求。
+
+记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。这两份规范属于
+`hs-dev-op-implement`，不是用户需要单独安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别保存，不能代写 Host 或正式文档。
 规范路径必须展开为绝对路径并记录其 SHA-256；它不是用户需要安装的工具。
 `apply` 中不得在源码阶段直接
-修改已锁定的实现约定；若实现约定、能力清单、计划 `op_spec.py` 或初版文档变化，必须返回 stage1 重新确定，不能先改代码再更新草稿。
+修改已锁定的实现约定；若实现约定、能力清单、计划 `op_spec.py` 或初版文档变化，必须返回 Stage1 重新确定，不能先改代码再更新草稿。
 
-## stage3：构建 MindSpore Lite 工具包
+## Stage3：构建 MindSpore Lite 工具包
 
 启动 `stage3.mslite_build` 后读取
 [`references/build-and-toolchain.md`](references/build-and-toolchain.md)。它负责
@@ -223,36 +251,36 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 `libmindspore_converter.so` 缺失、其他MSLite包路径污染或环境身份变化时，在同一子进程自动修复；
 不能让用户手工`export`，不修改`.bashrc`；需要重新构建/下载时使用新`RUN_ID`。
 
-## stage4：Host 全量验证
+## Stage4：Host 全量验证
 
-进入 `stage4.host_verify` 后调用 `hs-verify-op-host`，读取并执行 stage1 已锁定的完整
+进入 `stage4.host_verify` 后调用 `hs-verify-op-host`，读取并执行 Stage1 已锁定的完整
 `op_spec.py`；不把Host阶段当成正常改写计划用例的阶段。必须先通过 `pre-verify`/validator，
 再用 `--target all` 运行固定 harness，生成含逐 case 测试点的 `verify_summary.txt`、
 `board_expected_matrix.json`、两份 Excel 和逐 case 证据。Host 失败时，按实现、模型/spec 或工具链类别返回对应阶段，
 不能用部分 PASS 缩小分母。细节按 Host Skill 的 references 按需读取。
 
-## stage6：AUTO_ALL 固件矩阵
+## Stage5：AUTO_ALL 固件矩阵
 
-仅 `AUTO_ALL` 进入；`HOST_ONLY` 将 stage6-stage7 标记 `NOT_REQUESTED`。读取
+仅 `AUTO_ALL` 进入；`HOST_ONLY` 将 Stage5/Stage6 标记 `NOT_REQUESTED`。读取
 [`references/board-orchestration.md`](references/board-orchestration.md) 和
-`hs-verify-op-board/chips/ws63/references/sdk-integration.md`，按
+`hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`，按
 `framework -> case_id -> mode(fp32,int8)` 逐行准备 Micro 工程、adaptor、Sample、CMake/Kconfig
 和 target，交给 `hs-dev-build`，再由 Board Skill 验收 `FIRMWARE_CONTENT_GATE=PASS`。不得挑代表 case；
 `board_expected_matrix.json` 是唯一分母。
 
-## stage7：烧录、串口和板端精度
+## Stage6：烧录、串口和板端精度
 
-每个 stage6 新鲜 fwpkg 交给 `hs-dev-flash`，再由 `hs-verify-op-board` 采集完整 Tensor 并运行
+每个 Stage5 新鲜 fwpkg 交给 `hs-dev-flash`，再由 `hs-verify-op-board` 采集完整 Tensor 并运行
 `board_accuracy.py`。端口探测、flash JSON、串口时间、shape/元素数、余弦和
 `board_matrix_report.py` 的逐行规则由 [`references/board-orchestration.md`](references/board-orchestration.md)
 及 Board Skill 持有；不得以启动日志、标签、少数 case 或单一 PASS 代表完整验证。
 确认后默认自动执行，不再询问“是否要上板”；只有端口歧义、设备 RESET 或其他外部条件异常时，
 才按对应 Skill 记录 `NOT_RUN/BLOCKED` 和恢复动作。
 
-## stage5：终态文档
+## Stage7：终态文档回填和最终报告
 
-Stage6/7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 终态后，进入
-`stage5.final_docs`。若 Stage0 在执行确认前阻断，状态机会自动将 `stage5.final_docs` 标为
+Stage5/Stage6 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 终态后，进入
+这个任务。若 Stage0 在执行确认前阻断，状态机会自动将它标为
 `BLOCKED`，只让 `terminal.report` 做状态收尾：记录阻断原因、恢复条件和状态证据，不调用
 `hs-design-op-manual`，也不生成或覆盖正式交付文档。只有 Stage0 已完成
 确认后，才调用 `hs-design-op-manual mode=integrated-final`：所有必需阶段通过（HOST_ONLY 的板端为
@@ -287,17 +315,16 @@ Stage6/7 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_
 | 固件环境准备和 CLI 回退 | [`references/environment-prep.md`](references/environment-prep.md) |
 | Stage1 prepare、文档和 pre-source | [`references/stage1-plan.md`](references/stage1-plan.md) |
 | Stage3 工具链 | [`references/build-and-toolchain.md`](references/build-and-toolchain.md) |
-| Stage6/7 顶层衔接 | [`references/board-orchestration.md`](references/board-orchestration.md) |
-| Board 构建 handoff | [`../hs-verify-op-board/references/ws63-build-handoff.md`](../hs-verify-op-board/references/ws63-build-handoff.md) |
-| Board 烧录与串口交接 | [`../hs-verify-op-board/references/flash-serial-handoff.md`](../hs-verify-op-board/references/flash-serial-handoff.md) |
-| Board 精度与矩阵规则 | [`../hs-verify-op-board/references/board-accuracy-contract.md`](../hs-verify-op-board/references/board-accuracy-contract.md) |
-| Board 红线与失败分流 | [`../hs-verify-op-board/references/board-guardrails.md`](../hs-verify-op-board/references/board-guardrails.md) |
+| Stage5/Stage6 顶层衔接 | [`references/board-orchestration.md`](references/board-orchestration.md) |
+| Board 构建 handoff | `hs-verify-op-board` 内的 `references/ws63-build-handoff.md` |
+| Board 烧录与串口交接 | `hs-verify-op-board` 内的 `references/flash-serial-handoff.md` |
+| Board 精度与矩阵规则 | `hs-verify-op-board` 内的 `references/board-accuracy-contract.md` |
+| Board 红线与失败分流 | `hs-verify-op-board` 内的 `references/board-guardrails.md` |
 | 终态报告 | [`references/final-report.md`](references/final-report.md) |
-| WS63 具体接线 | [`../hs-verify-op-board/chips/ws63/references/sdk-integration.md`](../hs-verify-op-board/chips/ws63/references/sdk-integration.md) |
+| WS63 具体接线 | `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md` |
 | 实现/文档/Host/Board 专项 | 对应 Skill 的 `SKILL.md` 和其直接 references |
 
 专项 Skill 缺失时，完整安装地址为：
 `https://gitcode.com/HiSpark/hibot-skills/tree/master/skills`。
-需要 `hs-dev-env-prep`、`hs-dev-build` 或 `hs-dev-flash` 时，期望保留完整子目录：
-`<skill-root>/hs-dev-env-prep/SKILL.md`、`<skill-root>/hs-dev-build/SKILL.md`、
-`<skill-root>/hs-dev-flash/SKILL.md`；不能只复制一个 `SKILL.md`。
+需要 `hs-dev-env-prep`、`hs-dev-build` 或 `hs-dev-flash` 时，按名称检查是否能加载，
+并保留各自的 `SKILL.md` 和全部配套资源；无需安装在同一父目录，不能只复制一个 `SKILL.md`。

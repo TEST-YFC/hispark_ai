@@ -13,9 +13,11 @@ description: >-
 
 # 算子 Host 正确性验证
 
-本 Skill 只负责 PC/WSL 上的 Host 测试设计和精度验证。每个算子只写一个 `<opdir>/scripts/op_spec.py`；
+本 Skill 负责 PC/WSL 上的 Host 测试设计和精度验证。每个算子只写一个 `<opdir>/scripts/op_spec.py`；
 模型生成、转换、编译、推理、余弦计算、Excel 和 summary 都由仓内固定 harness 完成。ONNX 与 TFLite
 是两条独立路径，各自维护用例和结果；`riscv_*` 目标仍在 Host 执行，不代表真实板运行。
+
+下文 Step 表示本 Skill 的内部步骤，不对应顶层 workflow 的 Stage；harness 的 step1-step5 是每条用例内部的执行步骤。
 
 ## 固定工作流
 
@@ -33,14 +35,14 @@ description: >-
 
 1. [`references/workflow-gates.md`](references/workflow-gates.md)：用户可见 todo、流程地图、harness 内部步骤和 workflow 的 pre-verify 检查。
 2. [`references/host-guardrails.md`](references/host-guardrails.md)：不可变 harness、余弦/INT8 防伪、目录和依赖红线及前置检查。
-3. [`references/host-contract.md`](references/host-contract.md)：`op_spec.py`、能力清单、输入/输出和两框架用例设计的完整规则。
+3. [Host 规格与用例规则](references/host-contract.md)：`op_spec.py`、能力清单、输入/输出和两框架用例设计的规则。
 4. [`references/run-and-results.md`](references/run-and-results.md)：运行命令、长任务等待、结果文件和报告格式。
 5. [`references/failure-triage.md`](references/failure-triage.md)：converter/工具链/实现失败分流、处理方式和范围底线。
 
 ## 调用边界与自动推进
 
 完整 workflow 传入的 `<opdir>`、框架范围、实现约束、能力清单和计划 `op_spec.py` 已在上游确定；本
-Skill 只能只读对账，发现 case、GT、覆盖映射或源码指纹变化就回到 workflow stage1，不能在 Host 阶段
+Skill 只能只读对账，发现 case、GT、覆盖映射或源码指纹变化就回到 workflow Stage1，不能在 Host 阶段
 悄悄改 spec 继续跑。独立 Host 请求在开始时确认一次代码/工具包和目标目录；收到确认后，spec 生成、
 依赖修复、harness 运行、结果读取和失败处理由 agent 自动完成，不逐步询问用户。轻量 Python 依赖可在
 同一解释器的虚拟环境或用户范围自动修复；超出安全边界才报告阻塞。
@@ -54,10 +56,13 @@ Skill 只能只读对账，发现 case、GT、覆盖映射或源码指纹变化�
 ONNX/TFLite source entry，提供相应 builder、确定性 `make_inputs()`、两套独立 cases 和精确目标身份；
 不得以等价 builtin 顶替、按形状静默切换算子、手填 GT 或余弦值。完整 workflow 启动前依次通过：
 
+下列 `<hs-...>` 使用按名称找到的对应 Skill 实际根目录。
+
 ```bash
-python3 <hs-dev-op-implement>/scripts/gate_artifacts.py \
-  --opdir <absolute-opdir> --op <Op> --stage pre-verify --framework <framework>
-python3 <hs-verify-op-host>/scripts/validate_op_spec.py <absolute-opdir>
+python3 "<hs-dev-op-implement>/scripts/gate_artifacts.py" \
+  --opdir <absolute-opdir> --op <Op> --stage pre-verify --framework <framework> \
+  --manual-audit-script "<hs-design-op-manual>/scripts/audit_manual_inputs.py"
+python3 "<hs-verify-op-host>/scripts/validate_op_spec.py" <absolute-opdir>
 ```
 
 每个激活 framework 都必须得到 `ARTIFACT_GATE=PASS` 且 validator 退出 0。harness 自己还会检查目标节点/
@@ -114,7 +119,7 @@ next_owner=<hs-workflow-op-development|implementation|toolchain>
 | `scripts/judge.sh` | 单 case 诊断；不形成最终结论 |
 | [`references/workflow-gates.md`](references/workflow-gates.md) | step0/1 和 workflow 对账 |
 | [`references/host-guardrails.md`](references/host-guardrails.md) | 禁止事项、依赖和目录边界 |
-| [`references/host-contract.md`](references/host-contract.md) | spec、能力和用例完整规则 |
+| [Host 规格与用例规则](references/host-contract.md) | spec、能力和用例完整规则 |
 | [`references/run-and-results.md`](references/run-and-results.md) | 执行、等待、结果读取 |
 | [`references/failure-triage.md`](references/failure-triage.md) | 失败排查与处理 |
 
