@@ -15,7 +15,7 @@ HiSpark.AI 是海思嵌入式 AI 应用开发解决方案，功能覆盖模型�
 | ③   | HiSpark Studio AI for VS Code | IDE 插件，图形化界面覆盖模型编译、量化转换、烧录等操作，极大提升 AI 应用开发易用性                        | 源码 / 安装包 | 源码：[vscode-hispark-studio](https://gitcode.com/HiSpark/vscode-hispark-studio)；安装包：[VS Code 插件市场](https://marketplace.visualstudio.com/items?itemName=HiSpark.hisparkai) |
 | ④   | MindSpore-Lite                | 用于CPU平台，支持推理与端侧训练，可自动生成推理模块代码并提供 RISC-V 算子库                          | 源码/ 预构建  | 源码：本仓库 submodule；直接获取：[developerTool](https://developers.hisilicon.com/cn/developerTool)                                                                                |
 | ⑤   | CANN                          | 用于 NPU 平台，昇腾 AI 异构计算架构（ATC 模型编译、AMCT 模型压缩、ACL 推理库）                   | 预构建      | [developerTool](https://developers.hisilicon.com/cn/developerTool)                                                                                                      |
-| ⑥   | modelzoo                      | 生态组件，汇聚多类别的AI模型样例与AI应用开发参考方案。                                        | 源码       | [fbb-modelzoo](https://gitcode.com/HiSpark/fbb-modelzoo-dev) 仓库                                                                                                         |
+| ⑥   | modelzoo                      | 生态组件，汇聚多类别的AI模型样例与AI应用开发参考方案。                                        | 源码       | [fbb-modelzoo](https://gitcode.com/HiSpark/fbb-modelzoo) 仓库                                                                                                         |
 
 
 > 作为整体解决方案的导航，本仓库只放置其中部分组件的源码（见下表）；其余组件不在此仓，获取方式见上表。
@@ -175,7 +175,7 @@ NPU 侧异构计算架构，提供 ATC 模型编译、AMCT 模型压缩、ACL �
 ## modelzoo
 modelzoo 是 HiSpark.AI 的AI模型库，内置丰富的预训练模型与基于已适配的海思各芯片平台的部署示例，可用于快速构建 AI 应用。
 
-更多模型与部署示例，请前往 [fbb-modelzoo 仓库](https://gitcode.com/HiSpark/fbb-modelzoo-dev) 获取。
+更多模型与部署示例，请前往 [fbb-modelzoo 仓库](https://gitcode.com/HiSpark/fbb-modelzoo) 获取。
 
 ## 参与贡献
 
