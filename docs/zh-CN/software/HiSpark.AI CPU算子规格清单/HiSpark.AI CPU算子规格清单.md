@@ -372,7 +372,7 @@
 
 **功能描述<a name="section3190115702a"></a>**
 
-对5D输入进行三维卷积计算。该算子仅支持TFLite格式和RISCV Micro目标，source entry为TFLite CONV_3D，输入布局为NDHWC，权重布局为[KD, KH, KW, IC, OC]。
+对5D输入进行三维卷积计算。该算子为TFLite规格，支持RISCV Micro目标和x86目标，source entry为TFLite CONV_3D，输入布局为NDHWC，权重布局为[KD, KH, KW, IC, OC]。
 
 float32模型可通过全量化生成int8数据通路，量化后权重为int8，偏置为int32。
 
@@ -5300,7 +5300,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115702r1d"><a name="p3050115702r1d"></a><a name="p3050115702r1d"></a>输入张量，维度不限制。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115702r1e"><a name="p3050115702r1e"></a><a name="p3050115702r1e"></a>-</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115702r1e"><a name="p3050115702r1e"></a><a name="p3050115702r1e"></a>规格约束：不支持int64</p>
 </td>
 </tr>
 <tr id="row3050115702r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115702r2a"><a name="p3050115702r2a"></a><a name="p3050115702r2a"></a>k</p>
@@ -6734,7 +6734,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 **功能描述<a name="section3190115802a"></a>**
 
-基于5D权重对5D输入进行三维卷积计算。该算子仅支持ONNX格式和RISCV Micro目标，source entry为ONNX Conv；转换器按输入和权重rank自动识别为Conv3D。输入X布局为NCDHW，输出布局为NCDHW。
+基于5D权重对5D输入进行三维卷积计算。该算子为ONNX规格，支持RISCV Micro目标和x86目标，source entry为ONNX Conv；转换器按输入和权重rank自动识别为Conv3D。输入X布局为NCDHW，输出布局为NCDHW。
 
 float32模型可通过全量化生成int8数据通路。原生int8/int32模型不作为该规格支持范围。
 
@@ -13175,7 +13175,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3050115802r1d"><a name="p3050115802r1d"></a><a name="p3050115802r1d"></a>输入张量，维度不限制。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r1e"><a name="p3050115802r1e"></a><a name="p3050115802r1e"></a>-</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3050115802r1e"><a name="p3050115802r1e"></a><a name="p3050115802r1e"></a>规格约束：不支持int64</p>
 </td>
 </tr>
 <tr id="row3050115802r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3050115802r2a"><a name="p3050115802r2a"></a><a name="p3050115802r2a"></a>K</p>
@@ -14725,7 +14725,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 **参数说明<a name="section2026082903b"></a>**
 
 >![](public_sys-resources/icon-note.gif) **说明：**
->模型数据类型仅支持float32，部署路径为FP32与全量化INT8。必须同时输出Y与Y_h。仅支持layout=0（时间步在前的布局），layout=1（批在前的布局）不支持。TFLite无对应builtin算子，不支持转换。
+>模型数据类型仅支持float32，RISCV平台支持FP32与全量化INT8，x86平台仅支持FP32，不支持INT8量化。必须同时输出Y与Y_h。仅支持layout=0（时间步在前的布局），layout=1（批在前的布局）不支持。TFLite无对应builtin算子，不支持转换。
 
 **表 1**  RNN参数概览
 
