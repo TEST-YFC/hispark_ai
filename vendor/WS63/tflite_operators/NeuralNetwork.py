@@ -20,6 +20,7 @@ logging.basicConfig(level=logging.NOTSET)
 class _neuralnetworkmodel(tf.Module):
     def __init__(self):
         super(_neuralnetworkmodel, self).__init__()
+        tf.random.set_seed(42)
         self.conv_weights = tf.Variable(
             tf.random.normal([3, 3, 1, 16], dtype=tf.float32),
             trainable=False
