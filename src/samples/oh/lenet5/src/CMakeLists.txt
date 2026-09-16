@@ -133,8 +133,8 @@ elseif ("${CHIP_VERSION}" STREQUAL "1155")
         ${link_lib_list}
     )
 
-    target_link_libraries(ai_sample_mcu PRIVATE ${MSLITE_PATH}/tools/codegen/lib/arm/libnnacl.a)
     target_link_libraries(ai_sample_mcu PRIVATE ${MSLITE_PATH}/tools/codegen/lib/arm/libwrapper.a)
+    target_link_libraries(ai_sample_mcu PRIVATE ${MSLITE_PATH}/tools/codegen/lib/arm/libnnacl.a)
 
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath-link=${link_so_dir}")
 

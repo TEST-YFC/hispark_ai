@@ -9,7 +9,8 @@
 #
 # gate_artifacts.py --opdir <opdir> --op <Op> \
 #   --stage source-freeze|step3|prepare|pre-source|pre-code|pre-verify \
-#   [--code-root <mindspore-lite-root>] [--framework onnx ...]
+#   [--code-root <mindspore-lite-root>] [--framework onnx ...] [--source-only]
+#   [--manual-audit-script <resolved-absolute-audit-script-path>]
 #
 # Hard gate for hs-dev-op-implement artifacts. This script intentionally checks
 # only mechanical invariants; semantic judgement remains in SKILL.md. In
@@ -73,12 +74,6 @@ REVIEW_LIST_RULES = {
     ],
 }
 
-MANUAL_AUDIT_SCRIPT = (
-    Path(__file__).resolve().parents[2]
-    / "hs-design-op-manual"
-    / "scripts"
-    / "audit_manual_inputs.py"
-)
 SOURCE_FREEZE_NAME = "source-freeze.json"
 
 
@@ -381,14 +376,27 @@ def check_source_freeze(opdir, code_root, op, frameworks, plan_run_id, errors):
         )
 
 
-def run_manual_audit(opdir, facts_path, design_path, verify_path, errors):
-    if not MANUAL_AUDIT_SCRIPT.is_file():
-        errors.append(f"missing manual audit script: {MANUAL_AUDIT_SCRIPT}")
+def run_manual_audit(opdir, facts_path, design_path, verify_path, errors, manual_audit_script=None):
+    # The caller resolves hs-design-op-manual by skill name. Its installation
+    # location is independent of this script; never infer a sibling directory.
+    if manual_audit_script is None:
+        errors.append(
+            "--manual-audit-script is required for integrated-initial document audit; "
+            "load hs-design-op-manual by name and pass the absolute path of its "
+            "scripts/audit_manual_inputs.py"
+        )
+        return
+    manual_audit_script = Path(manual_audit_script)
+    if not manual_audit_script.is_absolute():
+        errors.append("--manual-audit-script must be an absolute path resolved from hs-design-op-manual")
+        return
+    if not manual_audit_script.is_file():
+        errors.append(f"missing manual audit script: {manual_audit_script}")
         return
     result = subprocess.run(
         [
             sys.executable,
-            str(MANUAL_AUDIT_SCRIPT),
+            str(manual_audit_script),
             "--opdir",
             str(opdir),
             "--facts",
@@ -421,7 +429,7 @@ def run_manual_audit(opdir, facts_path, design_path, verify_path, errors):
         )
 
 
-def check_initial_manual(opdir, op, errors):
+def check_initial_manual(opdir, op, errors, manual_audit_script=None):
     """Prove that integrated-initial consumed the current frozen planning inputs."""
     docs = opdir / "docs"
     facts_path = docs / "operator-manual-facts.json"
@@ -480,7 +488,7 @@ def check_initial_manual(opdir, op, errors):
         if entry.get("sha256") != file_sha256(source):
             errors.append(f"{facts_path} sources.{name}.sha256 does not match current file")
     if facts_path.is_file() and design_path.is_file() and verify_path.is_file():
-        run_manual_audit(opdir, facts_path, design_path, verify_path, errors)
+        run_manual_audit(opdir, facts_path, design_path, verify_path, errors, manual_audit_script)
 
 
 def check_code_review(path, op, frameworks, errors):
@@ -579,11 +587,28 @@ def main():
     parser.add_argument("--plan-run-id")
     parser.add_argument("--rotate-source-freeze", action="store_true")
     parser.add_argument("--framework", action="append", default=[])
+    parser.add_argument(
+        "--manual-audit-script",
+        type=Path,
+        help=(
+            "absolute path of scripts/audit_manual_inputs.py from hs-design-op-manual "
+            "resolved by skill name; required for pre-source/pre-code/pre-verify document audit, "
+            "except source-only pre-source/pre-code"
+        ),
+    )
+    parser.add_argument(
+        "--source-only",
+        action="store_true",
+        help="for standalone source-only apply: keep source gates but skip integrated-initial document audit",
+    )
     args = parser.parse_args()
 
     opdir = args.opdir.resolve()
     frameworks = [fw.lower() for fw in args.framework]
     errors = []
+
+    if args.source_only and args.stage not in {"pre-source", "pre-code"}:
+        errors.append("--source-only is only valid with stage=pre-source or stage=pre-code")
 
     if args.stage == "source-freeze":
         if args.code_root is None:
@@ -648,11 +673,12 @@ def main():
     if args.stage in ["prepare", "pre-source", "pre-code", "pre-verify"]:
         check_op_spec_text(scripts / "op_spec.py", args.op, frameworks, errors)
 
-    # pre-code remains a compatibility alias for pre-source. Both require the
-    # integrated-initial facts and draft, so an older caller cannot bypass the
-    # document-first gate by using the previous stage spelling.
-    if args.stage in ["pre-source", "pre-code", "pre-verify"]:
-        check_initial_manual(opdir, args.op, errors)
+    # pre-code remains a compatibility alias for pre-source. The normal
+    # workflow requires integrated-initial facts and drafts. Standalone
+    # source-only keeps every source/spec/capability gate but has no formal
+    # document Skill to audit, so it opts out explicitly at the command line.
+    if args.stage in ["pre-source", "pre-code", "pre-verify"] and not args.source_only:
+        check_initial_manual(opdir, args.op, errors, args.manual_audit_script)
 
     if args.stage == "pre-verify":
         check_code_review(docs / "code-review.md", args.op, frameworks, errors)

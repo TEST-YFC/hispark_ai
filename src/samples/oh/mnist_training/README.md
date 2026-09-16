@@ -6,16 +6,18 @@
 mnist_training
 ├── build.sh
 ├── CMakeLists.txt
-├── data
-│   └── README.md
+├── README.md
 ├── model
 │   └── micro_train.cfg
 ├── scripts
-│   └── preproc_mnist_data.py
+│   ├── preproc_mnist_data.py
+│   └── README.md
 └── src
     ├── ai_main_training.c
     └── mnist_training_data.h
 ```
+
+> 下文所有命令均在 `samples/oh/mnist_training` 目录下执行
 
 ## 1. 准备模型和 MNIST 数据
 
@@ -26,8 +28,6 @@ wget -O model/mnist_training_init.onnx \
   "https://api.gitcode.com/api/v5/repos/HiSpark/hispark_ai/raw/src/samples/oh/mnist_training/model/mnist_training_init.onnx?ref=master"
 ```
 > `mnist_training_init.onnx` 是用于 MNIST 手写数字分类的 LeNet-style CNN 示例模型。该类网络结构来源于 Yann LeCun 团队提出的 LeNet 系列卷积神经网络思想，本 Sample 使用的模型并非严格复现原始 LeNet-5，而是面向端侧训练验证做了简化。
-
-在 `samples/oh/mnist_training` 目录下执行：
 
 ```bash
 python scripts/preproc_mnist_data.py \
@@ -42,23 +42,13 @@ data/calib_data/bin/    # converter 量化校准使用的 BIN 数据
 src/mnist_training_data.c
 ```
 
-`model/micro_train.cfg` 默认使用：
-
-```ini
-calibrate_path=input:data/calib_data/bin
-calibrate_size=500
-```
-
-因此 converter 也需要在 `samples/oh/mnist_training` 目录下执行，或者将该路径改成绝对路径。
-`calibrate_size` 必须和 `data/calib_data/bin` 下的 bin 文件数量一致。
-
 
 ## 2. 生成 micro 工程
 
 配置 MindSpore Lite 包路径：
 
 ```bash
-export MSLITE_PKG=/path/to/mindspore-lite-2.8.0-linux-x64
+export MSLITE_PKG=/path/to/mindspore-lite-package
 export PATH=${MSLITE_PKG}/tools/converter/converter:${PATH}
 export LD_LIBRARY_PATH=${MSLITE_PKG}/tools/converter/lib:${LD_LIBRARY_PATH}
 ```

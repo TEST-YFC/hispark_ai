@@ -50,6 +50,15 @@ def _load_harness():
 h = _load_harness()
 
 
+def test_multi_output_ground_truth_uses_numeric_filename_order(tmp_path):
+    for index in (10, 2, 1):
+        np.save(tmp_path / f"output_{index}.npy", np.asarray([index]))
+
+    outputs = h._load_numpy_outputs(tmp_path)
+
+    assert [int(output[0]) for output in outputs] == [1, 2, 10]
+
+
 def test_onnx_reference_falls_back_only_for_ort_not_implemented(monkeypatch):
     class FailingSession:
         def __init__(self, *_args, **_kwargs):
@@ -699,6 +708,23 @@ def test_coverage_uncovered_when_no_covering_case_passed():
     assert any("[UNCOVERED]" in ln and "c2" in ln for ln in lines)
 
 
+@pytest.mark.parametrize(
+    "expected,executed,passed,uncovered,failed,exit_code",
+    [
+        (4, 4, 4, 0, 0, 0),
+        (4, 1, 1, 0, 3, 1),
+        (4, 4, 3, 0, 1, 1),
+        (4, 4, 4, 1, 0, 1),
+        (0, 0, 0, 0, 0, 1),
+    ],
+)
+def test_host_gate_requires_every_planned_variant(
+        expected, executed, passed, uncovered, failed, exit_code):
+    assert h.host_gate_result(expected, executed, passed, uncovered) == (
+        failed, exit_code,
+    )
+
+
 # =========================================================================== #
 # F. _err_msg — turns a failed path into an actionable reason. The crash/timeout
 #    classification must not regress into a generic "no output" message.
@@ -900,14 +926,15 @@ def test_assert_model_input_contract_rejects_missing_dynamic_input(tmp_path):
 
 def test_board_matrix_entry_is_emitted_only_for_riscv_variants(tmp_path):
     assert h.make_board_matrix_entry(
-        tmp_path, "Add", "onnx", "broadcast", "x86_fp32", "PASS", 1.0
+        tmp_path, "Add", "onnx", "broadcast", "验证广播语义", "x86_fp32", "PASS", 1.0
     ) is None
 
     entry = h.make_board_matrix_entry(
-        tmp_path, "Add", "onnx", "broadcast", "riscv_int8", "PASS", 0.998
+        tmp_path, "Add", "onnx", "broadcast", "验证广播语义", "riscv_int8", "PASS", 0.998
     )
     assert entry["framework"] == "onnx"
     assert entry["case_id"] == "broadcast"
+    assert entry["test_point"] == "验证广播语义"
     assert entry["mode"] == "int8"
     assert entry["host_path"] == "riscv_int8"
     assert entry["host_status"] == "PASS"
@@ -929,3 +956,33 @@ def test_load_spec_requires_only_selected_framework_builder(tmp_path):
     assert spec.OP_NAME == "OnlyOnnx"
     with pytest.raises(SystemExit, match="build_tflite_model"):
         h.load_spec(spec_path, ["onnx", "tflite"])
+
+
+@pytest.mark.parametrize("test_point", [None, "", " padded ", "line1\nline2", "a|b"])
+def test_load_spec_requires_valid_test_point_for_every_active_case(tmp_path, test_point):
+    spec_path = tmp_path / "op_spec.py"
+    spec_path.write_text(
+        "OP_NAME = 'Add'\n"
+        "ONNX_TARGET_OP_TYPE = 'Add'\n"
+        f"ONNX_TEST_CASES = [{{'id': 1, 'desc': 'basic', 'test_point': {test_point!r}, 'params': {{}}}}]\n"
+        "TFLITE_TEST_CASES = []\n"
+        "def build_onnx_model(*args): pass\n"
+        "def make_inputs(*args): return []\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit, match="test_point"):
+        h.load_spec(spec_path, ["onnx"])
+
+
+def test_excel_report_metadata_has_test_point_column():
+    tc = {
+        "id": 1,
+        "desc": "broadcast",
+        "test_point": "验证中间维广播的步长与索引",
+    }
+
+    assert h.EXCEL_CASE_COLUMNS == ["用例编号", "描述", "测试点"]
+    assert h.excel_case_metadata(tc) == [
+        1, "broadcast", "验证中间维广播的步长与索引",
+    ]

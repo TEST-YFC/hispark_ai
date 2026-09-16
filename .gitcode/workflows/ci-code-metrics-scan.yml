@@ -1,0 +1,29 @@
+name: code-metrics-scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 0 * * ?"
+
+permissions:
+  id-token: write
+
+jobs:
+  code-metrics-scan:
+    name: 代码度量检测
+    runs-on: ["ubuntu-latest", "x64", "small"]
+    env:
+      NODE_OPTIONS: "--max-old-space-size=6144"
+    steps:
+      - name: Checkout
+        uses: checkout
+        with:
+          token: ${{ secrets.ROBOT_TOKEN }}
+
+      - name: code-metrics-scan
+        uses: openlibing/code-metrics-action@95623b0e88eaaed34eac28da21df52f4ac33a2b8
+        with:
+          # 可选：排除指定目录/文件，不传 exclude-dirs 默认全路径扫描
+          exclude-dirs: "COPYRIGHT,COPYRIGHT.OpenSource,LICENSE,LICENSE.OpenSource,OAT.xml,README.md,.gitignore/,docs/,.git/,.gitcode/,.gitmodules/,skills/,vendor/WS63/,ci_build.py,opensource_software.json"
+          # 可选：扫描指定文件后缀的文件，不传 allowed-extensions 默认扫描全部文件
+          # allowed-extensions: ".ts,.js,.py"

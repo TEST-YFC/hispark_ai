@@ -26,8 +26,8 @@
 #define TASKS_NPU_AI_PRIO (osPriority_t)(17) /* Task Priority in LiteOS */
 #define GRU_RUN_TIMES 25
 
-static const char *modelFileName = "/user/gru.exeom";
-static const char *modelInputFile = "/user/sample_mfcc.bin";
+static const char *g_modelFileName = "/user/gru.exeom";
+static const char *g_modelInputFile = "/user/sample_mfcc.bin";
 
 int32_t GruRun()
 {
@@ -39,7 +39,7 @@ int32_t GruRun()
     }
 
     // 加载模型文件
-    if (LoadModel(&modelInfo, modelFileName, modelInputFile)) {
+    if (LoadModel(&modelInfo, g_modelFileName, g_modelInputFile)) {
         goto DESTROY;
     }
 

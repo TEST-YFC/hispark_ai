@@ -9,7 +9,7 @@ number or an "expected" tensor here.
 
 Required names (validated by the harness):
     OP_NAME            : str
-    ONNX_TEST_CASES    : list[dict]   each {"id", "desc", "params": {...}}
+    ONNX_TEST_CASES    : list[dict]   each {"id", "desc", "test_point", "params": {...}}
     TFLITE_TEST_CASES  : list[dict]   designed independently per TFLite spec (NHWC)
     build_onnx_model(tc, model_path)     -> writes a .onnx file (NCHW)
     build_tflite_model(tc, model_path)   -> writes a .tflite file (NHWC)
@@ -86,37 +86,37 @@ POST_CONVERSION_IDENTITY = {"markers": ["HSwishInt8", "HardSwish"]}
 # ---- ONNX cases (NCHW) -------------------------------------------------------
 ONNX_TEST_CASES = [
     # --- shape 覆盖 ---
-    {"id": 1,  "desc": "2D 基本",            "params": {"shape": [1, 8],        "value_domain": "mixed"}},
-    {"id": 2,  "desc": "4D 小张量",           "params": {"shape": [1, 3, 4, 4],   "value_domain": "mixed"}},
-    {"id": 3,  "desc": "4D 大张量",           "params": {"shape": [1, 32, 64, 64],"value_domain": "mixed"}},
-    {"id": 4,  "desc": "batch>1",            "params": {"shape": [4, 8],         "value_domain": "mixed"}},
+    {"id": 1,  "desc": "2D 基本", "test_point": "验证二维小输入的基础计算与通路可执行性", "params": {"shape": [1, 8], "value_domain": "mixed"}},
+    {"id": 2,  "desc": "4D 小张量", "test_point": "验证小型四维张量的形状遍历与布局处理", "params": {"shape": [1, 3, 4, 4], "value_domain": "mixed"}},
+    {"id": 3,  "desc": "4D 大张量", "test_point": "验证大型四维张量的循环边界与长数据处理", "params": {"shape": [1, 32, 64, 64], "value_domain": "mixed"}},
+    {"id": 4,  "desc": "batch>1", "test_point": "验证 batch 大于 1 时跨批次索引正确", "params": {"shape": [4, 8], "value_domain": "mixed"}},
     # --- 值域（sign domain）覆盖 — INT8 zp 偏向关键 ---
-    {"id": 5,  "desc": "全正数",             "params": {"shape": [1, 16],        "value_domain": "positive"}},
-    {"id": 6,  "desc": "全负数",             "params": {"shape": [1, 16],        "value_domain": "negative"}},
-    {"id": 7,  "desc": "小量级(接近零)",     "params": {"shape": [1, 16],        "value_domain": "near_zero"}},
-    {"id": 8,  "desc": "全零(退化)",         "params": {"shape": [1, 16],        "value_domain": "zeros"}},
+    {"id": 5,  "desc": "全正数", "test_point": "验证全正输入下非对称量化及正值区间计算", "params": {"shape": [1, 16], "value_domain": "positive"}},
+    {"id": 6,  "desc": "全负数", "test_point": "验证全负输入下非对称量化及负值区间计算", "params": {"shape": [1, 16], "value_domain": "negative"}},
+    {"id": 7,  "desc": "小量级(接近零)", "test_point": "验证近零小量级输入不会因精度或量化塌缩失真", "params": {"shape": [1, 16], "value_domain": "near_zero"}},
+    {"id": 8,  "desc": "全零(退化)", "test_point": "验证全零退化输入的稳定性与零输出语义", "params": {"shape": [1, 16], "value_domain": "zeros"}},
     # --- 算子敏感区间（HardSwish 示例：x<-3 饱和为0、-3≤x≤3 非线性段、x>3 线性段） ---
-    {"id": 9,  "desc": "饱和区(x<-3)",       "params": {"shape": [1, 16],        "value_domain": "hs_saturate_neg"}},
-    {"id": 10, "desc": "非线性段(-3≤x≤3)",   "params": {"shape": [1, 16],        "value_domain": "hs_nonlinear"}},
-    {"id": 11, "desc": "线性段(x>3)",        "params": {"shape": [1, 16],        "value_domain": "hs_linear"}},
+    {"id": 9,  "desc": "饱和区(x<-3)", "test_point": "验证 x<-3 饱和区输出为零", "params": {"shape": [1, 16], "value_domain": "hs_saturate_neg"}},
+    {"id": 10, "desc": "非线性段(-3≤x≤3)", "test_point": "验证 -3≤x≤3 区间的非线性公式", "params": {"shape": [1, 16], "value_domain": "hs_nonlinear"}},
+    {"id": 11, "desc": "线性段(x>3)", "test_point": "验证 x>3 线性区输出等于输入", "params": {"shape": [1, 16], "value_domain": "hs_linear"}},
 ]
 
 # ---- TFLite cases (NHWC) — designed independently ---------------------------
 TFLITE_TEST_CASES = [
     # --- shape 覆盖 ---
-    {"id": 1,  "desc": "2D 基本",            "params": {"shape": [1, 8],        "value_domain": "mixed"}},
-    {"id": 2,  "desc": "4D 小张量",           "params": {"shape": [1, 4, 4, 3],  "value_domain": "mixed"}},
-    {"id": 3,  "desc": "4D 大张量",           "params": {"shape": [1, 64, 64, 3],"value_domain": "mixed"}},
-    {"id": 4,  "desc": "batch>1",            "params": {"shape": [4, 8],         "value_domain": "mixed"}},
+    {"id": 1,  "desc": "2D 基本", "test_point": "验证二维小输入的基础计算与通路可执行性", "params": {"shape": [1, 8], "value_domain": "mixed"}},
+    {"id": 2,  "desc": "4D 小张量", "test_point": "验证 NHWC 小型四维张量的形状遍历与布局处理", "params": {"shape": [1, 4, 4, 3], "value_domain": "mixed"}},
+    {"id": 3,  "desc": "4D 大张量", "test_point": "验证 NHWC 大型四维张量的循环边界与长数据处理", "params": {"shape": [1, 64, 64, 3], "value_domain": "mixed"}},
+    {"id": 4,  "desc": "batch>1", "test_point": "验证 batch 大于 1 时跨批次索引正确", "params": {"shape": [4, 8], "value_domain": "mixed"}},
     # --- 值域覆盖 ---
-    {"id": 5,  "desc": "全正数",             "params": {"shape": [1, 16],        "value_domain": "positive"}},
-    {"id": 6,  "desc": "全负数",             "params": {"shape": [1, 16],        "value_domain": "negative"}},
-    {"id": 7,  "desc": "小量级(接近零)",     "params": {"shape": [1, 16],        "value_domain": "near_zero"}},
-    {"id": 8,  "desc": "全零(退化)",         "params": {"shape": [1, 16],        "value_domain": "zeros"}},
+    {"id": 5,  "desc": "全正数", "test_point": "验证全正输入下非对称量化及正值区间计算", "params": {"shape": [1, 16], "value_domain": "positive"}},
+    {"id": 6,  "desc": "全负数", "test_point": "验证全负输入下非对称量化及负值区间计算", "params": {"shape": [1, 16], "value_domain": "negative"}},
+    {"id": 7,  "desc": "小量级(接近零)", "test_point": "验证近零小量级输入不会因精度或量化塌缩失真", "params": {"shape": [1, 16], "value_domain": "near_zero"}},
+    {"id": 8,  "desc": "全零(退化)", "test_point": "验证全零退化输入的稳定性与零输出语义", "params": {"shape": [1, 16], "value_domain": "zeros"}},
     # --- 算子敏感区间 ---
-    {"id": 9,  "desc": "饱和区(x<-3)",       "params": {"shape": [1, 16],        "value_domain": "hs_saturate_neg"}},
-    {"id": 10, "desc": "非线性段(-3≤x≤3)",   "params": {"shape": [1, 16],        "value_domain": "hs_nonlinear"}},
-    {"id": 11, "desc": "线性段(x>3)",        "params": {"shape": [1, 16],        "value_domain": "hs_linear"}},
+    {"id": 9,  "desc": "饱和区(x<-3)", "test_point": "验证 x<-3 饱和区输出为零", "params": {"shape": [1, 16], "value_domain": "hs_saturate_neg"}},
+    {"id": 10, "desc": "非线性段(-3≤x≤3)", "test_point": "验证 -3≤x≤3 区间的非线性公式", "params": {"shape": [1, 16], "value_domain": "hs_nonlinear"}},
+    {"id": 11, "desc": "线性段(x>3)", "test_point": "验证 x>3 线性区输出等于输入", "params": {"shape": [1, 16], "value_domain": "hs_linear"}},
 ]
 
 
@@ -253,9 +253,9 @@ def make_inputs(tc, framework):
 #     return [a, b]
 #
 # Broadcast cases then differ only in shape. For full-NumPy-broadcast ops, cover ALL of:
-#   {"id": 12, "desc": "scalar-b broadcast",  "params": {"shape": [2, 4],    "b_shape": [1]}}
-#   {"id": 13, "desc": "middle-dim broadcast","params": {"shape": [2, 3, 4], "b_shape": [2, 1, 4]}}
-#   {"id": 14, "desc": "mixed: scalar + non-trivial", "params": {"shape": [2, 3, 4],
+#   {"id": 12, "desc": "scalar-b broadcast", "test_point": "验证第二输入为标量时的广播索引", "params": {"shape": [2, 4], "b_shape": [1]}}
+#   {"id": 13, "desc": "middle-dim broadcast", "test_point": "验证中间维广播的步长与索引", "params": {"shape": [2, 3, 4], "b_shape": [2, 1, 4]}}
+#   {"id": 14, "desc": "mixed: scalar + non-trivial", "test_point": "验证标量与非平凡广播并存时不会误走快路", "params": {"shape": [2, 3, 4],
 #                                                     "a_shape": [1], "b_shape": [2, 1, 4]}}
 # Why these two extra forms: kernels often add fast paths guarded by weak conditions —
 #   * an `i % num` index approximation is only accidentally right for OUTERMOST-dim

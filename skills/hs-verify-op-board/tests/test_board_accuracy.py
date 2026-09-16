@@ -21,6 +21,15 @@ def test_thresholds_match_host_signoff_contract():
     assert board.THRESHOLD_INT8 == 0.99
 
 
+def test_multi_output_ground_truth_uses_numeric_filename_order(tmp_path):
+    for index in (10, 2, 1):
+        np.save(tmp_path / f"output_{index}.npy", np.asarray([index]))
+
+    outputs = board.load_gt_outputs(tmp_path)
+
+    assert [int(output[0]) for output in outputs] == [1, 2, 10]
+
+
 def test_cosine_zero_contract_matches_host():
     assert board.cosine_similarity([0, 0], [0, 0]) == 1.0
     assert board.cosine_similarity([0, 0], [1, 0]) == 0.0
@@ -244,3 +253,54 @@ def test_main_rejects_negative_shape_without_traceback(tmp_path):
     assert "ACCURACY_VERDICT=FAIL" in completed.stdout
     assert "invalid shape metadata" in completed.stdout
     assert "Traceback" not in completed.stderr
+
+
+def test_main_accepts_utf16_monitor_from_windows_tool(tmp_path):
+    gt_dir = tmp_path / "gt"
+    gt_dir.mkdir()
+    np.save(gt_dir / "output.npy", np.array([1.0, 2.0], dtype=np.float32))
+    monitor = tmp_path / "monitor.txt"
+    monitor.write_bytes(
+        (
+            "[AI_MCU] OUTPUT: index=0\n"
+            "[AI_MCU] DType: 43\n"
+            "[AI_MCU] Shape: [2]\n"
+            "[AI_MCU] Elements: 2\n"
+            "[AI_MCU] Data: [1][2]\n"
+        ).encode("utf-16")
+    )
+
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--gt-dir", str(gt_dir), "--monitor", str(monitor)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert "ACCURACY_VERDICT=PASS" in completed.stdout
+
+
+def test_main_keeps_protocol_after_binary_serial_prefix(tmp_path):
+    gt_dir = tmp_path / "gt"
+    gt_dir.mkdir()
+    np.save(gt_dir / "output.npy", np.array([0.0, 0.0, 0.0], dtype=np.float32))
+    monitor = tmp_path / "monitor.log"
+    monitor.write_bytes(
+        b"\x80\x00\x00\x80\xdd" +
+        b"[AI_MCU] OUTPUT: index=0\n"
+        b"[AI_MCU] DType: 43\n"
+        b"[AI_MCU] Shape: [3]\n"
+        b"[AI_MCU] Elements: 3\n"
+        b"[AI_MCU] Data: [0.00000][0.00000][0.00000]\n"
+    )
+
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--gt-dir", str(gt_dir), "--monitor", str(monitor)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert "ACCURACY_VERDICT=PASS" in completed.stdout

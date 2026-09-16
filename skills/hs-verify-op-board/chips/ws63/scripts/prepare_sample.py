@@ -302,7 +302,7 @@ static OH_AI_Status check_tensor(OH_AI_TensorHandle tensor, OH_AI_DataType dtype
 {{
     size_t rank = 0;
     const int64_t *shape = OH_AI_TensorGetShape(tensor, &rank);
-    if (shape == NULL || rank != expected_rank || OH_AI_TensorGetDataType(tensor) != dtype ||
+    if ((shape == NULL && rank != 0) || rank != expected_rank || OH_AI_TensorGetDataType(tensor) != dtype ||
         OH_AI_TensorGetDataSize(tensor) != expected_bytes) {{
         return OH_AI_STATUS_FAILED;
     }}
@@ -338,7 +338,7 @@ static OH_AI_Status print_output(OH_AI_TensorHandle tensor, size_t output_index)
     const void *data = OH_AI_TensorGetMutableData(tensor);
     int64_t elements = OH_AI_TensorGetElementNum(tensor);
     OH_AI_DataType dtype = OH_AI_TensorGetDataType(tensor);
-    if (shape == NULL || data == NULL || elements < 0 || dtype == OH_AI_DATATYPE_UNKNOWN) {{
+    if ((shape == NULL && rank != 0) || data == NULL || elements < 0 || dtype == OH_AI_DATATYPE_UNKNOWN) {{
         return OH_AI_STATUS_FAILED;
     }}
     osal_printk("[AI_MCU] OUTPUT: index=%zu\\n", output_index);

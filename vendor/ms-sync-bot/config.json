@@ -1,0 +1,15 @@
+{
+  "repo_a": "",
+  "repo_b": "",
+  "a_remote_ref": "origin/master",
+  "b_branch": "r2.8",
+  "b_push_remote": "origin",
+  "fork_pr": false,
+  "gate": {
+    "default_mode": "quick",
+    "lint_filters": {
+      "cpplint": ".jenkins/check/config/filter_cpplint.txt",
+      "cppcheck": ".jenkins/check/config/filter_cppcheck.txt"
+    }
+  }
+}

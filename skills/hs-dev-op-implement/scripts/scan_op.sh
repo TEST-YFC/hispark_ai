@@ -228,7 +228,7 @@ echo "==> 开关3′「本算子被既有图 pass 消除/重写?」：上面「�
 echo "    （passthrough/no-op 类常见：Identity、推理期 Dropout、同 dtype Cast、空 Reshape）。这是合法优化——不禁用、不据此跳过 ①–⑦"
 echo "    （算子在该 pass 未触发的图里仍可达，仍须全做）；但忽略它 = ①–⑦ 可能是不可达死代码、Host 验证在被改写的空图上假绿。命中则必须："
 echo "    (a) 读懂命中 pass 的 DefinePattern/Process，写出本算子「何时被删 / 何时存活」（单消费者? 非图输出? 前后 dtype/shape 一致?）→ 落 docs/decision.md；"
-echo "    (b) capability checklist 含一条「该 pass 不触发、算子真正到达 kernel」用例（⑤/⑥/⑦ 与 INT8 genuine 的唯一落点），并对「该 pass 触发、算子被合法删除」情形给出用例合同（输出仍正确，但不得据此声称 kernel 覆盖）。"
+echo "    (b) capability checklist 含一条「该 pass 不触发、算子真正到达 kernel」用例（⑤/⑥/⑦ 与 INT8 genuine 的唯一落点），并对「该 pass 触发、算子被合法删除」情形写清用例要求（输出仍正确，但不得据此声称 kernel 覆盖）。"
 echo "    0 命中=开关3′ 填「否」。"
 
 echo
