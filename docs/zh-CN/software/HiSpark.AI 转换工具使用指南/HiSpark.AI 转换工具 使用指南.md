@@ -16144,7 +16144,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 **参数说明<a name="section2026082903b"></a>**
 
 >![](public_sys-resources/icon-note.gif) **说明：**
->模型数据类型仅支持float32，部署路径为FP32与全量化INT8。必须同时输出Y与Y_h。仅支持layout=0（时间步在前的布局），layout=1（批在前的布局）不支持。TFLite无对应builtin算子，不支持转换。
+>模型数据类型仅支持float32，部署路径为FP32与全量化INT8。x86平台的benchmark验证仅支持FP32，不支持INT8量化。必须同时输出Y与Y_h。仅支持layout=0（时间步在前的布局），layout=1（批在前的布局）不支持。TFLite无对应builtin算子，不支持转换。
 
 **表 1**  RNN参数概览
 
