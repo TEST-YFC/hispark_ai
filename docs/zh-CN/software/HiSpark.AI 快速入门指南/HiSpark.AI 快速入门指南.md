@@ -509,7 +509,7 @@ GPU加速版环境准备步骤如下：
         下载镜像文件后，执行如下命令导入 Docker 镜像：
 
         ```
-        docker load -i cann-cpu.tar
+        docker load -i cann-npu.tar
         ```
 
         导入完成后，可执行如下命令查看镜像信息：
