@@ -272,11 +272,11 @@ NPU 平台对应 CANN 工具链，适用于 HiDiTing、Hi1156等端侧 NPU 平�
 ### 准备待部署模型与数据
 
 - 准备好待部署模型。可直接使用 HiSpark.AI LeNet-5 以及 Gru Sample 中的 mnist-12.onnx 以及 GRU_S_STREAM.onnx。
-- 准备好量化数据。**无需量化可跳过此步骤。** 准备一个文件夹，将 float32 格式的量化数据存储为 `.bin` 格式，可直接使用 HiSpark.AI LeNet-5 以及 Gru Sample 中运行数据预处理脚本之后的 npy_data 文件夹。
+- 准备好量化数据。**1156E无需量化可跳过此步骤。** 准备一个文件夹，将 float32 格式的量化数据存储为 `.bin` 格式，可直接使用 HiSpark.AI LeNet-5 以及 Gru Sample 中运行数据预处理脚本之后的 npy_data 文件夹。
 
 ### 准备 SDK
 
-从开源社区下载 SDK 源码。
+使用商用发布SDK或从开源社区下载 SDK 源码。
 
 ### 准备 Sample
 
@@ -301,9 +301,10 @@ ${sample_path}
     └── CMakeLists.txt
 ```
 
-### 模型量化
+### HiDiTing模型量化
 
-使用 CANN 工具链中的 AMCT 工具进行模型量化，具体可参考对应 Sample README 中的量化指南：
+Hi1156E不涉及量化，直接参考**模型转换**章节。
+HiDiTing使用 CANN 工具链中的 AMCT 工具进行模型量化，具体可参考对应 Sample README 中的量化指南：
 
 ```
 amct_onnx calibration --model "xxx" --save_path "xxx" --input_shape "xxx" --data_dir "xxx" --data_types "xxx" --batch_num xxx
@@ -340,13 +341,8 @@ atc --model=xxx.onnx --framework=5 --output=xxx --input_fp16_nodes="xxx" --outpu
 - `--output_type`：指定网络输出数据类型
 - `--soc_version`：指定模型转换时昇腾 AI 处理器的版本
 - `--input_shape`：指定模型输入数据的 shape
-- `--mode`：运行模式
-
-运行成功后生成：
-
-- mode 选择 30：`xxx.exeom`
-- mode 选择 0：`xxx.om`
-
+- `--mode`：运行模式。HiDiTing指定30；Hi1156E指定0
+模型转换成功后，HiDiTing生成.exeom模型，Hi1156E生成.om模型。
 ### HiDiTing SDK 编译
 
 配置对应环境变量，在具体 Sample（如 gru）下运行 build_npu.sh 脚本，即可完成编译：
