@@ -203,12 +203,31 @@ def resolve_mslite_pkg(start: Path) -> str:
     if env and Path(env, "tools/converter/converter/converter_lite").is_file():
         _check_pkg_freshness(env)
         return env
-    rel = "src/mindspore-lite/output/mindspore-lite-2.8.0-linux-x64"
+    fixed_rel = "src/mindspore-lite/output/mindspore-lite-2.8.0-linux-x64"
+    output_names = ("mindspore-enterprise-lite-*-linux-x64", "mindspore-lite-*-linux-x64")
     for parent in [start, *start.parents]:
-        cand = parent / rel
-        if (cand / "tools/converter/converter/converter_lite").is_file():
-            _check_pkg_freshness(str(cand))
-            return str(cand.resolve())
+        fixed = parent / fixed_rel
+        if (fixed / "tools/converter/converter/converter_lite").is_file():
+            _check_pkg_freshness(str(fixed))
+            return str(fixed.resolve())
+
+        output_dir = parent / "src/mindspore-lite/output"
+        if not output_dir.is_dir():
+            continue
+        candidates = sorted(
+            path for pattern in output_names for path in output_dir.glob(pattern)
+            if (path / "tools/converter/converter/converter_lite").is_file()
+        )
+        if len(candidates) == 1:
+            _check_pkg_freshness(str(candidates[0]))
+            return str(candidates[0].resolve())
+        if len(candidates) > 1:
+            listing = "\n".join(f"  - {path}" for path in candidates)
+            sys.exit(
+                "[ERROR] 自动定位到多个可用的 MindSpore Lite 包，已停止选择：\n"
+                f"{listing}\n"
+                "请显式设置 MSLITE_PKG，避免按时间猜测工具链。"
+            )
     sys.exit(
         "[ERROR] MSLITE_PKG 未设置且无法自动定位已构建的 MindSpore Lite。\n"
         "        先 `export MSLITE_PKG=<absolute unpacked package path>`，\n"
