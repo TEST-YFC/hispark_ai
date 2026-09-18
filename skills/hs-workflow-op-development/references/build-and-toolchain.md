@@ -30,8 +30,8 @@ RISC-V 交叉库由独立 `ExternalProject` 构建，增量不会重新扫描它
 
 | 编译类型 | 命令 | 典型耗时 |
 |---|---|---|
-| 增量（日常开发） | `bash build.sh -I x86_64 -j12 -i` | 约10分钟 |
-| 全量（环境或CMake结构变化） | `bash build.sh -I x86_64 -j12` | 约30分钟 |
+| 增量（日常开发） | `bash build.sh -I x86_64 -i`（并发由构建脚本按 CPU 和内存估算） | 约10分钟 |
+| 全量（环境或CMake结构变化） | `bash build.sh -I x86_64`（并发由构建脚本按 CPU 和内存估算） | 约30分钟 |
 
 构建根目录是代码根目录（含 `schema/`、`tools/`、`src/litert/`）的上一级，必须含有
 `build.sh` 和 `output/`。HiSpark.AI 集成仓库中的典型构建根是 `src/mindspore-lite/`。
@@ -85,8 +85,8 @@ bash <skill>/scripts/build_mslite.sh --wait 540 "$OP_BUILD_RUN_ID"
 脚本构建成功后必须同时确认：
 
 - `build/riscv/build/nnacl/libnnacl.a`存在；
-- 最新 `output/mindspore-lite-*-linux-x64.tar.gz`存在；
-- 工具包已解压到对应 `output/mindspore-lite-*-linux-x64/`；
+- 最新 `output/mindspore-lite-*-linux-x64.tar.gz` 或 `output/mindspore-enterprise-lite-*-linux-x64.tar.gz` 存在；
+- 工具包已解压到同名目录，且包含 `tools/converter/converter/converter_lite`；
 - 解压目录中的 `converter_lite`和RISC-V codegen库可读；
 - 本次修改涉及的parser注册符号已经进入产物。
 

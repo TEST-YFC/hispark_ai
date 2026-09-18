@@ -387,8 +387,7 @@ for GEN in build/schema/model_generated.h build/schema/inner/model_generated.h; 
 done
 
 # ---- JOBS：未显式给定时 = min(可用内存/1.6GB, CPU 核数)，下限 2 ----
-# 1.6GB/任务是混合 C/C++ 的均值口径（converter 个别大 C++ 文件峰值更高，但同时编它们的概率低；
-# 旧口径 2.5GB/任务过于保守——20 核 15GB 的机器只跑 -j5，核数利用率 1/4）。
+# 1.6GB/任务是混合 C/C++ 的均值口径（converter 个别大 C++ 文件峰值更高，但同时编它们的概率低）。
 # 真 OOM 有兜底：日志见 Killed → 按 --status 提示 JOBS=<当前值一半> 重跑。
 if [ -z "${JOBS:-}" ]; then
   MEMJ=$(awk '/MemAvailable/{j=int($2/1600000); if(j<2)j=2; print j}' /proc/meminfo 2>/dev/null)
@@ -475,11 +474,29 @@ if [ ! -f "${RISCV_NNACL}" ]; then
 fi
 
 # ---- 解压产物（hs-verify-op-host 必须用解压包，不是 build/）----
-TARBALL=$(ls -t output/mindspore-lite-*-linux-x64.tar.gz output/tmp/mindspore-lite-*-linux-x64.tar.gz 2>/dev/null | head -1)
+# MindSpore Lite 2.8 CPack uses the enterprise package prefix. Keep both
+# prefixes, but only accept archives created by this build invocation. A stale
+# tar from an earlier successful build must never satisfy the current RUN_ID.
+TARBALL=""
+TARBALL_MTIME=0
+while IFS= read -r -d '' candidate; do
+  candidate_mtime=$(stat -c '%Y' "${candidate}" 2>/dev/null || echo 0)
+  if [ "${candidate_mtime}" -lt "${STARTED}" ]; then
+    continue
+  fi
+  if [ "${candidate_mtime}" -gt "${TARBALL_MTIME}" ]; then
+    TARBALL="${candidate}"
+    TARBALL_MTIME="${candidate_mtime}"
+  fi
+done < <(find output output/tmp -maxdepth 2 -type f \
+  \( -name 'mindspore-lite-*-linux-x64.tar.gz' \
+  -o -name 'mindspore-enterprise-lite-*-linux-x64.tar.gz' \) -print0 2>/dev/null)
 if [ -z "${TARBALL}" ]; then
-  echo "[!] 未找到产物 tar.gz（output/ 或 output/tmp/ 下）" >&2
+  echo "[!] 本轮构建没有生成产物 tar.gz（output/ 或 output/tmp/ 下）。不会复用构建开始前的旧产物。" >&2
   exit 5
 fi
+echo "MSLITE_TARBALL=${TARBALL}"
+echo "MSLITE_TARBALL_SHA256=$(sha256sum "${TARBALL}" | awk '{print $1}')"
 PKG_DIR="output/$(basename "${TARBALL}" .tar.gz)"
 rm -rf "${PKG_DIR}"
 tar xzf "${TARBALL}" -C output/ || exit 5
