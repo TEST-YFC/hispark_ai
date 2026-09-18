@@ -60,6 +60,8 @@ Stage 表示顶层阶段；`stage1.plan`、`stage1.initial_docs` 等是同一阶
 
 ## 路由优先级
 
+请求包含训练、反向传播或参数更新时，使用 `hs-workflow-train-op-development`。本工作流调用共享 Host、Board 和文档技能时使用 `verification_kind=inference`；原有未传该字段的调用仍走推理分支。
+
 1. 用户明确点名 Skill，或明确说“只做某阶段”时，使用对应专项 Skill，不启动本 workflow。
 2. 用户泛化地说“生成/实现/适配/新增/支持/移植一个算子”时，默认启动本 workflow，
    `BOARD_POLICY=AUTO_ALL`；不能把“生成算子”缩成只写源码或只跑 Host。

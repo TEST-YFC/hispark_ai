@@ -14,6 +14,7 @@ import json
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -117,12 +118,20 @@ def classify(port: str, evidence: list[str]) -> str:
     return "unknown_candidate"
 
 
-def inventory(timeout: float = 8.0) -> dict[str, Any]:
+def inventory(timeout: float = 8.0, target: str = "local") -> dict[str, Any]:
+    if target not in {"auto", "local", "windows"}:
+        raise ValueError("target must be auto, local, or windows")
     system = platform.system()
+    # A WSL Host cannot see a Windows COM port through /dev. If Windows
+    # PowerShell interop is available, inventory the Windows device side too.
+    windows_interop = (system != "Windows" and target in {"auto", "windows"} and
+                       shutil.which("powershell.exe") is not None)
+    use_windows = system == "Windows" or target == "windows" or windows_interop
+    use_local_devices = system != "Windows" and target in {"auto", "local"}
     sources: dict[str, Any] = {}
     by_port: dict[str, list[str]] = {}
 
-    if system == "Windows":
+    if use_windows:
         dotnet, err = _powershell(
             "[System.IO.Ports.SerialPort]::GetPortNames() | ConvertTo-Json -Compress",
             timeout,
@@ -155,7 +164,7 @@ def inventory(timeout: float = 8.0) -> dict[str, Any]:
         }
         for port, lines in pnp_map.items():
             by_port.setdefault(port, []).extend(f"pnputil: {line}" for line in lines)
-    else:
+    if use_local_devices:
         paths: list[str] = []
         for root in ("/dev/serial/by-id", "/dev/serial/by-path"):
             if os.path.isdir(root):
@@ -164,6 +173,8 @@ def inventory(timeout: float = 8.0) -> dict[str, Any]:
         sources["linux-dev"] = {"paths": sorted(set(paths)), "error": None}
         for path in paths:
             by_port.setdefault(path, []).append(path)
+    probe_target = "windows+local" if use_windows and use_local_devices else (
+        "windows" if use_windows else system.lower())
 
     candidates = []
     for port in sorted(by_port):
@@ -174,6 +185,8 @@ def inventory(timeout: float = 8.0) -> dict[str, Any]:
         "schema_version": 1,
         "probed_at_utc": datetime.now(timezone.utc).isoformat(),
         "system": system,
+        "probe_target": probe_target,
+        "windows_interop": windows_interop,
         "sources": sources,
         "ports": candidates,
         "compatible_candidates": compatible,
@@ -182,7 +195,8 @@ def inventory(timeout: float = 8.0) -> dict[str, Any]:
 
 
 def probe_with_retries(
-    timeout: float = 8.0, attempts: int = 1, interval: float = 1.0
+    timeout: float = 8.0, attempts: int = 1, interval: float = 1.0,
+    target: str = "local",
 ) -> dict[str, Any]:
     """Repeat inventory while USB enumeration settles after a reinsert.
 
@@ -197,7 +211,7 @@ def probe_with_retries(
 
     attempt_reports: list[dict[str, Any]] = []
     for attempt in range(1, attempts + 1):
-        report = inventory(timeout)
+        report = inventory(timeout, target)
         report["probe_attempt"] = attempt
         attempt_reports.append(report)
         if report.get("unique_compatible"):
@@ -227,9 +241,13 @@ def main(argv: list[str] | None = None) -> int:
         "--interval", type=float, default=1.0,
         help="seconds between inventory attempts",
     )
+    parser.add_argument(
+        "--target", choices=("auto", "local", "windows"), default="local",
+        help="inventory local devices; auto also queries Windows from WSL when interop is available",
+    )
     args = parser.parse_args(argv)
     try:
-        report = probe_with_retries(args.timeout, args.attempts, args.interval)
+        report = probe_with_retries(args.timeout, args.attempts, args.interval, args.target)
     except ValueError as exc:
         parser.error(str(exc))
     if args.output:

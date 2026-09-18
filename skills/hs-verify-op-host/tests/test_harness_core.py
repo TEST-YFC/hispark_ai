@@ -986,3 +986,43 @@ def test_excel_report_metadata_has_test_point_column():
     assert h.excel_case_metadata(tc) == [
         1, "broadcast", "验证中间维广播的步长与索引",
     ]
+
+
+def _make_mslite_package(path: Path):
+    converter = path / "tools/converter/converter/converter_lite"
+    converter.parent.mkdir(parents=True, exist_ok=True)
+    converter.write_text("", encoding="utf-8")
+    return path
+
+
+def _prepare_pkg_lookup(monkeypatch):
+    monkeypatch.delenv("MSLITE_PKG", raising=False)
+    monkeypatch.setattr(h, "_check_pkg_freshness", lambda _pkg: None)
+
+
+def test_resolve_mslite_pkg_keeps_fixed_legacy_default(tmp_path, monkeypatch):
+    _prepare_pkg_lookup(monkeypatch)
+    legacy = _make_mslite_package(
+        tmp_path / "src/mindspore-lite/output/mindspore-lite-2.8.0-linux-x64")
+    _make_mslite_package(
+        tmp_path / "src/mindspore-lite/output/mindspore-enterprise-lite-2.8.0-linux-x64")
+
+    assert Path(h.resolve_mslite_pkg(tmp_path)) == legacy.resolve()
+
+
+def test_resolve_mslite_pkg_accepts_unique_enterprise_package(tmp_path, monkeypatch):
+    _prepare_pkg_lookup(monkeypatch)
+    enterprise = _make_mslite_package(
+        tmp_path / "src/mindspore-lite/output/mindspore-enterprise-lite-2.8.0-linux-x64")
+
+    assert Path(h.resolve_mslite_pkg(tmp_path)) == enterprise.resolve()
+
+
+def test_resolve_mslite_pkg_rejects_ambiguous_packages(tmp_path, monkeypatch):
+    _prepare_pkg_lookup(monkeypatch)
+    output = tmp_path / "src/mindspore-lite/output"
+    _make_mslite_package(output / "mindspore-lite-2.7.0-linux-x64")
+    _make_mslite_package(output / "mindspore-enterprise-lite-2.8.0-linux-x64")
+
+    with pytest.raises(SystemExit, match="多个可用"):
+        h.resolve_mslite_pkg(tmp_path)

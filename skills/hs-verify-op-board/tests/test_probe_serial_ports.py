@@ -51,7 +51,7 @@ def test_probe_retries_after_empty_inventory(monkeypatch):
         "unique_compatible": True,
     }
     reports = iter((empty, ready))
-    monkeypatch.setattr(probe, "inventory", lambda timeout: next(reports))
+    monkeypatch.setattr(probe, "inventory", lambda timeout, target="auto": next(reports))
     monkeypatch.setattr(probe.time, "sleep", lambda seconds: None)
 
     result = probe.probe_with_retries(timeout=1, attempts=3, interval=2)
@@ -83,7 +83,7 @@ def test_cli_writes_receipt_and_leaves_json_as_last_output_line(monkeypatch, tmp
         "retry_interval_seconds": 0.0,
         "attempt_history": [],
     }
-    monkeypatch.setattr(probe, "probe_with_retries", lambda timeout, attempts, interval: report)
+    monkeypatch.setattr(probe, "probe_with_retries", lambda timeout, attempts, interval, target="local": report)
     output = tmp_path / "serial_probe.json"
 
     assert probe.main(["--output", str(output), "--attempts", "1", "--interval", "0"]) == 0
@@ -91,3 +91,24 @@ def test_cli_writes_receipt_and_leaves_json_as_last_output_line(monkeypatch, tmp
     captured = capsys.readouterr().out.splitlines()
     assert json.loads(captured[-1]) == report
     assert json.loads(output.read_text(encoding="utf-8")) == report
+
+
+def test_inventory_uses_windows_powershell_and_local_devices_from_wsl(monkeypatch):
+    def fake_powershell(command, timeout):
+        assert "SerialPort" in command or "SERIALCOMM" in command or "pnputil" in command
+        if "SerialPort" in command:
+            return '["COM12"]', None
+        if "SERIALCOMM" in command:
+            return "\\Device\\Serial1 : COM12", None
+        return "Device Description: USB-SERIAL CH340 (COM12)", None
+
+    monkeypatch.setattr(probe.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(probe.shutil, "which", lambda name: "powershell.exe" if name == "powershell.exe" else None)
+    monkeypatch.setattr(probe, "_powershell", fake_powershell)
+
+    result = probe.inventory(timeout=1, target="auto")
+
+    assert result["probe_target"] == "windows+local"
+    assert result["windows_interop"] is True
+    assert result["unique_compatible"] is True
+    assert result["compatible_candidates"][0]["port"] == "COM12"

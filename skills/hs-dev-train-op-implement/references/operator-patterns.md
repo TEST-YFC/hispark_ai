@@ -4,7 +4,7 @@
 
 ## shape-only / view 类
 
-例如 Reshape、Squeeze、Unsqueeze。通常只需要把 `dy` reshape 回 forward 输入形状，不对 shape、axes 等结构 tensor 求导。
+例如 Reshape、Squeeze 等视图类算子。通常只需要把 `dy` reshape 回 forward 输入形状，不对 shape、axes 等结构 tensor 求导。
 
 注意 converter 优化后 forward primitive 可能已经归一化为 Reshape。以 `CoderGraph` 中真实 primitive 为准。
 
@@ -18,7 +18,7 @@
 
 例如 Slice、StridedSlice、Gather。Backward 通常是把 `dy` scatter 回 input gradient。
 
-必须冻结：
+必须检查：
 
 - begin/end/stride/axis 是否为常量；
 - 重复 index 的累加语义；
@@ -31,7 +31,7 @@
 
 Concat backward 是按 axis 切分 `dy`。Split backward 是 concat 多路 `dy`。
 
-必须冻结：
+必须检查：
 
 - axis 是否常量；
 - 每个输入 shape 是否静态；
@@ -44,7 +44,7 @@ Concat backward 是按 axis 切分 `dy`。Split backward 是 concat 多路 `dy`�
 
 Transpose backward 是反 permutation。Permutation tensor 是结构输入，不可微。
 
-必须冻结：
+必须检查：
 
 - permutation 是否编译期常量；
 - rank 上限；
@@ -54,7 +54,7 @@ Transpose backward 是反 permutation。Permutation tensor 是结构输入，不
 
 例如 Conv、MatMul、Dense。Backward 通常产生 activation grad 与 weight/bias grad。
 
-必须冻结：
+必须检查：
 
 - differentiable input 和 trainable input 的区别；
 - weight layout；
@@ -68,7 +68,7 @@ Transpose backward 是反 permutation。Permutation tensor 是结构输入，不
 
 例如 Add、Mul、Relu、Sigmoid。Backward 可能需要 forward input 或 forward output。
 
-必须冻结：
+必须检查：
 
 - broadcasting 反向 reduce 规则；
 - 是否需要 forward input；

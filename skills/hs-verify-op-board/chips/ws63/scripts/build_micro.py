@@ -6,6 +6,7 @@ This step deliberately stops before modifying a firmware SDK.
 from __future__ import annotations
 
 import argparse
+import configparser
 import hashlib
 import json
 import os
@@ -142,6 +143,12 @@ def input_names(model: Path, framework: str) -> list[str]:
 
 
 def materialize_cfg(args: argparse.Namespace, out: Path) -> Path:
+    if args.config:
+        source = absolute_existing(args.config, "config")
+        validate_training_config(source)
+        target = out / "micro_train.cfg"
+        shutil.copy2(source, target)
+        return target
     cfg_dir = Path(__file__).resolve().parent / "cfg"
     if args.mode == "fp32":
         source = cfg_dir / "micro_riscv.cfg"
@@ -163,6 +170,23 @@ def materialize_cfg(args: argparse.Namespace, out: Path) -> Path:
     target = out / "micro_riscv_quant.cfg"
     target.write_text(template.replace("{CALIBRATE_PATH}", value), encoding="utf-8")
     return target
+
+
+def validate_training_config(path: Path) -> None:
+    """Accept the exact Host training config without guessing its semantics."""
+    parser = configparser.ConfigParser(interpolation=None)
+    try:
+        with path.open("r", encoding="utf-8") as stream:
+            parser.read_file(stream)
+    except (OSError, UnicodeError, configparser.Error) as exc:
+        fail(f"invalid_training_config:{path}:{exc}")
+    for section in ("micro_param", "train"):
+        if not parser.has_section(section):
+            fail(f"training_config_section_missing:{section}:{path}")
+    if parser.get("micro_param", "target", fallback="").strip().lower() != "riscv":
+        fail("training_config_target_must_be_riscv")
+    if parser.get("train", "train_mode", fallback="").strip().lower() != "fp32":
+        fail("training_config_train_mode_must_be_fp32")
 
 
 def run(command: list[str], cwd: Path, env: dict[str, str], log: Path) -> None:
@@ -199,11 +223,14 @@ def converter_encryption_capability(convert: Path, env: dict[str, str], log: Pat
     return [], "unsupported; omitted"
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
     parser.add_argument("--framework", required=True, choices=("onnx", "tflite"))
     parser.add_argument("--mode", required=True, choices=("fp32", "int8"))
+    parser.add_argument("--config", help="Host-generated micro_train.cfg for training models")
+    parser.add_argument("--run-id", help="Host run identity; required with --config")
+    parser.add_argument("--case-id", help="Host case identity; required with --config")
     parser.add_argument("--calib-dir",
                         help="Directory containing calib_0..calib_N in model-input order")
     parser.add_argument("--mslite-pkg", required=True)
@@ -211,10 +238,50 @@ def main() -> int:
                         help="Directory containing riscv32-linux-musl-gcc")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--jobs", type=int, default=4,
-                        help="parallel build jobs (must be >= 1)")
+                        help="parallel build jobs (must be >= 1; default: 4)")
+    return parser
+
+
+def validate_identity_arguments(parser: argparse.ArgumentParser,
+                                args: argparse.Namespace) -> None:
+    """Bind a training Micro build to one Host run and case."""
+    if args.config:
+        missing = [name for name in ("run_id", "case_id") if not getattr(args, name)]
+        if missing:
+            parser.error("--config requires " + " and ".join(
+                f"--{name.replace('_', '-')}" for name in missing))
+    elif args.run_id or args.case_id:
+        parser.error("--run-id and --case-id are only valid with --config")
+    for name in ("run_id", "case_id"):
+        value = getattr(args, name)
+        if value and not re.fullmatch(r"[A-Za-z0-9_.-]+", value):
+            parser.error(f"--{name} must contain only letters, digits, '.', '_' or '-'")
+
+
+def cmake_arguments(config: str | None, micro: Path, build: Path, pkg: Path,
+                    toolchain: Path) -> list[str]:
+    arguments = ["cmake", "-S", str(micro), "-B", str(build),
+                 f"-DOP_LIB={pkg / 'tools/codegen/lib/riscv/libnnacl.a'}",
+                 f"-DWRAPPER_LIB={pkg / 'tools/codegen/lib/riscv/libwrapper.a'}",
+                 f"-DRISCV_TOOLCHAIN_PATH={toolchain}", f"-DPKG_PATH={pkg}"]
+    if config:
+        arguments.append("-DMSLITE_TRAIN_OBSERVER=ON")
+    return arguments
+
+
+def add_training_config_identity(receipt: dict, config: str | None) -> dict:
+    """Expose the training config hash under the common training identity."""
+    if config:
+        receipt["training_config_sha256"] = receipt["config_sha256"]
+    return receipt
+
+
+def main() -> int:
+    parser = build_parser()
     args = parser.parse_args()
     if args.jobs < 1:
         parser.error("--jobs must be >= 1")
+    validate_identity_arguments(parser, args)
 
     model = absolute_existing(args.model, "model")
     pkg = absolute_existing(args.mslite_pkg, "mslite_pkg")
@@ -231,6 +298,8 @@ def main() -> int:
     output = output.resolve()
     if any(output.iterdir()):
         fail(f"output_dir_must_be_empty:{output}")
+    if args.config and args.mode != "fp32":
+        fail("training_config_requires_fp32_mode")
 
     cfg = materialize_cfg(args, output)
     micro = output / "micro"
@@ -249,10 +318,7 @@ def main() -> int:
         fail(f"converter_did_not_generate_micro_project:{micro}")
 
     build = output / "build"
-    cmake = ["cmake", "-S", str(micro), "-B", str(build),
-             f"-DOP_LIB={pkg / 'tools/codegen/lib/riscv/libnnacl.a'}",
-             f"-DWRAPPER_LIB={pkg / 'tools/codegen/lib/riscv/libwrapper.a'}",
-             f"-DRISCV_TOOLCHAIN_PATH={toolchain}", f"-DPKG_PATH={pkg}"]
+    cmake = cmake_arguments(args.config, micro, build, pkg, toolchain)
     run(cmake, output, env, output / "cmake.log")
     run(["cmake", "--build", str(build), "--parallel", str(args.jobs)], output, env,
         output / "build.log")
@@ -267,6 +333,13 @@ def main() -> int:
     destinations = [frozen / runtime.name, frozen / net.name]
     for source, destination in zip((runtime, net), destinations):
         shutil.copy2(source, destination)
+    generated_sources = {}
+    for relative in ("src/model0/model0.c", "src/model0/net0.c", "src/model0/weight0.c"):
+        generated_path = micro / relative
+        if generated_path.is_file():
+            generated_sources[relative] = {
+                "path": str(generated_path), "sha256": sha256(generated_path)
+            }
 
     calibration_files = []
     if args.mode == "int8":
@@ -276,14 +349,20 @@ def main() -> int:
             for path in sorted(calibration_root.glob("calib_*/*")) if path.is_file()
         ]
     receipt = {
+        "verification_kind": "training" if args.config else "inference",
+        "run_id": args.run_id, "case_id": args.case_id,
         "framework": args.framework, "mode": args.mode, "model": str(model),
         "model_sha256": sha256(model), "mslite_pkg": str(pkg),
         "converter": str(convert), "converter_encryption": encryption_state,
         "converter_library_dirs": list(converter_library_dirs),
         "toolchain_bin": str(toolchain), "config": str(cfg),
+        "config_sha256": sha256(cfg),
+        "training_observer": bool(args.config),
         "micro_project": str(micro), "calibration_files": calibration_files,
+        "generated_sources": generated_sources,
         "archives": {path.name: {"path": str(path), "sha256": sha256(path)} for path in destinations},
     }
+    add_training_config_identity(receipt, args.config)
     (output / "micro_build_receipt.json").write_text(
         json.dumps(receipt, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"MICRO_BUILD_GATE=PASS micro={micro} archives={frozen}")

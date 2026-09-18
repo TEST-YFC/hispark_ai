@@ -444,14 +444,26 @@ def test_document_audit_command_examples_receive_explicit_script_path():
 
 def test_individual_skill_trigger_is_explicit_and_board_stage_numbers_match():
     impl = read_bundle("hs-dev-op-implement")
-    manual = read_bundle("hs-design-op-manual")
     board = read_bundle("hs-verify-op-board")
     workflow = read_bundle("hs-workflow-op-development")
     assert "explicitly requests source-only work" in impl
     assert "gate_artifacts.py --stage pre-source --source-only" in impl
     assert "源码写入前" in impl
-    assert "template-analysis" in manual and "只输出分析，不写" in manual
-    assert "按 A/B/C/D 证据等级" in manual
+    # Inspect the mode-specific boundary, not unrelated no-write wording.
+    analysis_boundary = next(
+        paragraph for paragraph in read("hs-design-op-manual/SKILL.md").split("\n\n")
+        if paragraph.startswith("`template-analysis`")
+    )
+    for constraint in ("只输出分析", "不写文件", "不执行候选写入和发布步骤",
+                       "不生成 facts 文件或临时候选", "publication=none",
+                       "design_path=NONE", "verify_path=NONE"):
+        assert constraint in analysis_boundary, constraint
+    artifact_mode = next(
+        line for line in read("hs-design-op-manual/SKILL.md").splitlines()
+        if line.startswith("| `artifact-sync` |")
+    )
+    assert "A/B/C/D" in artifact_mode and "证据等级" in artifact_mode
+    assert "D 不写文件" in artifact_mode
     assert "本 skill step0-3" in board
     assert "workflow Stage5 的 sample/adaptor/固件接线" in board
     assert "Stage5 默认" in workflow and "Stage6 默认" in workflow
@@ -669,5 +681,34 @@ def test_host_run_identity_is_carried_by_entry_and_waiter():
     host = read("hs-verify-op-host/SKILL.md")
     runner = read("hs-verify-op-host/scripts/run_all_cases.py")
     waiter = read("hs-verify-op-host/scripts/wait_verify.sh")
-    assert "--run-id" in host and "RUN_ID" in runner
+    assert "旧调用默认 `inference`" in host
+    assert "`run_id`" in host
+    # Follow the public inference link: a token in training docs cannot satisfy this.
+    route = re.search(r"^- 推理：.*?\[[^\]]+\]\(([^)]+)\)", host, re.M)
+    assert route is not None
+    branch_path = SKILLS_ROOT / "hs-verify-op-host" / route.group(1)
+    assert branch_path.is_file()
+    inference = branch_path.read_text(encoding="utf-8")
+    commands = [
+        command
+        for block in re.findall(r"```(?:bash|sh)\n(.*?)```", inference, re.S)
+        for command in block.replace("\\\n", " ").splitlines()
+        if "scripts/run_all_cases.py" in command
+    ]
+    assert commands, "inference branch must document the actual runner command"
+    for command in commands:
+        assert re.search(r"--run-id\s+\S+", command), command
+    assert "RUN_ID 不一致" in inference
+    assert "RUN_ID" in runner
     assert "RUN_ID_MISMATCH" in waiter
+
+
+def test_mslite_build_concurrency_and_package_freshness_are_bounded():
+    build = read("hs-workflow-op-development/scripts/build_mslite.sh")
+    # Do not pin a machine-specific job count when JOBS is absent.
+    assert "JOBS=8" not in build
+    assert "MemAvailable" in build and "CORES=$(nproc" in build
+    # MindSpore Lite 2.8 may use the enterprise package prefix.
+    assert "mindspore-enterprise-lite-*-linux-x64.tar.gz" in build
+    assert "candidate_mtime=$(stat -c '%Y'" in build
+    assert '[ "${candidate_mtime}" -lt "${STARTED}" ]' in build

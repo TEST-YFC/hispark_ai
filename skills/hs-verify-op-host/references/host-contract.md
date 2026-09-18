@@ -5,7 +5,7 @@
 - [前置检查](#前置检查)
 - [资源边界与 Bundled Harness](#资源边界与-bundled-harness就地运行不要改不要拷)
 - [唯一要写的文件](#唯一要写的文件op_specpy)
-- [能力清单锁定文件](#能力清单锁定文件-projscriptscapability_checklistjson-完整-workflow-必需implement-step3-保存)
+- [能力清单锁定文件](#能力清单锁定文件-projscriptscapability_checklistjson完整-workflow-必需implement-step3-保存)
 - [用例设计原则](#用例设计原则op_specpy-里两套独立设计)
 
 进入对应阶段时读取本文件；`op_spec.py` 唯一写入边界和覆盖要求不变。
@@ -14,6 +14,10 @@
 
 需要一套**已构建**的 MindSpore Lite 工具链(含 `converter_lite` 与 benchmark 源码)。用环境变量
 `MSLITE_PKG` 指向它;harness 也会从当前目录向上自动定位作为兜底:
+自动定位优先使用固定默认目录 `src/mindspore-lite/output/mindspore-lite-2.8.0-linux-x64`。
+该目录不存在时，可识别唯一的 `mindspore-lite-*-linux-x64` 或
+`mindspore-enterprise-lite-*-linux-x64` 解压包；发现多个可用包时停止，必须显式设置
+`MSLITE_PKG`，不按修改时间选择工具链。
 
 本Host harness及当前`linux-x64` converter必须在Linux/WSL执行，不能直接用Windows Python
 启动。HiSpark.AI代码可以位于Windows磁盘，但传给harness、converter和CMake的路径必须先

@@ -62,6 +62,16 @@ def make_inputs(tmp_path: Path):
     return hispark, sample, libs
 
 
+def write_training_sample_receipt(tmp_path: Path, sample: Path, case: str = "tc_train"):
+    receipt = tmp_path / "training-sample.json"
+    receipt.write_text(json.dumps({
+        "verification_kind": "training", "run_id": "run_train", "case_id": case,
+        "model_sha256": "a" * 64, "framework": "onnx", "mode": "fp32",
+        "training_config_sha256": "b" * 64, "output": str(sample.resolve()),
+    }) + "\n", encoding="utf-8")
+    return receipt
+
+
 def test_sdk_integration_is_idempotent_and_writes_receipt(tmp_path):
     sdk_root, sdk = make_sdk(tmp_path)
     hispark, sample, libs = make_inputs(tmp_path)
@@ -88,6 +98,7 @@ def test_sdk_integration_is_idempotent_and_writes_receipt(tmp_path):
     wrapper = (receipt.parent / "invoke_hs_dev_build.ps1").read_text(encoding="utf-8")
     assert ". $PSScriptRoot\\ws63_board_env.ps1" in wrapper
     assert "fbb build 'ws63-liteos-app' --clean" in wrapper
+    assert "-j8" not in wrapper
     assert "AI_CUSTOM_SAMPLE_DIR=$env:AI_CUSTOM_SAMPLE_DIR" in wrapper
     assert "AI_MCU_MODEL_VARIANT=$env:AI_MCU_MODEL_VARIANT" in wrapper
     assert wrapper.rstrip().endswith("exit $LASTEXITCODE")
@@ -95,6 +106,82 @@ def test_sdk_integration_is_idempotent_and_writes_receipt(tmp_path):
     assert f"$env:FIRMWARE_SDK_ROOT='{sdk_root.resolve()}'" in ps_env
     # Existing native SDK hooks are reused, not duplicated.
     assert (sdk / "application/samples/CMakeLists.txt").read_text().count("add_subdirectory") == 1
+
+
+def test_sdk_integration_records_training_identity(tmp_path):
+    sdk_root, sdk = make_sdk(tmp_path)
+    hispark, sample, libs = make_inputs(tmp_path)
+    receipt = tmp_path / "training-integration.json"
+    sample_receipt = write_training_sample_receipt(tmp_path, sample)
+    command = [sys.executable, str(INTEGRATE), "--sdk-root", str(sdk_root.resolve()),
+               "--hispark-root", str(hispark.resolve()), "--sample-dir", str(sample.resolve()),
+               "--model-lib-dir", str(libs.resolve()), "--operator", "Op",
+               "--case", "tc_train", "--mode", "fp32", "--target", "ws63-liteos-app",
+               "--verification-kind", "training", "--run-id", "run_train",
+               "--model-sha256", "a" * 64,
+               "--training-sample-receipt", str(sample_receipt.resolve()),
+               "--receipt", str(receipt.resolve())]
+    result = subprocess.run(command, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(receipt.read_text(encoding="utf-8"))
+    assert payload["verification_kind"] == "training"
+    assert payload["run_id"] == "run_train"
+    assert payload["case_id"] == "tc_train"
+    assert payload["model_sha256"] == "a" * 64
+    assert payload["framework"] == "onnx"
+    assert payload["training_config_sha256"] == "b" * 64
+
+
+def test_sdk_integration_training_identity_is_required(tmp_path):
+    sdk_root, sdk = make_sdk(tmp_path)
+    hispark, sample, libs = make_inputs(tmp_path)
+    command = [sys.executable, str(INTEGRATE),
+               "--sdk-root", str(sdk_root.resolve()),
+               "--hispark-root", str(hispark.resolve()),
+               "--sample-dir", str(sample.resolve()),
+               "--model-lib-dir", str(libs.resolve()), "--operator", "Op",
+               "--case", "tc_train", "--mode", "fp32",
+               "--target", "ws63-liteos-app", "--verification-kind", "training",
+               "--receipt", str((tmp_path / "training.json").resolve())]
+    result = subprocess.run(command, text=True, capture_output=True)
+    assert result.returncode != 0
+    assert "training verification requires --run-id and --model-sha256" in result.stderr
+
+
+def test_sdk_integration_training_requires_sample_receipt(tmp_path):
+    sdk_root, sdk = make_sdk(tmp_path)
+    hispark, sample, libs = make_inputs(tmp_path)
+    command = [sys.executable, str(INTEGRATE),
+               "--sdk-root", str(sdk_root.resolve()),
+               "--hispark-root", str(hispark.resolve()),
+               "--sample-dir", str(sample.resolve()),
+               "--model-lib-dir", str(libs.resolve()), "--operator", "Op",
+               "--case", "tc_train", "--mode", "fp32",
+               "--target", "ws63-liteos-app", "--verification-kind", "training",
+               "--run-id", "run_train", "--model-sha256", "a" * 64,
+               "--receipt", str((tmp_path / "training.json").resolve())]
+    result = subprocess.run(command, text=True, capture_output=True)
+    assert result.returncode != 0
+    assert "training_sample_receipt_missing" in result.stderr
+
+
+def test_sdk_integration_jobs_are_recorded_and_used(tmp_path):
+    sdk_root, sdk = make_sdk(tmp_path)
+    hispark, sample, libs = make_inputs(tmp_path)
+    receipt = tmp_path / "integration-jobs.json"
+    command = [sys.executable, str(INTEGRATE),
+               "--sdk-root", str(sdk_root.resolve()),
+               "--hispark-root", str(hispark.resolve()),
+               "--sample-dir", str(sample.resolve()),
+               "--model-lib-dir", str(libs.resolve()), "--operator", "Op",
+               "--case", "tc1", "--mode", "fp32", "--target", "ws63-liteos-app",
+               "--jobs", "6", "--receipt", str(receipt.resolve())]
+    result = subprocess.run(command, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(receipt.read_text(encoding="utf-8"))
+    assert payload["jobs"] == 6
+    assert "--clean -j6" in (receipt.parent / "invoke_hs_dev_build.ps1").read_text(
+        encoding="utf-8")
 
 
 def test_sdk_integration_rejects_shell_metacharacters_in_target(tmp_path):
