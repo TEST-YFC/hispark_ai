@@ -893,6 +893,7 @@ def main() -> int:
     parser.add_argument("--micro-build-receipt", required=True)
     parser.add_argument("--output-dir", required=True)
     args = parser.parse_args()
+    fail("training_observer_unavailable_for_micro_generator")
 
     root = Path(args.opdir).resolve()
     run_id = safe_name(args.run_id, "run_id")

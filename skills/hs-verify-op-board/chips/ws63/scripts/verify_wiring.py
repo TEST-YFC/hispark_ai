@@ -231,10 +231,7 @@ def main():
     parser.add_argument("--integration-receipt")
     args = parser.parse_args()
     if args.verification_kind == "training":
-        required_receipts = (args.micro_build_receipt, args.training_sample_receipt,
-                             args.integration_receipt)
-        if not all(required_receipts) or not args.generated_symbol:
-            parser.error("training verification requires generated symbols and all three receipts")
+        parser.error("training_observer_unavailable_for_micro_generator")
     runtime_defaults = {
         "inference": ["MSModelPredict0", "Execute0"],
         "training": ["MSModelPredict0", "Execute0", "MSModelGetLabels",

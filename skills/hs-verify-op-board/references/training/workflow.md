@@ -27,18 +27,15 @@ python <hs-verify-op-board>/scripts/probe_serial_ports.py --target auto --output
 
 Host 的 `MSLITE_TRAIN_BENCHMARK=ON` 是 native 文件导出模式，板端不能照搬。板端用 WS63 对应的 RISC-V 工具链、ABI、NNACL/wrapper 库及 `MSLITE_TRAIN_BENCHMARK=OFF` 构建，交叉编译与推理分支使用相同的 SDK 身份检查。构建前查看当前生成 CMake 和工具链参数，不能把 Host 的 cpu 静态库安装到板端。
 
-训练工程使用同一条 WS63 准备链路：
+当前源码不能执行 WS63 训练板链路。`build_micro.py` 已在转换前检查 observer 能力；由于 Micro 生成器没有 `MSLITE_TRAIN_OBSERVER` 或运行时权重 accessor，它会以 `training_observer_unavailable_for_micro_generator` 失败。不得继续调用 sample、SDK 接入、`hs-dev-build` 或 `hs-dev-flash`，本阶段必须记录 `TRAIN_BOARD_VERIFY=NOT_RUN` 及恢复条件。
 
 ```text
 build_micro.py --config <Host micro_train.cfg> --run-id <run_id> --case-id <case_id>
-→ prepare_training_sample.py
-→ integrate_sdk.py --verification-kind training
-→ verify_wiring.py
-→ hs-dev-build
-→ hs-dev-flash
+→ TRAIN_BOARD_VERIFY=NOT_RUN
+  reason=training_observer_unavailable_for_micro_generator
 ```
 
-`build_micro.py` 传入 Host 生成的训练配置并开启训练 observer；`prepare_training_sample.py` 从 Host 已通过的 case 生成确定性 Sample 和 receipt；`integrate_sdk.py` 和 `verify_wiring.py` 继续执行 SDK 安装与机械接线核对。所有命令写入日志。
+下列完整链路只适用于未来已由生成器、运行时、receipt、sample 和 wiring 测试共同证明 observer 可用的版本；届时固件构建仍必须使用 `hs-dev-build`，烧录仍必须由 `hs-dev-flash` 负责，不能直接绕过 owner 调用 fbb。
 
 检查产物的架构、ABI、模型/运行时符号、重复库和训练源码收集。安装库、adaptor 和 Sample 到已授权 SDK 时保留原有文件及配置变更记录。固件构建交给 `hs-dev-build`，不绕过其 clean build 和 target 检查。
 
@@ -71,7 +68,7 @@ Sample 每个用例独立创建模型并恢复相同初始权重/optimizer state
 
 板端训练的数据来源、采集和比较分别负责以下工作：
 
-- 生成端 observer：通过训练模型内部 accessor 暴露运行时参数，sample 读取参数并按协议输出训练记录，具体见 [生成端 observer 说明](generated-observer.md)。已有 accessor 不代表 sample 接线或板测已完成。
+- 生成端 observer：当前源码没有训练模型运行时权重 accessor，具体边界见 [生成端 observer 说明](generated-observer.md)。因此当前训练板路径在 `build_micro.py` 能力门禁处停止；不能生成会引用不存在 `GetTrainWeight*` 的 sample，也不能把 Host 文件导出当成板端参数快照。
 - `collect_training_serial.py`：采集并保存原始串口，使用共享 `training_protocol.py` 解析，保留实际身份和解析状态。
 - `compare_training_board.py`：独立重放原文，核对完整 tensor 集合、checkpoint、参数规则和数值结果。
 
@@ -83,8 +80,8 @@ Sample 每个用例独立创建模型并恢复相同初始权重/optimizer state
 
 参数快照必须来自正在训练的运行时地址，名称/布局映射与 Host 一致。当前 Host `MSModelExportWeight` 依赖 `MSLITE_TRAIN_BENCHMARK` 和文件系统；不能假设 MCU 上有相同文件导出能力。先核对是否已有只读的参数访问/串口导出接口：
 
-- 有接口：检查快照确实读到运行时权重，不是默认常量，采集全部预期参数。
-- 无接口：输出和 loss 可以继续作为部分检查，但参数更新和完整训练结论不能 PASS。若补观测需要改生成器、框架或公共 adaptor，先说明文件、接口和兼容影响，由工作流确认后实施；不通过硬编码内存偏移或修改公式规避。
+- 有接口：只有在生成器 receipt、链接符号和运行时快照都证明读取的是实际权重地址时，才可继续完整板测。
+- 无接口：当前路径直接在 Micro 准备阶段 `NOT_RUN`；不生成输出-only 的“部分通过”，不硬编码内存偏移，也不通过修改公式规避 observer 缺失。补观测必须同时设计生成器、CMake、receipt、sample、wiring、SDK 构建和板测证据。
 
 冻结用例还需冻结参数前后快照及可训练上游参数更新。导出缺项不是冻结成功。设备没有文件系统时也不能把 Host 的冻结结果直接作为板端结果。
 
@@ -105,9 +102,9 @@ Sample 每个用例独立创建模型并恢复相同初始权重/optimizer state
 
 比较使用 Host 同一参考数据和逐元素 atol/rtol 规则，检查 Predict、checkpoint 0/1/final 的 Eval logits/loss 和参数集合，并检查上游非零更新。可复用 Host 训练 runner 中的纯数据比较函数；推理 `board_accuracy.py` / `board_matrix_report.py` 不认识训练 step/权重集合，不能直接用于完整训练 PASS。
 
-使用 `scripts/training/collect_training_serial.py --input-log` 可离线解析已有真实原文；实时采集由唯一设备拥有者执行，禁止并行抢口。fbb 分支以 --log 原文为准，使用 FBB_SDK_DIR 环境变量、完整行 DONE 正则和可选 --reset，实际参数先查本地 help。保留后端退出码与解析状态；超时但原文完整可单独离线比较，不能把工具失败改记为成功。
+使用 `scripts/training/collect_training_serial.py --input-log` 可离线解析已有原文；实时采集由唯一设备拥有者执行，禁止并行抢口。fbb 分支以 --log 原文为准，使用 FBB_SDK_DIR 环境变量、完整行 DONE 正则和可选 --reset，实际参数先查本地 help。保留后端退出码与解析状态；超时但原文完整可单独离线比较，不能把工具失败改记为成功。非协议行可包含任意启动噪声字节；解析器只把第一条严格合法的 `TRAIN_BEGIN` 之后的协议行计入会话，复位残帧不计入证据，计入会话后的协议行必须是完整、严格的 UTF-8 JSON。
 
-`compare_training_board.py` 从 --raw-log 或 collector JSON 引用的原文独立重放，核验 hash、BEGIN/DONE、身份、重复、完整 tensor 集合与数值。参数集合来自 expected.required_parameters 或既有 weight key/role 约定，不信任 parameters_observed 自报值；无参数预期且没有其他错误时返回 NOT_RUN，已知错误保持 FAIL。before/after、上游变化或冻结不变规则由 Host case 写入 expected.parameter_checks，不能硬编码参数名、步数或直接信任 observed 的更新结论。
+`compare_training_board.py` 从 --raw-log 或 collector JSON 引用的原文独立重放，核验 hash、BEGIN/DONE、身份、重复、完整 tensor 集合与数值。传入 observed 时还要求 `transport_status=PASS` 且 backend 返回码为 0；直接 raw replay 只保留 UNKNOWN 传输回执，供离线复核，不等价于真实板端训练通过。参数集合来自 expected.required_parameters 或既有 weight key/role 约定，不信任 parameters_observed 自报值；无参数预期且没有其他错误时返回 NOT_RUN，已知错误保持 FAIL。before/after、上游变化或冻结不变规则由 Host case 写入 expected.parameter_checks，不能硬编码参数名、步数或直接信任 observed 的更新结论。
 
 该脚本生成单 case training_board_report.json，包含所有必需身份、证据 hash、逐 tensor 数值及参数规则结果；tensor_count 不是 case 数。finalizer 从逐 case 结果派生 expected、recorded、executed、pass、fail、not_run、not_requested 统计并写入验证文档；统计必须能追溯到真实阶段记录或明确排除原因，不能事后推造。训练矩阵身份仍须包含验证类型和 checkpoint，不能和同名推理 case 合并。
 

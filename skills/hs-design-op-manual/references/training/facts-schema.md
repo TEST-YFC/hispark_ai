@@ -35,8 +35,7 @@
     "parser": "NOT_RUN", "selection": "NOT_RUN", "helper": "NOT_RUN",
     "development_chain": "NOT_REQUESTED", "graph": "NOT_REQUESTED",
     "memory": "NOT_REQUESTED", "export": "NOT_REQUESTED",
-    "freeze_snapshot": "NOT_REQUESTED",
-    "matmul_kernel_dw_null_check": "NOT_REQUESTED"
+    "freeze_snapshot": "NOT_REQUESTED"
   },
   "capability_notes": "说明所检查的源码位置和实际限制；不需要冻结时明确未请求。",
   "design": {
@@ -63,15 +62,23 @@
       {"name": "training_graph_and_memory", "status": "NOT_RUN", "reason": "尚未转换。"},
       {"name": "inference_isolation", "status": "NOT_RUN", "reason": "尚未生成对照工程。"}
     ]
+  },
+  "inference_numerical": {
+    "status": "NOT_RUN",
+    "reason": "没有真实 inference 输入、输出、golden 和数值比较；inference_isolation 不替代该检查。"
   }
 }
 ```
 
 `sources` 示例只展示一行，实际必须包含全部主源和本轮证据。`operator/run_id/case_id` 只用英文字母、数字、下划线和连字符。
 
-`checks.required` 至少保留上述四项，按任务增加必测项；`observed` 每项都要有状态和原因。PASS/FAIL 检查还要有 `evidence` 相对路径，且被 `sources` 记录。未执行项不伪造观察内容。
+`checks.required` 至少保留上述四项，按任务增加必测项；`observed` 每项都要有状态和原因。`inference_isolation` 只表示 inference-only 产物没有训练 artifact 泄漏；它不表示 `inference_numerical`，也不能满足训练模型生成、训练转换或 Host 训练验证门禁。`inference_numerical` 是独立结果字段，没有真实 inference 输入、输出、golden 和逐元素比较时必须为 `NOT_RUN`。PASS/FAIL 检查还要有 `evidence` 相对路径，且被 `sources` 记录。未执行项不伪造观察内容。
 
-冻结能力状态使用 `AVAILABLE/MISSING/BLOCKED/NOT_RUN/NOT_REQUESTED/UNSUPPORTED`。当 `requires_freezing=true` 且 Host 为 `PASS` 时，必须同时具备五项通用能力：`development_chain`、`graph`、`memory`、`export`、`freeze_snapshot`，并通过对应的开发链、训练图、训练内存、权重导出和冻结快照检查。MatMul 的 `matmul_kernel_dw_null_check` 仅在该算子适用时要求，不是通用冻结必填项。
+冻结能力状态使用 `AVAILABLE/MISSING/BLOCKED/NOT_RUN/NOT_REQUESTED/UNSUPPORTED`。当 `requires_freezing=true` 且 Host 为 `PASS` 时，必须同时满足：
+
+- 五项通用能力为 `AVAILABLE`：`development_chain`、`graph`、`memory`、`export`、`freeze_snapshot`；
+- 对应的开发链、训练图、训练内存、权重导出和冻结快照检查均为 PASS；
+- 算子专属能力写进该轮设计文档和验证证据，不加入这份通用 facts schema。
 
 case 级的离散梯度边界能力不新增到 facts 顶层 schema，仍由锁定的 `case.json` 表达。
 当 `graph_expectations.gradient_barrier=true` 时，测试设计和验证文档必须写明

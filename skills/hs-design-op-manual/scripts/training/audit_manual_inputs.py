@@ -26,7 +26,6 @@ REQUIRED_SOURCES = ("docs/forward-prerequisite.md", "docs/backward-contract.md",
                     "docs/generated-code-inspection.md", "scripts/train_case_spec.py")
 BASE_CAPABILITIES = ("parser", "selection", "helper")
 FREEZE_CAPABILITIES = ("development_chain", "graph", "memory", "export", "freeze_snapshot")
-OPTIONAL_CAPABILITIES = ("matmul_kernel_dw_null_check",)
 REQUIRED_CAPABILITIES = BASE_CAPABILITIES
 REQUIRED_CHECKS = {"package_source_freshness", "target_backward_path",
                    "training_graph_and_memory", "inference_isolation"}
@@ -91,9 +90,7 @@ def render(facts):
     for key, title in DESIGN.items():
         design += [f"## {title}", "", facts["design"][key], ""]
     design += ["## 权重冻结能力", "", f"本次要求冻结：{'是' if facts['requires_freezing'] else '否'}。", ""]
-    capability_names = (*BASE_CAPABILITIES, *FREEZE_CAPABILITIES,
-                        *(name for name in OPTIONAL_CAPABILITIES
-                          if name in facts.get("capabilities", {})))
+    capability_names = (*BASE_CAPABILITIES, *FREEZE_CAPABILITIES)
     for name in capability_names:
         design += [f"- {name}：{facts['capabilities'].get(name, 'NOT_REQUESTED')}"]
     design += ["", facts["capability_notes"], "", "## 设计来源", ""]
@@ -203,7 +200,7 @@ def validate(root, facts, publication):
         text(facts[key], key)
     for name in BASE_CAPABILITIES:
         require(facts["capabilities"].get(name) in CAPABILITIES, f"capability:{name}")
-    for name in (*FREEZE_CAPABILITIES, *OPTIONAL_CAPABILITIES):
+    for name in FREEZE_CAPABILITIES:
         if name in facts.get("capabilities", {}):
             require(facts["capabilities"][name] in CAPABILITIES, f"capability:{name}")
     freeze_missing = facts["requires_freezing"] and any(

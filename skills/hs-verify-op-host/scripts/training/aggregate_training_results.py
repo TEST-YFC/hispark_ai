@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Aggregate training Host case results into a schema-1 train_verify_summary.json."""
 from __future__ import annotations
 
@@ -200,6 +200,8 @@ def validate_summary(data, item, run_id):
     elif status == "PASS_EXPECTED_ERROR":
         require(item["kind"] == "reject" and data.get("numerical_pass") is False,
                 f"PASS_EXPECTED_ERROR requires reject kind and numerical_pass=false: {cid}")
+        require(isinstance(data.get("reason"), str) and data["reason"].strip(),
+                f"PASS_EXPECTED_ERROR requires a non-empty reason: {cid}")
     else:
         require(data.get("numerical_pass") is not True,
                 f"non-success status cannot claim numerical_pass=true: {cid}")
@@ -294,13 +296,42 @@ def evidence(path: Path, root: Path) -> dict:
             "sha256": sha256(resolved), "bytes": resolved.stat().st_size}
 
 
-def check_locked_file(base: Path, item, label: str) -> Path:
+def normalize_case(case: dict) -> dict:
+    """Apply schema-1 defaults in memory; historical case files stay unchanged."""
+    require(isinstance(case, dict), "case root must be an object")
+    schema_version = case.get("schema_version")
+    require(type(schema_version) is int and schema_version in (1, 2) and
+            case.get("verification_kind") == "training",
+            "invalid case version/kind")
+    if schema_version == 1:
+        case["framework"] = case.get("framework", "onnx")
+        case["dtype"] = case.get("dtype", "float32")
+        training = case.setdefault("training", {})
+        if isinstance(training, dict):
+            training.setdefault("learning_rate", 0.01)
+            training.setdefault("momentum", 0.0)
+            training.setdefault("label_tensor_name", "label")
+        for output in case.get("outputs", []):
+            if isinstance(output, dict):
+                output.setdefault("dtype", "float32")
+        for weight in case.get("weights", []):
+            if isinstance(weight, dict):
+                weight.setdefault("dtype", "float32")
+    require(case.get("framework") == "onnx", "unsupported case framework")
+    require(case.get("dtype") == "float32", "unsupported case dtype")
+    return case
+
+
+def check_locked_file(base: Path, item, label: str, legacy_schema: bool = False) -> Path:
     require(isinstance(item, dict) and isinstance(item.get("path"), str),
             f"{label} path missing")
     path = (base / item["path"]).resolve()
     require(path == base or base in path.parents, f"{label} escapes case directory")
     require(path.is_file(), f"{label} missing: {path}")
     require(item.get("sha256") == sha256(path), f"{label} hash mismatch")
+    if "bytes" not in item:
+        require(legacy_schema, f"{label} byte count missing")
+        item["bytes"] = path.stat().st_size
     require(type(item.get("bytes")) is int and item["bytes"] == path.stat().st_size,
             f"{label} byte count mismatch")
     return path
@@ -319,14 +350,21 @@ def json_values(array: np.ndarray, dtype: str) -> list:
 
 def build_expected(root: Path, run_id: str, case: dict, golden_path: Path,
                    case_digest: str, summary_digest: str) -> dict:
-    require(case.get("schema_version") == 1 and case.get("verification_kind") == "training",
+    require(case.get("schema_version") in (1, 2) and case.get("verification_kind") == "training",
             "invalid case version/kind")
     require(case.get("kind") == "numerical", "only numerical cases can enter board denominator")
     require(case.get("case_id") and re.fullmatch(r"[A-Za-z0-9_-]+", case["case_id"]),
             "invalid case_id")
     training = case.get("training", {})
+    require(isinstance(training, dict), "training must be an object")
+    for key, default in (("learning_rate", 0.01), ("momentum", 0.0),
+                         ("label_tensor_name", "label")):
+        training.setdefault(key, default)
     steps = training.get("steps")
     require(type(steps) is int and steps >= 2, "training steps must be at least 2")
+    if case["schema_version"] == 2:
+        for key in ("learning_rate", "momentum", "label_tensor_name"):
+            require(key in training, f"training.{key} required")
     checkpoints = sorted(set((0, 1, steps)))
     training = {**training, "checkpoints": checkpoints}
     outputs = case.get("outputs")
@@ -356,7 +394,7 @@ def build_expected(root: Path, run_id: str, case: dict, golden_path: Path,
         for output in outputs:
             require(isinstance(output, dict) and type(output.get("index")) is int and
                     output["index"] >= 0, "invalid output index")
-            dtype = output.get("dtype", "float32")
+            dtype = output["dtype"]
             require(dtype == "float32", "unsupported output dtype; expected float32")
             shape = output.get("shape")
             require(isinstance(shape, list) and all(type(x) is int and x > 0 for x in shape),
@@ -371,8 +409,8 @@ def build_expected(root: Path, run_id: str, case: dict, golden_path: Path,
         for step in checkpoints:
             for output in outputs:
                 key = f"step_{step}/output_{output['index']}"
-                add(key, golden(key, output.get("dtype", "float32"), output["shape"], key),
-                    output.get("dtype", "float32"), phase="eval", step=step, role="output",
+                add(key, golden(key, output["dtype"], output["shape"], key),
+                    output["dtype"], phase="eval", step=step, role="output",
                     name=f"output_{output['index']}")
 
         names = set()
@@ -393,7 +431,7 @@ def build_expected(root: Path, run_id: str, case: dict, golden_path: Path,
                     "duplicate weight identity")
             names.add(name)
             references.add(reference)
-            dtype = weight.get("dtype", "float32")
+            dtype = weight["dtype"]
             require(dtype in ("float32", "int32"), "unsupported weight dtype")
             shape = weight.get("shape")
             require(isinstance(shape, list) and all(type(x) is int and x > 0 for x in shape),
@@ -443,8 +481,8 @@ def build_expected(root: Path, run_id: str, case: dict, golden_path: Path,
         "verification_kind": "training",
         "run_id": run_id,
         "case_id": case["case_id"],
-        "framework": case.get("framework", "onnx"),
-        "dtype": case.get("dtype", "float32"),
+        "framework": case["framework"],
+        "dtype": case["dtype"],
         "test_point": case.get("test_point", ""),
         "model_sha256": model.get("sha256"),
         "case_sha256": case_digest,
@@ -511,6 +549,7 @@ def export(root: Path, run_id: str, summary_path: Path, output_dir: Path) -> dic
         require(case_summary.get("case_sha256") == origin_digest,
                 f"case summary does not lock original case: {cid}")
         case = load_json(origin)
+        normalize_case(case)
         require(case.get("case_id") == cid, f"case identity mismatch: {cid}")
         if row.get("kind") != "numerical":
             excluded.append({"case_id": cid, "kind": row.get("kind"),
@@ -522,8 +561,9 @@ def export(root: Path, run_id: str, summary_path: Path, output_dir: Path) -> dic
                              "reason": row.get("reason") or "Host numerical case is not PASS"})
             continue
         base = origin.parent
-        model_path = check_locked_file(base, case.get("model"), "model")
-        golden_path = check_locked_file(base, case.get("golden"), "golden")
+        legacy_schema = case["schema_version"] == 1
+        model_path = check_locked_file(base, case.get("model"), "model", legacy_schema)
+        golden_path = check_locked_file(base, case.get("golden"), "golden", legacy_schema)
         expected = build_expected(root, run_id, case, golden_path, origin_digest,
                                   record["sha256"])
         training_config_path = run_dir / cid / "micro_train.cfg"
@@ -539,7 +579,7 @@ def export(root: Path, run_id: str, summary_path: Path, output_dir: Path) -> dic
             for sample in samples:
                 for role in ("inputs", "labels"):
                     for item in sample.get(role, []):
-                        path = check_locked_file(base, item, f"{section}.{role}")
+                        path = check_locked_file(base, item, f"{section}.{role}", legacy_schema)
                         expected["inputs"].append(evidence(path, root))
         expected_path = output_dir / f"{cid}.json"
         cases.append({

@@ -18,9 +18,10 @@ try:
 finally:
     sys.path.pop(0)
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] /
+                       "hs-verify-op-board/scripts/training"))
 try:
-    from check_board_reference import ATOL, RTOL, check_expected_against_golden
+    from compare_training_board import ATOL, RTOL, check_expected_against_golden
 finally:
     sys.path.pop(0)
 
@@ -328,7 +329,13 @@ def replay_board_report(root, facts, report):
 
     expected = by_hash("expected_sha256")
     try:
-        reference = check_expected_against_golden(case_path, locked, load_json(expected), report)
+        reference = check_expected_against_golden(
+            case_path,
+            locked,
+            load_json(expected),
+            report,
+            evidence_root=root,
+        )
     except FileNotFoundError:
         raise  # Missing golden is NOT_VERIFIED, not a fabricated comparison PASS.
     except ValueError as exc:
@@ -339,8 +346,8 @@ def replay_board_report(root, facts, report):
     with tempfile.TemporaryDirectory(prefix="training-board-replay-") as tmp:
         output = Path(tmp) / "compare.json"
         command = [sys.executable, str(comparator), "--expected", str(expected),
-                   "--raw-log", str(raw), "--output", str(output),
-                   "--atol", str(ATOL), "--rtol", str(RTOL)]
+                   "--raw-log", str(raw), "--evidence-root", str(root),
+                   "--output", str(output), "--atol", str(ATOL), "--rtol", str(RTOL)]
         if observed:
             command += ["--observed", str(observed)]
         result = subprocess.run(command, capture_output=True, text=True, check=False)
@@ -354,6 +361,8 @@ def replay_board_report(root, facts, report):
             raise IntegrityError(f"board report differs from replay: {key}")
     if fresh.get("status") != "PASS" or fresh.get("parameters_observed") is not True:
         raise IntegrityError("board parameter evidence did not pass")
+    if fresh.get("capture_transport_status") != "PASS" or fresh.get("backend_returncode") != 0:
+        raise IntegrityError("board capture transport or backend evidence did not pass")
     return {**fresh, "reference_binding": reference}
 
 

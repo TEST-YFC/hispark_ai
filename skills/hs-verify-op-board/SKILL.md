@@ -11,7 +11,7 @@ description: >-
 使用 `verification_kind=inference|training`，由调用方明确传入。独立请求包含训练、反向传播、梯度或权重更新时选择 `training`；没有训练语义的旧调用默认 `inference`。两种模式分别读取自己的步骤，不把推理结果当作训练结果。
 
 - 推理：读取 [推理验证步骤](references/inference/workflow.md)。现有脚本、参数和结果格式保持不变。
-- 训练：读取 [训练验证步骤](references/training/workflow.md)。只按本分支规定的训练模型、执行入口和数值证据作结论。
+- 训练：读取 [训练验证步骤](references/training/workflow.md)。当前 Micro 生成器缺少运行时 observer，训练板路径在 `build_micro.py` 能力门禁处 `NOT_RUN`；只有未来 observer 合同完整实现并验证后，才按该步骤执行完整板测。
 
 `framework_scope` 仍表示源模型框架，例如 `onnx`、`tflite`；它不是验证类型。`fp32` 等数值类型也单独记录。
 
@@ -28,4 +28,4 @@ description: >-
 
 SDK 写入前必须核对用户给出的固件 SDK 路径和芯片身份，不能把 skills 目录直接当作 SDK。复用 `scripts/probe_serial_ports.py` 保存端口探测结果；没有设备时记录 `NOT_RUN`，不能把 Host 执行说成上板通过。
 
-固件构建、烧录分别调用 `hs-dev-build`、`hs-dev-flash`，串口采集使用已安装的串口技能或工作流指定工具。Host 已通过的预期用例全部保留；设备不足或资源限制导致未执行的行仍须出现在报告中。
+推理固件构建、烧录分别调用 `hs-dev-build`、`hs-dev-flash`，串口采集使用已安装的串口技能或工作流指定工具。训练路径还必须先通过 observer 能力门禁；当前源码缺少该能力时不得构建或烧录，Host 已通过的预期用例仍保留并记录 `NOT_RUN`。

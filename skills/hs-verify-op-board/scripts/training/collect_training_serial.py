@@ -14,7 +14,12 @@ import time
 import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from training_protocol import DONE_PATTERN, parse_raw, read_json, write_json
+from training_protocol import (parse_raw, read_json, validate_new_output, write_json)
+
+
+def lexical_absolute(path):
+    """Return an absolute path without following the final name or its parents."""
+    return Path(os.path.abspath(os.fspath(path)))
 
 
 def main(argv=None):
@@ -39,14 +44,19 @@ def main(argv=None):
         ap.error("--reset requires live --fbb-monitor")
     if a.input_log and (a.fbb_monitor or a.sdk_dir):
         ap.error("replay cannot use live backend options")
-    raw_path = (a.output or a.input_log).resolve()
-    protocol_path = a.protocol_output.resolve()
+    raw_path = a.input_log.resolve() if a.input_log else lexical_absolute(a.output)
+    protocol_path = lexical_absolute(a.protocol_output)
     protected = [x.resolve() for x in (a.input_log, a.expected) if x]
     if protocol_path == raw_path or protocol_path in protected or (a.output and raw_path == (a.expected.resolve() if a.expected else None)):
         ap.error("input, expected, raw and protocol output paths must not overwrite each other")
-    # Exclusive new attempt paths prevent stale evidence reuse.
-    if protocol_path.exists() or (a.output and raw_path.exists()):
-        ap.error("output already exists; use new attempt paths")
+    # Collector-owned outputs are created exclusively. For fbb, this is only a
+    # preflight check; fbb owns creation of the --log raw file.
+    try:
+        validate_new_output(protocol_path)
+        if a.output:
+            validate_new_output(raw_path)
+    except ValueError as exc:
+        ap.error(str(exc))
     expected = read_json(a.expected) if a.expected else None
     started = datetime.now(timezone.utc).isoformat()
     backend_rc = None
@@ -65,7 +75,7 @@ def main(argv=None):
             raw_path.parent.mkdir(parents=True, exist_ok=True)
             cmd = ["fbb", "monitor", "--port", a.port, "--baud", str(a.baudrate),
                    "--chip", "ws63", "--timeout", str(a.seconds), "--log", str(raw_path),
-                   "--until", DONE_PATTERN, "--json-summary"]
+                   "--json-summary"]
             if a.reset:
                 cmd.append("--reset")
             env = os.environ.copy()
@@ -90,13 +100,8 @@ def main(argv=None):
                     log.flush()
                     raw += chunk
                     pending += chunk
-                    stop = False
                     while b"\n" in pending:
-                        line, pending = pending.split(b"\n", 1)
-                        if line.startswith(b"TRAIN_DONE "):
-                            stop = parse_raw(raw, expected)["capture_complete"]
-                    if stop:
-                        break
+                        pending = pending.split(b"\n", 1)[1]
             backend_rc = 0 if parse_raw(raw, expected)["capture_complete"] else 4
     except (OSError, ImportError, subprocess.SubprocessError) as exc:
         transport_error = str(exc)

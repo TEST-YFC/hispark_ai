@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Deterministically convert one Host-PASS model and build its WS63 Micro archives.
+"""Convert one Host-PASS model and build WS63 Micro archives.
 
-This step deliberately stops before modifying a firmware SDK.
+Inference builds are supported. Training builds stop before conversion because the
+current Micro generator has no runtime training-weight observer contract.
 """
 from __future__ import annotations
 
@@ -250,6 +251,8 @@ def validate_identity_arguments(parser: argparse.ArgumentParser,
         if missing:
             parser.error("--config requires " + " and ".join(
                 f"--{name.replace('_', '-')}" for name in missing))
+        if args.framework != "onnx":
+            parser.error("training_config_requires_onnx_framework")
     elif args.run_id or args.case_id:
         parser.error("--run-id and --case-id are only valid with --config")
     for name in ("run_id", "case_id"):
@@ -264,8 +267,6 @@ def cmake_arguments(config: str | None, micro: Path, build: Path, pkg: Path,
                  f"-DOP_LIB={pkg / 'tools/codegen/lib/riscv/libnnacl.a'}",
                  f"-DWRAPPER_LIB={pkg / 'tools/codegen/lib/riscv/libwrapper.a'}",
                  f"-DRISCV_TOOLCHAIN_PATH={toolchain}", f"-DPKG_PATH={pkg}"]
-    if config:
-        arguments.append("-DMSLITE_TRAIN_OBSERVER=ON")
     return arguments
 
 
@@ -282,6 +283,10 @@ def main() -> int:
     if args.jobs < 1:
         parser.error("--jobs must be >= 1")
     validate_identity_arguments(parser, args)
+    if args.config and args.mode != "fp32":
+        fail("training_config_requires_fp32_mode")
+    if args.config:
+        fail("training_observer_unavailable_for_micro_generator")
 
     model = absolute_existing(args.model, "model")
     pkg = absolute_existing(args.mslite_pkg, "mslite_pkg")
@@ -298,9 +303,6 @@ def main() -> int:
     output = output.resolve()
     if any(output.iterdir()):
         fail(f"output_dir_must_be_empty:{output}")
-    if args.config and args.mode != "fp32":
-        fail("training_config_requires_fp32_mode")
-
     cfg = materialize_cfg(args, output)
     micro = output / "micro"
     convert = converter(pkg)
@@ -357,7 +359,7 @@ def main() -> int:
         "converter_library_dirs": list(converter_library_dirs),
         "toolchain_bin": str(toolchain), "config": str(cfg),
         "config_sha256": sha256(cfg),
-        "training_observer": bool(args.config),
+        "training_observer": False,
         "micro_project": str(micro), "calibration_files": calibration_files,
         "generated_sources": generated_sources,
         "archives": {path.name: {"path": str(path), "sha256": sha256(path)} for path in destinations},

@@ -19,16 +19,18 @@ python3 <host_skill_root>/scripts/training/run_training_case.py \
 
 ## case.json
 
-以下是字段示意。`sha256` 要由实际文件计算，不能直接执行占位值；路径相对 case.json 所在目录解析，所有模型、输入、标签和参考文件必须归档在该 case 目录内，不能引用目录外文件。
+以下是字段示意。`sha256` 和 `bytes` 要由实际文件计算，不能直接执行占位值；路径相对 case.json 所在目录解析，所有模型、输入、标签和参考文件必须归档在该 case 目录内，不能引用目录外文件。
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "verification_kind": "training",
+  "framework": "onnx",
+  "dtype": "float32",
   "case_id": "TC_001",
   "kind": "numerical",
   "test_point": "静态 FP32 反向传播与上游参数更新",
-  "model": {"path": "model.onnx", "sha256": "实际SHA256"},
+  "model": {"path": "model.onnx", "sha256": "实际SHA256", "bytes": 12345},
   "graph_expectations_version": 1,
   "graph_expectations": {
     "targets": [{
@@ -48,19 +50,19 @@ python3 <host_skill_root>/scripts/training/run_training_case.py \
   "training": {"steps": 2, "learning_rate": 0.01, "momentum": 0.0,
                "label_tensor_name": "label", "frozen_nodes": []},
   "sequence": [
-    {"inputs": [{"path": "x0.bin", "sha256": "实际SHA256", "dtype": "float32", "shape": [1, 3]}],
-     "labels": [{"path": "y0.bin", "sha256": "实际SHA256", "dtype": "int32", "shape": [1]}]},
-    {"inputs": [{"path": "x1.bin", "sha256": "实际SHA256", "dtype": "float32", "shape": [1, 3]}],
-     "labels": [{"path": "y1.bin", "sha256": "实际SHA256", "dtype": "int32", "shape": [1]}]}
+    {"inputs": [{"path": "x0.bin", "sha256": "实际SHA256", "bytes": 12, "dtype": "float32", "shape": [1, 3]}],
+     "labels": [{"path": "y0.bin", "sha256": "实际SHA256", "bytes": 4, "dtype": "int32", "shape": [1]}]},
+    {"inputs": [{"path": "x1.bin", "sha256": "实际SHA256", "bytes": 12, "dtype": "float32", "shape": [1, 3]}],
+     "labels": [{"path": "y1.bin", "sha256": "实际SHA256", "bytes": 4, "dtype": "int32", "shape": [1]}]}
   ],
   "eval": {
-    "inputs": [{"path": "eval_x.bin", "sha256": "实际SHA256", "dtype": "float32", "shape": [1, 3]}],
-    "labels": [{"path": "eval_y.bin", "sha256": "实际SHA256", "dtype": "int32", "shape": [1]}]
+    "inputs": [{"path": "eval_x.bin", "sha256": "实际SHA256", "bytes": 12, "dtype": "float32", "shape": [1, 3]}],
+    "labels": [{"path": "eval_y.bin", "sha256": "实际SHA256", "bytes": 4, "dtype": "int32", "shape": [1]}]
   },
   "reference_source": "独立参考实现、版本和同一初始化模型的生成方式",
-  "golden": {"path": "golden.npz", "sha256": "实际SHA256"},
-  "outputs": [{"index": 0, "shape": [1, 4], "role": "logits"},
-              {"index": 1, "shape": [1], "role": "loss"}],
+  "golden": {"path": "golden.npz", "sha256": "实际SHA256", "bytes": 12345},
+  "outputs": [{"index": 0, "shape": [1, 4], "dtype": "float32", "role": "logits"},
+              {"index": 1, "shape": [1], "dtype": "float32", "role": "loss"}],
   "weights": [{"name": "实际导出参数名", "reference": "wup", "dtype": "float32", "shape": [3, 4]}],
   "upstream_weights": ["实际导出参数名"],
   "frozen_weights": []
@@ -68,6 +70,8 @@ python3 <host_skill_root>/scripts/training/run_training_case.py \
 ```
 
 上例使用通用占位，不对应任何具体算子，不能直接运行。所有 `<...>` 必须按当前源 ONNX、转换图和生成代码对应的明确预期填写；两个 primitive 字段中的 `0` 仅为保持 JSON 整数类型的占位，必须替换为实际 primitive 编号。`domain: ""` 表示预期默认 domain；非默认域须显式填写实际预期值。`forward_target` 的名称和 primitive 须与对应 target 一致。不得照搬占位、编号或符号，也不得将本次检查读出的实际值自动回填充当事先声明的预期。新 numerical case 必须按下文声明完整 `source_node`。
+
+新生成 case 使用 `schema_version=2`，`framework`、`dtype`、训练参数、输出/权重 dtype，以及每个归档文件的 `bytes` 都必须显式声明。既有 `schema_version=1` case 只支持只读复审：runner 和聚合器会在内存中按旧默认值补齐、从当前文件读取缺失字节数，然后继续执行完整校验；不要为了升级版本或补字段改写已锁定的历史证据。
 
 训练序列长度必须等于 steps，且至少两步；每步与 Eval 的输入顺序、dtype、shape 一致。输出下标连续，最后一个是 loss。参数名须与当前生成工程的导出 manifest 一一对应；若转换后的 layout 不同，先确定映射、更新计划和独立参考，不能为了让比较通过而盲目转置。
 
@@ -158,7 +162,7 @@ python3 <host_skill_root>/scripts/training/aggregate_training_results.py \
 
 - 非空 `parallel_upstream_paths`：每项含 `forward_upstream`、`forward_sink`、
   `upstream_backward`、`parameter_grad`、`optimizer`，证明另一条 FP32 可训练路径仍有
-  loss→Backward→ParameterGrad→optimizer 链路；
+  loss→Backward→ParameterGrad→optimizer 路径；
 - 非空 `barrier_upstream_paths`：每项含 `forward_upstream` 和 `forward_target`，
   证明源模型中边界上游确实连到目标；
 - 非空 `barrier_weights`：这些权重必须出现在 `weights` 中，且不能列入
@@ -176,7 +180,7 @@ python3 <host_skill_root>/scripts/training/aggregate_training_results.py \
 
 ### 旧 case 兼容与 ONNX 依赖边界
 
-为只读复审既有 schema-1 证据，代码仍接受未声明 `source_node` 的旧 numerical case，**这不是新用例的推荐或允许省略规则**。旧 case 仍须重新读取并核对模型 SHA、实际解析 ONNX、运行模型检查，以 `forward_name` 唯一匹配源节点并验证上游拓扑。其实际 `name/op_type/domain` 会记录在源检查结果中，`declared_identity_checked=false`；只能报告“已解析源模型并验证节点名/拓扑”，不能报告“已比对预期 op_type/domain”。完整声明且比对通过时该标记才为 `true`。不要为了补字段改写已锁定的历史 case、summary 或日志。
+为只读复审既有 schema-1 证据，代码仍接受未声明 `source_node` 和上述新显式字段的旧 numerical case；这不是新用例的省略规则。旧 case 仍须重新读取并核对模型 SHA、实际解析 ONNX、运行模型检查，以 `forward_name` 唯一匹配源节点并验证上游拓扑。其实际 `name/op_type/domain` 会记录在源检查结果中，`declared_identity_checked=false`；只能报告“已解析源模型并验证节点名/拓扑”，不能报告“已比对预期 op_type/domain”。完整声明且比对通过时该标记才为 `true`。不要为了补字段改写已锁定的历史 case、summary 或日志。
 
 执行 numerical runner 和独立聚合复审的 Python 环境均须具备 `onnx` 包，包括在 Windows 上复审 WSL 生成的证据时；缺少依赖明确失败，没有静默跳过或 allow 模式。当前不支持 external-data ONNX：外部 tensor 文件没有单独锁定的身份链，模型不会被当成受支持的 numerical 输入放行。请为新用例生成数据内嵌的单文件 ONNX，并重新计算 SHA。`kind="reject"` 继续使用现有预期错误路径，不因源模型无法解析而提前取代 converter 的拒绝测试。
 

@@ -30,7 +30,7 @@ description: >-
 | train-stage2 | 仓库增量构建、确认训练工具包 | `MSLITE_TRAIN_BUILD=PASS`，包与源码版本一致 |
 | train-stage3 | Host 生成模型、转换、图/内存/生成代码检查 | 正向和预期拒绝用例均有真实转换结果 |
 | train-stage4 | Host 编译并运行生成 C 的多步训练，完整数值比较 | 预期用例全部完成，结构和数值检查通过 |
-| train-stage5 | 检测设备；按条件准备 WS63 固件、烧录、训练板测；由生成端 observer 提供运行时参数，sample 输出训练记录，collector 采集，compare 比较 | 板端逐项结果，或明确的未执行记录 |
+| train-stage5 | 检测设备；先核对生成端 observer 能力，再按条件准备 WS63 固件、烧录、训练板测 | 板端逐项结果，或明确的未执行/不支持记录 |
 | train-stage6 | 用本轮结果更新两份文档，输出最终报告；调度器的 `final` 阶段在成功或失败时均同步真实结果 | 两份文档通过审计，状态与真实证据一致 |
 
 stage6 放在板端结果之后收尾；初版文档在 stage1 编码前生成。失败、设备缺失或用户排除板端时也要更新验证文档，不能只为成功结果写报告。
@@ -95,11 +95,13 @@ stage6 放在板端结果之后收尾；初版文档在 stage1 编码前生成�
 
 保留四类证据：模型生成、转换、编译执行、数值比较。转换和编译通过不等于训练数值通过。检查 `training_graph.dot`、`training_memory.json`、生成的 `net0.c`/`net.cmake` 及无训练配置时的生成物，确认反向路径、保活/内存、源码收集和无训练符号泄漏。
 
+无训练配置对照工程的 `inference_isolation` 只证明 inference-only 产物没有泄漏训练符号、反向节点或训练源码；它不是 inference numerical correctness，也不能满足 `TRAIN_MODEL_GENERATE`、`TRAIN_CONVERT_GATE` 或 `TRAIN_HOST_VERIFY_GATE`。只有真实输入、输出、golden 和数值比较齐全时，才可记录 `INFERENCE_NUMERICAL=PASS`；没有该执行证据必须记录 `INFERENCE_NUMERICAL=NOT_RUN`。训练模型生成、训练转换和 Host 训练数值门禁分别以本工作流的 case runner/aggregate 证据为准。
+
 ## train-stage5：WS63 训练板测
 
 Host 通过后调用 `hs-verify-op-board verification_kind=training`。输入必须是 `runs/<run_id>/board_expected/training_board_expected_matrix.json` 及其中逐 case expected 文件；该矩阵由 aggregate 阶段从 Host 汇总和 golden 自动导出，不能由板端阶段手工挑选用例。
 
-按 [生成端 observer 说明](../hs-verify-op-board/references/training/generated-observer.md) 核对运行时参数访问接口，由 sample 读取参数并输出训练记录；已有 accessor 不代表 sample 接线或板测已完成。`collect_training_serial.py` 采集并保存原始串口，使用 `training_protocol.py` 解析协议，再由 `compare_training_board.py` 对原始日志或 collector 结果独立复核。采集与比较的命令见 [板端训练脚本说明](../hs-verify-op-board/references/training/commands.md)。
+按 [生成端 observer 说明](../hs-verify-op-board/references/training/generated-observer.md) 先核对运行时参数访问接口。当前 Micro 生成器没有该能力，`build_micro.py --config` 会以 `training_observer_unavailable_for_micro_generator` 停止；因此本轮不得继续 sample、SDK 接入、`hs-dev-build` 或 `hs-dev-flash`，必须记录 `TRAIN_BOARD_VERIFY=NOT_RUN` 和恢复条件。只有未来 observer 通过生成器、receipt、sample、wiring 和板端回归后，才可按 [板端训练脚本说明](../hs-verify-op-board/references/training/commands.md) 执行采集与比较。
 
 仅收到 `TRAIN_DONE`，或仅看到某个输出张量，不能写 `TRAIN_BOARD_VERIFY=PASS`；必须同时核对 run/case/model 身份、完整 `TRAIN_BEGIN`/`TRAIN_TENSOR`/`TRAIN_DONE` 序列、必测张量集合、checkpoint、参数快照及逐元素数值比较。解析、采集或比较失败要保留为 `FAIL`；缺少必要观测时只能记录 `NOT_RUN` 或未完成状态。
 
@@ -122,6 +124,8 @@ TRAIN_MODEL_GENERATE=<PASS|FAIL|NOT_RUN>
 TRAIN_CONVERT_GATE=<PASS|FAIL|NOT_RUN>
 TRAIN_GENERATED_ARTIFACTS=<PASS|FAIL|NOT_RUN>
 TRAIN_HOST_VERIFY_GATE=<PASS|FAIL|NOT_RUN>
+INFERENCE_ISOLATION=<PASS|FAIL|NOT_RUN>
+INFERENCE_NUMERICAL=<PASS|FAIL|NOT_RUN>
 TRAIN_BOARD_VERIFY=<PASS|FAIL|NOT_RUN|NOT_REQUESTED>
 TRAIN_OP_MANUAL_SYNC=<PASS|FAIL>
 TRAIN_CASE_EXPECTED=<n>

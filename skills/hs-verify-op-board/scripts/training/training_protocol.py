@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import re
 import struct
 from pathlib import Path
@@ -143,19 +144,37 @@ def parse_raw(raw, expected=None):
     session = None
     state = "WAIT_BEGIN"
     seen = set()
-    try:
-        target = identity(expected) if expected is not None else None
-        text = raw.decode("utf-8", errors="strict")
-    except (ValueError, UnicodeError) as exc:
-        result["errors"].append(str(exc))
-        return result
-    for number, line in enumerate(text.splitlines(keepends=True), 1):
-        if not line.startswith(("TRAIN_BEGIN", "TRAIN_TENSOR", "TRAIN_DONE")):
+    target = identity(expected) if expected is not None else None
+    markers = (b"TRAIN_BEGIN", b"TRAIN_TENSOR", b"TRAIN_DONE")
+    start = 0
+    number = 0
+    while start < len(raw):
+        end = raw.find(b"\n", start)
+        line = raw[start:] if end < 0 else raw[start:end + 1]
+        start = end + 1
+        number += 1
+        if state == "WAIT_BEGIN" and not line.startswith(b"TRAIN_BEGIN"):
+            # A reset may leave a partial TRAIN_TENSOR or TRAIN_DONE frame in the
+            # input stream before the current session starts. Bytes before the
+            # session anchor are startup noise and cannot contribute evidence.
+            # A damaged TRAIN_BEGIN is still parsed below and remains an error.
+            if end < 0:
+                break
+            continue
+        if state != "WAIT_BEGIN" and not line.startswith(markers):
+            result["errors"].append(
+                f"line {number}: unexpected non-protocol output after TRAIN_BEGIN")
+            if end < 0:
+                break
             continue
         try:
-            if not line.endswith("\n"):
+            if not line.endswith(b"\n"):
                 raise ValueError("truncated protocol line (missing newline)")
-            prefix, separator, payload = line.rstrip("\r\n").partition(" ")
+            try:
+                text = line.decode("utf-8", errors="strict")
+            except UnicodeDecodeError as exc:
+                raise ValueError(f"protocol line is not UTF-8: {exc}") from exc
+            prefix, separator, payload = text.rstrip("\r\n").partition(" ")
             if not separator or prefix not in ("TRAIN_BEGIN", "TRAIN_TENSOR", "TRAIN_DONE"):
                 raise ValueError("malformed protocol prefix")
             value = loads(payload)
@@ -180,9 +199,11 @@ def parse_raw(raw, expected=None):
             else:
                 if state != "IN_RUN":
                     raise ValueError("TENSOR/DONE outside active session")
+                session_identity = {key: value for key, value in session.items()
+                                    if not (prefix == "TRAIN_TENSOR" and key == "dtype")}
                 frame_identity = {key: value for key, value in current.items()
                                   if not (prefix == "TRAIN_TENSOR" and key == "dtype")}
-                if frame_identity != session:
+                if frame_identity != session_identity:
                     raise ValueError("record identity differs from BEGIN")
                 if prefix == "TRAIN_DONE":
                     result["done_count"] += 1
@@ -195,6 +216,8 @@ def parse_raw(raw, expected=None):
                     result["tensors"].append(value)
         except (ValueError, TypeError) as exc:
             result["errors"].append(f"line {number}: {exc}")
+        if end < 0:
+            break
     if state != "ENDED":
         result["errors"].append("incomplete BEGIN/DONE session")
     result["capture_complete"] = state == "ENDED" and not result["errors"]
@@ -213,5 +236,28 @@ def parse_raw(raw, expected=None):
 
 def write_json(path, value):
     path = Path(path)
+    validate_new_output(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, allow_nan=False, indent=2) + "\n", encoding="utf-8")
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, ensure_ascii=False, allow_nan=False, indent=2)
+        stream.write("\n")
+
+
+def validate_new_output(path):
+    path = Path(path)
+    if os.path.lexists(path):
+        raise ValueError(f"output already exists: {path}")
+    ancestor = path.parent
+    while ancestor != ancestor.parent:
+        if ancestor.is_symlink():
+            raise ValueError(f"output path crosses a symlink: {ancestor}")
+        if os.name == "nt":
+            try:
+                stat = os.stat(ancestor, follow_symlinks=False)
+            except FileNotFoundError:
+                pass
+            else:
+                if getattr(stat, "st_reparse_tag", 0):
+                    raise ValueError(
+                        f"output path crosses a symlink or reparse point: {ancestor}")
+        ancestor = ancestor.parent

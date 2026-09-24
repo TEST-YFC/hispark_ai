@@ -1,18 +1,14 @@
 # 生成训练 observer 说明
 
-生成训练模型可在 CMake 配置时启用 `MSLITE_TRAIN_OBSERVER=ON`，而不启用
-`MSLITE_TRAIN_BENCHMARK`。生成的 `GetTrainWeightCountN()` / `GetTrainWeightN()`
-是模型内部 accessor，不改变公共 ABI。
+当前检出的 Micro 生成器不提供训练 observer。源码中不存在 `MSLITE_TRAIN_OBSERVER`、`GetTrainWeightCount<model_index>()` 或 `GetTrainWeight<model_index>()`；因此不能从生成模型运行时地址读取板端训练权重。
 
-`GetTrainWeightN(index, &metadata, &data)` 当前接受生成 metadata 标记为
-`float32` 或 `int32` 的训练权重。bytes 非零且与 dtype 对应、shape 元素数与 bytes
-一致；越界 index、NULL 输出指针、未绑定的 runtime weight 指针和 bytes 不匹配都会
-被拒绝。`data` 指向 LoadWeight 后的训练 RAM，而不是只读的 `_const` 初始数组。
-调用者应遍历 count 和 metadata 的 `raw_name/rank/shape`，不要假设 `m0_weight0`、
-参数顺序或元素个数。
+当前唯一相关能力是 `MSLITE_TRAIN_BENCHMARK`。它用于 Host/native benchmark 的文件导出（例如 `ExportN` 和 `manifest.json`），不能证明 RISC-V 固件中存在运行时 accessor，也不能作为板端参数快照。`const` 初始数组、Host 文件或 sample 自报的 `parameters_observed` 都不能替代实际 mutable weight 地址。
 
-`float32` 权重仍按训练容差比较；`int32` 权重按整数精确相等判断。当前不支持其他
-训练权重 dtype，也不把这个能力扩大成通用混合精度训练。
+因此当前训练板验证边界为：
 
-本说明只描述生成接口。真实结论仍须使用与当前源码一致的 converter 生成训练模型，
-完成 Sample 接线、WS63 构建、烧录和串口采集，并按训练验证流程比较完整数据。
+- `build_micro.py --config ...` 在转换前失败，原因是 `training_observer_unavailable_for_micro_generator`；
+- `prepare_training_sample.py` 和 `verify_wiring.py` 对该能力同样 fail closed，不生成或要求不存在的 `GetTrainWeight*` 符号；
+- 不调用 `hs-dev-build`、`hs-dev-flash` 或 fbb flash，不生成板端 PASS；
+- Host 训练仍可独立执行，板端结果记录为 `NOT_RUN`，而不是 `PASS` 或伪造的 output-only 完整训练结论。
+
+未来若要恢复板端训练，必须一次性设计并验证生成器代码、CMake 选项、Micro receipt 能力字段、sample 接线、wiring/nm 检查、SDK 构建、`hs-dev-flash` 烧录和串口比较；不能只添加一个命令行选项或在 sample 中声明外部函数。

@@ -61,6 +61,8 @@ python3 <workflow_skill_root>/scripts/run_training_workflow.py \
 
 板端证据交给 facts 时保持最小：单 case 直接引用 comparator report；多 case 使用只含 case、状态和 report 路径/hash 的 `board_matrix.json`。构建、烧录、端口和设备信息保留在各自证据及 `facts.sources` 中。finalizer 重放每个 report，并核对 Host expected 数值用例集合。
 
+训练 model 阶段可能额外生成 inference-only 对照探针。其 `INFERENCE_ISOLATION` 仅表示该对照产物没有训练 artifact 泄漏；不得将探针 PASS 当作模型生成、训练转换、Host 训练数值或 inference numerical PASS。若没有真实 inference 输入/输出/golden 执行与逐元素比较，终态必须写 `INFERENCE_NUMERICAL=NOT_RUN`；只有独立 inference runner 提供完整证据时才记录 PASS/FAIL。
+
 ## 终态 finalizer（调度结束后单独调用）
 
 `run_training_workflow.py` 只负责阶段命令调度。即使调度器输出 `COMMANDS_COMPLETED`，也不代表训练业务验证通过。调度器结束后，必须单独调用：
@@ -74,6 +76,8 @@ python3 <workflow-skill-root>/scripts/finalize_training_workflow.py \
   --verify <opdir>/<verify.md> \
   --board-policy AUTO_ALL
 ```
+
+finalizer 必须在完整的 skills 目录布局中运行：`hs-verify-op-host` 和 `hs-verify-op-board` 与训练工作流同级存在。Python 环境需要 NumPy；Host aggregate 复审还会使用 ONNX 依赖。finalizer 只重放和审计已有证据，不需要板卡、串口或 MindSpore 板端工具。
 
 `--board-policy` 默认为 `AUTO_ALL`；只有明确采用 Host-only 策略时才使用 `HOST_ONLY`。finalizer 读取已经结束的 `train_workflow_summary.json`、现有 `runs/<run_id>/train_verify_summary.json` 和 facts，不新增 facts schema 字段，不重跑训练、Host、构建、烧录或串口验证。
 
@@ -91,7 +95,7 @@ finalizer 必须在调度结束后独立运行，不能放入调度器的 `final
 
 ## 板端参考与锁定 golden 绑定
 
-finalizer 在每个 case 重放 comparator 前，调用只读 helper `check_board_reference.py` 的 `check_expected_against_golden(case_path, locked, expected, report)`。该检查使用原始 case 目录中的 golden，不把 run 目录内的归档 case 副本当作相对路径基准。
+finalizer 在每个 case 重放前，调用 `hs-verify-op-board` 中 `compare_training_board.py` 的只读函数 `check_expected_against_golden(case_path, locked, expected, report, evidence_root=root)`。该检查使用原始 case 目录中的 golden，不把 run 目录内的归档 case 副本当作相对路径基准；`expected.training_config` 若存在，必须是相对于 `<opdir>` 的普通文件证据，并由 finalizer 使用 opdir root 校验路径、字节数和 SHA256；训练工作流不单独提供这个入口。
 
 - 先校验 locked golden SHA256，以 `np.load(..., allow_pickle=False)` 读取 NPZ，检查 keys、shape 与有限值。输出和 loss 是 FP32；训练权重按 case 声明为 FP32 或 INT32。
 - 仅支持当前标准 Host 格式：Predict 使用 `outputs[:-1]`，Eval 覆盖 `checkpoints=[0,1,steps]` 的全部 outputs 与 weights reference；`before/after` 按明确的 weight name 映射到初末 checkpoint。映射必须唯一且覆盖完整集合，不做任意协议翻译。

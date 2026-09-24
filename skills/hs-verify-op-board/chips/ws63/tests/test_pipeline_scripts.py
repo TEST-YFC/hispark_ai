@@ -20,6 +20,13 @@ def load_build_module():
     return module
 
 
+def load_integrate_module():
+    spec = importlib.util.spec_from_file_location("integrate_sdk", INTEGRATE)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def make_sdk(tmp_path: Path):
     sdk_root = tmp_path / "sdk"
     sdk = sdk_root / "src"
@@ -87,6 +94,8 @@ def test_sdk_integration_is_idempotent_and_writes_receipt(tmp_path):
     assert "SDK_INTEGRATION_GATE=PASS" in second.stdout
     payload = json.loads(receipt.read_text(encoding="utf-8"))
     assert payload["variant"] == "ReduceSumSquare_tc3_fp32"
+    assert payload["environment"]["HISPARK_AI_SDK_LOCK"].endswith(".hispark_ai_sdk.lock")
+    assert not (sdk_root / ".hispark_ai_sdk.lock").exists()
     assert (sdk / "middleware/utils/ai_mcu/lib/ReduceSumSquare_tc3_fp32/libnet.a").read_bytes() == b"net"
     target = (sdk / "build/config/target_config/ws63/config.py").read_text(encoding="utf-8")
     assert target.count("# BEGIN HISPARK AI TARGET COMPONENT") == 1
@@ -101,14 +110,15 @@ def test_sdk_integration_is_idempotent_and_writes_receipt(tmp_path):
     assert "-j8" not in wrapper
     assert "AI_CUSTOM_SAMPLE_DIR=$env:AI_CUSTOM_SAMPLE_DIR" in wrapper
     assert "AI_MCU_MODEL_VARIANT=$env:AI_MCU_MODEL_VARIANT" in wrapper
-    assert wrapper.rstrip().endswith("exit $LASTEXITCODE")
+    assert "exit $LASTEXITCODE" in wrapper
+    assert "HISPARK_AI_SDK_LOCK" in wrapper
     ps_env = (receipt.parent / "ws63_board_env.ps1").read_text(encoding="utf-8")
     assert f"$env:FIRMWARE_SDK_ROOT='{sdk_root.resolve()}'" in ps_env
     # Existing native SDK hooks are reused, not duplicated.
     assert (sdk / "application/samples/CMakeLists.txt").read_text().count("add_subdirectory") == 1
 
 
-def test_sdk_integration_records_training_identity(tmp_path):
+def test_sdk_integration_rejects_training_until_observer_exists(tmp_path):
     sdk_root, sdk = make_sdk(tmp_path)
     hispark, sample, libs = make_inputs(tmp_path)
     receipt = tmp_path / "training-integration.json"
@@ -122,14 +132,9 @@ def test_sdk_integration_records_training_identity(tmp_path):
                "--training-sample-receipt", str(sample_receipt.resolve()),
                "--receipt", str(receipt.resolve())]
     result = subprocess.run(command, text=True, capture_output=True)
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(receipt.read_text(encoding="utf-8"))
-    assert payload["verification_kind"] == "training"
-    assert payload["run_id"] == "run_train"
-    assert payload["case_id"] == "tc_train"
-    assert payload["model_sha256"] == "a" * 64
-    assert payload["framework"] == "onnx"
-    assert payload["training_config_sha256"] == "b" * 64
+    assert result.returncode != 0
+    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+    assert not receipt.exists()
 
 
 def test_sdk_integration_training_identity_is_required(tmp_path):
@@ -162,7 +167,7 @@ def test_sdk_integration_training_requires_sample_receipt(tmp_path):
                "--receipt", str((tmp_path / "training.json").resolve())]
     result = subprocess.run(command, text=True, capture_output=True)
     assert result.returncode != 0
-    assert "training_sample_receipt_missing" in result.stderr
+    assert "training_observer_unavailable_for_micro_generator" in result.stderr
 
 
 def test_sdk_integration_jobs_are_recorded_and_used(tmp_path):
@@ -211,6 +216,14 @@ def test_sdk_integration_shell_environment_is_quoted(tmp_path):
     assert "export ENABLE_AI_CUSTOM_SAMPLE=y" in shell_env
     assert 'export FIRMWARE_SDK_ROOT=' in shell_env
     assert '"' not in shell_env.splitlines()[0]
+
+
+def test_powershell_environment_converts_wsl_drive_mounts():
+    module = load_integrate_module()
+    assert module.wsl_drive_path_to_windows(
+        "/mnt/c/community/code with space") == "C:/community/code with space"
+    assert module.wsl_drive_path_to_windows("/mnt/d") == "D:/"
+    assert module.wsl_drive_path_to_windows("/opt/sdk") == "/opt/sdk"
 
 
 def test_sdk_integration_refuses_unreviewed_adaptor_overwrite(tmp_path):
@@ -319,3 +332,87 @@ def test_micro_builder_runtime_env_fails_when_package_has_no_converter_library(t
     pkg.mkdir()
     with pytest.raises(SystemExit):
         module.converter_runtime_env(pkg, {})
+
+
+def test_micro_builder_rejects_tflite_training_config(tmp_path):
+    module = load_build_module()
+    parser = module.build_parser()
+    args = parser.parse_args([
+        "--model", "model.tflite", "--framework", "tflite", "--mode", "fp32",
+        "--config", "micro_train.cfg", "--run-id", "run1", "--case-id", "case1",
+        "--mslite-pkg", "pkg", "--toolchain-bin", "toolchain", "--output-dir", "out",
+    ])
+    with pytest.raises(SystemExit):
+        module.validate_identity_arguments(parser, args)
+
+
+def test_micro_builder_rejects_training_without_observer(tmp_path):
+    model = tmp_path / "model.onnx"
+    model.write_bytes(b"model")
+    package = tmp_path / "pkg"
+    package.mkdir()
+    toolchain = tmp_path / "toolchain"
+    toolchain.mkdir()
+    (toolchain / "riscv32-linux-musl-gcc").write_bytes(b"gcc")
+    config = tmp_path / "micro_train.cfg"
+    config.write_text("[micro_param]\ntarget=riscv\n[train]\ntrain_mode=fp32\n", encoding="utf-8")
+    output = tmp_path / "out"
+    result = subprocess.run([
+        sys.executable, str(BUILD), "--model", str(model), "--framework", "onnx",
+        "--mode", "fp32", "--config", str(config), "--run-id", "run1",
+        "--case-id", "case1", "--mslite-pkg", str(package),
+        "--toolchain-bin", str(toolchain), "--output-dir", str(output),
+    ], text=True, capture_output=True)
+    assert result.returncode != 0
+    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+    assert not output.exists()
+
+
+def test_micro_builder_cmake_arguments_do_not_claim_observer(tmp_path):
+    module = load_build_module()
+    arguments = module.cmake_arguments("micro_train.cfg", tmp_path / "micro",
+                                       tmp_path / "build", tmp_path / "pkg",
+                                       tmp_path / "toolchain")
+    assert not any("MSLITE_TRAIN_OBSERVER" in item for item in arguments)
+
+
+def test_sdk_integration_rejects_tflite_training_receipt(tmp_path):
+    sdk_root, sdk = make_sdk(tmp_path)
+    hispark, sample, libs = make_inputs(tmp_path)
+    receipt = write_training_sample_receipt(tmp_path, sample)
+    value = json.loads(receipt.read_text(encoding="utf-8"))
+    value["framework"] = "tflite"
+    receipt.write_text(json.dumps(value), encoding="utf-8")
+    command = [sys.executable, str(INTEGRATE), "--sdk-root", str(sdk_root.resolve()),
+               "--hispark-root", str(hispark.resolve()), "--sample-dir", str(sample.resolve()),
+               "--model-lib-dir", str(libs.resolve()), "--operator", "Op",
+               "--case", "tc_train", "--mode", "fp32", "--target", "ws63-liteos-app",
+               "--verification-kind", "training", "--run-id", "run_train",
+               "--model-sha256", "a" * 64, "--training-sample-receipt", str(receipt.resolve()),
+               "--receipt", str((tmp_path / "integration.json").resolve())]
+    result = subprocess.run(command, text=True, capture_output=True)
+    assert result.returncode != 0
+    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+
+
+def test_training_sample_fails_closed_without_observer():
+    script = ROOT / "scripts" / "prepare_training_sample.py"
+    result = subprocess.run([
+        sys.executable, str(script), "--opdir", ".", "--run-id", "run1",
+        "--case-id", "case1", "--micro-model-source", "model0.c",
+        "--micro-build-receipt", "receipt.json", "--output-dir", "sample",
+    ], text=True, capture_output=True)
+    assert result.returncode != 0
+    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+
+
+def test_training_wiring_fails_closed_without_observer():
+    script = ROOT / "scripts" / "verify_wiring.py"
+    result = subprocess.run([
+        sys.executable, str(script), "--sdk-root", ".", "--sample-dir", ".",
+        "--model-lib-dir", ".", "--adaptor-dir", ".", "--ai-header", ".",
+        "--consumer", "x::token", "--net-source", "x.c", "--nm", "nm",
+        "--kernel-symbol", "Kernel", "--verification-kind", "training",
+    ], text=True, capture_output=True)
+    assert result.returncode != 0
+    assert "training_observer_unavailable_for_micro_generator" in result.stderr
