@@ -128,7 +128,20 @@ static OH_AI_Status createModelDescFromFile(ModelInfo *model_info)
 #else
 #endif
 
-static void destroyTensorArray(OH_AI_TensorHandle *tensors, size_t *count, int max_index)
+static void destroyNPUTensor(NPUTensor *tensor)
+{
+    if (tensor == NULL) {
+        return;
+    }
+
+    if (tensor->shape != NULL) {
+        aclrtFree(tensor->shape);
+        tensor->shape = NULL;
+    }
+    aclrtFree(tensor);
+}
+
+static void destroyTensorArray(NPUTensor **tensors, size_t *count, int max_index)
 {
     if (tensors == NULL || count == NULL) {
         return;
@@ -137,13 +150,27 @@ static void destroyTensorArray(OH_AI_TensorHandle *tensors, size_t *count, int m
     size_t release_count = (max_index == -1) ? *count : (size_t)max_index;
     for (size_t i = 0; i < release_count; i++) {
         if (tensors[i] != NULL) {
-            aclrtFree(tensors[i]);
+            destroyNPUTensor(tensors[i]);
             tensors[i] = NULL;
         }
     }
     aclrtFree(tensors);
-    *tensors = NULL;
     *count = 0;
+}
+
+static void destroyTensorArrayPartially(NPUTensor **tensors, size_t count)
+{
+    if (tensors == NULL) {
+        return;
+    }
+
+    for (size_t i = 0; i < count; i++) {
+        if (tensors[i] != NULL) {
+            destroyNPUTensor(tensors[i]);
+            tensors[i] = NULL;
+        }
+    }
+    aclrtFree(tensors);
 }
 
 static void destoryDataset(aclmdlDataset *dataset)
@@ -176,9 +203,11 @@ static void destroyModelInputAndOutput(ModelInfo *model_info)
     }
     if (model_info->inputs != NULL) {
         destroyTensorArray(model_info->inputs, &model_info->input_count, DESTORYALL);
+        model_info->inputs = NULL;
     }
     if (model_info->outputs != NULL) {
         destroyTensorArray(model_info->outputs, &model_info->output_count, DESTORYALL);
+        model_info->outputs = NULL;
     }
 }
 
@@ -213,14 +242,14 @@ static void destroyModelStreamAndDesc(ModelInfo *model_info)
         aclError ret = aclrtDestroyStream(model_info->model_stream);
         if (ret != ACL_SUCCESS) {
             error_code = ret;
-            return;
         }
         model_info->model_stream = NULL;
+    }
 
-        ret = aclmdlDestroyDesc(model_info->model_desc);
+    if (model_info->model_desc != NULL) {
+        aclError ret = aclmdlDestroyDesc(model_info->model_desc);
         if (ret != ACL_SUCCESS) {
             error_code = ret;
-            return;
         }
         model_info->model_desc = NULL;
     }
@@ -250,11 +279,13 @@ static OH_AI_Status loadModelFromFile(ModelInfo *model_info, const char *model_p
     ret = aclrtMalloc(&model_info->workspace, model_info->work_size, ACL_MEM_MALLOC_NORMAL_ONLY);
     if (ret != ACL_SUCCESS) {
         error_code = ret;
+        destroyModelWeightAndWorkspace(model_info);
         return OH_AI_STATUS_FAILED;
     }
 
     aclmdlConfigHandle *config_handle = aclmdlCreateConfigHandle();
     if (config_handle == NULL) {
+        destroyModelWeightAndWorkspace(model_info);
         return OH_AI_STATUS_FAILED;
     }
 
@@ -268,6 +299,7 @@ static OH_AI_Status loadModelFromFile(ModelInfo *model_info, const char *model_p
     if (ret != ACL_SUCCESS) {
         error_code = ret;
         aclmdlDestroyConfigHandle(config_handle);
+        destroyModelWeightAndWorkspace(model_info);
         return OH_AI_STATUS_FAILED;
     }
 
@@ -502,13 +534,18 @@ OH_AI_Status OH_AI_ModelBuildFromFile(
 
     OH_AI_Status ret = setModelStream(model_info);
     if (ret != OH_AI_STATUS_SUCCESS) {
+        model_info->context->model_count--;
         return ret;
     }
 
     ret = loadModelFromFile(model_info, model_path);
     if (ret != OH_AI_STATUS_SUCCESS) {
+        destroyModelStreamAndDesc(model_info);
+        destroyModelWeightAndWorkspace(model_info);
+        model_info->context->model_count--;
         return ret;
     }
+    model_info->is_model_loaded = true;
 
 #if defined(PROCESSOR_TYPE_NANO)
     ret = createModelDescFromFile(model_info, model_path);
@@ -517,17 +554,27 @@ OH_AI_Status OH_AI_ModelBuildFromFile(
 #else
 #endif
     if (ret != OH_AI_STATUS_SUCCESS) {
+        destroyModelStreamAndDesc(model_info);
+        destroyModelWeightAndWorkspace(model_info);
+        model_info->context->model_count--;
         return ret;
     }
-    model_info->is_model_loaded = true;
 
     OH_AI_TensorHandleArray input_tensors = OH_AI_ModelGetInputs(model);
     if (input_tensors.handle_num == 0 || input_tensors.handle_list == NULL) {
+        destroyModelInputAndOutput(model_info);
+        destroyModelStreamAndDesc(model_info);
+        destroyModelWeightAndWorkspace(model_info);
+        model_info->context->model_count--;
         return OH_AI_STATUS_FAILED;
     }
 
     OH_AI_TensorHandleArray output_tensors = OH_AI_ModelGetOutputs(model);
     if (output_tensors.handle_num == 0 || output_tensors.handle_list == NULL) {
+        destroyModelInputAndOutput(model_info);
+        destroyModelStreamAndDesc(model_info);
+        destroyModelWeightAndWorkspace(model_info);
+        model_info->context->model_count--;
         return OH_AI_STATUS_FAILED;
     }
 
@@ -583,6 +630,7 @@ OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle model)
         error_code = ret;
         return result;
     }
+    aclrtMemset(model_info->inputs, input_count * sizeof(NPUTensor *), 0, input_count * sizeof(NPUTensor *));
 
     model_info->input_dataset = aclmdlCreateDataset();
     if (model_info->input_dataset == NULL) {
@@ -592,14 +640,12 @@ OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle model)
     }
 
     if (InitializeInputTensors(model_info, input_count) != OH_AI_STATUS_SUCCESS) {
-        if (model_info->inputs != NULL) {
-            aclrtFree(model_info->inputs);
-            model_info->inputs = NULL;
-        }
         if (model_info->input_dataset != NULL) {
-            aclmdlDestroyDataset(model_info->input_dataset);
+            destoryDataset(model_info->input_dataset);
             model_info->input_dataset = NULL;
         }
+        destroyTensorArrayPartially(model_info->inputs, input_count);
+        model_info->inputs = NULL;
         return result;
     }
 
@@ -639,6 +685,7 @@ OH_AI_TensorHandleArray OH_AI_ModelGetOutputs(const OH_AI_ModelHandle model)
                     ACL_MEM_MALLOC_NORMAL_ONLY) != ACL_SUCCESS) {
         return result;
     }
+    aclrtMemset(model_info->outputs, output_count * sizeof(NPUTensor *), 0, output_count * sizeof(NPUTensor *));
 
     model_info->output_dataset = aclmdlCreateDataset();
     if (model_info->output_dataset == NULL) {
@@ -648,14 +695,12 @@ OH_AI_TensorHandleArray OH_AI_ModelGetOutputs(const OH_AI_ModelHandle model)
     }
 
     if (InitializeOutputTensors(model_info, output_count) != OH_AI_STATUS_SUCCESS) {
-        if (model_info->outputs != NULL) {
-            aclrtFree(model_info->outputs);
-            model_info->outputs = NULL;
-        }
         if (model_info->output_dataset != NULL) {
-            aclmdlDestroyDataset(model_info->output_dataset);
+            destoryDataset(model_info->output_dataset);
             model_info->output_dataset = NULL;
         }
+        destroyTensorArrayPartially(model_info->outputs, output_count);
+        model_info->outputs = NULL;
         return result;
     }
 

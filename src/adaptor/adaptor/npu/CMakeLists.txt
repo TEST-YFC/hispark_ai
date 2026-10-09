@@ -14,9 +14,17 @@ if ("${CHIP_VERSION}" STREQUAL "")
         "${ROOT_DIR}/include/middleware/utils"
     )
 
-    set(LIBS
-        ${ROOT_DIR}/interim_binary/3322/libs/npu/3322-wstp-app/turing/libascendcl.a
-    )
+    set(LIBS "")
+    if(EXISTS ${ROOT_DIR}/interim_binary/3322/libs/npu/3322-wstp-app)
+        list(APPEND LIBS ${ROOT_DIR}/interim_binary/3322/libs/npu/3322-wstp-app/turing/libascendcl.a)
+    elseif(EXISTS ${ROOT_DIR}/interim_binary/3322/libs/npu/diting-community)
+        list(APPEND LIBS ${ROOT_DIR}/interim_binary/3322/libs/npu/diting-community/turing/libascendcl.a)
+    endif()
+
+    list(LENGTH LIBS list_len)
+    if(list_len EQUAL 0)
+        MESSAGE(FATAL_ERROR "No libascendcl found!")
+    endif()
 
     set(PRIVATE_DEFINES PROCESSOR_TYPE_NANO)
 

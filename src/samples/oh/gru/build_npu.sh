@@ -17,9 +17,32 @@ set -e
 CHIP_VERSION=$1
 CUR_DIR=$(cd $(dirname $0) && pwd -P)
 
+SUPPORTED_WSPT_TARGETS=("pack_3322_wstp", "3322_wstp_app")
+SUPPORTED_DITING_TARGETS=("diting_community", "pack_diting_community")
+
+# Check if the target under 3322 is valid
+# $1 indicates
+function validate_build_target()
+{
+    all_supported_target=("${SUPPORTED_WSPT_TARGETS[@]}" "${SUPPORTED_DITING_TARGETS[@]}")
+
+    if [[ ! "${all_supported_target[*]}" =~ "$1" ]]; then
+        echo "Error: Invalid BUILD_TARGET '$1'"
+        echo "Supported build targets: ${all_supported_target[@]}"
+        exit 1
+    fi
+}
 
 function prepare_env()
 {
+    echo "============================"
+    echo "$SDK_PATH/application/samples/CMakeLists.txt"
+    echo "$SDK_PATH/build/config/target_config/3322/config.py"
+    echo "$SDK_PATH/middleware/chips/3322/at_adapter/at_adapter.c"
+    echo "$AT_CMAKELIST_PATH"
+    echo "$UTILS_CMAKELIST_PATH"
+    echo "$TARGET_CONFIG_PATH"
+
     if ! [[ -f "$SDK_PATH/application/samples/CMakeLists.txt" &&
             -f "$SDK_PATH/build/config/target_config/3322/config.py" &&
             -f "$SDK_PATH/middleware/chips/3322/at_adapter/at_adapter.c" &&
@@ -57,13 +80,13 @@ function set_3322_build_env()
 {
     if [ -z "$SDK_PATH" ]; then
         echo "ERROR: env SDK_PATH is empty, please set SDK_PATH"
-        exit
+        exit 1
     else
         echo "SDK_PATH=$SDK_PATH"
     fi
     if [ -z "$ADAPTOR_PATH" ]; then
         echo "ERROR: env ADAPTOR_PATH is empty, please set ADAPTOR_PATH"
-        exit
+        exit 1
     else
         echo "ADAPTOR_PATH=$ADAPTOR_PATH"
     fi
@@ -73,15 +96,19 @@ function set_3322_build_env()
     UTILS_CMAKELIST_PATH=$SDK_PATH/middleware/utils/CMakeLists.txt
     TARGET_CONFIG_PATH=$SDK_PATH/build/config/target_config/3322/target_config.py
 
+    # Copy the unified API adaptor to the SDK path.
     mkdir -p $SDK_PATH/middleware/utils/ai_mcu/adaptor/npu
     cp -rf $ADAPTOR_PATH/adaptor/npu $SDK_PATH/middleware/utils/ai_mcu/adaptor
 
+    # Copy the unified API header file to the SDK path.
     mkdir -p $SDK_PATH/include/middleware/utils
     cp -rf $ADAPTOR_PATH/include/ai.h $SDK_PATH/include/middleware/utils
 
+    # Copy the sample CMakeLists file to the SDK path.
     mkdir -p $SDK_PATH/application/samples/ai
     cp -f ../../CMakeLists.txt $SDK_PATH/application/samples/ai
 
+    # Copy the sample source code to the SDK path.
     mkdir -p $SDK_PATH/application/samples/ai/npu/src
     cp -rf ./src/* $SDK_PATH/application/samples/ai/npu/src
 }
@@ -103,11 +130,17 @@ function build_cfbb()
     fi
 
     if ! grep -q "npu_samples" "$SDK_PATH/build/config/target_config/3322/config.py"; then
+        if [[ "${SUPPORTED_WSPT_TARGETS[*]}" =~ "$SPK_BUILD_TARGET" ]]; then
+            target_name="3322-wstp-app"
+        else
+            target_name="diting-community"
+        fi
+
         config_content=$(< "$SDK_PATH/build/config/target_config/3322/config.py")
         config_content=${config_content%$'\r'}
-        config_target=$(python -c "import json; $config_content; target['3322-wstp-app']['ram_component'].append('npu_samples'); print(target)")
-        config_target_copy=$(python -c "import json; $config_content; target['3322-wstp-app']['ram_component'].append('npu_samples'); print(target_copy)")
-        config_target_group=$(python -c "import json; $config_content; target['3322-wstp-app']['ram_component'].append('npu_samples'); print(target_group)")
+        config_target=$(python -c "import json; $config_content; target['$target_name']['ram_component'].append('npu_samples'); print(target)")
+        config_target_copy=$(python -c "import json; $config_content; target['$target_name']['ram_component'].append('npu_samples'); print(target_copy)")
+        config_target_group=$(python -c "import json; $config_content; target['$target_name']['ram_component'].append('npu_samples'); print(target_group)")
         echo "" > $SDK_PATH/build/config/target_config/3322/config.py
         echo "target = $config_target" >> $SDK_PATH/build/config/target_config/3322/config.py
         echo "target_copy = $config_target_copy" >> $SDK_PATH/build/config/target_config/3322/config.py
@@ -146,11 +179,19 @@ function build_cfbb()
     fi
 
     cd $SDK_PATH
-    ./build.py -c pack_3322_wstp 2>&1 | tee build.log
+    ./build.py -c $SPK_BUILD_TARGET 2>&1 | tee build.log
+
+    pkg_name=$SPK_BUILD_TARGET
+    if [ $pkg_name == "pack_3322_wstp" ]; then
+        pkg_name="3322-wstp-app"
+    elif [ $pkg_name == "pack_diting_community" ]; then
+        pkg_name="diting-community"
+    fi
 
     # Copy Output fwpkg
     mkdir -p $CUR_DIR/output
-    cp $SDK_PATH/output/3322/fwpkg/3322-wstp-app.fwpkg $CUR_DIR/output/3322-ai-liteos-sample.fwpkg
+    cp $SDK_PATH/output/3322/fwpkg/${pkg_name}.fwpkg $CUR_DIR/output/3322-ai-liteos-sample.fwpkg
+    
 }
 
 function set_1156_build_env()
@@ -298,6 +339,18 @@ if [ "$CHIP_VERSION" = "1156" ]; then
     build_1156_adaptor
     build_1156_sample
 elif [ "$CHIP_VERSION" = "3322" ]; then
+    if [ $# -ne 2 ]; then
+        all_supported_target=("${SUPPORTED_WSPT_TARGETS[@]}" "${SUPPORTED_DITING_TARGETS[@]}")
+
+        echo "Usage: $0 <CHIP_VERSION> <BUILD_TARGET>"
+        echo " CHIP_VERSION: 1156, 3322"
+        echo " BUILD_TARGET: ${all_supported_target[@]}"
+        exit 1
+    fi
+
+    SPK_BUILD_TARGET=$2
+    validate_build_target ${SPK_BUILD_TARGET}
+
     set_3322_build_env
     prepare_env
     build_cfbb
