@@ -15023,3 +15023,598 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tr>
 </tbody>
 </table>
+
+# 专题<a name="ZH-CN_TOPIC_0000002562713759" id="ZH-CN_TOPIC_0000002562713759"></a>
+
+-   **[高效算子支持](#ZH-CN_TOPIC_0000002531793838)**  
+
+## 高效算子支持<a name="ZH-CN_TOPIC_0000002531793838" id="ZH-CN_TOPIC_0000002531793838"></a>
+
+HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专题的性能优化。在converter\_lite命令行中开启riscvOpt选项，即可启用高性能模式。对性能要求较高的嵌入式AI场景中，在AI模型设计时可以优先采用以下规格。
+
+-   **[Conv优化](#ZH-CN_TOPIC_0000002531633886)**  
+
+-   **[Matmul优化](#ZH-CN_TOPIC_0000002628690692)**  
+
+-   **[MaxPooling/AveragePooling优化](#ZH-CN_TOPIC_0000002661401189)**  
+
+### Conv优化<a name="ZH-CN_TOPIC_0000002531633886" id="ZH-CN_TOPIC_0000002531633886"></a>
+
+以下规格的Onnx算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
+
+**表 1**  Conv Onnx高效算子支持规格列表
+
+<a name="table189651429122117"></a>
+<table><thead align="left"><tr id="row1496911294216"><th class="cellrowborder" valign="top" width="14.032806561312263%" id="mcps1.2.6.1.1"><p id="p3340101235915"><a name="p3340101235915"></a><a name="p3340101235915"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.822364472894579%" id="mcps1.2.6.1.2"><p id="p1650105819311"><a name="p1650105819311"></a><a name="p1650105819311"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="10.072014402880576%" id="mcps1.2.6.1.3"><p id="p1534011285913"><a name="p1534011285913"></a><a name="p1534011285913"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="25.725145029005798%" id="mcps1.2.6.1.4"><p id="p7340612155913"><a name="p7340612155913"></a><a name="p7340612155913"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="38.34766953390678%" id="mcps1.2.6.1.5"><p id="p1072813016591"><a name="p1072813016591"></a><a name="p1072813016591"></a>高效算子规格支持范围说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row4970192982114"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p1477616583269"><a name="p1477616583269"></a><a name="p1477616583269"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p2776155811264"><a name="p2776155811264"></a><a name="p2776155811264"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p67768585268"><a name="p67768585268"></a><a name="p67768585268"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p5776175813266"><a name="p5776175813266"></a><a name="p5776175813266"></a>输入张量，维度为3D或4D，格式为NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p573518356592"><a name="p573518356592"></a><a name="p573518356592"></a>C在 [1, 8, 16, 32]列表中</p>
+<p id="p27351535105914"><a name="p27351535105914"></a><a name="p27351535105914"></a>H，W均满足 6<=H, W <= 32</p>
+</td>
+</tr>
+<tr id="row6971132912215"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p19727413172119"><a name="p19727413172119"></a><a name="p19727413172119"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p107261213152117"><a name="p107261213152117"></a><a name="p107261213152117"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p67261313102115"><a name="p67261313102115"></a><a name="p67261313102115"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p57261613112110"><a name="p57261613112110"></a><a name="p57261613112110"></a>输出张量，维度为3D或4D，格式为NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p10324174213592"><a name="p10324174213592"></a><a name="p10324174213592"></a>C在 [1, 8, 16, 32]列表中</p>
+<p id="p193241942175913"><a name="p193241942175913"></a><a name="p193241942175913"></a>H，W均满足 6<=H, W <= 32</p>
+</td>
+</tr>
+<tr id="row13973529102110"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p177785819261"><a name="p177785819261"></a><a name="p177785819261"></a>kernel_shape</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p977718586269"><a name="p977718586269"></a><a name="p977718586269"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p17777145822614"><a name="p17777145822614"></a><a name="p17777145822614"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p1011953613513"><a name="p1011953613513"></a><a name="p1011953613513"></a>kernel沿各轴的大小。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p1836342918014"><a name="p1836342918014"></a><a name="p1836342918014"></a>1D支持kernel_shape = 3, 5，2D支持kernel_shape = 3,3</p>
+</td>
+</tr>
+<tr id="row19973129102114"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p1414571372710"><a name="p1414571372710"></a><a name="p1414571372710"></a>pads</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p614519131277"><a name="p614519131277"></a><a name="p614519131277"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p16338550143115"><a name="p16338550143115"></a><a name="p16338550143115"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p85157422328"><a name="p85157422328"></a><a name="p85157422328"></a>各轴前后填充零的个数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p11118122518259"><a name="p11118122518259"></a><a name="p11118122518259"></a>支持pads满足输入输出tensor H/W相等的情况</p>
+</td>
+</tr>
+<tr id="row48490213206"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p1851524472710"><a name="p1851524472710"></a><a name="p1851524472710"></a>strides</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p1451574413278"><a name="p1451574413278"></a><a name="p1451574413278"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p2077235113117"><a name="p2077235113117"></a><a name="p2077235113117"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p18216141324"><a name="p18216141324"></a><a name="p18216141324"></a>各个方向上kernel的移动步长。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p121181125172518"><a name="p121181125172518"></a><a name="p121181125172518"></a>stride = 1</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+以下规格的TFLite算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
+
+**表 2**  Conv TFLite高效算子支持规格列表
+
+<a name="table668985955612"></a>
+<table><thead align="left"><tr id="row13690359165613"><th class="cellrowborder" valign="top" width="13.120000000000001%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="12.44%" id="mcps1.2.6.1.2"><p id="p2136105314214"><a name="p2136105314214"></a><a name="p2136105314214"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="10.61%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="25.480000000000004%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="38.35%" id="mcps1.2.6.1.5"><p id="p11445381638"><a name="p11445381638"></a><a name="p11445381638"></a>高效算子规格支持范围说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row0259114117411"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p72592411944"><a name="p72592411944"></a><a name="p72592411944"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.44%" headers="mcps1.2.6.1.2 "><p id="p1425914411416"><a name="p1425914411416"></a><a name="p1425914411416"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.61%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.480000000000004%" headers="mcps1.2.6.1.4 "><p id="p9421530351"><a name="p9421530351"></a><a name="p9421530351"></a>输入张量，维度为4D，格式为NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.35%" headers="mcps1.2.6.1.5 "><p id="p14237385316"><a name="p14237385316"></a><a name="p14237385316"></a>C在 [1, 8, 16, 32]列表中</p>
+<p id="p42375811311"><a name="p42375811311"></a><a name="p42375811311"></a>H，W均满足 6<=H, W <= 32</p>
+</td>
+</tr>
+<tr id="row44831201652"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p194831017511"><a name="p194831017511"></a><a name="p194831017511"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.44%" headers="mcps1.2.6.1.2 "><p id="p048340450"><a name="p048340450"></a><a name="p048340450"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.61%" headers="mcps1.2.6.1.3 "><p id="p124839018518"><a name="p124839018518"></a><a name="p124839018518"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.480000000000004%" headers="mcps1.2.6.1.4 "><p id="p13483801352"><a name="p13483801352"></a><a name="p13483801352"></a>输出张量，维度为4D，格式为NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.35%" headers="mcps1.2.6.1.5 "><p id="p2659101217314"><a name="p2659101217314"></a><a name="p2659101217314"></a>C在 [1, 8, 16, 32]列表中</p>
+<p id="p1465941219318"><a name="p1465941219318"></a><a name="p1465941219318"></a>H，W均满足 6<=H, W <= 32</p>
+</td>
+</tr>
+<tr id="row869245925620"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p96921059125614"><a name="p96921059125614"></a><a name="p96921059125614"></a>padding</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.44%" headers="mcps1.2.6.1.2 "><p id="p1150158930"><a name="p1150158930"></a><a name="p1150158930"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.61%" headers="mcps1.2.6.1.3 "><p id="p76921259115619"><a name="p76921259115619"></a><a name="p76921259115619"></a>string</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.480000000000004%" headers="mcps1.2.6.1.4 "><p id="p10118203645110"><a name="p10118203645110"></a><a name="p10118203645110"></a>填充类型。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.35%" headers="mcps1.2.6.1.5 "><p id="p1769285995619"><a name="p1769285995619"></a><a name="p1769285995619"></a>配置范围：支持SAME</p>
+</td>
+</tr>
+<tr id="row369235919566"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p106921159195616"><a name="p106921159195616"></a><a name="p106921159195616"></a>stride_h</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.44%" headers="mcps1.2.6.1.2 "><p id="p15015581132"><a name="p15015581132"></a><a name="p15015581132"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.61%" headers="mcps1.2.6.1.3 "><p id="p56921593564"><a name="p56921593564"></a><a name="p56921593564"></a>int32</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.480000000000004%" headers="mcps1.2.6.1.4 "><p id="p136921359195618"><a name="p136921359195618"></a><a name="p136921359195618"></a>filter在H方向上的移动步长。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.35%" headers="mcps1.2.6.1.5 "><p id="p523152894518"><a name="p523152894518"></a><a name="p523152894518"></a>stride_h = 1</p>
+</td>
+</tr>
+<tr id="row1198393324510"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p1898353317457"><a name="p1898353317457"></a><a name="p1898353317457"></a>stride_w</p>
+</td>
+<td class="cellrowborder" valign="top" width="12.44%" headers="mcps1.2.6.1.2 "><p id="p16508581531"><a name="p16508581531"></a><a name="p16508581531"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.61%" headers="mcps1.2.6.1.3 "><p id="p499819412458"><a name="p499819412458"></a><a name="p499819412458"></a>int32</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.480000000000004%" headers="mcps1.2.6.1.4 "><p id="p1399834134511"><a name="p1399834134511"></a><a name="p1399834134511"></a>filter在W方向上的移动步长。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.35%" headers="mcps1.2.6.1.5 "><p id="p1986020122419"><a name="p1986020122419"></a><a name="p1986020122419"></a>stride_w = 1</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Matmul优化<a name="ZH-CN_TOPIC_0000002628690692" id="ZH-CN_TOPIC_0000002628690692"></a>
+
+以下规格的Onnx算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
+
+**表 1**  Matmul Onnx高效算子支持规格列表
+
+<a name="table189651429122117"></a>
+<table><thead align="left"><tr id="row1496911294216"><th class="cellrowborder" valign="top" width="14.032806561312263%" id="mcps1.2.6.1.1"><p id="p3340101235915"><a name="p3340101235915"></a><a name="p3340101235915"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="14.932986597319465%" id="mcps1.2.6.1.2"><p id="p1650105819311"><a name="p1650105819311"></a><a name="p1650105819311"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="14.222844568913784%" id="mcps1.2.6.1.3"><p id="p1534011285913"><a name="p1534011285913"></a><a name="p1534011285913"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="28.875775155031008%" id="mcps1.2.6.1.4"><p id="p7340612155913"><a name="p7340612155913"></a><a name="p7340612155913"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="27.935587117423488%" id="mcps1.2.6.1.5"><p id="p1072813016591"><a name="p1072813016591"></a><a name="p1072813016591"></a>高效算子规格支持范围说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row4970192982114"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p103983121012"><a name="p103983121012"></a><a name="p103983121012"></a>A</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p139812121213"><a name="p139812121213"></a><a name="p139812121213"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p67768585268"><a name="p67768585268"></a><a name="p67768585268"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p1039831214110"><a name="p1039831214110"></a><a name="p1039831214110"></a>输入张量，维度为2D，格式为ND。</p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p2877368212"><a name="p2877368212"></a><a name="p2877368212"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row6971132912215"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p14399111216119"><a name="p14399111216119"></a><a name="p14399111216119"></a>B</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p73991412910"><a name="p73991412910"></a><a name="p73991412910"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p577685812611"><a name="p577685812611"></a><a name="p577685812611"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p20860222122017"><a name="p20860222122017"></a><a name="p20860222122017"></a>权重张量，维度为2D。</p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p94354200476"><a name="p94354200476"></a><a name="p94354200476"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row13973529102110"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p639913125119"><a name="p639913125119"></a><a name="p639913125119"></a>C</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p639920123113"><a name="p639920123113"></a><a name="p639920123113"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p14476173516477"><a name="p14476173516477"></a><a name="p14476173516477"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p639917121713"><a name="p639917121713"></a><a name="p639917121713"></a>偏置张量，维度为1D。</p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p2043462094715"><a name="p2043462094715"></a><a name="p2043462094715"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row19973129102114"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p75541850190"><a name="p75541850190"></a><a name="p75541850190"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p655417501497"><a name="p655417501497"></a><a name="p655417501497"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p1447613357472"><a name="p1447613357472"></a><a name="p1447613357472"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p155541650997"><a name="p155541650997"></a><a name="p155541650997"></a>输出张量，维度为2D，格式为ND。</p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p343402019479"><a name="p343402019479"></a><a name="p343402019479"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row48490213206"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p1254114101281"><a name="p1254114101281"></a><a name="p1254114101281"></a>alpha</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p25419101988"><a name="p25419101988"></a><a name="p25419101988"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p954191019819"><a name="p954191019819"></a><a name="p954191019819"></a>float</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p1631314581473"><a name="p1631314581473"></a><a name="p1631314581473"></a>A×B张量的缩放系数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p443312044717"><a name="p443312044717"></a><a name="p443312044717"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row18678242382"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p196785421812"><a name="p196785421812"></a><a name="p196785421812"></a><span id="ph1047817574113"><a name="ph1047817574113"></a><a name="ph1047817574113"></a>beta</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p1267810421187"><a name="p1267810421187"></a><a name="p1267810421187"></a><span id="ph20220250121218"><a name="ph20220250121218"></a><a name="ph20220250121218"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p4678104211819"><a name="p4678104211819"></a><a name="p4678104211819"></a><span id="ph13200943161217"><a name="ph13200943161217"></a><a name="ph13200943161217"></a>float</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p26781742289"><a name="p26781742289"></a><a name="p26781742289"></a><span id="ph525523561214"><a name="ph525523561214"></a><a name="ph525523561214"></a>C的乘数。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p96786421288"><a name="p96786421288"></a><a name="p96786421288"></a><span id="ph726891131316"><a name="ph726891131316"></a><a name="ph726891131316"></a>无特殊限制</span></p>
+</td>
+</tr>
+<tr id="row17998732181019"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p3998832121015"><a name="p3998832121015"></a><a name="p3998832121015"></a><span id="ph10691833124"><a name="ph10691833124"></a><a name="ph10691833124"></a>transA</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p899817323105"><a name="p899817323105"></a><a name="p899817323105"></a><span id="ph1996620596126"><a name="ph1996620596126"></a><a name="ph1996620596126"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p17998103213104"><a name="p17998103213104"></a><a name="p17998103213104"></a><span id="ph51857460126"><a name="ph51857460126"></a><a name="ph51857460126"></a>int</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p179986322104"><a name="p179986322104"></a><a name="p179986322104"></a><span id="ph71282038161218"><a name="ph71282038161218"></a><a name="ph71282038161218"></a>决定输入A是否转置。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p129988328102"><a name="p129988328102"></a><a name="p129988328102"></a><span id="ph117442115131"><a name="ph117442115131"></a><a name="ph117442115131"></a>无特殊限制</span></p>
+</td>
+</tr>
+<tr id="row13400111081217"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p8401710191214"><a name="p8401710191214"></a><a name="p8401710191214"></a><span id="ph44182118124"><a name="ph44182118124"></a><a name="ph44182118124"></a>transB</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.932986597319465%" headers="mcps1.2.6.1.2 "><p id="p540151014123"><a name="p540151014123"></a><a name="p540151014123"></a><span id="ph14377019131"><a name="ph14377019131"></a><a name="ph14377019131"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.222844568913784%" headers="mcps1.2.6.1.3 "><p id="p13401171091218"><a name="p13401171091218"></a><a name="p13401171091218"></a><span id="ph8369174781213"><a name="ph8369174781213"></a><a name="ph8369174781213"></a>int</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="28.875775155031008%" headers="mcps1.2.6.1.4 "><p id="p10401310121219"><a name="p10401310121219"></a><a name="p10401310121219"></a><span id="ph19697740171214"><a name="ph19697740171214"></a><a name="ph19697740171214"></a>决定输入B是否转置。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="27.935587117423488%" headers="mcps1.2.6.1.5 "><p id="p154011710151219"><a name="p154011710151219"></a><a name="p154011710151219"></a><span id="ph2016891211134"><a name="ph2016891211134"></a><a name="ph2016891211134"></a>无特殊限制</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+以下规格的TFLite算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
+
+**表 2**  Matmul TFLite高效算子支持规格列表
+
+<a name="table668985955612"></a>
+<table><thead align="left"><tr id="row13690359165613"><th class="cellrowborder" valign="top" width="13.120000000000001%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="17.549999999999997%" id="mcps1.2.6.1.2"><p id="p2136105314214"><a name="p2136105314214"></a><a name="p2136105314214"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="14.39%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="26.87%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="28.07%" id="mcps1.2.6.1.5"><p id="p11445381638"><a name="p11445381638"></a><a name="p11445381638"></a>高效算子规格支持范围说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row0259114117411"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p112257544213"><a name="p112257544213"></a><a name="p112257544213"></a>x</p>
+</td>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p17783152895719"><a name="p17783152895719"></a><a name="p17783152895719"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p11225145413218"><a name="p11225145413218"></a><a name="p11225145413218"></a>输入张量，维度为3D/4D，格式分别为NWC、NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p3958445174614"><a name="p3958445174614"></a><a name="p3958445174614"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row44831201652"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p13777511528"><a name="p13777511528"></a><a name="p13777511528"></a>y</p>
+</td>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p768141275618"><a name="p768141275618"></a><a name="p768141275618"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p17573133716412"><a name="p17573133716412"></a><a name="p17573133716412"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p1077351627"><a name="p1077351627"></a><a name="p1077351627"></a>权重张量，维度为3D/4D，格式分别为NWC、NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p495814453468"><a name="p495814453468"></a><a name="p495814453468"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row869245925620"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p085513466213"><a name="p085513466213"></a><a name="p085513466213"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p1245412116319"><a name="p1245412116319"></a><a name="p1245412116319"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p148550467217"><a name="p148550467217"></a><a name="p148550467217"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p188554460214"><a name="p188554460214"></a><a name="p188554460214"></a>输出张量，维度为3D/4D，格式分别为NWC、NHWC。符合矩阵乘法运算规则。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p14959745174611"><a name="p14959745174611"></a><a name="p14959745174611"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row369235919566"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p191801255115014"><a name="p191801255115014"></a><a name="p191801255115014"></a>adj_x</p>
+</td>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p1150158930"><a name="p1150158930"></a><a name="p1150158930"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p526953345212"><a name="p526953345212"></a><a name="p526953345212"></a>bool</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p1486615211304"><a name="p1486615211304"></a><a name="p1486615211304"></a>是否对x的最后两个维度进行转置。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p09591845144614"><a name="p09591845144614"></a><a name="p09591845144614"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row1198393324510"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p9156191441212"><a name="p9156191441212"></a><a name="p9156191441212"></a>adj_y</p>
+</td>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p15015581132"><a name="p15015581132"></a><a name="p15015581132"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p17678145075410"><a name="p17678145075410"></a><a name="p17678145075410"></a>bool</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p45991644144318"><a name="p45991644144318"></a><a name="p45991644144318"></a>是否对y的最后两个维度进行转置。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p1495914554617"><a name="p1495914554617"></a><a name="p1495914554617"></a><span id="ph175114117194"><a name="ph175114117194"></a><a name="ph175114117194"></a>无特殊限制</span></p>
+</td>
+</tr>
+<tr id="row124651007199"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p147686913197"><a name="p147686913197"></a><a name="p147686913197"></a>asymmetric_quantize_inputs</p>
+</td>
+<td class="cellrowborder" valign="top" width="17.549999999999997%" headers="mcps1.2.6.1.2 "><p id="p11741141351919"><a name="p11741141351919"></a><a name="p11741141351919"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.39%" headers="mcps1.2.6.1.3 "><p id="p18720171691910"><a name="p18720171691910"></a><a name="p18720171691910"></a>bool</p>
+</td>
+<td class="cellrowborder" valign="top" width="26.87%" headers="mcps1.2.6.1.4 "><p id="p71921430151914"><a name="p71921430151914"></a><a name="p71921430151914"></a><span>BatchMatmul是否对输入进行非对称量化</span>。</p>
+</td>
+<td class="cellrowborder" valign="top" width="28.07%" headers="mcps1.2.6.1.5 "><p id="p13465160131918"><a name="p13465160131918"></a><a name="p13465160131918"></a><span id="ph8733142101917"><a name="ph8733142101917"></a><a name="ph8733142101917"></a>无特殊限制</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+### MaxPool/AveragePool优化<a name="ZH-CN_TOPIC_0000002661401189" id="ZH-CN_TOPIC_0000002661401189"></a>
+
+以下规格的Onnx算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
+
+**表 1**  MaxPool / AveragePool Onnx高效算子支持规格列表
+
+<a name="table189651429122117"></a>
+<table><thead align="left"><tr id="row1496911294216"><th class="cellrowborder" valign="top" width="14.032806561312263%" id="mcps1.2.6.1.1"><p id="p3340101235915"><a name="p3340101235915"></a><a name="p3340101235915"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="11.822364472894579%" id="mcps1.2.6.1.2"><p id="p1650105819311"><a name="p1650105819311"></a><a name="p1650105819311"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="10.072014402880576%" id="mcps1.2.6.1.3"><p id="p1534011285913"><a name="p1534011285913"></a><a name="p1534011285913"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="25.725145029005798%" id="mcps1.2.6.1.4"><p id="p7340612155913"><a name="p7340612155913"></a><a name="p7340612155913"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="38.34766953390678%" id="mcps1.2.6.1.5"><p id="p1072813016591"><a name="p1072813016591"></a><a name="p1072813016591"></a>高效算子规格支持范围说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row4970192982114"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p814484714519"><a name="p814484714519"></a><a name="p814484714519"></a>X</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p16144114785114"><a name="p16144114785114"></a><a name="p16144114785114"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p67768585268"><a name="p67768585268"></a><a name="p67768585268"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p5776175813266"><a name="p5776175813266"></a><a name="p5776175813266"></a>输入张量，维度为3D或4D，格式为NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p18848151322319"><a name="p18848151322319"></a><a name="p18848151322319"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row6971132912215"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p18729439018"><a name="p18729439018"></a><a name="p18729439018"></a>Y</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p198723431017"><a name="p198723431017"></a><a name="p198723431017"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p577685812611"><a name="p577685812611"></a><a name="p577685812611"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p57261613112110"><a name="p57261613112110"></a><a name="p57261613112110"></a>输出张量，维度为3D或4D，格式为NCW/NCHW。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p6847131316239"><a name="p6847131316239"></a><a name="p6847131316239"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row13973529102110"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p211803695110"><a name="p211803695110"></a><a name="p211803695110"></a>auto_pad</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p4118173613511"><a name="p4118173613511"></a><a name="p4118173613511"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p71181836115119"><a name="p71181836115119"></a><a name="p71181836115119"></a>string</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p1577685818263"><a name="p1577685818263"></a><a name="p1577685818263"></a>指定padding的类型。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p14897185443916"><a name="p14897185443916"></a><a name="p14897185443916"></a>配置范围：NOTSET、SAME_UPPER、SAME_LOWER、VALID</p>
+</td>
+</tr>
+<tr id="row19973129102114"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p1311833614510"><a name="p1311833614510"></a><a name="p1311833614510"></a>ceil_mode</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p10118153617514"><a name="p10118153617514"></a><a name="p10118153617514"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p411814360514"><a name="p411814360514"></a><a name="p411814360514"></a>int</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p1351318783714"><a name="p1351318783714"></a><a name="p1351318783714"></a>输出形状的取整方式。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p10748523112318"><a name="p10748523112318"></a><a name="p10748523112318"></a>规格约束：仅支持floor</p>
+</td>
+</tr>
+<tr id="row48490213206"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p211883675111"><a name="p211883675111"></a><a name="p211883675111"></a>dilations</p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p811833615513"><a name="p811833615513"></a><a name="p811833615513"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p17777145822614"><a name="p17777145822614"></a><a name="p17777145822614"></a>list(int)</p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p3776105813265"><a name="p3776105813265"></a><a name="p3776105813265"></a>每个轴上的扩张系数。</p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p147561323132312"><a name="p147561323132312"></a><a name="p147561323132312"></a><span id="ph183481916394"><a name="ph183481916394"></a><a name="ph183481916394"></a>dilations</span> = 1</p>
+</td>
+</tr>
+<tr id="row697811471398"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p8979647133920"><a name="p8979647133920"></a><a name="p8979647133920"></a><span id="ph958483420407"><a name="ph958483420407"></a><a name="ph958483420407"></a>kernel_shape</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p3979184718393"><a name="p3979184718393"></a><a name="p3979184718393"></a><span id="ph59404412408"><a name="ph59404412408"></a><a name="ph59404412408"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p139791447113914"><a name="p139791447113914"></a><a name="p139791447113914"></a><span id="ph7997135284013"><a name="ph7997135284013"></a><a name="ph7997135284013"></a>list(int)</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p15979114763915"><a name="p15979114763915"></a><a name="p15979114763915"></a><span id="ph189885813407"><a name="ph189885813407"></a><a name="ph189885813407"></a>kernel沿各轴的大小。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p20979164773916"><a name="p20979164773916"></a><a name="p20979164773916"></a><span id="ph14561167114115"><a name="ph14561167114115"></a><a name="ph14561167114115"></a>1 <= kernel_shape <=5</span></p>
+</td>
+</tr>
+<tr id="row4613111544115"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p36136152412"><a name="p36136152412"></a><a name="p36136152412"></a><span id="ph23589202418"><a name="ph23589202418"></a><a name="ph23589202418"></a>pads</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p0613215114112"><a name="p0613215114112"></a><a name="p0613215114112"></a><span id="ph1142523134116"><a name="ph1142523134116"></a><a name="ph1142523134116"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p7613121544112"><a name="p7613121544112"></a><a name="p7613121544112"></a><span id="ph1815828144113"><a name="ph1815828144113"></a><a name="ph1815828144113"></a>list(int)</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p1761319156416"><a name="p1761319156416"></a><a name="p1761319156416"></a><span id="ph1669283017411"><a name="ph1669283017411"></a><a name="ph1669283017411"></a>各轴前后填充零的个数。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p5613215154111"><a name="p5613215154111"></a><a name="p5613215154111"></a><span id="ph169811446154115"><a name="ph169811446154115"></a><a name="ph169811446154115"></a>无特殊限制</span></p>
+</td>
+</tr>
+<tr id="row58991352204119"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p10899185219412"><a name="p10899185219412"></a><a name="p10899185219412"></a><span id="ph76365412429"><a name="ph76365412429"></a><a name="ph76365412429"></a>storage_order</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p1089913522412"><a name="p1089913522412"></a><a name="p1089913522412"></a><span id="ph199245610427"><a name="ph199245610427"></a><a name="ph199245610427"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p289918520414"><a name="p289918520414"></a><a name="p289918520414"></a><span id="ph1658216818426"><a name="ph1658216818426"></a><a name="ph1658216818426"></a>int</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p58991352154113"><a name="p58991352154113"></a><a name="p58991352154113"></a><span id="ph114961511134212"><a name="ph114961511134212"></a><a name="ph114961511134212"></a>张量存储主序。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p1389915214112"><a name="p1389915214112"></a><a name="p1389915214112"></a><span id="ph3294651124417"><a name="ph3294651124417"></a><a name="ph3294651124417"></a>规格约束：仅支持0</span></p>
+</td>
+</tr>
+<tr id="row13111119104213"><td class="cellrowborder" valign="top" width="14.032806561312263%" headers="mcps1.2.6.1.1 "><p id="p113123191421"><a name="p113123191421"></a><a name="p113123191421"></a><span id="ph9885822104212"><a name="ph9885822104212"></a><a name="ph9885822104212"></a>strides</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="11.822364472894579%" headers="mcps1.2.6.1.2 "><p id="p19312141994220"><a name="p19312141994220"></a><a name="p19312141994220"></a><span id="ph734213255421"><a name="ph734213255421"></a><a name="ph734213255421"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.072014402880576%" headers="mcps1.2.6.1.3 "><p id="p9312151974219"><a name="p9312151974219"></a><a name="p9312151974219"></a><span id="ph29007288424"><a name="ph29007288424"></a><a name="ph29007288424"></a>list(int)</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="25.725145029005798%" headers="mcps1.2.6.1.4 "><p id="p14312111954212"><a name="p14312111954212"></a><a name="p14312111954212"></a><span id="ph07981031184214"><a name="ph07981031184214"></a><a name="ph07981031184214"></a>各个方向上kernel的移动步长。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="38.34766953390678%" headers="mcps1.2.6.1.5 "><p id="p203121819124217"><a name="p203121819124217"></a><a name="p203121819124217"></a><span id="ph2811113444216"><a name="ph2811113444216"></a><a name="ph2811113444216"></a>1 <= strides <= 5</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+
+以下规格的TFLite算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
+
+**表 2**  MaxPool2D / AveragePool2D TFLite高效算子支持规格列表
+
+<a name="table668985955612"></a>
+<table><thead align="left"><tr id="row13690359165613"><th class="cellrowborder" valign="top" width="13.120000000000001%" id="mcps1.2.6.1.1"><p id="p369065912564"><a name="p369065912564"></a><a name="p369065912564"></a>参数名</p>
+</th>
+<th class="cellrowborder" valign="top" width="14.77%" id="mcps1.2.6.1.2"><p id="p2136105314214"><a name="p2136105314214"></a><a name="p2136105314214"></a>参数/输入输出</p>
+</th>
+<th class="cellrowborder" valign="top" width="10.27%" id="mcps1.2.6.1.3"><p id="p769019599566"><a name="p769019599566"></a><a name="p769019599566"></a>数据类型</p>
+</th>
+<th class="cellrowborder" valign="top" width="30.959999999999997%" id="mcps1.2.6.1.4"><p id="p1069045919565"><a name="p1069045919565"></a><a name="p1069045919565"></a>参数含义</p>
+</th>
+<th class="cellrowborder" valign="top" width="30.880000000000003%" id="mcps1.2.6.1.5"><p id="p11445381638"><a name="p11445381638"></a><a name="p11445381638"></a>高效算子规格支持范围说明</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row44831201652"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p72592411944"><a name="p72592411944"></a><a name="p72592411944"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p1425914411416"><a name="p1425914411416"></a><a name="p1425914411416"></a>input</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p82590411149"><a name="p82590411149"></a><a name="p82590411149"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p9421530351"><a name="p9421530351"></a><a name="p9421530351"></a>输入张量，维度为4D，格式为NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p1725934116412"><a name="p1725934116412"></a><a name="p1725934116412"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row869245925620"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p194831017511"><a name="p194831017511"></a><a name="p194831017511"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p048340450"><a name="p048340450"></a><a name="p048340450"></a>output</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p124839018518"><a name="p124839018518"></a><a name="p124839018518"></a>tensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p13483801352"><a name="p13483801352"></a><a name="p13483801352"></a>输出张量，维度为4D，格式为NHWC。</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p748310020510"><a name="p748310020510"></a><a name="p748310020510"></a>无特殊限制</p>
+</td>
+</tr>
+<tr id="row369235919566"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p1269165919569"><a name="p1269165919569"></a><a name="p1269165919569"></a>filter_height</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p2509588318"><a name="p2509588318"></a><a name="p2509588318"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p469110599562"><a name="p469110599562"></a><a name="p469110599562"></a>int32</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p126911459165613"><a name="p126911459165613"></a><a name="p126911459165613"></a>在H方向上的过滤窗口大小。</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p1447651443920"><a name="p1447651443920"></a><a name="p1447651443920"></a>1<=filter_height<=5</p>
+</td>
+</tr>
+<tr id="row1198393324510"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p1169119595569"><a name="p1169119595569"></a><a name="p1169119595569"></a>filter_width</p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p65015581736"><a name="p65015581736"></a><a name="p65015581736"></a>attribute</p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p769119597568"><a name="p769119597568"></a><a name="p769119597568"></a>int32</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p1614615144496"><a name="p1614615144496"></a><a name="p1614615144496"></a>在W方向上的过滤窗口大小。</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p4868183464414"><a name="p4868183464414"></a><a name="p4868183464414"></a>1<=<span id="ph343635465210"><a name="ph343635465210"></a><a name="ph343635465210"></a>filter_width</span><=5</p>
+</td>
+</tr>
+<tr id="row993262644317"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p793312260434"><a name="p793312260434"></a><a name="p793312260434"></a><span id="ph55381038194319"><a name="ph55381038194319"></a><a name="ph55381038194319"></a>fused_activation_function</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p893372674320"><a name="p893372674320"></a><a name="p893372674320"></a><span id="ph756312401437"><a name="ph756312401437"></a><a name="ph756312401437"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p6933182654313"><a name="p6933182654313"></a><a name="p6933182654313"></a><span id="ph6327742174316"><a name="ph6327742174316"></a><a name="ph6327742174316"></a>string</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p99331726154312"><a name="p99331726154312"></a><a name="p99331726154312"></a><span id="ph663712442434"><a name="ph663712442434"></a><a name="ph663712442434"></a>融合的激活函数类型。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p1293342694311"><a name="p1293342694311"></a><a name="p1293342694311"></a><span id="ph158441816448"><a name="ph158441816448"></a><a name="ph158441816448"></a>配置范围：NONE、RELU</span></p>
+</td>
+</tr>
+<tr id="row16677233154317"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p5677533114319"><a name="p5677533114319"></a><a name="p5677533114319"></a><span id="ph198105894911"><a name="ph198105894911"></a><a name="ph198105894911"></a>padding</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p1267743324312"><a name="p1267743324312"></a><a name="p1267743324312"></a><span id="ph871215085013"><a name="ph871215085013"></a><a name="ph871215085013"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p1467716336437"><a name="p1467716336437"></a><a name="p1467716336437"></a><span id="ph78446319509"><a name="ph78446319509"></a><a name="ph78446319509"></a>string</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p16677103344313"><a name="p16677103344313"></a><a name="p16677103344313"></a><span id="ph184682545012"><a name="ph184682545012"></a><a name="ph184682545012"></a>填充类型。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p17677183315437"><a name="p17677183315437"></a><a name="p17677183315437"></a><span id="ph9253156165415"><a name="ph9253156165415"></a><a name="ph9253156165415"></a>配置范围：SAME、VALID</span></p>
+</td>
+</tr>
+<tr id="row198553296437"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p1285582916435"><a name="p1285582916435"></a><a name="p1285582916435"></a><span id="ph12951484502"><a name="ph12951484502"></a><a name="ph12951484502"></a>stride_h</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p3855172918433"><a name="p3855172918433"></a><a name="p3855172918433"></a><span id="ph421691165014"><a name="ph421691165014"></a><a name="ph421691165014"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p985502924312"><a name="p985502924312"></a><a name="p985502924312"></a><span id="ph9761350502"><a name="ph9761350502"></a><a name="ph9761350502"></a>int32</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p4855162916437"><a name="p4855162916437"></a><a name="p4855162916437"></a><span id="ph1832414270501"><a name="ph1832414270501"></a><a name="ph1832414270501"></a>filter在H方向上的移动步长。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p585520299434"><a name="p585520299434"></a><a name="p585520299434"></a><span id="ph172631628155319"><a name="ph172631628155319"></a><a name="ph172631628155319"></a>1<=stride_h<=5</span></p>
+</td>
+</tr>
+<tr id="row2232919114316"><td class="cellrowborder" valign="top" width="13.120000000000001%" headers="mcps1.2.6.1.1 "><p id="p52337195436"><a name="p52337195436"></a><a name="p52337195436"></a><span id="ph878018106502"><a name="ph878018106502"></a><a name="ph878018106502"></a>stride_w</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="14.77%" headers="mcps1.2.6.1.2 "><p id="p52331219144311"><a name="p52331219144311"></a><a name="p52331219144311"></a><span id="ph188311814509"><a name="ph188311814509"></a><a name="ph188311814509"></a>attribute</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="10.27%" headers="mcps1.2.6.1.3 "><p id="p5233619134311"><a name="p5233619134311"></a><a name="p5233619134311"></a><span id="ph1117314614509"><a name="ph1117314614509"></a><a name="ph1117314614509"></a>int32</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.959999999999997%" headers="mcps1.2.6.1.4 "><p id="p1923311196432"><a name="p1923311196432"></a><a name="p1923311196432"></a><span id="ph753092915020"><a name="ph753092915020"></a><a name="ph753092915020"></a>filter在W方向上的移动步长。</span></p>
+</td>
+<td class="cellrowborder" valign="top" width="30.880000000000003%" headers="mcps1.2.6.1.5 "><p id="p18233161919436"><a name="p18233161919436"></a><a name="p18233161919436"></a><span id="ph129761031105317"><a name="ph129761031105317"></a><a name="ph129761031105317"></a>1<=stride_w<=5</span></p>
+</td>
+</tr>
+</tbody>
+</table>
