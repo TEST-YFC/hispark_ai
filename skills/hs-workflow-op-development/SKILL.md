@@ -72,7 +72,7 @@ Stage 表示顶层阶段；`stage1.plan`、`stage1.initial_docs` 等是同一阶
 | 用户请求 | 顶层入口 | 处理边界 |
 |---|---|---|
 | “实现/适配/新增 MatMul 算子” | `hs-workflow-op-development` | 默认完整走文档、实现、构建、Host 和全用例板测；只有明确 Host-only 才跳过板端 |
-| “生成 BitShift 算子” | `hs-workflow-op-development` | 默认宣布`AUTO_ALL`，走实现、MSLite 构建、Host、固件和全部 case |
+| “生成 BitShift 算子” | `hs-workflow-op-development` | 默认采用 `AUTO_ALL` 模式，依次完成实现、MSLite 构建、Host、固件和全部 case |
 | “在 WS63 上实现/运行 X 算子” | `hs-workflow-op-development` | 核对 SDK；总确认通过且设备可用时自动跑完整矩阵，不再询问是否上板 |
 | “实现 X，只改 MindSpore Lite 源码，不测试、不编译、不写文档” | `hs-dev-op-implement` | 只做源码实现并把结果交给调用方 |
 | “只用 hs-dev-op-implement 分析/补 X” | `hs-dev-op-implement` | 用户点名专项 Skill，严格停在该 Skill 边界 |
@@ -179,11 +179,10 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 
 Stage0 的完整探测、环境准备分流、依赖自动修复和安装/CLI 回退见
 [`references/environment-prep.md`](references/environment-prep.md)。若环境或端口仍需要人工决定，只记录
-`BLOCKED/NOT_RUN` 和恢复条件，不把未执行写成 PASS。`缺失依赖自动修复`遵循该 reference：
-不能只
-报告“缺少xxx”就结束；禁止`sudo pip`；记录 `DEPENDENCY_REPAIR`；镜像源失败可再尝试默认源；
-自动安装和验证均失败时才阻塞。构建或长测试环境身份变化时生成新`RUN_ID`。ONNX必须同时具备
-`onnx`和`onnxruntime`。
+`BLOCKED/NOT_RUN` 和恢复条件，不把未执行写成 PASS。缺失依赖的自动修复遵循该 reference：
+不能只报告“缺少依赖”就结束；禁止 `sudo pip`；记录 `DEPENDENCY_REPAIR`；镜像源失败后可再尝试默认源；
+自动安装和验证均失败时才阻塞。构建或长测试环境身份变化时生成新 `RUN_ID`。ONNX 必须同时具备
+`onnx` 和 `onnxruntime`。
 
 执行确认预览必须先用普通中文展示以下内容，再放技术记录；模板完整版本在 Stage0 reference：
 
@@ -208,13 +207,13 @@ Stage0 的完整探测、环境准备分流、依赖自动修复和安装/CLI �
 hs-dev-op-implement mode=prepare
   -> OP_PLAN_GATE=PASS
 hs-design-op-manual mode=integrated-initial
-  -> OP_MANUAL_SYNC publication=record
+  -> 生成并审计设计文档、验证文档初稿；OP_MANUAL_SYNC publication=record
 gate_artifacts.py --stage pre-source
   -> PRE_SOURCE_GATE=PASS
 ```
 
 prepare 期间禁止源码写入；初版设计/验证文档、facts、实现约定、能力清单和计划版
-`op_spec.py` 必须来自同一冻结输入；每条计划 case 必须包含明确且非空的 `test_point`。`PRE_SOURCE_GATE=PASS` 前不能调用
+`op_spec.py` 必须来自同一冻结输入；每条计划 case 必须包含明确且非空的 `test_point`。设计文档只记录规格、边界和实现方案；验证文档列出计划用例，并将未执行项标为 `NOT_RUN`。`PRE_SOURCE_GATE=PASS` 前不能调用
 `hs-dev-op-implement mode=apply`。不能先改代码再更新草稿；规格、实现约定、能力或计划用例变化时返回
 Stage1 完整重跑。详细产物和哈希校验见 [`references/stage1-plan.md`](references/stage1-plan.md)。
 
@@ -288,9 +287,9 @@ Stage5/Stage6 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN
 确认后，才调用 `hs-design-op-manual mode=integrated-final`：所有必需阶段通过（HOST_ONLY 的板端为
 `NOT_REQUESTED`）使用 `terminal_state=completed`；任一后续阶段为 `FAIL|BLOCKED|NOT_RUN` 时使用
 `terminal_state=blocked|hard-stop`，并在验证文档明确原因。记录性文档不能宣称完整通过。两份文档
-的 facts/content/case audit 通过后写 `OP_MANUAL_SYNC=PASS publication=record`。
+的 facts/content/case audit 通过后写 `OP_MANUAL_SYNC=PASS publication=record`。文档同步通过仅表示文档与本轮事实一致，不表示算子已完成验证。
 终态文档固定写入 `<opdir>/docs/{op}-operator-design-doc.md` 和
-`<opdir>/docs/{op}-operator-verify-doc.md`。
+`<opdir>/docs/{op}-operator-verify-doc.md`；实际执行结果只写入验证文档。
 
 ## 完成与收尾
 

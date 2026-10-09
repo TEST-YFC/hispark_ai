@@ -12,7 +12,7 @@ build_micro.py --config <Host micro_train.cfg>
   reason=training_observer_unavailable_for_micro_generator
 ```
 
-只有未来生成器和运行时真正提供 observer，并且通过 receipt、sample、wiring、固件内容和板端回归后，才可执行以下完整链路：
+只有未来生成器和运行时真正提供 observer，并且 receipt、sample 与 wiring 前置检查通过后，才可进入以下完整链路。`verify_firmware.py` 是烧录前的固件内容门禁；串口采集与比较结果用于判定板端回归，不是执行链路的前置条件：
 
 ```text
 build_micro.py

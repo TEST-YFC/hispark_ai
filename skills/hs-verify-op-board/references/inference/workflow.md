@@ -3,8 +3,7 @@
 本 Skill 负责把本轮 Host 已通过的板端适用矩阵逐行接入固件并核对真实板输出。它不修改算子源码、
 不重新设计 `op_spec.py`，也不自行实现固件构建或烧录；构建交给 `hs-dev-build`，烧录交给
 `hs-dev-flash`，本 Skill 在同一行、同一 receipt 返回后继续验收。
-本 skill step0-3 负责模型、adaptor、Sample 和固件接线；workflow stage6 的 sample/adaptor/固件接线
-必须完成后才能交给构建 Skill。
+本技能的 step0-3 负责模型、adaptor、Sample 和固件接线。这些工作属于 workflow Stage5；接线完成后才能交给构建技能。
 
 ## 模式与固定流程
 

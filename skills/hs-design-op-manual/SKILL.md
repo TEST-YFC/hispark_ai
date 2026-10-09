@@ -18,10 +18,10 @@ description: >-
 
 解析 `verification_kind=inference|training` 后再执行对应步骤。明确要求训练文档时选 `training`；旧调用未指定且没有训练语义时按 `inference` 处理。`framework_scope` 仍只表示 `onnx`/`tflite`，不表示训练类型。
 
-- **训练**：读取 [训练文档流程](references/training/workflow.md)、[训练事实与审计](references/training/facts-schema.md)，使用其中的训练模板和 `scripts/training/audit_manual_inputs.py`。到该分支执行，不继续下面的推理规则。
-- **推理**：执行下面的原有模式、流程、模板和审计脚本。
+- **训练**：读取 [训练文档流程](references/training/workflow.md)、[训练事实与审计](references/training/facts-schema.md)，使用其中的训练模板和 `scripts/training/audit_manual_inputs.py`。进入该分支后，仅执行训练文档流程，不再执行下文的推理规则。
+- **推理**：执行下文的推理模式、流程、模板和审计脚本。
 
-两类文档均在正式实现前生成设计初稿，终态更新验证结果，候选审核后成对发布。未执行、失败或阻塞的任务也需要如实记录；文档同步通过不代表算子验证通过。
+两类流程都在正式实现前生成设计文档和验证文档初稿，并在终态如实更新验证结果；候选审核通过后成对发布。设计文档说明规格、边界和实现方案，验证文档记录用例、执行结果和证据。未执行、失败或阻塞的任务也需要如实记录；文档同步通过仅表示文档与事实一致，不代表算子已验证通过。
 
 ## 推理文档规则
 

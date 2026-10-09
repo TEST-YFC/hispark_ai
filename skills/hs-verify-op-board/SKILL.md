@@ -28,4 +28,5 @@ description: >-
 
 SDK 写入前必须核对用户给出的固件 SDK 路径和芯片身份，不能把 skills 目录直接当作 SDK。复用 `scripts/probe_serial_ports.py` 保存端口探测结果；没有设备时记录 `NOT_RUN`，不能把 Host 执行说成上板通过。
 
-推理固件构建、烧录分别调用 `hs-dev-build`、`hs-dev-flash`，串口采集使用已安装的串口技能或工作流指定工具。训练路径还必须先通过 observer 能力门禁；当前源码缺少该能力时不得构建或烧录，Host 已通过的预期用例仍保留并记录 `NOT_RUN`。
+- **推理路径**：固件构建和烧录分别调用 `hs-dev-build`、`hs-dev-flash`，串口采集使用已安装的串口技能或工作流指定工具。
+- **训练路径**：先检查 observer 能力门禁；当前源码缺少该能力时，不得构建或烧录，Host 已通过的预期用例仍保留并记录 `NOT_RUN`。

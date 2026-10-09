@@ -66,8 +66,8 @@ SDK §4-5 的 Micro 生成/交叉编译以及 SDK §8 的 `prepare_sample.py` �
 中 source 不算接线完成。SDK §8 的 `prepare_sample.py` 和 §10 的 `verify_wiring.py` 两个机械门禁不可由人工阅读
 或临场生成代码替代；非 WS63 芯片必须先提供对应 `<chip>-sdk-integration.md` 及确定性脚本。
 
-不得以新建一个能编译的 `ai_main.c`代替上述流程，也不得在找不到输入时填零、只打印
-ArgMax/标签、让任务无限循环，或让Sample用硬编码答案自报最终精度PASS。
+不得以仅新建一个可编译的 `ai_main.c` 替代上述流程，也不得在找不到输入时填零、只打印
+ArgMax/标签、让任务无限循环，或让 Sample 用硬编码答案自报最终精度 PASS。
 
 随后调用 `hs-dev-build` 生成 fwpkg；它只负责通过 fbb CLI 构建指定 target。若使用 CLI 回退，先从
 `fbb list-targets --json` 或 `fbb describe --json` 获取真实 target，配置变更后强制 clean build。

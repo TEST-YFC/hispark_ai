@@ -45,9 +45,9 @@ Host 与 Board 不合并为一个 skill：
 |---|---|
 | `op_spec.py`、最小模型、输入和 GT | `hs-verify-op-host` |
 | 算子源码缺陷 | `hs-dev-op-implement` |
-| 固件SDK位置授权、Micro模型、adaptor、Sample和构建接线 | 本 skill step0-3；完整workflow恢复同一轮状态处理handoff |
-| fwpkg 构建 | 顶层workflow调用 `hs-dev-build`；本skill输出构建handoff并验收返回证据 |
-| fwpkg 烧录 | 顶层workflow调用 `hs-dev-flash`；本skill输出烧录handoff并验收返回证据 |
+| 固件 SDK 位置授权、Micro 模型、adaptor、Sample 和构建接线 | 本 skill step0-3；这些工作属于 workflow Stage5，完整 workflow 恢复同一轮状态处理 handoff |
+| fwpkg 构建 | workflow Stage5 调用 `hs-dev-build`；本 skill 输出构建 handoff 并验收返回证据 |
+| fwpkg 烧录 | workflow Stage6 调用 `hs-dev-flash`；本 skill 输出烧录 handoff 并验收返回证据 |
 | 串口完整 Tensor 与 GT 比对 | 本 skill |
 
 如果用户只说“烧录”，使用 `hs-dev-flash`；如果用户泛化地要求“适配算子并上板验证”，使用顶层 workflow。

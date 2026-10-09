@@ -1,21 +1,23 @@
 # 编译与工具链
 
-> 当前职责：本文由 `hs-workflow-op-development` 的 MindSpore Lite 工具包构建阶段读取。
+> 当前职责：本文由 `hs-workflow-op-development` 的推理 Stage3 读取。
 > `hs-dev-op-implement` 算子实现专项 Skill 只生成或修复源码并执行实现门禁，不直接启动构建。这里的
 > MindSpore Lite 工具包构建也不同于 `hs-dev-build` 的 fbb 固件构建，二者不能互相替代。
 
-实现完成后，workflow Stage3 调用 `scripts/build_mslite.sh` 编译 MindSpore Lite。本文只
-解释脚本背后的工具链、受控构建、产物校验和故障分诊。
+实现完成后，推理 workflow Stage3 调用 `scripts/build_mslite.sh` 编译 MindSpore Lite。本文只
+解释推理 profile 的工具链、受控构建、产物校验和故障分诊。训练 workflow 使用同一脚本的
+`--profile training`；其训练开关和验收条件以 `hs-workflow-train-op-development` 为准。
 
 ## 构建身份与源码冻结
 
-构建新鲜度指纹覆盖构建根仓和直接依赖子模块的 HEAD、Git 状态、变更内容与未跟踪源码。
-更深层的测试或模型仓库只通过父仓 gitlink/dirty 元数据体现，避免递归读取无关大仓导致
-构建启动长时间阻塞。
+构建根仓的新鲜度指纹覆盖 HEAD、Git 状态、变更内容与未跟踪源码。直接依赖子模块只记录当前
+HEAD：上游构建会在子模块中应用受管补丁，Windows 换行转换也可能让整仓显示 dirty，因此不能把
+子模块 worktree 变化当作运行中源码漂移。直接子模块的 commit 变化仍会使指纹失效；更深层的测试
+或模型仓库只通过父仓 index/gitlink 身份体现，避免递归读取无关大仓。
 
-workflow 设置 `HISPARK_SKIP_SUBMODULE_UPDATE=1`，并在构建前后锁定已检出的子模块 SHA。
-受控构建期间不得执行远程 submodule 更新，也不得编辑源码。源码或环境修复后必须使用
-新的 `RUN_ID` 启动新构建。
+wrapper 在构建前后锁定已检出的子模块 SHA；当前上游 `build.sh` 不读取
+`HISPARK_SKIP_SUBMODULE_UPDATE`，因此不能用该环境变量证明远程更新已禁用。受控构建期间不得编辑
+构建根仓源码；子模块 HEAD 发生漂移时不得签收产物。源码或环境修复后必须使用新的 `RUN_ID` 启动新构建。
 
 ## 何时全量、何时增量
 
@@ -36,7 +38,9 @@ RISC-V 交叉库由独立 `ExternalProject` 构建，增量不会重新扫描它
 构建根目录是代码根目录（含 `schema/`、`tools/`、`src/litert/`）的上一级，必须含有
 `build.sh` 和 `output/`。HiSpark.AI 集成仓库中的典型构建根是 `src/mindspore-lite/`。
 
-## 必需环境变量
+## 推理 profile 的环境变量
+
+以下配置仅适用于 `--profile inference`；它保留推理流程的 `MSLITE_ENABLE_TRAIN=OFF`，不能用于训练工作流。
 
 ```bash
 export MSLITE_ENABLE_MICRO=ON
@@ -103,7 +107,9 @@ python3 <skill>/scripts/check_build_freshness.py \
 ```
 
 只有构建终态SUCCESS、交叉库与工具包门禁通过、`BUILD_FRESHNESS=PASS`时，才把新鲜
-`MSLITE_PKG`交回workflow进入 `hs-verify-op-host`。
+`MSLITE_PKG`交回workflow进入 `hs-verify-op-host`。`--status` 和 `--wait` 的成功输出还必须包含
+`BUILD_PROFILE`、`RESOLVED_MSLITE_ENABLE_TRAIN` 与 `TRAIN_PACKAGE_ARTIFACTS`；training profile
+只有在新鲜解压包包含非空 `libmindspore-lite-train.so` 和 `.a` 时才可签收。
 
 ## 失败分诊
 

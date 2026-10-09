@@ -2,7 +2,7 @@
 
 当前检出的 Micro 生成器不提供训练 observer。源码中不存在 `MSLITE_TRAIN_OBSERVER`、`GetTrainWeightCount<model_index>()` 或 `GetTrainWeight<model_index>()`；因此不能从生成模型运行时地址读取板端训练权重。
 
-当前唯一相关能力是 `MSLITE_TRAIN_BENCHMARK`。它用于 Host/native benchmark 的文件导出（例如 `ExportN` 和 `manifest.json`），不能证明 RISC-V 固件中存在运行时 accessor，也不能作为板端参数快照。`const` 初始数组、Host 文件或 sample 自报的 `parameters_observed` 都不能替代实际 mutable weight 地址。
+`MSLITE_TRAIN_BENCHMARK` 仅用于 Host/native benchmark 的文件导出（例如 `ExportN` 和 `manifest.json`）。它不提供 RISC-V 固件中的运行时 accessor，也不能生成板端参数快照。`const` 初始数组、Host 文件或 Sample 自报的 `parameters_observed` 都不能替代实际 mutable weight 地址。
 
 因此当前训练板验证边界为：
 

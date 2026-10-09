@@ -7,13 +7,15 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# build_mslite.sh --run-id <id> [--full] [构建根目录]  启动一次可追踪构建
+# build_mslite.sh --run-id <id> [--profile inference|training] [--full] [构建根目录]  启动一次可追踪构建
 # build_mslite.sh --wait [max_secs] <id>    只等待指定构建轮次
 # build_mslite.sh --status <id>             只报告指定构建轮次
-# build_mslite.sh --stop                    终止当前构建（杀整个进程组，含 make/编译器子进程）
+# build_mslite.sh --stop                    终止当前构建（终止整个进程组，含 make/编译器子进程）
+# build_mslite.sh --source-fingerprint <构建根目录>  输出源码身份（诊断/回归测试）
+# build_mslite.sh --verify-package-profile <inference|training> <解压包目录>  核验 profile 产物
 #
-# hs-workflow-op-development Stage3 标准工具包重建入口，一条命令完成：
-#   并发锁（同一时刻只允许一个构建）→ 固定 env 开关 → 定位 RISC-V 工具链
+# MindSpore Lite 工具包受控构建入口，一条命令完成：
+#   并发锁（同一时刻只允许一个构建）→ 按 profile 设置环境开关 → 定位 RISC-V 工具链
 #   → bash build.sh（默认增量 -i，--full 全量）→ 断言交叉库产出 → 解压产物
 #   → 断言改动的 parser 注册符号已真正链入产物（堵「假编译成功」，exit 6）→ 打印 MSLITE_PKG
 # 失败即非零退出并说明原因。不要绕过本脚本直接跑 build.sh / make——裸跑丢 env、
@@ -43,58 +45,61 @@ LOGFILE="${STATE_DIR}/mslite_build.log"
 PGIDFILE="${STATE_DIR}/mslite_build.pgid"   # setsid 后的构建进程组组长，--stop 据此整组清场
 STARTFILE="${STATE_DIR}/mslite_build.start" # RUN_ID/start/root/source fingerprint
 RUNIDFILE="${STATE_DIR}/mslite_build.run_id"
-
-mkdir -p "${STATE_DIR}"
+RESULTFILE="${STATE_DIR}/mslite_build.result" # 仅在产物与实际 profile 均验证后发布
 
 read_meta() {
-  META_RUN_ID=""; META_STARTED=""; META_ROOT=""; META_FINGERPRINT=""
+  META_RUN_ID=""; META_PROFILE=""; META_STARTED=""; META_ROOT=""; META_FINGERPRINT=""
   [ -f "${STARTFILE}" ] || return 1
   while IFS='=' read -r key value; do
     case "${key}" in
       RUN_ID) META_RUN_ID="${value}" ;;
+      PROFILE) META_PROFILE="${value}" ;;
       STARTED) META_STARTED="${value}" ;;
       ROOT) META_ROOT="${value}" ;;
       SOURCE_FINGERPRINT) META_FINGERPRINT="${value}" ;;
     esac
   done < "${STARTFILE}"
-  [ -n "${META_RUN_ID}" ] && [ -n "${META_ROOT}" ]
+  [ -n "${META_RUN_ID}" ] && [ -n "${META_PROFILE}" ] && [ -n "${META_ROOT}" ]
+}
+
+read_result() {
+  RESULT_RUN_ID=""; RESULT_PROFILE=""; RESULT_TRAIN=""; RESULT_TRAIN_ARTIFACTS=""; RESULT_PKG=""
+  [ -f "${RESULTFILE}" ] || return 1
+  while IFS='=' read -r key value; do
+    case "${key}" in
+      RUN_ID) RESULT_RUN_ID="${value}" ;;
+      BUILD_PROFILE) RESULT_PROFILE="${value}" ;;
+      RESOLVED_MSLITE_ENABLE_TRAIN) RESULT_TRAIN="${value}" ;;
+      TRAIN_PACKAGE_ARTIFACTS) RESULT_TRAIN_ARTIFACTS="${value}" ;;
+      MSLITE_PKG) RESULT_PKG="${value}" ;;
+    esac
+  done < "${RESULTFILE}"
+  [ -n "${RESULT_RUN_ID}" ] && [ -n "${RESULT_PROFILE}" ] \
+    && [ -n "${RESULT_TRAIN}" ] && [ -n "${RESULT_TRAIN_ARTIFACTS}" ] \
+    && [ -n "${RESULT_PKG}" ]
 }
 
 fingerprint_repo() {
   local repo="$1" label="$2"
-  # Fingerprinting must inspect the bytes already present in the worktree.  Do
-  # not invoke Git LFS clean filters here: large dirty submodules can otherwise
-  # block before STARTFILE is published and leave no diagnosable build record.
+  # 不调用 Git LFS clean filter；否则大子模块可能在 STARTFILE 发布前阻塞。
   local -a git_no_filters=(git -c filter.lfs.process= -c filter.lfs.clean=cat -c filter.lfs.required=false)
   echo "${label}:HEAD=$(git -C "${repo}" rev-parse HEAD 2>/dev/null || echo NO_HEAD)"
 
-  # The nested MindSpore repository is a pinned build dependency.  Its Windows
-  # checkout may appear wholly dirty because of line-ending conversion, making
-  # even a metadata-only diff take many minutes.  The outer repository (where
-  # Lite operator sources live) is still fingerprinted byte-for-byte below;
-  # direct submodules are identified by their immutable commit SHA here.
   if [[ "${label}" == SUBMODULE:* ]]; then
+    # 直接子模块只锁定 commit：构建脚本会在其中应用受管补丁，Windows 换行转换也可能
+    # 让整仓显示 dirty；把 worktree 内容纳入运行中指纹会误判合法构建。构建前后另有
+    # SUBMOD-LOCK 检查 HEAD 漂移，算子源码所在的外层构建仓仍按实际内容记录。
     return 0
   fi
 
-  # Raw metadata preserves status, object IDs and mode changes without materializing
-  # a potentially enormous binary patch for line-ending-dirty repositories.
+  # 外层构建仓只读取实际发生变化的文件，并按内容记录。
   "${git_no_filters[@]}" -C "${repo}" diff --ignore-submodules=dirty --no-ext-diff --no-textconv --raw --no-abbrev -z HEAD -- 2>/dev/null
   echo "${label}:TRACKED_CONTENT"
   "${git_no_filters[@]}" -C "${repo}" diff --ignore-submodules=dirty --no-ext-diff --no-textconv --name-only -z HEAD -- 2>/dev/null |
     while IFS= read -r -d '' rel; do
       [ -f "${repo}/${rel}" ] || [ -L "${repo}/${rel}" ] || continue
       printf '%s\0' "${repo}/${rel}"
-    done | if [[ "${label}" == SUBMODULE:* ]]; then
-      # Windows checkouts can report an entire nested repository dirty only
-      # because of line-ending conversion.  Hashing every byte makes startup
-      # take many minutes.  Size + nanosecond mtime still invalidates an active
-      # build when any such worktree file is edited, while the parent gitlink
-      # and raw diff above preserve repository identity.
-      xargs -0 -r stat -c 'TRACKED:%s:%Y:%y:%n' -- 2>/dev/null
-    else
-      xargs -0 -r sha256sum -- 2>/dev/null
-    fi
+    done | xargs -0 -r sha256sum -- 2>/dev/null
 
   echo "${label}:UNTRACKED_NAMES"
   git -C "${repo}" ls-files --others --exclude-standard -z 2>/dev/null
@@ -108,25 +113,83 @@ fingerprint_repo() {
 }
 
 source_fingerprint() {
-  local root="$1" repo rel
+  local root="$1" repo rel payload digest rc=0
+  payload=$(mktemp "${TMPDIR:-/tmp}/mslite-source-fingerprint.XXXXXX") || return 1
   {
     if ! git -C "${root}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       echo NO_GIT_REPOSITORY
-      return
-    fi
-    fingerprint_repo "${root}" ROOT
+      rc=1
+    else
+      fingerprint_repo "${root}" ROOT || rc=$?
 
-    # Hash direct build dependencies in full. Do not recursively enter nested
-    # test/model submodules: their gitlink/dirty metadata is already captured
-    # by the direct parent's raw diff, while content-walking them can delay a
-    # converter build for hours on a line-ending-dirty Windows worktree.
-    while read -r rel; do
-      [ -n "${rel}" ] || continue
-      repo="${root}/${rel}"
-      fingerprint_repo "${repo}" "SUBMODULE:${rel}"
-    done < <(git -C "${root}" submodule status 2>/dev/null | awk '{print $2}')
-  } | sha256sum | awk '{print $1}'
+      # 只进入直接构建依赖；更深层测试/模型仓由父级 index/gitlink 身份体现。
+      if [ "${rc}" -eq 0 ]; then
+        while read -r rel; do
+          [ -n "${rel}" ] || continue
+          repo="${root}/${rel}"
+          fingerprint_repo "${repo}" "SUBMODULE:${rel}" || { rc=$?; break; }
+        done < <(git -C "${root}" submodule status 2>/dev/null | awk '{print $2}')
+      fi
+    fi
+  } > "${payload}"
+  if [ "${rc}" -eq 0 ]; then
+    digest=$(sha256sum "${payload}" 2>/dev/null | awk '{print $1}') || rc=$?
+    [ -n "${digest}" ] || rc=1
+  fi
+  rm -f "${payload}"
+  [ "${rc}" -eq 0 ] || return "${rc}"
+  printf '%s\n' "${digest}"
 }
+
+verify_package_profile() {
+  local profile="$1" pkg="$2"
+  local train_so="${pkg}/runtime/lib/libmindspore-lite-train.so"
+  local train_a="${pkg}/runtime/lib/libmindspore-lite-train.a"
+  RESOLVED_TRAIN=""
+  TRAIN_ARTIFACTS=""
+  case "${profile}" in
+    training)
+      if [ ! -s "${train_so}" ] || [ ! -s "${train_a}" ]; then
+        echo "[!] training profile 缺少非空训练库: ${train_so} / ${train_a}" >&2
+        return 1
+      fi
+      RESOLVED_TRAIN="ON"
+      TRAIN_ARTIFACTS="PASS"
+      ;;
+    inference)
+      if [ -e "${train_so}" ] || [ -e "${train_a}" ]; then
+        echo "[!] inference profile 的新鲜工具包意外包含训练库: ${pkg}" >&2
+        return 1
+      fi
+      RESOLVED_TRAIN="OFF"
+      TRAIN_ARTIFACTS="ABSENT"
+      ;;
+    *)
+      echo "[!] 未知构建 profile: ${profile}" >&2
+      return 1
+      ;;
+  esac
+}
+
+# 诊断/测试入口必须在状态目录创建前返回，保证只读且复用生产实现。
+if [ "${1:-}" = "--source-fingerprint" ]; then
+  _root="${2:-}"
+  [ -n "${_root}" ] || { echo "[!] --source-fingerprint 必须指定构建根目录" >&2; exit 1; }
+  source_fingerprint "${_root}" || { echo "[!] 源码身份计算失败: ${_root}" >&2; exit 1; }
+  exit 0
+fi
+if [ "${1:-}" = "--verify-package-profile" ]; then
+  _profile="${2:-}"; _pkg="${3:-}"
+  [ -n "${_profile}" ] && [ -n "${_pkg}" ] \
+    || { echo "[!] --verify-package-profile 必须指定 profile 和解压包目录" >&2; exit 1; }
+  verify_package_profile "${_profile}" "${_pkg}" || exit 5
+  echo "BUILD_PROFILE=${_profile}"
+  echo "RESOLVED_MSLITE_ENABLE_TRAIN=${RESOLVED_TRAIN}"
+  echo "TRAIN_PACKAGE_ARTIFACTS=${TRAIN_ARTIFACTS}"
+  exit 0
+fi
+
+mkdir -p "${STATE_DIR}"
 
 # ---- --status：即时返回，不阻塞 ----
 if [ "${1:-}" = "--status" ]; then
@@ -151,7 +214,10 @@ if [ "${1:-}" = "--status" ]; then
     exit 12
   fi
   if [ -f "${PIDFILE}" ] && kill -0 "$(cat "${PIDFILE}")" 2>/dev/null; then
-    CURRENT_FINGERPRINT=$(source_fingerprint "${META_ROOT}")
+    CURRENT_FINGERPRINT=$(source_fingerprint "${META_ROOT}") || {
+      echo "INCOMPLETE_BUILD_RECORD：RUN_ID=${EXPECTED_RUN_ID} 无法重新计算源码身份。"
+      exit 12
+    }
     if [ "${CURRENT_FINGERPRINT}" != "${META_FINGERPRINT}" ]; then
       echo "STALE_BUILD_RECORD：RUN_ID=${EXPECTED_RUN_ID} 运行中源码内容已变化；先 --stop，再启动新构建。"
       exit 12
@@ -181,14 +247,32 @@ if [ "${1:-}" = "--status" ]; then
     echo "[i] 按上面的恢复步骤把子模块 checkout 回构建前 SHA、注释 build.sh 的 update_submodule 后重建。"
     exit 7
   fi
-  CURRENT_FINGERPRINT=$(source_fingerprint "${META_ROOT}")
+  CURRENT_FINGERPRINT=$(source_fingerprint "${META_ROOT}") || {
+      echo "INCOMPLETE_BUILD_RECORD：RUN_ID=${EXPECTED_RUN_ID} 无法重新计算源码身份。"
+      exit 12
+    }
   if [ "${CURRENT_FINGERPRINT}" != "${META_FINGERPRINT}" ]; then
     echo "STALE_BUILD_RECORD：RUN_ID=${EXPECTED_RUN_ID} 启动后源码内容已变化，旧 RC/日志不能作为当前结论；必须启动新构建。"
     exit 12
   fi
   if [ "${rc}" = "0" ]; then
+    if ! read_result || [ "${RESULT_RUN_ID}" != "${EXPECTED_RUN_ID}" ] \
+        || [ "${RESULT_PROFILE}" != "${META_PROFILE}" ]; then
+      echo "INCOMPLETE_BUILD_RECORD：RUN_ID=${EXPECTED_RUN_ID} 缺少匹配的终态产物元数据。"
+      exit 12
+    fi
+    if [ ! -x "${RESULT_PKG}/tools/converter/converter/converter_lite" ] \
+        || ! verify_package_profile "${RESULT_PROFILE}" "${RESULT_PKG}" \
+        || [ "${RESOLVED_TRAIN}" != "${RESULT_TRAIN}" ] \
+        || [ "${TRAIN_ARTIFACTS}" != "${RESULT_TRAIN_ARTIFACTS}" ]; then
+      echo "STALE_BUILD_RECORD：RUN_ID=${EXPECTED_RUN_ID} 的终态工具包或 profile 产物已变化。"
+      exit 12
+    fi
     echo "SUCCESS：RUN_ID=${EXPECTED_RUN_ID} 本轮构建成功。"
-    grep "MSLITE_PKG=" "${LOGFILE}" 2>/dev/null | tail -1
+    echo "BUILD_PROFILE=${RESULT_PROFILE}"
+    echo "RESOLVED_MSLITE_ENABLE_TRAIN=${RESULT_TRAIN}"
+    echo "TRAIN_PACKAGE_ARTIFACTS=${RESULT_TRAIN_ARTIFACTS}"
+    echo "MSLITE_PKG=${RESULT_PKG}"
     exit 0
   fi
   echo "FAILED (exit ${rc})——错误摘要："
@@ -287,6 +371,16 @@ if [ -z "${RUN_ID}" ]; then
 fi
 case "${RUN_ID}" in (*[!A-Za-z0-9_.-]*) echo "[!] RUN_ID 只允许字母、数字、点、下划线和连字符" >&2; exit 1;; esac
 
+PROFILE="inference"
+if [ "${1:-}" = "--profile" ]; then
+  PROFILE="${2:-}"
+  shift 2
+fi
+case "${PROFILE}" in
+  inference|training) ;;
+  *) echo "[!] --profile 只支持 inference 或 training" >&2; exit 1 ;;
+esac
+
 FULL=0
 if [ "${1:-}" = "--full" ]; then FULL=1; shift; fi
 ROOT="${1:-.}"
@@ -305,26 +399,37 @@ fi
 echo $$ > "${PIDFILE}"
 printf '%s\n' "${RUN_ID}" > "${RUNIDFILE}"
 STARTED=$(date +%s)
-SOURCE_FINGERPRINT=$(source_fingerprint "${PWD}")
+SOURCE_FINGERPRINT=$(source_fingerprint "${PWD}") || {
+  rm -f "${PIDFILE}"
+  if [ "$(cat "${RUNIDFILE}" 2>/dev/null || true)" = "${RUN_ID}" ]; then rm -f "${RUNIDFILE}"; fi
+  echo "[!] 无法计算构建源码身份；未启动构建。" >&2
+  exit 8
+}
 {
   echo "RUN_ID=${RUN_ID}"
+  echo "PROFILE=${PROFILE}"
   echo "STARTED=${STARTED}"
   echo "ROOT=${PWD}"
   echo "SOURCE_FINGERPRINT=${SOURCE_FINGERPRINT}"
 } > "${STARTFILE}"
-rm -f "${RCFILE}" "${PGIDFILE}"
+rm -f "${RCFILE}" "${PGIDFILE}" "${RESULTFILE}" "${RESULTFILE}.tmp"
 trap 'rc=$?; printf "%s %s\n" "${RUN_ID}" "${rc}" > "${RCFILE}.tmp"; mv "${RCFILE}.tmp" "${RCFILE}"; rm -f "${PIDFILE}" "${PGIDFILE}"' EXIT
 # 自写固定日志（先截断旧内容）：--status 只认 ${LOGFILE}，与调用方是否/如何重定向无关，
 # 杜绝"新一轮 RUNNING 却 tail 出上一轮 BUILD OK"的陈旧假信号
 exec > "${LOGFILE}" 2>&1
-echo "[build_mslite] RUN_ID=${RUN_ID} 本轮启动: $(date '+%F %T')  日志: ${LOGFILE}"
+echo "[build_mslite] RUN_ID=${RUN_ID} PROFILE=${PROFILE} 本轮启动: $(date '+%F %T')  日志: ${LOGFILE}"
 
 export MSLITE_ENABLE_MICRO=ON
 export MSLITE_ENABLE_INT8=ON
-export MSLITE_ENABLE_TRAIN=OFF
+if [ "${PROFILE}" = "training" ]; then
+  export MSLITE_ENABLE_TRAIN=ON
+else
+  export MSLITE_ENABLE_TRAIN=OFF
+fi
 export MSLITE_ENABLE_TESTCASES=OFF
 export MSLITE_TARGET_RISCV=ON
-export HISPARK_SKIP_SUBMODULE_UPDATE=1
+echo "BUILD_PROFILE=${PROFILE}"
+echo "MSLITE_ENABLE_TRAIN=${MSLITE_ENABLE_TRAIN}"
 
 # ---- 工具链定位通用函数 ----
 # 工具链 bin/ 下的入口常是符号链接（如 clang -> clang-15），
@@ -504,6 +609,10 @@ if [ ! -x "${PKG_DIR}/tools/converter/converter/converter_lite" ]; then
   echo "[!] 解压后未见 converter_lite: ${PKG_DIR}" >&2
   exit 5
 fi
+if ! verify_package_profile "${PROFILE}" "${PKG_DIR}"; then
+  echo "[!] 工具包实际训练能力与请求的 ${PROFILE} profile 不一致" >&2
+  exit 5
+fi
 
 # ---- 注册符号兜底断言：堵「假编译成功」（exit 6）----
 # 失败模式：改动的 parser 经 `XxxNodeRegister g_xxx(...)` 静态初始化注册；该全局是命名空间作用域
@@ -552,8 +661,21 @@ else
   echo "[REG-ASSERT] 跳过（无 nm 或非 git 仓库）：无法核验注册符号是否进链接产物"
 fi
 
+ABS_PKG="${PWD}/${PKG_DIR}"
+{
+  echo "RUN_ID=${RUN_ID}"
+  echo "BUILD_PROFILE=${PROFILE}"
+  echo "RESOLVED_MSLITE_ENABLE_TRAIN=${RESOLVED_TRAIN}"
+  echo "TRAIN_PACKAGE_ARTIFACTS=${TRAIN_ARTIFACTS}"
+  echo "MSLITE_PKG=${ABS_PKG}"
+} > "${RESULTFILE}.tmp"
+mv "${RESULTFILE}.tmp" "${RESULTFILE}"
+
 echo "=================================================="
-echo "BUILD OK（增量=$((1-FULL))）。交叉库齐备，产物已解压。"
+echo "BUILD OK（profile=${PROFILE}，增量=$((1-FULL))）。交叉库齐备，产物已解压。"
+echo "BUILD_PROFILE=${PROFILE}"
+echo "RESOLVED_MSLITE_ENABLE_TRAIN=${RESOLVED_TRAIN}"
+echo "TRAIN_PACKAGE_ARTIFACTS=${TRAIN_ARTIFACTS}"
 echo "hs-verify-op-host 请使用解压包（不是 build/）："
-echo "export MSLITE_PKG=${PWD}/${PKG_DIR}"
-echo "==> 下一步: 返回 hs-workflow-op-development，由 workflow 调用 hs-verify-op-host；汇报时保留上面的 MSLITE_PKG 行。"
+echo "MSLITE_PKG=${ABS_PKG}"
+echo "==> 下一步: 返回对应工作流，由其调用 hs-verify-op-host；汇报时保留上面的 MSLITE_PKG 和 BUILD_PROFILE 行。"

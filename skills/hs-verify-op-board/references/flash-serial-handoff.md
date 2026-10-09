@@ -56,7 +56,7 @@ port=<serial port>
 8. 若使用`--then-monitor`，monitor必须在本次烧录成功后开始并保存完整原文；否则由
    串口能力使用同一端口和Sample规定波特率采集。烧录波特率不能当作启动日志波特率。
 
-这些规则由 `hs-dev-flash`拥有；本skill负责在handoff和返回证据中逐项核对，不复制或
+这些规则由 `hs-dev-flash` 定义；本技能负责核验 handoff 和返回证据，不复制或
 绕过烧录实现。缺少端口、最终 JSON、烧录时间或本次 monitor 时间任一证据时，不能确认精度。
 
 ### 端口重插后的重试顺序

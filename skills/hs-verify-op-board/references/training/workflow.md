@@ -106,7 +106,14 @@ Sample 每个用例独立创建模型并恢复相同初始权重/optimizer state
 
 `compare_training_board.py` 从 --raw-log 或 collector JSON 引用的原文独立重放，核验 hash、BEGIN/DONE、身份、重复、完整 tensor 集合与数值。传入 observed 时还要求 `transport_status=PASS` 且 backend 返回码为 0；直接 raw replay 只保留 UNKNOWN 传输回执，供离线复核，不等价于真实板端训练通过。参数集合来自 expected.required_parameters 或既有 weight key/role 约定，不信任 parameters_observed 自报值；无参数预期且没有其他错误时返回 NOT_RUN，已知错误保持 FAIL。before/after、上游变化或冻结不变规则由 Host case 写入 expected.parameter_checks，不能硬编码参数名、步数或直接信任 observed 的更新结论。
 
-该脚本生成单 case training_board_report.json，包含所有必需身份、证据 hash、逐 tensor 数值及参数规则结果；tensor_count 不是 case 数。finalizer 从逐 case 结果派生 expected、recorded、executed、pass、fail、not_run、not_requested 统计并写入验证文档；统计必须能追溯到真实阶段记录或明确排除原因，不能事后推造。训练矩阵身份仍须包含验证类型和 checkpoint，不能和同名推理 case 合并。
+该脚本生成单 case `training_board_report.json`，包含必需身份、证据 hash、逐 tensor 数值及参数规则结果；`tensor_count` 不是 case 数。
+
+- **比较输入**：只接受同一 case 的期望数据、原始串口日志或 collector 输出。
+- **PASS 判定**：必须完成所有必测 tensor 与参数规则的真实数值比较。
+- **finalizer**：从逐 case 结果派生 `expected`、`recorded`、`executed`、`pass`、`fail`、`not_run`、`not_requested` 统计。
+- **文档同步**：将可追溯的阶段状态与明确排除原因写入验证文档，不得事后补造统计。
+
+训练矩阵身份仍须包含验证类型和 checkpoint，不能和同名推理 case 合并。
 
 交给 facts 的板端证据保持最小：
 

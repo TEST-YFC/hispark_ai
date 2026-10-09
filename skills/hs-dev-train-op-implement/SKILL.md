@@ -22,10 +22,10 @@ description: >-
 | 模式 | 执行范围 | 是否允许源码写入 |
 |---|---|---|
 | `prepare` | step0、step1；建立前置检查、训练链路说明和实现计划 | 否 |
-| `apply` | 先检查设计文档和 prepare 产物，再执行 step2、step3、step4、step5 | 是 |
+| `apply` | 先检查已审计的设计文档、验证文档和 prepare 产物，再执行 step2、step3、step4、step5 | 是 |
 
-独立源码请求也必须先执行 `mode=prepare`。集成工作流的 `mode=apply` 必须先检查正式设计文档；独立且明确只做源码的请求先完成内部设计材料，不额外发布两份正式文档。
-上层工作流 必须在 prepare 之后完成设计文档，再调用 apply。`prepare` 阶段发现阻断时停止，不写源码。
+独立源码请求也必须先执行 `mode=prepare`。集成工作流的 `mode=apply` 必须先检查已审计的设计文档和验证文档；独立且明确只做源码的请求先完成内部设计材料，不额外发布两份正式文档。
+上层工作流必须在 `prepare` 后完成并审计设计文档、验证文档，再调用 `apply`。`prepare` 阶段发现阻断时停止，不写源码。
 
 ## 职责边界
 
@@ -58,7 +58,7 @@ output 保活、动态 shape/rank、新 workspace lifetime、算子特有 alias�
 ## 工作区和交接产物
 
 每个 training unit 使用 `$MSLITE_OP_OUTPUT/train_<unit>/` 作为 `<opdir>`。缺省位置与 mindspore-lite 仓库平级，
-不要放进源码树或构建树。prepare 必须产出或更新以下分析材料；apply 在材料检查通过后才能写源码，集成模式还需检查正式设计文档。`generated-code-inspection.md` 在 prepare 阶段只列检查计划，尚未生成或运行的项目写 `NOT_RUN`，实际结果在转换后补齐。
+不要放进源码树或构建树。prepare 必须产出或更新以下分析材料；apply 在材料检查通过后才能写源码，集成模式还需检查已审计的正式设计文档和验证文档。`generated-code-inspection.md` 在 prepare 阶段只列检查计划，尚未生成或运行的项目写 `NOT_RUN`，实际结果在转换后补齐。
 
 ```text
 <opdir>/
@@ -143,7 +143,7 @@ index/slice、multi-input/multi-output、parameter-gradient 或 framework-specia
 `RET_NOT_SUPPORT`，不能让目标端生成 C 后才失败。
 
 step1 必须形成实现约束、训练调用关系说明和能力清单，保留原有文件名。详细分类读取 [算子模式](references/operator-patterns.md)。`mode=prepare` 到此结束，
-不得修改源码；输出 `TRAIN_IMPLEMENT_GATE=PREPARED`。集成模式设计文档缺失、所需冻结能力阻断或 forward 前置失败时，
+不得修改源码；输出 `TRAIN_IMPLEMENT_GATE=PREPARED`。集成模式的设计文档或验证文档缺失、任一文档未通过审计、所需冻结能力阻断或 forward 前置失败时，
 不得进入 apply。
 
 ## step2：实现 GradRule
@@ -198,16 +198,16 @@ step1 必须形成实现约束、训练调用关系说明和能力清单，保�
 
 ```bash
 git diff --check
-bash <mslite-workflow-skill>/scripts/build_mslite.sh --run-id <run_id> <mindspore-lite-root>
+bash <mslite-workflow-skill>/scripts/build_mslite.sh --run-id <run_id> --profile training <mindspore-lite-root>
 ```
 
-优先使用增量构建；首次没有可复用的构建配置时，使用同一脚本的全量模式（`--full`）。不得要求仓库中不存在的 `incremental_build.sh`，也不要绕过 `build_mslite.sh` 直接运行 `make` 或 `build.sh`。脚本记录源码身份、工具包打包和解包结果；训练构建并发默认按 CPU 和可用内存估算；资源不足时按真实日志降低并记录原因。随后至少检查正反转换、`training_graph.dot`、
+优先使用增量构建；首次没有可复用的构建配置时，使用同一脚本的全量模式（`--full`）。训练构建必须使用 `--profile training`，并保留 `BUILD_PROFILE=training`、`RESOLVED_MSLITE_ENABLE_TRAIN=ON` 与 `TRAIN_PACKAGE_ARTIFACTS=PASS` 记录。不得要求仓库中不存在的 `incremental_build.sh`，也不要绕过 `build_mslite.sh` 直接运行 `make` 或 `build.sh`。脚本记录源码身份、工具包打包和解包结果；训练构建并发默认按 CPU 和可用内存估算；资源不足时按真实日志降低并记录原因。随后至少检查正反转换、`training_graph.dot`、
 `training_memory.json`、generated `net0.c`/`net.cmake` 和 generated host-native build。转换成功不是数值 PASS。
 数值交给 `hs-verify-op-host` 的 training 模式；不要把推理 Host/板端结果当作训练结果。
 
 源码 apply 阶段先输出 `TRAIN_SOURCE_GATE=PASS`；此时 `TRAIN_IMPLEMENT_GATE=NOT_RUN`，因为工具包、转换和生成代码尚未完成。完成后续构建、转换、生成工程和 native build 后，再回到本步骤核对以下条件；全部满足才输出 `TRAIN_IMPLEMENT_GATE=PASS`：
 
-- forward 前置、反向传播说明、训练调用关系、实现约束和能力清单一致；集成模式还需与正式设计文档一致；
+- forward 前置、反向传播说明、训练调用关系、实现约束和能力清单一致；集成模式还需与已审计的正式设计文档、验证文档一致；
 - GradRule、TrainNodeCoder、NNACL kernel 和 CMake 收集可映射到能力；
 - `git diff --check` 和增量构建均已执行且通过，正反转换、生成图/内存/源码检查与 native 构建证据完整；未执行不能算通过；
 - 没有公共 TrainingGraph、scheduler 或 memory code 的普通算子越权修改；

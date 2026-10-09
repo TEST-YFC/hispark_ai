@@ -50,7 +50,7 @@ stage6 放在板端结果之后收尾；初版文档在 stage1 编码前生成�
 | `final` | train-stage6 的文档收尾：成功或失败均同步 facts、两份文档并审计 |
 | 调度结束后 | 独立 finalizer：读取终态证据，给出业务 verdict |
 
-调度器结束后必须独立运行 `scripts/finalize_training_workflow.py`，完整命令见 [终态 finalizer](references/commands.md#终态-finalizer调度结束后单独调用)。该命令读取本轮 summary、Host/board 汇总和 facts，形成业务 verdict；不能放入调度器的 `final` 阶段，也不能以 `COMMANDS_COMPLETED` 代替训练验证通过。
+调度器结束后必须独立运行 `scripts/finalize_training_workflow.py`，完整命令见 [终态 finalizer：调度结束后单独调用](references/commands.md#终态-finalizer调度结束后单独调用)。该命令读取本轮 summary、Host/board 汇总和 facts，形成业务 verdict；不能放入调度器的 `final` 阶段，也不能以 `COMMANDS_COMPLETED` 代替训练验证通过。
 
 ## train-stage0：范围与环境
 
@@ -68,7 +68,7 @@ stage6 放在板端结果之后收尾；初版文档在 stage1 编码前生成�
 
 1. 调用 `hs-dev-train-op-implement mode=prepare`，按原顺序执行 step0、step1。形成前向前置说明、反向传播说明、调用关系、实现约束和 `train_capability_checklist.json`。
 2. 调用 `hs-verify-op-host verification_kind=training stage=plan` 制定用例：测试点、预期结果、支持/拒绝边界、梯度经过目标算子的可观测路径、冻结适用性。此时只准备生成器和计划，不声称验证完成。
-3. 调用 `hs-design-op-manual verification_kind=training mode=integrated-initial`。设计文档写规格、反向映射、保活张量、复用决定和实现路径；独立验证文档写测试计划，各未执行项为 `NOT_RUN`。两份文档经训练审计后才能改正式源码。
+3. 调用 `hs-design-op-manual verification_kind=training mode=integrated-initial`，生成并审计设计文档和验证文档初稿。两份文档固定写入 `<opdir>/docs/{op}-operator-design-doc.md` 和 `<opdir>/docs/{op}-operator-verify-doc.md`。设计文档记录规格、反向映射、保活张量、复用决定和实现路径；验证文档记录测试计划，所有未执行项均为 `NOT_RUN`。只有两份文档均通过训练审计，才能修改正式源码；文档审计通过不代表训练验证通过。
 4. 调用 `hs-dev-train-op-implement mode=apply`，保持原步骤：step2 GradRule → step3 TrainNodeCoder → step4 NNACL fp32_grad 与 CMake → step5 实现检查和增量构建。apply 阶段完成源码检查后输出 `TRAIN_SOURCE_GATE=PASS`、`TRAIN_IMPLEMENT_GATE=NOT_RUN`；构建、转换和生成代码证据在 stage2～stage4 完成后，再回到 step5 收尾并决定最终实现门禁。已有实现满足需求时记录复用证据，不为了产生 diff 重写代码。
 5. 数值失败导致规格、用例或实现范围变化时，先更新设计和计划再修复。普通实现修复保留原参考结果，重新构建并重跑受影响用例。
 
@@ -78,13 +78,14 @@ stage6 放在板端结果之后收尾；初版文档在 stage1 编码前生成�
 
 目标：用当前源码生成训练工具包，并确认后续转换使用的 converter 来自本轮构建。
 
-1. 使用 `hs-workflow-op-development/scripts/build_mslite.sh` 构建。先保留增量构建；只有在构建配置无效或增量构建无法可靠复现时，才通过同一入口使用 `--full`。
-2. 训练构建默认按 CPU 和可用内存估算并发；若显式设置 `JOBS`，记录实际值和原因；出现资源压力时降低并发并保留日志。
-3. 保存以下证据：完整构建命令、退出码、构建日志、训练工具包路径、源码指纹，以及构建时间和当前 `run_id`。
-4. 构建成功后重新检查 converter 的实际路径、版本或源码指纹，确认它属于本轮构建；禁止用旧工具包或旧 converter 代替当前源码。
-5. 构建失败时将 `MSLITE_TRAIN_BUILD` 记为 `FAIL`，保留日志和恢复条件；后续依赖构建的阶段记为 `NOT_RUN`，不得把失败改写成未执行。
+1. 使用 `hs-workflow-op-development/scripts/build_mslite.sh --run-id <run_id> --profile training <mindspore-lite-root>` 构建。先使用增量构建；只有构建配置失效或增量构建无法可靠复现时，才通过同一入口增加 `--full`。
+2. 训练 profile 必须记录 `BUILD_PROFILE=training`、`RESOLVED_MSLITE_ENABLE_TRAIN=ON` 与 `TRAIN_PACKAGE_ARTIFACTS=PASS`。若缺少其中任一记录，当前工具包不能用于训练验证。
+3. 训练构建默认按 CPU 和可用内存估算并发；若显式设置 `JOBS`，记录实际值和原因；出现资源压力时降低并发并保留日志。
+4. 保存以下证据：完整构建命令、退出码、构建日志、训练工具包路径、源码指纹、构建 profile、训练开关、构建时间和当前 `run_id`。
+5. 构建成功后重新检查 converter 的实际路径、版本或源码指纹，确认它属于本轮构建；禁止用旧工具包、旧 converter 或 inference profile 工具包代替当前源码。
+6. 构建失败时将 `MSLITE_TRAIN_BUILD` 记为 `FAIL`，保留日志和恢复条件；后续依赖构建的阶段记为 `NOT_RUN`，不得把失败改写成未执行。
 
-通过条件：构建命令退出码为 0，训练工具包真实存在，工具包与源码指纹一致，且 converter 复核通过。
+通过条件：构建命令退出码为 0，训练工具包真实存在，工具包与源码指纹一致，构建记录包含 `BUILD_PROFILE=training`、`RESOLVED_MSLITE_ENABLE_TRAIN=ON` 和 `TRAIN_PACKAGE_ARTIFACTS=PASS`，且 converter 复核通过。
 ## train-stage3/4：Host 训练验证
 
 调用 `hs-verify-op-host verification_kind=training stage=run`，读取其训练步骤。Host 技能负责模型生成、转换、训练图/内存/生成代码检查、native 构建、训练执行和数值比较；工作流只检查结果、处理跨阶段失败，不另外维护一套训练执行命令。
@@ -95,13 +96,13 @@ stage6 放在板端结果之后收尾；初版文档在 stage1 编码前生成�
 
 保留四类证据：模型生成、转换、编译执行、数值比较。转换和编译通过不等于训练数值通过。检查 `training_graph.dot`、`training_memory.json`、生成的 `net0.c`/`net.cmake` 及无训练配置时的生成物，确认反向路径、保活/内存、源码收集和无训练符号泄漏。
 
-无训练配置对照工程的 `inference_isolation` 只证明 inference-only 产物没有泄漏训练符号、反向节点或训练源码；它不是 inference numerical correctness，也不能满足 `TRAIN_MODEL_GENERATE`、`TRAIN_CONVERT_GATE` 或 `TRAIN_HOST_VERIFY_GATE`。只有真实输入、输出、golden 和数值比较齐全时，才可记录 `INFERENCE_NUMERICAL=PASS`；没有该执行证据必须记录 `INFERENCE_NUMERICAL=NOT_RUN`。训练模型生成、训练转换和 Host 训练数值门禁分别以本工作流的 case runner/aggregate 证据为准。
+无训练配置对照工程的 `INFERENCE_ISOLATION` 仅证明 inference-only 产物未包含训练符号、反向节点或训练源码；它不代表推理数值正确性，也不能满足 `TRAIN_MODEL_GENERATE`、`TRAIN_CONVERT_GATE` 或 `TRAIN_HOST_VERIFY_GATE`。只有真实输入、输出、golden 与数值比较证据齐全时，才可记录 `INFERENCE_NUMERICAL=PASS`；否则记录 `INFERENCE_NUMERICAL=NOT_RUN`。训练模型生成、训练转换和 Host 训练数值门禁分别以本工作流的 case runner/aggregate 证据为准。
 
 ## train-stage5：WS63 训练板测
 
 Host 通过后调用 `hs-verify-op-board verification_kind=training`。输入必须是 `runs/<run_id>/board_expected/training_board_expected_matrix.json` 及其中逐 case expected 文件；该矩阵由 aggregate 阶段从 Host 汇总和 golden 自动导出，不能由板端阶段手工挑选用例。
 
-按 [生成端 observer 说明](../hs-verify-op-board/references/training/generated-observer.md) 先核对运行时参数访问接口。当前 Micro 生成器没有该能力，`build_micro.py --config` 会以 `training_observer_unavailable_for_micro_generator` 停止；因此本轮不得继续 sample、SDK 接入、`hs-dev-build` 或 `hs-dev-flash`，必须记录 `TRAIN_BOARD_VERIFY=NOT_RUN` 和恢复条件。只有未来 observer 通过生成器、receipt、sample、wiring 和板端回归后，才可按 [板端训练脚本说明](../hs-verify-op-board/references/training/commands.md) 执行采集与比较。
+按 [生成端 observer 说明](../hs-verify-op-board/references/training/generated-observer.md) 先核对运行时参数访问接口。当前 Micro 生成器没有该能力，`build_micro.py --config` 会以 `training_observer_unavailable_for_micro_generator` 停止；因此本轮不得继续 Sample 准备、SDK 接入、`hs-dev-build` 或 `hs-dev-flash`，必须记录 `TRAIN_BOARD_VERIFY=NOT_RUN` 和恢复条件。未来只有在生成器实现 observer、receipt 包含能力字段、Sample 与 SDK 接线通过、wiring 检查和固件内容检查通过后，才能按 [板端训练脚本说明](../hs-verify-op-board/references/training/commands.md) 执行烧录、采集与比较；这些执行结果再用于判定板端回归，不把板端回归本身列为执行前置。
 
 仅收到 `TRAIN_DONE`，或仅看到某个输出张量，不能写 `TRAIN_BOARD_VERIFY=PASS`；必须同时核对 run/case/model 身份、完整 `TRAIN_BEGIN`/`TRAIN_TENSOR`/`TRAIN_DONE` 序列、必测张量集合、checkpoint、参数快照及逐元素数值比较。解析、采集或比较失败要保留为 `FAIL`；缺少必要观测时只能记录 `NOT_RUN` 或未完成状态。
 
