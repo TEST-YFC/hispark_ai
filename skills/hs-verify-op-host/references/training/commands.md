@@ -1,8 +1,8 @@
 # Host 训练执行器
 
-`run_training_case.py` 运行一个已确定的 ONNX FP32 训练用例：转换为 Micro C、native 编译、执行训练，并逐元素比较完整输出、loss 和参数。它不生成模型或参考数组；会独立解析源 ONNX，并在转换后、构建前执行目标节点保留、训练关键链及生成 C 调用检查。它不证明工具包对应当前源码，也不证明任意训练图/内存语义正确；完整审计仍按 [训练验证步骤](workflow.md) 完成。
+`run_training_case.py` 运行一个已确定的 ONNX 或 TFLite FP32 训练用例：转换为 Micro C、native 编译、执行训练，并逐元素比较完整输出、loss 和参数。它不生成模型或参考数组；会独立解析源 ONNX，并在转换后、构建前执行目标节点保留、训练关键链及生成 C 调用检查。它不证明工具包对应当前源码，也不证明任意训练图/内存语义正确；完整审计仍按 [训练验证步骤](workflow.md) 完成。
 
-当前执行范围：Linux/WSL、batch=1、静态 shape、FP32 数据、int32 稀疏分类标签、softmax cross entropy、SGD with momentum。训练权重当前只接受 `float32` 和 `int32`；`int32` 权重按整数精确相等判定。其他 loss、batch、dtype、optimizer、TFLite 不在此脚本的已实现范围；遇到这些需求先报告范围差异，不要强行套用。本脚本依赖 Python 3.10+、NumPy、ONNX Python 包、CMake、C/C++ 编译器和同一版本的 converter/静态库。
+当前执行范围：Linux/WSL、batch=1、静态 shape、FP32 数据、int32 稀疏分类标签、softmax cross entropy、SGD with momentum。训练权重当前只接受 `float32` 和 `int32`；`int32` 权重按整数精确相等判定。其他 loss、batch、dtype、optimizer 不在此脚本的已实现范围；ONNX 和 TFLite 是当前支持的训练源格式。TF、Caffe、MINDIR、PyTorch、OM、MSLITE 等 converter 输入枚举不代表 generated-C 训练链支持，遇到这些格式必须报告 `UNSUPPORTED_FRAMEWORK`，不得静默改用 ONNX 或其他等价格式。MindIR 的 `trainModel=true` 属于另一条 Lite runtime 路径，不纳入本流程。本脚本依赖 Python 3.10+、NumPy、ONNX Python 包、CMake、C/C++ 编译器和同一版本的 converter/静态库。
 
 ## 用法
 

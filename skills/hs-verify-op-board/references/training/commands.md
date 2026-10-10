@@ -4,15 +4,15 @@
 
 ## 当前边界与未来命令链
 
-当前检出的 Micro 生成器没有训练 observer。对带 `--config` 的训练调用，`build_micro.py` 会在转换前返回 `training_observer_unavailable_for_micro_generator`；因此不能继续执行 sample 生成、SDK 接入、固件构建、烧录或串口采集。训练板结果必须记录为 `NOT_RUN`，并保留 Host 通过与 observer 缺失的证据。
+训练 observer 不写入算子源码或共享 SDK。`build_micro.py` 在每个独立 run/case 的生成 Micro 工程 `src/model0/` 内生成 `observer_adapter.c/.h`，从该工程的 mutable `model_params[]` 读取权重；构建后必须用 `nm` 验证 `GetTrainWeightCount0` 和 `GetTrainWeight0` 已定义，并把 adapter 路径、hash、case hash 和 capability 写入 receipt。缺少 case metadata、ABI 校验、编译符号或 receipt 任一项时，训练板链路 `NOT_RUN`。
 
 ```text
-build_micro.py --config <Host micro_train.cfg>
-→ TRAIN_BOARD_VERIFY=NOT_RUN
-  reason=training_observer_unavailable_for_micro_generator
+build_micro.py --config <Host micro_train.cfg> --case-json <locked case.json>
+→ observer_adapter=true + nm_verified=true
+→ prepare_training_sample.py
 ```
 
-只有未来生成器和运行时真正提供 observer，并且 receipt、sample 与 wiring 前置检查通过后，才可进入以下完整链路。`verify_firmware.py` 是烧录前的固件内容门禁；串口采集与比较结果用于判定板端回归，不是执行链路的前置条件：
+只有 receipt、sample 与 wiring 前置检查通过后，才可进入以下完整链路。`verify_firmware.py` 是烧录前的固件内容门禁；串口采集与比较结果用于判定板端回归，不是执行链路的前置条件：
 
 ```text
 build_micro.py
@@ -71,17 +71,17 @@ $MicroU = "$CaseU/micro"
 $SampleU = "$CaseU/sample"
 $MicroReceiptU = "$MicroU/micro_build_receipt.json"
 $TrainingSampleReceiptU = "$SampleU/training_sample_receipt.json"
+$CaseJsonU = "$OpdirU/cases/$CaseId/case.json"
 $ModelSha256 = (Get-FileHash -LiteralPath (Join-Path $OpdirW "cases\$CaseId\model.onnx") -Algorithm SHA256).Hash.ToLowerInvariant()
-# 当前脚本会在 build_micro.py 的 observer 能力门禁停止，以下模板仅用于未来支持版本。
 ```
 
-未来 observer 已验证可用时，生成 Micro 静态库、训练 Sample 并接入 SDK；当前源码不得执行本节命令：
+在 receipt、sample 与 wiring 前置检查通过后，生成 Micro 静态库、训练 Sample 并接入 SDK；真实烧录和串口采集仍需具备对应硬件与环境：
 
 ```powershell
 wsl.exe -e python3 -B "$BoardSkillU/chips/ws63/scripts/build_micro.py" `
   --model "$OpdirU/cases/$CaseId/model.onnx" `
   --framework onnx --mode fp32 `
-  --config "$RunU/$CaseId/micro_train.cfg" `
+  --config "$RunU/$CaseId/micro_train.cfg" --case-json $CaseJsonU `
   --run-id $RunId --case-id $CaseId `
   --mslite-pkg $PkgU --toolchain-bin $ToolchainU `
   --output-dir $MicroU
@@ -122,7 +122,6 @@ wsl.exe -e python3 -B "$BoardSkillU/chips/ws63/scripts/verify_wiring.py" `
   --runtime-symbol "MSModelPredict$ModelIndex" `
   --runtime-symbol "Execute$ModelIndex" `
   --kernel-symbol $BackwardKernelSymbol `
-  # --generated-symbol 必须来自未来生成器 receipt；当前源码没有该参数可用的符号。
   --micro-build-receipt $MicroReceiptU `
   --training-sample-receipt $TrainingSampleReceiptU `
   --integration-receipt "$CaseU/integration.json"

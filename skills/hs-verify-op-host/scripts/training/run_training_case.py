@@ -33,6 +33,14 @@ def graph_checker():
     return module
 
 
+def framework_adapter():
+    spec = importlib.util.spec_from_file_location(
+        'hs_training_framework_adapters', Path(__file__).with_name('framework_adapters.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def sha256(path):
     h = hashlib.sha256()
     with Path(path).open("rb") as stream:
@@ -110,7 +118,14 @@ def load_case(path):
         for weight in c.get("weights", []):
             if isinstance(weight, dict):
                 weight.setdefault("dtype", "float32")
-    require(c.get("framework") == "onnx", "case framework must be onnx")
+    framework = framework_adapter().framework_name(c.get("framework", ""))
+    if framework == "tflite":
+        for target in c.get("graph_expectations", {}).get("targets", []):
+            source = target.get("source_node", {})
+            require(type(source.get("index", target.get("operator_index"))) is int,
+                    "TFLite target requires source_node.index")
+            require(type(source.get("builtin_code", target.get("builtin_code"))) is int,
+                    "TFLite target requires source_node.builtin_code")
     require(c.get("dtype") == "float32", "case dtype must be float32")
     require(isinstance(c.get("case_id"), str) and re.fullmatch(r"[A-Za-z0-9_-]+", c["case_id"]), "case_id")
     require(c.get("kind") in ("numerical", "reject"), "case kind")
@@ -224,7 +239,8 @@ def load_case(path):
     require(not set(barrier_weights) & set(frozen_weights), "barrier/frozen weight mapping")
     if frozen:
         require(frozen_weights, "frozen snapshots required")
-    c["source_graph"] = graph_checker().check_source_model(model, c["model"]["sha256"], ge)
+    c["source_graph"] = framework_adapter().validate_source_model(
+        model, c["model"]["sha256"], ge, c["framework"])
     return c, list(dict.fromkeys(files))
 
 
@@ -460,7 +476,8 @@ def execute(case_path, pkg, run_dir, timeout=300, riscv_toolchain_path=None, job
         config = run_dir / "micro_train.cfg"
         config.write_text(config_text(c), encoding="utf-8")
         net = run_dir / "net"
-        convert_args = [str(converter), "--fmk=ONNX", f"--modelFile={c['model_path']}",
+        fmk = framework_adapter().converter_framework(c["framework"])
+        convert_args = [str(converter), f"--fmk={fmk}", f"--modelFile={c['model_path']}",
                         f"--configFile={config}", f"--outputFile={net}"]
         if supported:
             convert_args.append("--encryption=false")

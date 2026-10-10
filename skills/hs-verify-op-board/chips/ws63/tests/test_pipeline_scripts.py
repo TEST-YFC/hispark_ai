@@ -118,7 +118,7 @@ def test_sdk_integration_is_idempotent_and_writes_receipt(tmp_path):
     assert (sdk / "application/samples/CMakeLists.txt").read_text().count("add_subdirectory") == 1
 
 
-def test_sdk_integration_rejects_training_until_observer_exists(tmp_path):
+def test_sdk_integration_rejects_training_without_observer_capability(tmp_path):
     sdk_root, sdk = make_sdk(tmp_path)
     hispark, sample, libs = make_inputs(tmp_path)
     receipt = tmp_path / "training-integration.json"
@@ -133,7 +133,7 @@ def test_sdk_integration_rejects_training_until_observer_exists(tmp_path):
                "--receipt", str(receipt.resolve())]
     result = subprocess.run(command, text=True, capture_output=True)
     assert result.returncode != 0
-    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+    assert "training_observer_capability_missing" in result.stderr
     assert not receipt.exists()
 
 
@@ -167,7 +167,7 @@ def test_sdk_integration_training_requires_sample_receipt(tmp_path):
                "--receipt", str((tmp_path / "training.json").resolve())]
     result = subprocess.run(command, text=True, capture_output=True)
     assert result.returncode != 0
-    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+    assert "training_sample_receipt_missing" in result.stderr
 
 
 def test_sdk_integration_jobs_are_recorded_and_used(tmp_path):
@@ -334,16 +334,16 @@ def test_micro_builder_runtime_env_fails_when_package_has_no_converter_library(t
         module.converter_runtime_env(pkg, {})
 
 
-def test_micro_builder_rejects_tflite_training_config(tmp_path):
+def test_micro_builder_accepts_tflite_training_identity(tmp_path):
     module = load_build_module()
     parser = module.build_parser()
     args = parser.parse_args([
         "--model", "model.tflite", "--framework", "tflite", "--mode", "fp32",
-        "--config", "micro_train.cfg", "--run-id", "run1", "--case-id", "case1",
+        "--config", "micro_train.cfg", "--case-json", "case.json",
+        "--run-id", "run1", "--case-id", "case1",
         "--mslite-pkg", "pkg", "--toolchain-bin", "toolchain", "--output-dir", "out",
     ])
-    with pytest.raises(SystemExit):
-        module.validate_identity_arguments(parser, args)
+    module.validate_identity_arguments(parser, args)
 
 
 def test_micro_builder_rejects_training_without_observer(tmp_path):
@@ -359,12 +359,12 @@ def test_micro_builder_rejects_training_without_observer(tmp_path):
     output = tmp_path / "out"
     result = subprocess.run([
         sys.executable, str(BUILD), "--model", str(model), "--framework", "onnx",
-        "--mode", "fp32", "--config", str(config), "--run-id", "run1",
-        "--case-id", "case1", "--mslite-pkg", str(package),
+        "--mode", "fp32", "--config", str(config), "--case-json", str(tmp_path / "case.json"),
+        "--run-id", "run1", "--case-id", "case1", "--mslite-pkg", str(package),
         "--toolchain-bin", str(toolchain), "--output-dir", str(output),
     ], text=True, capture_output=True)
     assert result.returncode != 0
-    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+    assert "build_micro_requires_linux_or_wsl_for_linux_x64_converter" in result.stderr
     assert not output.exists()
 
 
@@ -392,7 +392,7 @@ def test_sdk_integration_rejects_tflite_training_receipt(tmp_path):
                "--receipt", str((tmp_path / "integration.json").resolve())]
     result = subprocess.run(command, text=True, capture_output=True)
     assert result.returncode != 0
-    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+    assert "training_observer_capability_missing" in result.stderr
 
 
 def test_training_sample_fails_closed_without_observer():
@@ -403,7 +403,7 @@ def test_training_sample_fails_closed_without_observer():
         "--micro-build-receipt", "receipt.json", "--output-dir", "sample",
     ], text=True, capture_output=True)
     assert result.returncode != 0
-    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+    assert "opdir, micro-model-source and micro-build-receipt must exist" in result.stderr
 
 
 def test_training_wiring_fails_closed_without_observer():
@@ -415,4 +415,49 @@ def test_training_wiring_fails_closed_without_observer():
         "--kernel-symbol", "Kernel", "--verification-kind", "training",
     ], text=True, capture_output=True)
     assert result.returncode != 0
-    assert "training_observer_unavailable_for_micro_generator" in result.stderr
+    assert "BOARD_WIRING_GATE=FAIL" in result.stdout
+
+
+def write_observer_fixture(tmp_path: Path, weights: list[dict]):
+    weight_source = tmp_path / "weight0.c"
+    weight_source.write_text('''
+struct ModelParameter model_params[] = {
+  {(void **)&m0_weight0, m0_weight0_const, 16, 0},
+  {(void **)&m0_weight1, m0_weight1_const, 16, 16},
+};
+#ifdef MSLITE_TRAIN_BENCHMARK
+static const TrainWeightExportItem train_weight_export_items[] = {
+  {"first", "000_first.bin", 0, 16, kMSDataTypeNumberTypeFloat32, 2, {1, 4, 0, 0, 0, 0, 0, 0}},
+  {"second", "001_second.bin", 16, 16, kMSDataTypeNumberTypeFloat32, 2, {1, 4, 0, 0, 0, 0, 0, 0}},
+};
+#endif
+''', encoding="utf-8")
+    case = tmp_path / "case.json"
+    case.write_text(json.dumps({"weights": weights}), encoding="utf-8")
+    return weight_source, case
+
+
+def test_observer_metadata_binds_generated_names_and_case_order(tmp_path):
+    module = load_build_module()
+    weights = [
+        {"name": "first", "dtype": "float32", "shape": [1, 4]},
+        {"name": "second", "dtype": "float32", "shape": [1, 4]},
+    ]
+    weight_source, case = write_observer_fixture(tmp_path, weights)
+
+    params, items = module.parse_observer_metadata(weight_source, case)
+
+    assert [item["name"] for item in items] == ["first", "second"]
+    assert [param["offset"] for param in params] == [0, 16]
+
+
+def test_observer_metadata_rejects_same_size_weight_reordering(tmp_path):
+    module = load_build_module()
+    weights = [
+        {"name": "second", "dtype": "float32", "shape": [1, 4]},
+        {"name": "first", "dtype": "float32", "shape": [1, 4]},
+    ]
+    weight_source, case = write_observer_fixture(tmp_path, weights)
+
+    with pytest.raises(SystemExit):
+        module.parse_observer_metadata(weight_source, case)

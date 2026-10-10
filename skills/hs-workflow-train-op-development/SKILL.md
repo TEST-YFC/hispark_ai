@@ -102,7 +102,7 @@ stage6 放在板端结果之后收尾；初版文档在 stage1 编码前生成�
 
 Host 通过后调用 `hs-verify-op-board verification_kind=training`。输入必须是 `runs/<run_id>/board_expected/training_board_expected_matrix.json` 及其中逐 case expected 文件；该矩阵由 aggregate 阶段从 Host 汇总和 golden 自动导出，不能由板端阶段手工挑选用例。
 
-按 [生成端 observer 说明](../hs-verify-op-board/references/training/generated-observer.md) 先核对运行时参数访问接口。当前 Micro 生成器没有该能力，`build_micro.py --config` 会以 `training_observer_unavailable_for_micro_generator` 停止；因此本轮不得继续 Sample 准备、SDK 接入、`hs-dev-build` 或 `hs-dev-flash`，必须记录 `TRAIN_BOARD_VERIFY=NOT_RUN` 和恢复条件。未来只有在生成器实现 observer、receipt 包含能力字段、Sample 与 SDK 接线通过、wiring 检查和固件内容检查通过后，才能按 [板端训练脚本说明](../hs-verify-op-board/references/training/commands.md) 执行烧录、采集与比较；这些执行结果再用于判定板端回归，不把板端回归本身列为执行前置。
+按 [生成端 observer 说明](../hs-verify-op-board/references/training/generated-observer.md) 生成本轮 Micro 工程内的 observer adapter。`build_micro.py` 必须接收当前锁定的 `case.json`，并在 receipt 中证明 adapter 路径/hash、mutable 参数表校验和 `libnet.a` 的 `nm` 定义符号；sample、SDK 接线和 wiring 只接受同一 receipt 能力链。任何前置校验失败记为 `TRAIN_BOARD_VERIFY=NOT_RUN` 或 `FAIL`，不能把 Host 文件导出当成板端参数快照。前置全部通过后，才能按 [板端训练脚本说明](../hs-verify-op-board/references/training/commands.md) 执行固件内容检查、烧录、采集与比较；这些执行结果再用于判定板端回归，不把板端回归本身列为执行前置。
 
 仅收到 `TRAIN_DONE`，或仅看到某个输出张量，不能写 `TRAIN_BOARD_VERIFY=PASS`；必须同时核对 run/case/model 身份、完整 `TRAIN_BEGIN`/`TRAIN_TENSOR`/`TRAIN_DONE` 序列、必测张量集合、checkpoint、参数快照及逐元素数值比较。解析、采集或比较失败要保留为 `FAIL`；缺少必要观测时只能记录 `NOT_RUN` 或未完成状态。
 

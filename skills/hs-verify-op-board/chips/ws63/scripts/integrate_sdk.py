@@ -155,7 +155,7 @@ def load_training_sample_receipt(path_text: str, args: argparse.Namespace) -> di
             or receipt.get("case_id") != args.case
             or receipt.get("model_sha256") != args.model_sha256
             or receipt.get("mode") != args.mode
-            or framework != "onnx"
+            or framework not in ("onnx", "tflite")
             or not isinstance(config_sha, str)
             or not re.fullmatch(r"[0-9a-f]{64}", config_sha)):
         fail(f"training_sample_receipt_identity_mismatch:{path}")
@@ -248,10 +248,13 @@ def main() -> int:
     if args.jobs is not None and args.jobs < 1:
         parser.error("--jobs must be >= 1")
     validate_identity_arguments(parser, args)
-    if args.verification_kind == "training":
-        fail("training_observer_unavailable_for_micro_generator")
     training_sample = None
-    if args.verification_kind == "inference" and args.training_sample_receipt:
+    if args.verification_kind == "training":
+        training_sample = load_training_sample_receipt(args.training_sample_receipt, args)
+        observer = training_sample.get("observer_adapter")
+        if not isinstance(observer, dict) or observer.get("nm_verified") is not True:
+            fail("training_observer_capability_missing")
+    elif args.training_sample_receipt:
         parser.error("--training-sample-receipt is only valid for training verification")
 
     sdk_root = existing_absolute(args.sdk_root, "sdk_root")

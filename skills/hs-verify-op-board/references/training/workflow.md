@@ -23,19 +23,18 @@ python <hs-verify-op-board>/scripts/probe_serial_ports.py --target auto --output
 
 ## 2. Micro 模型与交叉编译
 
-逐行复用 Host 已通过的同一 ONNX、训练配置和初始状态，生成独立 RISCV 训练工程。记录 converter、配置和生成工程 hash，不手写网络/反向公式替代 converter 产物。
+逐行复用 Host 已通过的同一源模型、训练配置和初始状态，生成独立 RISCV 训练工程。记录 framework、converter、配置和生成工程 hash，不手写网络/反向公式替代 converter 产物。
 
 Host 的 `MSLITE_TRAIN_BENCHMARK=ON` 是 native 文件导出模式，板端不能照搬。板端用 WS63 对应的 RISC-V 工具链、ABI、NNACL/wrapper 库及 `MSLITE_TRAIN_BENCHMARK=OFF` 构建，交叉编译与推理分支使用相同的 SDK 身份检查。构建前查看当前生成 CMake 和工具链参数，不能把 Host 的 cpu 静态库安装到板端。
 
-当前源码不能执行 WS63 训练板链路。`build_micro.py` 已在转换前检查 observer 能力；由于 Micro 生成器没有 `MSLITE_TRAIN_OBSERVER` 或运行时权重 accessor，它会以 `training_observer_unavailable_for_micro_generator` 失败。不得继续调用 sample、SDK 接入、`hs-dev-build` 或 `hs-dev-flash`，本阶段必须记录 `TRAIN_BOARD_VERIFY=NOT_RUN` 及恢复条件。
+`build_micro.py` 在本轮 Micro 工程内生成 observer adapter；调用时必须传入当前锁定的 `case.json`：
 
 ```text
-build_micro.py --config <Host micro_train.cfg> --run-id <run_id> --case-id <case_id>
-→ TRAIN_BOARD_VERIFY=NOT_RUN
-  reason=training_observer_unavailable_for_micro_generator
+build_micro.py --config <Host micro_train.cfg> --case-json <locked case.json> --run-id <run_id> --case-id <case_id>
+→ observer_adapter=true, nm_verified=true
 ```
 
-下列完整链路只适用于未来已由生成器、运行时、receipt、sample 和 wiring 测试共同证明 observer 可用的版本；届时固件构建仍必须使用 `hs-dev-build`，烧录仍必须由 `hs-dev-flash` 负责，不能直接绕过 owner 调用 fbb。
+只有生成 C 的 mutable 参数表、case metadata、adapter、`libnet.a` 定义符号和 receipt 身份链全部通过后，才能调用 sample、SDK 接入和 `hs-dev-build`。任一前置失败记为 `NOT_RUN`/失败，不能以 Host 文件导出或 Sample 自报替代真实板端参数地址；固件构建仍必须使用 `hs-dev-build`，烧录仍必须由 `hs-dev-flash` 负责，不能直接绕过 owner 调用 fbb。
 
 检查产物的架构、ABI、模型/运行时符号、重复库和训练源码收集。安装库、adaptor 和 Sample 到已授权 SDK 时保留原有文件及配置变更记录。固件构建交给 `hs-dev-build`，不绕过其 clean build 和 target 检查。
 

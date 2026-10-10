@@ -13,6 +13,10 @@ import tempfile
 
 import numpy as np
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+from framework_adapters import framework_name
+
 VALID = {"PASS", "FAIL", "NOT_RUN", "NOT_REQUESTED", "BLOCKED", "PASS_EXPECTED_ERROR"}
 
 
@@ -166,10 +170,13 @@ def validate_graph_evidence(root, run_id, cid, summary):
     require(model_path in model_records, f'locked model evidence mismatch: {cid}')
     net = case_dir / "net"
     checker_path = Path(__file__).with_name("check_training_graph.py")
+    adapter_path = Path(__file__).with_name("framework_adapters.py")
     sys.path.insert(0, str(checker_path.parent))
     try:
-        from check_training_graph import check_training_graph, check_source_model
-        source = check_source_model(model_path, model['sha256'], case['graph_expectations'])
+        from check_training_graph import check_training_graph
+        from framework_adapters import validate_source_model
+        source = validate_source_model(model_path, model['sha256'],
+                                       case['graph_expectations'], case.get('framework', 'onnx'))
         result = check_training_graph(net, case["graph_expectations"] | {"graph_expectations_version": case["graph_expectations_version"]})
     finally:
         sys.path.pop(0)
@@ -317,7 +324,7 @@ def normalize_case(case: dict) -> dict:
         for weight in case.get("weights", []):
             if isinstance(weight, dict):
                 weight.setdefault("dtype", "float32")
-    require(case.get("framework") == "onnx", "unsupported case framework")
+    framework_name(case.get("framework", "onnx"))
     require(case.get("dtype") == "float32", "unsupported case dtype")
     return case
 
