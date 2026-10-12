@@ -17,12 +17,13 @@ import shlex
 import shutil
 import sys
 import time
+from typing import NoReturn
 
 
 _ACTIVE_LOCK = None
 
 
-def fail(message: str) -> "NoReturn":
+def fail(message: str) -> NoReturn:
     if _ACTIVE_LOCK is not None:
         _ACTIVE_LOCK.release()
     print(f"SDK_INTEGRATION_GATE=FAIL reason={message}", file=sys.stderr)
@@ -290,7 +291,10 @@ def main() -> int:
     shutil.copy2(source_header, header)
     installed.append(str(header))
 
-    variant = re.sub(r"[^a-zA-Z0-9_.-]", "_", f"{args.operator}_{args.case}_{args.mode}")
+    variant_parts = [args.operator, args.case, args.mode]
+    if args.run_id:
+        variant_parts.append(args.run_id)
+    variant = re.sub(r"[^a-zA-Z0-9_.-]", "_", "_".join(variant_parts))
     variant_dir = sdk / "middleware/utils/ai_mcu/lib" / variant
     variant_dir.mkdir(parents=True, exist_ok=True)
     for name in ("libmicro_runtime.a", "libnet.a"):

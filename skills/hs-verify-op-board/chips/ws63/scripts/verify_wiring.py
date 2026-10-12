@@ -319,10 +319,16 @@ def main():
                 errors.append(f"kernel symbol {symbol!r} missing from {net}")
 
     if args.verification_kind == "training":
-        receipt_paths = [Path(value) for value in (
-            args.micro_build_receipt, args.training_sample_receipt,
-            args.integration_receipt,
-        ) if value]
+        receipt_values = (
+            ("--micro-build-receipt", args.micro_build_receipt),
+            ("--training-sample-receipt", args.training_sample_receipt),
+            ("--integration-receipt", args.integration_receipt),
+        )
+        if any(value is None for _, value in receipt_values):
+            for option, value in receipt_values:
+                if value is None:
+                    errors.append(f"training wiring requires {option}")
+        receipt_paths = [Path(value) for _, value in receipt_values if value]
         for path in receipt_paths:
             if not path.is_absolute() or not path.is_file():
                 errors.append(f"receipt missing/not absolute: {path}")

@@ -10,6 +10,7 @@ task without treating an old artifact as a new result.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -111,6 +112,22 @@ def normalized_evidence(values: list[str], task_id: str) -> list[str]:
     if not result:
         raise StateError(f"at least one evidence reference is required: {task_id}")
     return result
+
+
+def finalize_evidence(values: list[str]) -> tuple[list[str], list[dict[str, str]]]:
+    """Require terminal evidence to be existing absolute report files."""
+
+    references = normalized_evidence(values, "terminal.report")
+    digests: list[dict[str, str]] = []
+    for reference in references:
+        if not is_absolute_path(reference):
+            raise StateError("terminal.report evidence must be an absolute file path")
+        path = Path(reference).expanduser()
+        if not path.is_file():
+            raise StateError(f"terminal.report evidence file does not exist: {reference}")
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        digests.append({"path": str(path.resolve()), "sha256": digest})
+    return [item["path"] for item in digests], digests
 
 
 def new_attempt_token() -> str:
@@ -1275,7 +1292,7 @@ def cmd_finalize(args: argparse.Namespace) -> int:
         raise StateError("terminal report is still RUNNING; recover it with resume before finalizing")
     if report["status"] not in {"PENDING"}:
         raise StateError(f"terminal report cannot be finalized from status={report['status']}")
-    evidence = normalized_evidence(args.evidence, "terminal.report")
+    evidence, evidence_digests = finalize_evidence(args.evidence)
     if report["status"] == "PENDING":
         report["status"] = "RUNNING"
         report["attempts"] += 1
@@ -1291,6 +1308,7 @@ def cmd_finalize(args: argparse.Namespace) -> int:
     state["artifacts"]["terminal.report"] = {
         "status": "PASS",
         "evidence": list(report["evidence"]),
+        "evidence_digests": evidence_digests,
         "updated_at": utc_now(),
     }
     state["current_task"] = None

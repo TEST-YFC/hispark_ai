@@ -69,13 +69,17 @@ def make_inputs(tmp_path: Path):
     return hispark, sample, libs
 
 
-def write_training_sample_receipt(tmp_path: Path, sample: Path, case: str = "tc_train"):
+def write_training_sample_receipt(tmp_path: Path, sample: Path, case: str = "tc_train",
+                                  *, observer: bool = False):
     receipt = tmp_path / "training-sample.json"
-    receipt.write_text(json.dumps({
+    payload = {
         "verification_kind": "training", "run_id": "run_train", "case_id": case,
         "model_sha256": "a" * 64, "framework": "onnx", "mode": "fp32",
         "training_config_sha256": "b" * 64, "output": str(sample.resolve()),
-    }) + "\n", encoding="utf-8")
+    }
+    if observer:
+        payload["observer_adapter"] = {"nm_verified": True, "symbols": []}
+    receipt.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     return receipt
 
 
@@ -346,7 +350,7 @@ def test_micro_builder_accepts_tflite_training_identity(tmp_path):
     module.validate_identity_arguments(parser, args)
 
 
-def test_micro_builder_rejects_training_without_observer(tmp_path):
+def test_micro_builder_training_requires_linux_or_wsl(tmp_path):
     model = tmp_path / "model.onnx"
     model.write_bytes(b"model")
     package = tmp_path / "pkg"
@@ -376,7 +380,27 @@ def test_micro_builder_cmake_arguments_do_not_claim_observer(tmp_path):
     assert not any("MSLITE_TRAIN_OBSERVER" in item for item in arguments)
 
 
-def test_sdk_integration_rejects_tflite_training_receipt(tmp_path):
+def test_sdk_integration_training_variant_is_run_scoped(tmp_path):
+    sdk_root, sdk = make_sdk(tmp_path)
+    hispark, sample, libs = make_inputs(tmp_path)
+    sample_receipt = write_training_sample_receipt(tmp_path, sample, observer=True)
+    integration_receipt = tmp_path / "integration.json"
+    command = [sys.executable, str(INTEGRATE), "--sdk-root", str(sdk_root.resolve()),
+               "--hispark-root", str(hispark.resolve()), "--sample-dir", str(sample.resolve()),
+               "--model-lib-dir", str(libs.resolve()), "--operator", "Op",
+               "--case", "tc_train", "--mode", "fp32", "--target", "ws63-liteos-app",
+               "--verification-kind", "training", "--run-id", "run_train",
+               "--model-sha256", "a" * 64,
+               "--training-sample-receipt", str(sample_receipt.resolve()),
+               "--receipt", str(integration_receipt.resolve())]
+    result = subprocess.run(command, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(integration_receipt.read_text(encoding="utf-8"))
+    assert payload["variant"] == "Op_tc_train_fp32_run_train"
+    assert (sdk / "middleware/utils/ai_mcu/lib/Op_tc_train_fp32_run_train/libnet.a").is_file()
+
+
+def test_sdk_integration_training_requires_observer_capability(tmp_path):
     sdk_root, sdk = make_sdk(tmp_path)
     hispark, sample, libs = make_inputs(tmp_path)
     receipt = write_training_sample_receipt(tmp_path, sample)

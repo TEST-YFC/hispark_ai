@@ -67,7 +67,7 @@ Sample 每个用例独立创建模型并恢复相同初始权重/optimizer state
 
 板端训练的数据来源、采集和比较分别负责以下工作：
 
-- 生成端 observer：当前源码没有训练模型运行时权重 accessor，具体边界见 [生成端 observer 说明](generated-observer.md)。因此当前训练板路径在 `build_micro.py` 能力门禁处停止；不能生成会引用不存在 `GetTrainWeight*` 的 sample，也不能把 Host 文件导出当成板端参数快照。
+- 生成端 observer：每轮 Micro 工程在 `src/model0/` 生成独立的 `observer_adapter.h/.c`，adapter 通过 `GetTrainWeightCount0`/`GetTrainWeight0` 读取实际运行时权重地址；`build_micro.py` 用 archive-aware `nm` 验证符号，并在 receipt 中记录源文件、头文件、符号和哈希。adapter 不属于算子源码、共享 SDK 或公共模板。
 - `collect_training_serial.py`：采集并保存原始串口，使用共享 `training_protocol.py` 解析，保留实际身份和解析状态。
 - `compare_training_board.py`：独立重放原文，核对完整 tensor 集合、checkpoint、参数规则和数值结果。
 
@@ -79,8 +79,8 @@ Sample 每个用例独立创建模型并恢复相同初始权重/optimizer state
 
 参数快照必须来自正在训练的运行时地址，名称/布局映射与 Host 一致。当前 Host `MSModelExportWeight` 依赖 `MSLITE_TRAIN_BENCHMARK` 和文件系统；不能假设 MCU 上有相同文件导出能力。先核对是否已有只读的参数访问/串口导出接口：
 
-- 有接口：只有在生成器 receipt、链接符号和运行时快照都证明读取的是实际权重地址时，才可继续完整板测。
-- 无接口：当前路径直接在 Micro 准备阶段 `NOT_RUN`；不生成输出-only 的“部分通过”，不硬编码内存偏移，也不通过修改公式规避 observer 缺失。补观测必须同时设计生成器、CMake、receipt、sample、wiring、SDK 构建和板测证据。
+- 有接口：只有在本轮生成器 receipt、链接符号和运行时快照都证明读取的是实际权重地址时，才可继续完整板测；当前 adapter 的 header/source、sample、SDK archive 和 wiring 必须形成同一条哈希链。
+- 无有效 receipt 链：在对应准备阶段记录 `NOT_RUN` 或已发生错误的 `FAIL`；不生成输出-only 的“部分通过”，不硬编码内存偏移，也不把 Host 文件导出当成板端参数快照。
 
 冻结用例还需冻结参数前后快照及可训练上游参数更新。导出缺项不是冻结成功。设备没有文件系统时也不能把 Host 的冻结结果直接作为板端结果。
 

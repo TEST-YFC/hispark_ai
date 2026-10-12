@@ -26,14 +26,6 @@ def converter_framework(value: str) -> str:
     return _CONVERTER_FLAGS[framework_name(value)]
 
 
-def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
 def validate_source_model(path: Path, expected_sha256: str, expectations: dict,
                           framework: str) -> dict:
     framework = framework_name(framework)
@@ -83,15 +75,17 @@ def _operator_tensor_indices(operator):
     return values
 
 
+_PLACEHOLDER_FOR_GREATER_OP_CODES = 127
+
+
 def _builtin_code(operator_code):
     modern = int(operator_code.BuiltinCode())
-    deprecated_method = getattr(operator_code, "DeprecatedBuiltinCode", None)
-    deprecated = int(deprecated_method()) if callable(deprecated_method) else 0
-    # Modern schema values are authoritative. Legacy values are used only when
-    # modern code is the schema default and must not conflict with it.
-    if modern != 0 and deprecated not in (0, modern):
-        raise ValueError("TFLite builtin and deprecated builtin codes conflict")
-    return modern if modern != 0 else deprecated
+    if modern <= _PLACEHOLDER_FOR_GREATER_OP_CODES:
+        deprecated_method = getattr(operator_code, "DeprecatedBuiltinCode", None)
+        if not callable(deprecated_method):
+            raise ValueError("TFLite schema lacks deprecated builtin code accessor")
+        return int(deprecated_method())
+    return modern
 
 
 def _validate_tflite(path: Path, raw: bytes, expectations: dict, expected_sha256: str) -> dict:

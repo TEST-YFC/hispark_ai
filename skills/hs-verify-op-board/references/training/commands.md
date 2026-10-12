@@ -48,6 +48,12 @@ $Operator = '<operator>'
 $Target = '<ws63-target>'
 $Port = '<detected-serial-port>'
 $ModelIndex = 0
+$CaseJsonW = Join-Path $OpdirW "cases\$CaseId\case.json"
+$CaseSpec = Get-Content -LiteralPath $CaseJsonW -Raw | ConvertFrom-Json
+$Framework = [string]$CaseSpec.framework
+$ModelRelative = [string]$CaseSpec.model.path
+$ModelW = Join-Path (Split-Path -Parent $CaseJsonW) $ModelRelative
+$ModelU = "$OpdirU/cases/$CaseId/$($ModelRelative -replace '\\', '/')"
 # 从锁定 case 的 graph_expectations.targets[*].backward_symbols 中选择符号；
 # verify_wiring/nm 会继续核对该符号来自当前 net0.c 和 libnet.a。
 $BackwardKernelSymbol = '<target_backward_kernel_symbol>'
@@ -72,15 +78,15 @@ $SampleU = "$CaseU/sample"
 $MicroReceiptU = "$MicroU/micro_build_receipt.json"
 $TrainingSampleReceiptU = "$SampleU/training_sample_receipt.json"
 $CaseJsonU = "$OpdirU/cases/$CaseId/case.json"
-$ModelSha256 = (Get-FileHash -LiteralPath (Join-Path $OpdirW "cases\$CaseId\model.onnx") -Algorithm SHA256).Hash.ToLowerInvariant()
+$ModelSha256 = (Get-FileHash -LiteralPath $ModelW -Algorithm SHA256).Hash.ToLowerInvariant()
 ```
 
 在 receipt、sample 与 wiring 前置检查通过后，生成 Micro 静态库、训练 Sample 并接入 SDK；真实烧录和串口采集仍需具备对应硬件与环境：
 
 ```powershell
 wsl.exe -e python3 -B "$BoardSkillU/chips/ws63/scripts/build_micro.py" `
-  --model "$OpdirU/cases/$CaseId/model.onnx" `
-  --framework onnx --mode fp32 `
+  --model $ModelU `
+  --framework $Framework --mode fp32 `
   --config "$RunU/$CaseId/micro_train.cfg" --case-json $CaseJsonU `
   --run-id $RunId --case-id $CaseId `
   --mslite-pkg $PkgU --toolchain-bin $ToolchainU `
@@ -151,12 +157,15 @@ python -B (Join-Path $BoardSkillW 'chips\ws63\scripts\verify_firmware.py') `
   --firmware $firmwareW `
   --map-symbol "MSModelPredict$ModelIndex" `
   --map-symbol "Execute$ModelIndex" `
+  --map-symbol "GetTrainWeightCount$ModelIndex" `
+  --map-symbol "GetTrainWeight$ModelIndex" `
   --map-symbol $BackwardKernelSymbol `
   --newer-than $sampleSourceW `
   --newer-than (Join-Path $modelLibW 'libmicro_runtime.a') `
   --newer-than (Join-Path $modelLibW 'libnet.a')
 
-fbb flash $Target --port $Port --json-summary
+# verify_firmware.py 通过后，将 $firmwareW、$Target 和 $Port 交给 hs-dev-flash；
+# 不在此处直接调用 fbb flash。
 ```
 
 最后使用新的 raw、observed 和 report 路径采集并比较。`<expected>` 是 Host 聚合导出的当前 case expected JSON：

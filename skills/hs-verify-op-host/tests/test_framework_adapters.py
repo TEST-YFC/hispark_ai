@@ -28,6 +28,24 @@ def test_source_hash_is_checked_before_framework_parser(tmp_path):
         module.validate_source_model(model, "0" * 64, {"targets": []}, "tflite")
 
 
+def test_tflite_builtin_code_uses_legacy_sentinel_rule():
+    class OperatorCode:
+        def __init__(self, modern, deprecated):
+            self.modern = modern
+            self.deprecated = deprecated
+
+        def BuiltinCode(self):
+            return self.modern
+
+        def DeprecatedBuiltinCode(self):
+            return self.deprecated
+
+    assert module._builtin_code(OperatorCode(130, 127)) == 130
+    assert module._builtin_code(OperatorCode(95, 95)) == 95
+    assert module._builtin_code(OperatorCode(0, 42)) == 42
+    assert module._builtin_code(OperatorCode(50, 127)) == 127
+
+
 def test_tflite_missing_schema_is_not_silent():
     model = Path(__file__).resolve()
     digest = hashlib.sha256(model.read_bytes()).hexdigest()

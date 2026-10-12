@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Convert one Host-PASS model and build WS63 Micro archives.
 
-Inference builds are supported. Training builds stop before conversion because the
-current Micro generator has no runtime training-weight observer contract.
+Inference builds and FP32 training builds are supported. Training builds generate
+an observer adapter inside the per-run Micro project and record its verified
+symbols and hashes in the build receipt.
 """
 from __future__ import annotations
 
