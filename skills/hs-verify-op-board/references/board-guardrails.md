@@ -18,7 +18,7 @@
 6. 不手填预期张量、余弦值，不复用跨轮GT/monitor，不调低阈值。
 7. 不因“硬件公差”“串口噪声”放行精度失败；先用原始输出证明根因。
 8. 不以只有平铺数值、缺少shape元数据的串口输出确认结果；相同元素数不代表输出shape正确。
-9. 不修改Host用例、能力清单或算子源码来让板测变绿。
+9. 不得为了消除板测失败而修改 Host 用例、能力清单或算子源码。
 10. 不允许以一个或少数代表case的PASS确认完整算子；expected分母只能来自Host manifest。
 11. 不允许只汇报总PASS；最终用户消息必须逐行列出实际执行的case/mode和各自状态。
 12. 固件生成、接线、clean build和内容检查只属于“固件构建验证”，不能写成“板测通过”或
@@ -59,8 +59,8 @@ ACCURACY_VERDICT=PASS
 | `chips/ws63/scripts/check_python_deps.py` | 在模型解析前检查本轮 framework 所需 Python 模块是否可导入并输出版本 |
 | `chips/ws63/scripts/build_micro.py` | 固定生成FP32/INT8配置，运行converter和Micro CMake，冻结两份模型库与receipt |
 | `chips/ws63/scripts/integrate_sdk.py` | 固定安装adaptor、模型库并接入WS63 CMake/target；拒绝静默覆盖差异文件 |
-| `chips/ws63/scripts/verify_wiring.py` | 构建前机械核对Sample、两份库、adaptor和CMake/Kconfig消费点 |
-| `chips/ws63/scripts/verify_firmware.py` | 构建后机械核对Sample对象、最终map符号和完整fwpkg新鲜度 |
+| `chips/ws63/scripts/verify_wiring.py` | 构建前核对 Sample、两份库、adaptor 和 CMake/Kconfig 消费点 |
+| `chips/ws63/scripts/verify_firmware.py` | 构建后核对 Sample 对象、最终 map 符号和完整 fwpkg 新鲜度 |
 | `chips/ws63/references/device.md` | 核对 WS63 串口和设备信息；非WS63不得套用本接入规范 |
 | `chips/ws63/references/troubleshooting.md` | 读取串口和板端结果异常时 |
 | `chips/ws63/references/sdk-integration.md` | 必须完整读取；规定Micro模型、adaptor、Sample、CMake/Kconfig和固件接入细节 |

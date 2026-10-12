@@ -14,12 +14,12 @@ description: >-
 
 # 算子适配端到端工作流
 
-本 skill 只负责跨阶段编排、检查点、状态和阶段衔接。每个阶段仍由对应专项 Skill 或确定性脚本执行；
-步骤不能被一句“完成接线”替代。入口正文只保留始终需要看到的约定，细节按阶段读取直接链接的
-`references/`文件。
+本 skill 负责跨阶段编排，管理检查点、状态和阶段衔接。各阶段由对应的专项 Skill 或确定性脚本执行，
+不能用“完成接线”等概括性描述代替实际步骤。正文只说明全程适用的约定；进入具体阶段时，再读取直接链接的
+`references/` 文件。
 
-跨 Skill 先按名称加载，再读取目标 Skill 内的资源，不推算同级安装目录。
-命令中的 `<hs-...>` 使用按名称找到的实际根目录；本 Skill 自身资源仍用相对链接。
+调用其他 Skill 时，先按名称加载，再读取其中的资源，不推测安装目录。
+命令中的 `<hs-...>` 应替换为按名称找到的实际根目录；本 Skill 自身资源使用相对链接。
 
 ## 工作流总览
 
@@ -37,10 +37,9 @@ Stage7 终态文档回填 -> terminal.report/finalize
 ```
 
 状态机任务 ID 与对外阶段编号一致，统一使用 `stage0` 到 `stage7`。Stage7 包含终态文档回填和最终报告，
-必须等 Stage5、Stage6 到达终态后才启动。编号只保留一套，命令、待办、状态文件和文档使用同一名称。
-当前状态 schema 为 3；schema=1/2 的运行记录不能直接恢复，请保留原记录并用新的 `RUN_ID` 重新开始，不要手工替换状态文件中的编号。
-`HOST_ONLY` 时，Stage5/Stage6 记为
-`NOT_REQUESTED`，然后同样进入终态文档和报告。
+必须在 Stage5、Stage6 到达终态后启动。命令、待办、状态文件和文档均使用这套编号。
+当前状态 schema 为 3。schema=1/2 的运行记录不能直接恢复：保留原记录，并用新的 `RUN_ID` 重新开始；
+不要手工替换状态文件中的编号。`HOST_ONLY` 时，将 Stage5/Stage6 记为 `NOT_REQUESTED`，然后进入终态文档和报告。
 
 下面是入口速查，不改变任何步骤、门禁或证据要求：
 
@@ -50,12 +49,12 @@ AUTO_ALL -> Stage5 -> Stage6 -> Stage7 -> terminal.report/finalize
 HOST_ONLY -> Stage5/Stage6=NOT_REQUESTED -> Stage7 -> terminal.report/finalize
 ```
 
-Stage 表示顶层阶段；`stage1.plan`、`stage1.initial_docs` 等是同一阶段内按顺序完成、分别保存证据的任务，不能合并或跳过。
-专项 Skill 的 `step0`、`step1` 等只表示其内部步骤，数字不对应顶层 Stage；跨 Skill 提到 step 时写明所属 Skill。
+Stage 表示顶层阶段。`stage1.plan`、`stage1.initial_docs` 等是阶段内任务，必须按顺序完成并分别保存证据，不能合并或跳过。
+专项 Skill 的 `step0`、`step1` 等仅表示其内部步骤，与顶层 Stage 编号无关。提到其他 Skill 的 step 时，应写明所属 Skill。
 
-固定顺序不能交换：`hs-dev-op-implement mode=prepare` 必须先于
-`hs-design-op-manual mode=integrated-initial`，后者必须先于
-`gate_artifacts.py --stage pre-source`，之后才能
+以下顺序固定：先执行 `hs-dev-op-implement mode=prepare`，再执行
+`hs-design-op-manual mode=integrated-initial`，然后执行
+`gate_artifacts.py --stage pre-source`；通过后才能执行
 `hs-dev-op-implement mode=apply`。工具包构建、Host、固件和板测的详细命令见各阶段 reference。
 
 ## 路由优先级
@@ -103,14 +102,14 @@ Stage 表示顶层阶段；`stage1.plan`、`stage1.initial_docs` 等是同一阶
 
 ## 待办、状态和证据
 
-每次开始生成算子，第一项动作必须是 `scripts/workflow_state.py init`，在
+每次开始生成算子，先运行 `scripts/workflow_state.py init`。该命令在
 `<opdir>/.workflow-state/<RUN_ID>/` 原子生成
-`workflow_state.json`、`workflow_todo.md` 和 `workflow_events.jsonl`。待办模板为
-`references/workflow-todo.template.md`，状态机为 `scripts/workflow_state.py`；不要用对话记忆或手工编辑
-进度。完整恢复、重试、锁、attempt token 和 fail-closed 规则见
+`workflow_state.json`、`workflow_todo.md` 和 `workflow_events.jsonl`。待办模板是
+`references/workflow-todo.template.md`，状态机入口是 `scripts/workflow_state.py`。进度以这些文件为准，
+不要依赖对话记忆，也不要手工编辑。恢复、重试、锁、attempt token 和 fail-closed 规则见
 [`references/workflow-state.md`](references/workflow-state.md)。
-完整 13 项 task ID 的固定顺序和每项最小证据见模板及状态 reference；初始化时必须整份生成，
-不得把任务合并、跳过或改成最后才补记。
+模板和状态 reference 定义了 13 项 task ID 的固定顺序及最小证据。初始化时必须生成完整清单，
+逐项执行并及时记录，不能合并或跳过任务。
 
 最小命令约定（所有命令使用同一 `RUN_ID`）：
 
@@ -133,10 +132,10 @@ python <skill>/scripts/workflow_state.py finalize --state-dir <STATE_DIR> --run-
   --evidence <本轮终态报告绝对路径>
 ```
 
-状态机拒绝空证据、乱序、损坏文件、模板占位符、锁超时、run ID 不一致和陈旧 token；
-失败会阻止后续任务，`retry`/`resume` 会使旧证据失效。只要有 `RUNNING/PENDING/NOT_RUN`，
-整体就不能判 PASS；先把 `terminal.report` 保存到文件。`stage0.confirm` 是本轮唯一确认，
-确认后不再询问普通阶段。
+状态机拒绝空证据、乱序、损坏文件、未展开的模板占位符、锁超时、run ID 不一致和过期 token。
+失败会阻止后续任务；`retry`/`resume` 会使旧证据失效。只要存在 `RUNNING/PENDING/NOT_RUN`，
+整体就不能判为 PASS。收尾时先把 `terminal.report` 保存到文件。`stage0.confirm` 是本轮唯一确认，
+确认后不再逐阶段询问。
 
 ## Stage0：确定范围、环境并完成一次确认
 
@@ -154,15 +153,14 @@ DEVICE_IO_ENV=<Windows|WSL|Linux>
 TARGET_RUNTIME=<chip/board/OS/fbb-target>
 ```
 
-先自动探测。`file converter_lite`、`fbb describe --json`、SDK 的
-`min_cli_version`、端口和路径证据分别归档；路径只直接证明“文件存在哪里”，不能单独证明命令
-在哪里执行。版本不足的
-候选环境标记`BLOCKED`。Windows 串口要用 `.NET SerialPort.GetPortNames()`、注册表和有界
+先自动探测，并分别归档 `file converter_lite`、`fbb describe --json`、SDK `min_cli_version`、
+端口和路径证据。路径只直接证明“文件存在哪里”，不能单独证明命令在哪里执行。版本不足的
+候选环境标记`BLOCKED`。Windows 串口使用 `.NET SerialPort.GetPortNames()`、注册表和有界
 `pnputil` 交叉检查，不能只依赖 WMI。完整顺序和用户预览模板见
 [`references/stage0-environment.md`](references/stage0-environment.md)。
 
 默认完整流程必须由用户提供 `FIRMWARE_SDK_ROOT`；缺少`FIRMWARE_SDK_ROOT`时只询问该绝对路径，
-不得搜索磁盘、环境变量或历史记录替用户选择。收到路径后再自动判断其存储、构建和设备 I/O 环境。
+不得搜索磁盘、环境变量或历史记录替用户选择。收到路径后再自动判断其存储、构建和设备I/O环境。
 只有用户明确说“只做Host/不上板/不烧录”时才用 `HOST_ONLY`。
 
 唯一确认规则（Stage0）：
@@ -177,12 +175,12 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
   `confirmation_count=1`。不得把“生成某算子”或仅提供 SDK 路径当成确认。
 - 确认后文档、代码、审查、构建、Host、固件、烧录、串口和回填全部由 agent 自动完成，不再逐阶段询问。
 
-Stage0 的完整探测、环境准备分流、依赖自动修复和安装/CLI 回退见
-[`references/environment-prep.md`](references/environment-prep.md)。若环境或端口仍需要人工决定，只记录
-`BLOCKED/NOT_RUN` 和恢复条件，不把未执行写成 PASS。缺失依赖的自动修复遵循该 reference：
-不能只报告“缺少依赖”就结束；禁止 `sudo pip`；记录 `DEPENDENCY_REPAIR`；镜像源失败后可再尝试默认源；
-自动安装和验证均失败时才阻塞。构建或长测试环境身份变化时生成新 `RUN_ID`。ONNX 必须同时具备
-`onnx` 和 `onnxruntime`。
+固件环境准备分流及安装/CLI 回退见
+[`references/environment-prep.md`](references/environment-prep.md)；Stage0 探测和通用依赖修复见
+[`references/stage0-environment.md`](references/stage0-environment.md)。若环境或端口仍需人工决定，记录
+`BLOCKED/NOT_RUN` 和恢复条件，不把未执行写成 PASS。修复缺失依赖时，不能只报告“缺少依赖”就结束；
+禁止 `sudo pip`，记录 `DEPENDENCY_REPAIR`，镜像源失败后可再尝试默认源。自动安装和验证均失败时才阻塞。
+构建或长测试环境身份变化时生成新 `RUN_ID`。ONNX 必须同时具备 `onnx` 和 `onnxruntime`。
 
 执行确认预览必须先用普通中文展示以下内容，再放技术记录；模板完整版本在 Stage0 reference：
 
@@ -212,10 +210,10 @@ gate_artifacts.py --stage pre-source
   -> PRE_SOURCE_GATE=PASS
 ```
 
-prepare 期间禁止源码写入；初版设计/验证文档、facts、实现约定、能力清单和计划版
-`op_spec.py` 必须来自同一冻结输入；每条计划 case 必须包含明确且非空的 `test_point`。设计文档只记录规格、边界和实现方案；验证文档列出计划用例，并将未执行项标为 `NOT_RUN`。`PRE_SOURCE_GATE=PASS` 前不能调用
-`hs-dev-op-implement mode=apply`。不能先改代码再更新草稿；规格、实现约定、能力或计划用例变化时返回
-Stage1 完整重跑。详细产物和哈希校验见 [`references/stage1-plan.md`](references/stage1-plan.md)。
+prepare 期间禁止写入源码。初版设计/验证文档、facts、实现约定、能力清单和计划版
+`op_spec.py` 必须来自同一组冻结输入；每条计划 case 都要有明确且非空的 `test_point`。设计文档只记录规格、边界和实现方案；验证文档列出计划用例，并将未执行项标为 `NOT_RUN`。`PRE_SOURCE_GATE=PASS` 前不能调用
+`hs-dev-op-implement mode=apply`。不能先改代码再更新草稿；规格、实现约定、能力或计划用例变化时，返回
+Stage1 完整重跑。产物清单和哈希校验见 [`references/stage1-plan.md`](references/stage1-plan.md)。
 
 ## Stage2：实现源码
 
@@ -226,20 +224,18 @@ implementation unit、全部生成文件的哈希和 `HISPARK_ROOT`。只有 `PR
 - `references/code-style.md`：团队代码规范。
 - `references/code-quality-gate.md`：代码质量检查要求。
 
-记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。这两份规范属于
-`hs-dev-op-implement`，不是用户需要单独安装的工具；在写任何①-⑦源码前完成逐规则审计。实现和代码审查分别保存，不能代写 Host 或正式文档。
-规范路径必须展开为绝对路径并记录其 SHA-256；它不是用户需要安装的工具。
-`apply` 中不得在源码阶段直接
-修改已锁定的实现约定；若实现约定、能力清单、计划 `op_spec.py` 或初版文档变化，必须返回 Stage1 重新确定，不能先改代码再更新草稿。
+记录 `CODE_STYLE_SOURCE`、`CODE_STYLE_SOURCE_SHA256`，再按七层能力实现。规范路径必须展开为绝对路径，
+并记录 SHA-256。这两份规范随 `hs-dev-op-implement` 提供，不是用户需要安装的工具；在写任何①-⑦源码前完成逐规则审计。
+实现结果和代码审查应分别保存，不能代替 Host 结果或正式文档。
+`apply` 期间不得直接修改已锁定的实现约定。若实现约定、能力清单、计划 `op_spec.py` 或初版文档需要变化，必须返回 Stage1 重新确定。
 
 ## Stage3：构建 MindSpore Lite 工具包
 
 启动 `stage3.mslite_build` 后读取
-[`references/build-and-toolchain.md`](references/build-and-toolchain.md)。它负责
-`converter_lite`、RISC-V Micro 库、受控构建、后台 `--wait`、构建新鲜度和失败分诊；这一步不同于
-`hs-dev-build` 的 fbb 固件构建。构建前 workflow 必须用同一`CODE_STYLE_SOURCE`重跑
-`CODE_STYLE_AUDIT=PASS`、`CODE_STYLE_GATE=PASS` 和 `SECURITY_GATE=PASS`，顺序早于下面命令：
-这是构建前由 workflow 执行的质量复核，不是可选提示。
+[`references/build-and-toolchain.md`](references/build-and-toolchain.md)。该文件说明
+`converter_lite`、RISC-V Micro 库、受控构建、后台 `--wait`、构建新鲜度和失败分诊。此处构建的是
+MindSpore Lite 工具包，不是 `hs-dev-build` 负责的 fbb 固件。构建前由 workflow 使用
+同一`CODE_STYLE_SOURCE`重跑质量检查，并得到 `CODE_STYLE_AUDIT=PASS`、`CODE_STYLE_GATE=PASS` 和 `SECURITY_GATE=PASS`。
 
 ```bash
 nohup bash <hs-workflow-op-development>/scripts/build_mslite.sh \
@@ -255,10 +251,10 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 ## Stage4：Host 全量验证
 
 进入 `stage4.host_verify` 后调用 `hs-verify-op-host`，读取并执行 Stage1 已锁定的完整
-`op_spec.py`；不把Host阶段当成正常改写计划用例的阶段。必须先通过 `pre-verify`/validator，
+`op_spec.py`；不把Host阶段当成正常改写计划用例的阶段。先通过 `pre-verify`/validator，
 再用 `--target all` 运行固定 harness，生成含逐 case 测试点的 `verify_summary.txt`、
-`board_expected_matrix.json`、两份 Excel 和逐 case 证据。Host 失败时，按实现、模型/spec 或工具链类别返回对应阶段，
-不能用部分 PASS 缩小分母。细节按 Host Skill 的 references 按需读取。
+`board_expected_matrix.json`、两份 Excel 和逐 case 证据。Host 失败时，按实现、模型/spec 或工具链归类，
+并返回对应阶段；不能因为部分 case PASS 而缩小分母。具体要求按需读取 Host Skill 的 references。
 
 ## Stage5：AUTO_ALL 固件矩阵
 
@@ -267,7 +263,7 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`，按
 `framework -> case_id -> mode(fp32,int8)` 逐行准备 Micro 工程、adaptor、Sample、CMake/Kconfig
 和 target，交给 `hs-dev-build`，再由 Board Skill 验收 `FIRMWARE_CONTENT_GATE=PASS`。不得挑代表 case；
-`board_expected_matrix.json` 是唯一分母。
+板端用例总数以 `board_expected_matrix.json` 为准。
 
 ## Stage6：烧录、串口和板端精度
 
@@ -280,14 +276,14 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 
 ## Stage7：终态文档回填和最终报告
 
-Stage5/Stage6 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 终态后，进入
-这个任务。若 Stage0 在执行确认前阻断，状态机会自动将它标为
-`BLOCKED`，只让 `terminal.report` 做状态收尾：记录阻断原因、恢复条件和状态证据，不调用
-`hs-design-op-manual`，也不生成或覆盖正式交付文档。只有 Stage0 已完成
-确认后，才调用 `hs-design-op-manual mode=integrated-final`：所有必需阶段通过（HOST_ONLY 的板端为
-`NOT_REQUESTED`）使用 `terminal_state=completed`；任一后续阶段为 `FAIL|BLOCKED|NOT_RUN` 时使用
-`terminal_state=blocked|hard-stop`，并在验证文档明确原因。记录性文档不能宣称完整通过。两份文档
-的 facts/content/case audit 通过后写 `OP_MANUAL_SYNC=PASS publication=record`。文档同步通过仅表示文档与本轮事实一致，不表示算子已完成验证。
+Stage5、Stage6 及其后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN|NOT_REQUESTED` 终态后，进入本阶段。
+若 Stage0 在执行确认前阻断，状态机会自动将本任务标为 `BLOCKED`。此时只执行 `terminal.report`：
+记录阻断原因、恢复条件和状态证据，不调用 `hs-design-op-manual`，也不生成或覆盖正式交付文档。
+
+Stage0 已确认时，调用 `hs-design-op-manual mode=integrated-final`。所有必需阶段通过时（HOST_ONLY 的板端为
+`NOT_REQUESTED`），使用 `terminal_state=completed`；任一后续阶段为 `FAIL|BLOCKED|NOT_RUN` 时，使用
+`terminal_state=blocked|hard-stop`，并在验证文档写明原因。记录性文档不能宣称完整通过。两份文档
+的 facts/content/case audit 通过后，写入 `OP_MANUAL_SYNC=PASS publication=record`。该状态只说明文档与本轮事实一致，不代表算子已完成验证。
 终态文档固定写入 `<opdir>/docs/{op}-operator-design-doc.md` 和
 `<opdir>/docs/{op}-operator-verify-doc.md`；实际执行结果只写入验证文档。
 
@@ -301,7 +297,7 @@ Stage5/Stage6 以及被阻断的后续阶段都到达 `PASS|FAIL|BLOCKED|NOT_RUN
 - 明确 `HOST_ONLY` 且 Host 全绿、板端 `NOT_REQUESTED` 时是 `HOST_ONLY_PASS`。
 - `FIRMWARE_MATRIX=<expected=N built=M pass=P fail=F not_run=R>`、`BOARD_RECORDS=<expected=N recorded=M>`、
   `BOARD_MATRIX_GATE=PASS` 和 `expected=executed=pass` 必须来自真实逐行证据。
-- 如果板端未执行，即使Host和24份固件全部成功，整体仍是`OP_WORKFLOW=INCOMPLETE`。
+- 板端是否执行及其对整体状态的影响，以 `final-report.md` 的完整判据为准。
 - 禁止把“已完成迁移和验证”“已完成开发和验证”“验证通过”“全部通过”用于未完整通过的范围；
   `executed=pass+fail` 不把 `NOT_RUN` 计入 executed。`全部通过` 只有完整流程全部 PASS 才能用。
 - 收尾前必须让 `terminal.report` 通过 `finalize` 保存到文件；不得手工改写 `OP_WORKFLOW`。

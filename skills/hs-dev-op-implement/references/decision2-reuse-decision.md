@@ -1,6 +1,6 @@
 # decision2 复用裁决详细流程
 
-SKILL.md step2 给出了 decision2 的判据与结论格式；本文是完整操作流程：候选从哪来、语义证据怎么取、TFLite 多 builtin 怎么实证、同义词簇怎么维护。**新建一条与已有 PrimType 语义重复的完整通路（双倍 kernel/infer/coder、双倍维护面）是 decision2 要防住的最大浪费**——确切名 0 命中只说明"没有同名 PrimType"，不构成"需要新建"的结论。
+SKILL.md step2 给出了 decision2 的判据与结论格式。本文说明候选来源、语义证据获取、TFLite 多 builtin 验证和同义词簇维护。不得新建与已有 PrimType 语义重复的通路，否则会重复实现 kernel/infer/coder 并增加维护成本。确切名称 0 命中只表示没有同名 PrimType，不能据此判定需要新建。
 
 ## 候选的四层来源（scan_op.sh「decision2 复用候选排查」段自动汇集）
 
@@ -9,7 +9,7 @@ SKILL.md step2 给出了 decision2 的判据与结论格式；本文是完整操
 3. **跨框架映射字典**——tf2onnx 的 `@tf_op` 注册表（TF/TFLite 名 ↔ ONNX 名的权威映射，对任意算子通用，是异名同义的主力来源）。其输出含 handler 的辅助算子，按链路概览与语义证据甄别主算子。
 4. **同义词簇缓存**——历次 decision2 裁决确认过的等价族（scan_op.sh 内 `CLUSTERS` 表）。
 
-**簇缓存自维护**：人工检索发现 ①–④ 都没列出的新等价族时，按格式把它追加进 scan_op.sh 的 `CLUSTERS` 表（一行）。这是 skill 替代跨会话 memory 的累积机制——让下一个会话机械命中，不再重复人工检索。
+人工检索发现 ①–④ 未列出的新等价族时，按格式向 `scan_op.sh` 的 `CLUSTERS` 表追加一行。该表用于跨会话保留已确认的等价关系，使后续扫描直接列出候选，避免重复检索。
 
 ## 人工语义检索（四层之外必补一轮）
 
@@ -32,7 +32,7 @@ SKILL.md step2 给出了 decision2 的判据与结论格式；本文是完整操
 
 ## 可达性探针（TFLite 同族多 builtin / 疑似 converter 归一化时，裁决前必做）
 
-源框架可能按输入形状对同一上层算子择优发不同 builtin（同形发非广播版，真广播形状才发广播版）。「哪个输入形态实际落到哪个 builtin」决定每个 builtin 的**真实输入域**，直接改写 decision2 裁决与各层工作量——按文档语义全集裁决，会把探针逼不出的不可达形态当需求实现（kernel/infer/coder 全白做），又把真实需求分错家。
+源框架可能根据输入形状为同一上层算子生成不同 builtin，例如同形输入生成非广播版，实际需要广播时生成广播版。输入形态对应哪个 builtin，决定该 builtin 的可达输入域，并影响 decision2 裁决和各层工作量。若直接按文档中的全部语义裁决，可能实现探针无法生成的形态，或把可达需求归到错误的 builtin。
 
 方法：每类形状形态（同形 / 各广播形态 / 规格列明的特殊形态）各构建一个最小 TFLite 模型（`tf.function` 包裹目标 raw_op → `TFLiteConverter` 转出），解包核对 operator code：
 
@@ -50,4 +50,4 @@ print([max(m.OperatorCodes(i).BuiltinCode(),m.OperatorCodes(i).DeprecatedBuiltin
 
 环境无 TensorFlow 时（hs-verify-op-host 本就依赖它，正常都有），把"未探针、按文档全集裁决"作为风险显式写进 decision4 报告。
 
-两个结构性推论（多 builtin 同族时）：**非广播版是公共地带的收敛目标**（用户上层无论写哪个 op，同形输入都落到它），优先保证其链路完整；**两版的"专属语义"可能互不包含**（如非广播版特有的"rank-1 条件匹配首维"模式不属于 numpy 广播，广播版反而表达不了），各自用例只覆盖各自规格列明的形态。
+多 builtin 同族时，同形输入通常落到非广播版，因此应优先保证非广播版链路完整。两版的专属语义可能互不包含；例如，非广播版特有的 rank-1 条件匹配首维模式不属于 numpy 广播，广播版不能表达该模式。各自的用例只覆盖各自规格列明的形态。

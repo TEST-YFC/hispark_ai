@@ -50,13 +50,13 @@
 {来自 spec.md 的公开、已验证语义简述}
 ```
 
-产物集成模式只有 `spec.md` 明确给出英文全名、类别或公式时才写对应内容。独立模式使用其已查证来源。所选来源缺少全名/类别时使用不增加新事实的中性已验证描述；缺少公式时省略公式块，不使用通用名称或经验公式补造。
+产物集成模式只有 `spec.md` 明确给出英文全名、类别或公式时才写对应内容。独立模式使用其已查证来源。所选来源缺少全名/类别时使用不增加新事实的中性已验证描述；缺少公式时省略公式块，不得根据通用名称或经验公式自行添加内容。
 
 ### 第 1 章：算子概述
 
 严格使用模板中的 `1.1 功能和数学定义` 与 `1.2 最小示例`。产物集成模式只有 `spec.md`
 明确给出公式时才写公式；独立模式使用已交叉查证的规格。最小示例必须给出输入 dtype、shape、
-关键属性和预期输出，但不写运行结果。缺少可靠公式时省略公式，不使用经验公式补造。
+关键属性和预期输出，但不写运行结果。缺少可靠公式时省略公式，不得根据经验自行添加公式。
 
 ### 第 2 章：框架算子规格
 
@@ -94,12 +94,13 @@ source entry 重复 `2.1` 小节。无属性时写 `| — | — | — | — | �
 `3.1 七类能力与复用裁决` 必须覆盖 Schema、Parser、Populate/Parameter、Infer、Kernel、
 OpCoder 和 Quantizer，并写明复用/修改/新建/N/A、仓库相对文件或注册点、依据和限制。
 
-`3.2 关键场景与软件行为` 先完整保留 capability checklist，再通过 `scenario_groups` 组织公开
-章节。当 capability 多于 7 项时，必须归并为 3～7 个面向读者的场景；每个场景回答“什么时候
-会遇到”“软件支持什么”“有什么限制”。每个 capability 必须恰好属于一个 group，group 的
-`covered_by` 等于成员 capability 用例号的有序并集，但不把用例号写入设计文档。找不到、重复
-或遗漏即 FAIL，禁止为补齐覆盖而新造用例。独立模式不要求 capability checklist，但仍按相同
-读者场景结构组织。
+`3.2 关键场景与软件行为` 必须保留 capability checklist 中的全部能力，并使用 `scenario_groups`
+按使用场景分组。capability 多于 7 项时，将其归并为 3～7 个便于读者理解的场景。每个场景说明
+“什么时候会遇到”“软件支持什么”“有什么限制”。
+
+每个 capability 必须且只能属于一个 group。group 的 `covered_by` 必须等于其成员 capability
+用例号的有序并集，但设计文档中不显示用例号。找不到、重复或遗漏 capability 时立即 FAIL，
+不得新造用例补齐覆盖。独立模式不要求 capability checklist，但仍按上述场景结构组织内容。
 
 `3.3 转换与运行调用链` 必须把模板的通用链替换为当前算子的真实 Parser、Primitive/Schema、
 Parameter、Infer、OpCoder、生成入口、Kernel 和应用模型 API；不适用环节写 N/A 及原因。
@@ -138,7 +139,7 @@ Parameter、Infer、OpCoder、生成入口、Kernel 和应用模型 API；不适
 - 全量化 int8 通路：只统计 float32 模型经 FULL_QUANT 后确实生成 int8 张量/量化内核的 PASS 用例；必须有 `int8_genuine`、生成内核或等价产物证据。
 - 原生整数通路：单独说明 int32 等原生整数模型。即使它执行了名为 `riscv_int8` 的任务，只要张量和内核仍为原生整数，就不能计入 int8 量化覆盖。
 
-验证结论中的数量必须从 facts 的 cases、逐 case `verification_paths` 和实现/生成证据计算，不能从聚合路径列表或路径名称推断。`verification_paths` 保留机器任务名用于审计，但公开验证文档必须转换为“x86 主机非量化”“RISC-V 非量化”“RISC-V 全量化 int8”“RISC-V 原生整数”等实际含义；全文不得出现 `x86_fp32`、`riscv_fp32`、`riscv_int8`。
+验证结论中的数量必须根据 facts 的 cases、逐 case `verification_paths` 和实现或生成证据计算，不得根据聚合路径列表或路径名称推断。`verification_paths` 可保留机器任务名用于审计；公开验证文档必须将其表述为“x86 主机非量化”“RISC-V 非量化”“RISC-V 全量化 int8”或“RISC-V 原生整数”等实际运行含义。公开文档中不得出现 `x86_fp32`、`riscv_fp32` 或 `riscv_int8`。
 
 以下验证文档用例表规则只适用于产物集成模式：
 

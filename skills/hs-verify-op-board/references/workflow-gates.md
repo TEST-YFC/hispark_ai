@@ -13,12 +13,11 @@
 
 # 算子真板精度验证
 
-本 skill 负责“本轮Host板端期望矩阵中的每条用例如何被确定性接入固件SDK，以及它们在真实WS63
-上是否全部可达并输出正确”。它不重新设计测试规格、不修改MindSpore Lite算子源码；固件
-构建和烧录由顶层workflow分别调用 `hs-dev-build`、`hs-dev-flash`；本skill输出明确
-handoff并在它们完成后继续验收，但不会在未读取这两个Skill时自行解释其内部流程。
-本skill必须完整执行构建前的Micro模型、adaptor、Sample和SDK接线步骤，不能只验收一个
-来源不明的固件。
+本 skill 负责将本轮 Host 板端期望矩阵中的每条用例确定性地接入固件 SDK，并确认它们在真实
+WS63 上均可执行且输出正确。它不重新设计测试规格，也不修改 MindSpore Lite 算子源码。
+固件构建和烧录由顶层 workflow 分别调用 `hs-dev-build`、`hs-dev-flash`；本 skill 输出明确的
+handoff，并在两个 Skill 完成后继续验收，不自行解释尚未读取的内部流程。
+构建前必须完整执行 Micro 模型、adaptor、Sample 和 SDK 接线步骤。验收的固件必须具有可追踪的来源。
 
 两种入口模式：
 
@@ -106,8 +105,8 @@ python3 chips/ws63/scripts/check_python_deps.py --framework <onnx|tflite|all>
 
 ## step1：锁定完整板端期望矩阵
 
-唯一分母是本轮`hs-verify-op-host`生成的`board_expected_matrix.json`。完整workflow的Host阶段
-必须使用`--target all`，该manifest会列出每个RISC-V `framework/case_id/mode/test_point`。逐行确认：
+板端用例总数以本轮 `hs-verify-op-host` 生成的 `board_expected_matrix.json` 为准。完整 workflow 的 Host 阶段
+必须使用 `--target all`，该 manifest 会列出每个 RISC-V `framework/case_id/mode/test_point`。逐行确认：
 
 - `verify_summary.txt` 中该case/mode的明确PASS；
 - 该 case 的模型文件；

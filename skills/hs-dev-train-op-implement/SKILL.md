@@ -2,18 +2,17 @@
 name: hs-dev-train-op-implement
 description: >-
   Implement or repair FP32 backward operator support in the MindSpore Lite Micro TrainingGraph pipeline for HiSpark.AI.
-  This training implementation skill owns forward-prerequisite and training-framework capability checks, GradRule, TrainNodeCoder,
-  NNACL fp32_grad, generated training C inspection, and implementation gates. Use it only when the user explicitly
-  names hs-dev-train-op-implement, requests training/backward source work, or hs-workflow-train-op-development routes
-  a training implementation defect. Generic inference operator work belongs to hs-dev-op-implement.
+  This skill checks forward prerequisites and training-framework capabilities, then handles GradRule, TrainNodeCoder,
+  NNACL fp32_grad, generated training C inspection, and implementation gates. Use it only when the user explicitly names
+  hs-dev-train-op-implement, requests training/backward source work, or hs-workflow-train-op-development routes a training
+  implementation defect. Generic inference operator work belongs to hs-dev-op-implement.
 ---
 
 # MindSpore Lite Micro 训练算子实现
 
-本技能负责训练反向源码和源码集成检查，不执行完整训练数值验证。权重冻结是否可用，须先检查当前框架。
-完整训练交付由 `hs-workflow-train-op-development` 编排；训练数值由 `hs-verify-op-host` 的 training 模式负责。
-普通推理 parser、primitive、populate、infer-shape、forward kernel 或 forward coder 缺口回流
-`hs-dev-op-implement`，不要在本技能内顺手补齐。
+本技能负责训练反向源码和源码集成检查。完整训练交付由 `hs-workflow-train-op-development` 编排，训练数值由 `hs-verify-op-host` 的 training 模式验证。权重冻结是否可用，须先检查当前框架。
+
+普通推理 parser、primitive、populate、infer-shape、forward kernel 或 forward coder 的缺失能力应转交 `hs-dev-op-implement` 处理。
 
 ## 调用模式
 
@@ -24,8 +23,9 @@ description: >-
 | `prepare` | step0、step1；建立前置检查、训练链路说明和实现计划 | 否 |
 | `apply` | 先检查已审计的设计文档、验证文档和 prepare 产物，再执行 step2、step3、step4、step5 | 是 |
 
-独立源码请求也必须先执行 `mode=prepare`。集成工作流的 `mode=apply` 必须先检查已审计的设计文档和验证文档；独立且明确只做源码的请求先完成内部设计材料，不额外发布两份正式文档。
-上层工作流必须在 `prepare` 后完成并审计设计文档、验证文档，再调用 `apply`。`prepare` 阶段发现阻断时停止，不写源码。
+独立源码请求也必须先执行 `mode=prepare`。独立且明确只做源码的请求先完成内部设计材料，不额外发布两份正式文档。
+
+集成工作流按以下顺序执行：上层工作流先完成 `prepare`，再生成并审计设计文档和验证文档，最后调用 `apply`。调用 `apply` 前，检查已审计的设计文档、验证文档和 prepare 产物；任一材料缺失、审计未通过或 `prepare` 已报告阻断时，停止且不写源码。
 
 ## 职责边界
 
@@ -57,8 +57,9 @@ output 保活、动态 shape/rank、新 workspace lifetime、算子特有 alias�
 
 ## 工作区和交接产物
 
-每个 training unit 使用 `$MSLITE_OP_OUTPUT/train_<unit>/` 作为 `<opdir>`。缺省位置与 mindspore-lite 仓库平级，
-不要放进源码树或构建树。prepare 必须产出或更新以下分析材料；apply 在材料检查通过后才能写源码，集成模式还需检查已审计的正式设计文档和验证文档。`generated-code-inspection.md` 在 prepare 阶段只列检查计划，尚未生成或运行的项目写 `NOT_RUN`，实际结果在转换后补齐。
+每个 training unit 使用 `$MSLITE_OP_OUTPUT/train_<unit>/` 作为 `<opdir>`。缺省位置与 mindspore-lite 仓库平级，产物放在源码树和构建树之外。
+
+prepare 产出或更新以下分析材料；apply 按“调用模式”中的前置规则检查材料。`generated-code-inspection.md` 在 prepare 阶段只列检查计划。尚未生成或运行的项目写 `NOT_RUN`，实际结果在转换后补齐。
 
 ```text
 <opdir>/
@@ -73,8 +74,7 @@ output 保活、动态 shape/rank、新 workspace lifetime、算子特有 alias�
 └── logs/
 ```
 
-上层工作流或训练验证 skill 可以在同一 `<opdir>` 补充 `training_graph.dot`、`training_memory.json`、generated
-project、数值对齐日志和 summary；本技能不伪造数值 PASS。
+上层工作流或训练验证 skill 可以在同一 `<opdir>` 补充 `training_graph.dot`、`training_memory.json`、generated project、数值对齐日志和 summary。只有训练验证 skill 能依据实际数值证据给出数值 PASS。
 
 ## step0：范围、forward 前置和冻结能力检查
 
@@ -143,8 +143,7 @@ index/slice、multi-input/multi-output、parameter-gradient 或 framework-specia
 `RET_NOT_SUPPORT`，不能让目标端生成 C 后才失败。
 
 step1 必须形成实现约束、训练调用关系说明和能力清单，保留原有文件名。详细分类读取 [算子模式](references/operator-patterns.md)。`mode=prepare` 到此结束，
-不得修改源码；输出 `TRAIN_IMPLEMENT_GATE=PREPARED`。集成模式的设计文档或验证文档缺失、任一文档未通过审计、所需冻结能力阻断或 forward 前置失败时，
-不得进入 apply。
+不得修改源码；输出 `TRAIN_IMPLEMENT_GATE=PREPARED`。设计文档或验证文档缺失、任一文档未通过审计时，按“调用模式”的 apply 前置规则停止。冻结能力阻断或 forward 前置失败时也不得进入 apply。
 
 ## step2：实现 GradRule
 
@@ -179,8 +178,7 @@ step1 必须形成实现约束、训练调用关系说明和能力清单，保�
 - 只对有有效 status return 的 kernel 使用 `CodeFunctionWithCheck()`；
 - 不分配 runtime buffer，不硬编码 `m0_buffer` offset，不在生成 C 中重复数值循环，不在算子 coder 内手写 branch gradient accumulation。
 
-若当前框架没有 `OptionalGradAddr` 或等价能力，冻结任务必须在 step0 BLOCKED；不得在单个算子 coder 内私造
-与框架不一致的冻结语义。
+若当前框架没有 `OptionalGradAddr` 或等价能力，冻结任务必须在 step0 BLOCKED。冻结语义由框架统一提供，单个算子 coder 不得自行定义。
 
 ## step4：实现 NNACL FP32 gradient kernel
 
@@ -211,7 +209,7 @@ bash <mslite-workflow-skill>/scripts/build_mslite.sh --run-id <run_id> --profile
 - GradRule、TrainNodeCoder、NNACL kernel 和 CMake 收集可映射到能力；
 - `git diff --check` 和增量构建均已执行且通过，正反转换、生成图/内存/源码检查与 native 构建证据完整；未执行不能算通过；
 - 没有公共 TrainingGraph、scheduler 或 memory code 的普通算子越权修改；
-- 没有构建、Host 数值、flash、board 或冻结快照的虚假完成声明。
+- 构建、Host 数值、flash、board 和冻结快照的完成状态均有对应证据。
 
 若任务包含冻结，还必须交接冻结检查结果：`freezing_capability=AVAILABLE|MISSING|NOT_RUN`、实际快照路径、
 训练图和内存 dump 路径、ExportWeight/manifest 路径（如启用）以及未解决的框架缺口。没有实际快照不得写

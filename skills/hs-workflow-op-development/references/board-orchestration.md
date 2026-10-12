@@ -10,17 +10,16 @@
 
 ## Stage5：默认全矩阵固件接入与构建
 
-自动启动 `stage5.firmware_matrix`，按 `board_expected_matrix.json` 逐行记录构建结果；不允许
-人工挑选代表用例或在完成一行后等待用户确认下一行。SDK/工具链确实不可用时写
-`NOT_RUN`/`BLOCKED` 和恢复条件，并让状态机进入终态收尾；若阻断发生在 Stage0 执行确认前，
-状态机会将 `stage7.final_docs` 自动标为 `BLOCKED`，只由 `terminal.report` 记录阻断状态，不调用文档 Skill。
-确认后的后续阶段阻断才按其规则生成记录性
-终态文档。状态脚本允许将当前阶段明确写为 `BLOCKED`，后续阶段会自动继承阻断标记。
+自动启动 `stage5.firmware_matrix`，并按 `board_expected_matrix.json` 逐行记录构建结果。
+不得人工挑选代表用例，也不得每完成一行就等待用户确认下一行。SDK 或工具链不可用时，记录
+`NOT_RUN`/`BLOCKED` 和恢复条件，然后让状态机进入终态收尾。若阻断发生在 Stage0 执行确认前，
+状态机会将 `stage7.final_docs` 标为 `BLOCKED`，只由 `terminal.report` 记录阻断状态，不调用文档 Skill。
+确认后发生的阻断，按对应规则生成记录性终态文档。当前阶段可明确写为 `BLOCKED`，后续阶段由状态脚本继承阻断标记。
 
-除非用户在Stage0明确`BOARD_POLICY=HOST_ONLY`，否则默认执行。本阶段若发现
-`FIRMWARE_SDK_ROOT`缺失、身份变化或环境结论失效，自动将本阶段写为`BLOCKED`或`NOT_RUN`，
-保存首个错误和恢复命令；不要在Host完成后补发第二次 SDK/执行确认。只有用户主动开始新的
-范围或更换 SDK 时才新建一轮并重新执行Stage0。不能等到Host完成后才首次询问SDK；开始前必须显示：
+除非用户在 Stage0 明确选择`BOARD_POLICY=HOST_ONLY`，否则执行本阶段。若此时发现
+`FIRMWARE_SDK_ROOT`缺失、身份变化或环境结论失效，将本阶段写为`BLOCKED`或`NOT_RUN`，
+并保存首个错误和恢复命令。不要在 Host 完成后补发第二次 SDK/执行确认。只有用户主动改变范围或
+更换 SDK 时，才新建一轮并重新执行 Stage0。不能等到Host完成后才首次询问SDK；开始前必须显示：
 
 ```text
 BOARD_SDK_GATE=PASS
@@ -30,13 +29,13 @@ chip=<chip>
 target=<fbb真实target>
 ```
 
-本阶段必须完整读取并逐节执行 `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`
-及 `references/ws63-build-handoff.md`。下表是编排映射，不是删减步骤；每个映射项
-仍须按对应 reference 的原步骤执行并回传证据：
+本阶段完整读取并逐节执行 `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`
+和 `references/ws63-build-handoff.md`。下表只映射顶层编排与具体步骤，不删减任何步骤；
+每一项仍须按对应 reference 执行并回传证据。
 
-对于 WS63，顶层先调用 `hs-verify-op-board` step0-3 准备模型与 SDK 接线，在它输出构建 handoff
-后才调用 `hs-dev-build`；构建结果返回同一轮 Board Skill step4 验收，不在烧录后重新从 step0
-启动另一轮。下表列出每项的权威步骤和必须回传的交接：
+对于 WS63，先调用 `hs-verify-op-board` step0-3 准备模型并完成 SDK 接线。收到构建 handoff 后，
+再调用 `hs-dev-build`。构建结果返回同一轮 Board Skill，由 step4 验收；烧录后不重新从 step0 启动。
+下表列出各项的权威步骤和必要交接：
 
 | 编排项 | 具体步骤归属 | 必须回传的交接 |
 |---|---|---|
@@ -46,25 +45,25 @@ target=<fbb真实target>
 | step3 | Board Skill step3、SDK reference §6-10、`ws63-build-handoff.md` | adaptor、带 case 身份的模型库、Sample、CMake/Kconfig/target、`BOARD_WIRING_GATE=PASS` |
 | step4 | Board Skill step4、SDK reference §11、`ws63-build-handoff.md` | `hs-dev-build` 返回的新鲜 fwpkg 和 `FIRMWARE_CONTENT_GATE=PASS` |
 
-SDK reference 中的九项接线动作、模型库组成、Sample 输入/输出协议和构建前检查仍然是强制步骤，
-由该 reference 维护；上表只负责步骤归属和交接，避免 workflow 同时展开两份细节。
+九项接线动作、模型库组成、Sample 输入/输出协议和构建前检查由 SDK reference 统一定义，均为强制步骤。
+上表只说明步骤归属和交接，不重复这些细节。
 
-矩阵按固定顺序`framework → case_id → mode(fp32,int8)`逐行执行。每行都要完成step2-4并生成
-独立fwpkg；一张最小模型对应一组Micro库和一次固件构建，不能把某行的固件/日志复用于另一行。
-case局部失败时记录后继续其余安全可执行行；环境、工具链或设备级失败会阻塞后续行，但所有
-未执行行必须明确记为`NOT_RUN`。
+按固定顺序`framework → case_id → mode(fp32,int8)`逐行执行矩阵。每行都要完成 step2-4，并生成
+独立 fwpkg。一张最小模型对应一组 Micro 库和一次固件构建；不能复用其他行的固件或日志。
+单个 case 失败时，记录结果，并继续其余可安全执行的行。环境、工具链或设备级失败会阻塞后续行；
+所有未执行行必须明确记为`NOT_RUN`。
 
-SDK §4-5 的 Micro 生成/交叉编译以及 SDK §8 的 `prepare_sample.py` 在自动探测后的
-`HISPARK_RUN_ENV` 执行（与 Host 共用可导入模型的 Python）；SDK §6-7、§9-10 的 adaptor、模型库、
-`integrate_sdk.py` 和 wiring 在 `FIRMWARE_BUILD_ENV` 执行。两者不同时，按
-`micro_build_receipt.json` 核对静态库哈希；保存 `prepare_sample.py` 的 PASS stdout，并为 Sample
-输出目录生成本轮文件清单和 SHA-256 后再在固件构建环境运行
-`integrate_sdk.py`。该脚本生成的
-`ws63_board_env.ps1|sh` 必须在调用 `hs-dev-build` 的同一进程中导入；优先使用同目录
-`invoke_hs_dev_build.ps1|sh`，否则先 source、回显 `AI_CUSTOM_SAMPLE_DIR` 与
-`AI_MCU_MODEL_VARIANT`，再在同一进程调用 build Skill/fbb CLI。只生成、查看或在已退出的 shell
-中 source 不算接线完成。SDK §8 的 `prepare_sample.py` 和 §10 的 `verify_wiring.py` 两个机械门禁不可由人工阅读
-或临场生成代码替代；非 WS63 芯片必须先提供对应 `<chip>-sdk-integration.md` 及确定性脚本。
+在自动探测得到的 `HISPARK_RUN_ENV` 中执行 SDK §4-5 的 Micro 生成/交叉编译和 SDK §8 的
+`prepare_sample.py`；这些步骤与 Host 共用可导入模型的 Python。在 `FIRMWARE_BUILD_ENV` 中执行
+SDK §6-7、§9-10 的 adaptor、模型库、`integrate_sdk.py` 和 wiring。两个环境不同时，按
+`micro_build_receipt.json` 核对静态库哈希。保存 `prepare_sample.py` 的 PASS stdout，并为 Sample
+输出目录生成本轮文件清单和 SHA-256，然后在固件构建环境运行 `integrate_sdk.py`。
+
+必须在调用 `hs-dev-build` 的同一进程中导入该脚本生成的 `ws63_board_env.ps1|sh`。优先使用同目录的
+`invoke_hs_dev_build.ps1|sh`；否则先 source 并回显 `AI_CUSTOM_SAMPLE_DIR` 和 `AI_MCU_MODEL_VARIANT`，
+再在同一进程调用 build Skill/fbb CLI。仅生成或查看文件，或在已经退出的 shell 中 source，都不算完成接线。
+SDK §8 的 `prepare_sample.py` 和 §10 的 `verify_wiring.py` 是必须执行的脚本检查，不能以人工阅读或临时生成代码替代。
+非 WS63 芯片必须先提供对应的 `<chip>-sdk-integration.md` 和确定性脚本。
 
 不得以仅新建一个可编译的 `ai_main.c` 替代上述流程，也不得在找不到输入时填零、只打印
 ArgMax/标签、让任务无限循环，或让 Sample 用硬编码答案自报最终精度 PASS。
@@ -80,33 +79,30 @@ ArgMax/标签、让任务无限循环，或让 Sample 用硬编码答案自报�
 
 ## Stage6：默认全矩阵烧录与板端精度
 
-自动启动 `stage6.board_matrix`，逐行完成烧录、串口采集和精度判定并立即保存。详细的 flash、
-端口交叉探测、重插/RESET、monitor 时间和 JSON 解析规则必须读取
-`hs-verify-op-board` 内的 `references/flash-serial-handoff.md`；Tensor、阈值和矩阵规则必须读取
-同一 Skill 内的 `references/board-accuracy-contract.md`（板端精度与矩阵规则）和
-`references/board-guardrails.md`。
+自动启动 `stage6.board_matrix`。逐行完成烧录、串口采集和精度判定，并立即保存结果。
+flash、端口交叉探测、重插/RESET、monitor 时间和 JSON 解析规则见 `hs-verify-op-board` 内的
+`references/flash-serial-handoff.md`；Tensor、阈值和矩阵规则见同一 Skill 内的
+`references/board-accuracy-contract.md` 和 `references/board-guardrails.md`。
 
-对 `board_expected_matrix.json` 的每一行调用 `hs-dev-flash` 烧录该行 Stage5 生成的新鲜固件，
-只接受本轮 flash 的最后一行 `success=true` JSON，随后采集串口并运行精度判定；不能直接绕过统一
-flash 入口调用 BurnTool。
-进入本阶段以及每次 `PORT_NOT_FOUND` 重试前，必须按 `hs-verify-op-board` 内的 `references/flash-serial-handoff.md` 运行
-`probe_serial_ports.py` 并保存本轮回执；其中的 .NET/注册表交叉探测、PnP 超时和 USB-UART
-候选排除规则是强制门禁，不能被简化为端口名称判断。
+对 `board_expected_matrix.json` 的每一行，调用 `hs-dev-flash` 烧录该行在 Stage5 生成的新鲜固件。
+只接受本轮 flash 最后一行的 `success=true` JSON；然后采集串口并运行精度判定。不能绕过统一 flash 入口直接调用 BurnTool。
+进入本阶段以及每次 `PORT_NOT_FOUND` 重试前，按 `hs-verify-op-board` 内的
+`references/flash-serial-handoff.md` 运行 `probe_serial_ports.py`，并保存本轮回执。.NET/注册表交叉探测、
+PnP 超时和 USB-UART 候选排除规则都是强制门禁，不能简化为只判断端口名称。
 
-进入烧录前核对 `FBB_SDK_DIR`、真实 target 和 Stage5 内容门禁的新鲜 `_all.fwpkg`。
-端口歧义时按 `hs-verify-op-board` 内的 `references/flash-serial-handoff.md` 输出候选、错误和恢复命令，请求具体端口选择或重新接线；
-只读 stdout 最后一行 JSON 并按 `success` 与 `error.code` 分流。若返回 `DEVICE_NOT_RESPONDING`，
-将该行标为 `NOT_RUN` 并记录一次人工 RESET 动作；不在后续阶段再次索取总确认。烧录后采集时间、端口和日志波特率必须可追溯；
-缺任一证据都不能进入精度签收。详细执行规则由 `hs-dev-flash` 与 `hs-verify-op-board` step5
-持有，workflow 仅核对执行完成和证据。
+烧录前，核对 `FBB_SDK_DIR`、真实 target，以及通过 Stage5 内容门禁的新鲜 `_all.fwpkg`。
+端口有歧义时，按 `hs-verify-op-board` 内的 `references/flash-serial-handoff.md` 输出候选、错误和恢复命令，
+请求用户选择具体端口或重新接线。只读取 stdout 最后一行 JSON，并按 `success` 和 `error.code` 分流。
+若返回 `DEVICE_NOT_RESPONDING`，将该行标为 `NOT_RUN`，并记录一次人工 RESET 动作；后续阶段不再索取总确认。
+烧录后的采集时间、端口和日志波特率必须可追溯；缺少任一证据时，不能确认精度结果。
+具体执行规则由 `hs-dev-flash` 和 `hs-verify-op-board` step5 定义；workflow 只核对执行状态和证据。
 
-烧录成功不等于板端精度成功。将烧录和串口证据返回同一轮
-`hs-verify-op-board` step5-6，传入已冻结的同轮 Host GT、测试输入、串口完整输出和
-fp32/INT8模式，由它输出`ACCURACY_VERDICT`。这是恢复同一轮Board Skill，
-不重跑step0-4的写入与构建动作。
+烧录成功不代表板端精度通过。将烧录和串口证据返回同一轮 `hs-verify-op-board` step5-6，
+并传入本轮已冻结的 Host GT、测试输入、串口完整输出和 fp32/INT8 模式，由它输出`ACCURACY_VERDICT`。
+这是继续同一轮 Board Skill，不重跑 step0-4 的写入与构建动作。
 
-固件构建与设备I/O环境可以不同。若SDK在WSL构建而串口只在Windows可见，把签收后的fwpkg
-复制到Windows并核对哈希，再调用flash/serial能力；CLI回退可使用
+固件构建与设备 I/O 环境可以不同。若 SDK 在 WSL 构建而串口只在 Windows 可见，将通过内容检查的 fwpkg
+复制到 Windows 并核对哈希，再调用 flash/serial 能力；CLI 回退可使用
 `fbb flash --file <本地fwpkg> --chip <chip> --json-summary`。
 
 `hs-verify-op-board`必须完整执行板端验证：核对前置产物、确认固件身份、

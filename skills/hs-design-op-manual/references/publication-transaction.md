@@ -110,7 +110,7 @@ OP_MANUAL_SYNC=PASS mode=<mode> publication=<final|record|none> design_path=<abs
 OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NONE
 ```
 
-失败详情在终态行之前简要列出并返回父流程。`integrated-initial`失败会阻塞进入编码；`integrated-final`失败会阻塞完成声明。两份文档只能由冻结facts和同轮终态证据渲染，不能成为另一套手工维护的事实源。
+失败详情应在终态行之前简要列出并返回父流程。`integrated-initial` 失败时阻止进入编码；`integrated-final` 失败时不得声明完成。两份文档只能根据冻结的 facts 和同轮终态证据生成，不得在文档中单独维护事实。
 
 ## 自检与最终复核
 

@@ -1,8 +1,8 @@
 # 权重冻结能力与交接
 
-本文件描述训练实现技能在 step0–step5 对冻结权重的核查边界。它是待实现能力的检查与交接规则，不表示当前
-MindSpore Lite Micro 已经支持 `frozen_node`。必须以当前代码的真实文件和行号为准；不能用本文件向用户承诺
-现成冻结能力。
+本文件描述训练实现技能在 step0–step5 对冻结权重的核查边界。它规定如何检查和交接待实现能力，
+不表示当前 MindSpore Lite Micro 已经支持 `frozen_node`。必须以当前代码的真实文件和行号为准，
+并如实报告能力状态。不得仅凭本文件向用户承诺现成冻结能力。
 
 ## 1. 语义边界
 
@@ -38,10 +38,10 @@ MindSpore Lite Micro 已经支持 `frozen_node`。必须以当前代码的真实
 | export | manifest、名称、shape、dtype、实际运行时数据是否可观察？ |
 
 任一关键能力缺失时，输出 `TRAIN_IMPLEMENT_GATE=BLOCKED`，原因必须是
-`weight-freezing-framework-capability-missing`，并请求用户确认框架变更。不得通过只改某个算子 coder 或
-kernel 伪造冻结支持。
+`weight-freezing-framework-capability-missing`，并请求用户确认框架变更。只改某个算子 coder 或 kernel
+不能形成冻结支持；必须如实报告缺失能力。
 
-如果任务没有冻结要求，普通非冻结实现可以继续。能力状态照实记录；本次没有执行冻结验证时在交接中明确：
+如果任务没有冻结要求，可以继续普通非冻结实现，并如实记录能力状态。本次没有执行冻结验证时，在交接中明确：
 
 ```text
 weight_freezing=NOT_REQUESTED
@@ -51,15 +51,15 @@ weight_freezing=NOT_REQUESTED
 
 ## 3. 地址和 kernel 规则
 
-必选梯度（例如 dY，以及确实由图要求的 dX）使用必选地址解析；缺失是错误。可能因冻结而不存在的 dW、dB
-使用可选地址 helper：
+必选梯度使用必选地址解析，缺失即为错误。例如，dY 和图中明确要求的 dX 都是必选梯度。
+可能因冻结而不存在的 dW、dB 使用可选地址 helper：
 
 - 无效 gradient ID → `NULL`，表示有意省略；
 - 地址解析失败 → 空字符串或错误状态，必须失败；
 - `NULL` 不能当成空地址错误。
 
-coder 和 kernel 不读取 `frozen_node`，不按 node name 自行决策。TrainingGraph 是唯一可信来源。
-kernel 接口只按指针是否为空决定是否计算对应输出，并分别保护 dX、dW、dB 的读写、清零和累加。
+coder 和 kernel 不读取 `frozen_node`，也不按 node name 自行决策。TrainingGraph 是唯一可信来源。
+kernel 接口仅根据指针是否为空决定是否计算对应输出，并分别保护 dX、dW、dB 的读写、清零和累加。
 
 若框架没有可选地址 helper，冻结任务停止在 step0；不要在单算子中添加局部替代语义。
 
