@@ -27,7 +27,7 @@
 ```
 hs-<phase>-<topic>/
 ├── SKILL.md          # skill 入口：frontmatter（name/description）+ 流程正文
-├── scripts/          # 配套脚本（机械门禁、校验、用例生成等，CI 可直接调用）
+├── scripts/          # 配套脚本（自动检查、校验、用例生成等，CI 可直接调用）
 ├── references/       # 参考文档（判定准则、复用决策、编码规范等）
 ├── tests/            # 脚本测试
 ├── agents/           # 某些 agent 使用的可选 UI 元数据
@@ -37,7 +37,7 @@ hs-<phase>-<topic>/
 约定：
 
 - **入口唯一**：每个 skill 必须有且仅有一个 `SKILL.md`，其 `description` 决定 agent 的触发匹配，应列出中英文关键短语。
-- **脚本只做机械判据**：`scripts/` 下的门禁脚本（如 `gate_artifacts.py`、`audit_manual_inputs.py`）只检查机械不变量，语义判定保留在 `SKILL.md`。
+- **脚本只检查可自动验证的规则**：`scripts/` 下的门禁脚本（如 `gate_artifacts.py`、`audit_manual_inputs.py`）只检查格式、字段和状态等固定规则；需要理解算子语义的判断保留在 `SKILL.md`。
 - **默认完整工作流、按需使用专项 Skill**：泛化的“适配/新增/支持算子”进入 `hs-workflow-op-development`；带有“训练/反向/backward/梯度/GradRule/TrainNodeCoder”的算子请求进入 `hs-workflow-train-op-development`；用户点名某个专项 Skill 或明确“只做某阶段”时，不启动完整工作流。
 - **`.gitkeep` 占位**：git 只追踪文件、不追踪空目录；保留空目录时用 `.gitkeep` 占位，待放入实质内容后可删除。
 - **Python 产物不入库**：`__pycache__/`、`*.pyc`、`.pytest_cache/` 不应提交（见仓库 `.gitignore`）。

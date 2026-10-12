@@ -5,8 +5,8 @@
 > MindSpore Lite 工具包构建也不同于 `hs-dev-build` 的 fbb 固件构建，二者不能互相替代。
 
 实现完成后，推理 workflow 在 Stage3 调用 `scripts/build_mslite.sh` 编译 MindSpore Lite。
-本文说明推理 profile 的工具链、受控构建、产物校验和故障分诊。训练 workflow 使用同一脚本的
-`--profile training`；训练开关和验收条件以 `hs-workflow-train-op-development` 为准。
+本文说明推理 profile 的工具链、受控构建、产物检查和故障定位。训练 workflow 使用同一脚本的
+`--profile training`；训练开关和通过条件以 `hs-workflow-train-op-development` 为准。
 
 ## 构建身份与源码冻结
 
@@ -115,4 +115,4 @@ python3 <skill>/scripts/check_build_freshness.py \
 - 子模块 SHA 漂移：恢复到构建前记录的 SHA，不得使用漂移后的产物。
 - tar.gz存在但解压包陈旧：重新执行受控构建和解压，不放宽新鲜度门禁。
 
-修复后必须重新执行质量门禁并启动新构建；本reference不越过workflow宣布Host验证完成。
+修复后必须重新执行质量门禁并启动新构建；本文不会代替 workflow 宣布 Host 验证完成。

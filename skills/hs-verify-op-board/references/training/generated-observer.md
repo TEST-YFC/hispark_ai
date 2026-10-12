@@ -9,8 +9,8 @@ adapter 使用本轮生成 `weight0.c` 的 `model_params[]`，通过 `*model_par
 - `--case-json` 指向当前 Host 通过的锁定 case；
 - adapter 只位于本轮 Micro 工程 `src/model0/`，路径和 SHA256 写入 `micro_build_receipt.json`；
 - `libnet.a` 中由 archive-aware `nm` 定义 `GetTrainWeightCount0` 与 `GetTrainWeight0`；
-- receipt 标记 `training_observer=true`、`nm_verified=true`，且 sample/integration/wiring 逐级核对同一能力和身份链。
+- receipt 标记 `training_observer=true`、`nm_verified=true`，且 sample、integration、wiring 各阶段都核对同一 observer 能力和身份信息。
 
 `MSLITE_TRAIN_BENCHMARK` 仍只用于 Host/native 文件导出（例如 `ExportN` 和 `manifest.json`），不能替代 RISC-V adapter，也不能把 Host 文件当作板端参数快照。
 
-当前 WS63 脚本/fixture 测试覆盖 adapter 生成和 capability receipt；真实板端仍必须经过 SDK 构建、固件内容检查、烧录、串口采集和逐元素比较，脚本通过不等于 `TRAIN_BOARD_VERIFY=PASS`。任何 metadata、ABI、编译符号或 receipt 校验失败都记录 `NOT_RUN`/失败，不生成 output-only 的伪通过。
+当前 WS63 脚本/fixture 测试覆盖 adapter 生成和 capability receipt；真实板端仍必须经过 SDK 构建、固件内容检查、烧录、串口采集和逐元素比较，脚本通过不等于 `TRAIN_BOARD_VERIFY=PASS`。任何 metadata、ABI、编译符号或 receipt 校验失败都记录 `NOT_RUN`/失败，不能只有 output 通过就宣称整体通过。

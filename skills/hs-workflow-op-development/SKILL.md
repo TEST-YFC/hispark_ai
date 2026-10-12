@@ -33,10 +33,10 @@ Stage3 构建 MindSpore Lite 工具包 -> MSLITE_PKG
 Stage4 Host 全量验证 -> HOST_VERIFY_GATE
 Stage5 AUTO_ALL 固件矩阵 -> FIRMWARE_CONTENT_GATE
 Stage6 AUTO_ALL 烧录、串口和板端精度 -> BOARD_MATRIX_GATE
-Stage7 终态文档回填 -> terminal.report/finalize
+Stage7 更新终态文档 -> terminal.report/finalize
 ```
 
-状态机任务 ID 与对外阶段编号一致，统一使用 `stage0` 到 `stage7`。Stage7 包含终态文档回填和最终报告，
+状态机任务 ID 与对外阶段编号一致，统一使用 `stage0` 到 `stage7`。Stage7 包含终态文档更新和最终报告，
 必须在 Stage5、Stage6 到达终态后启动。命令、待办、状态文件和文档均使用这套编号。
 当前状态 schema 为 3。schema=1/2 的运行记录不能直接恢复：保留原记录，并用新的 `RUN_ID` 重新开始；
 不要手工替换状态文件中的编号。`HOST_ONLY` 时，将 Stage5/Stage6 记为 `NOT_REQUESTED`，然后进入终态文档和报告。
@@ -173,7 +173,7 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 - `EXECUTION_CONFIRM_GATE（一次总确认；确认前只读）` 在确认前为 `EXECUTION_CONFIRM_GATE=PENDING`，
   成功后为 `EXECUTION_CONFIRM_GATE=PASS`；`--confirmed-mode` 必须与 `mode` 一致，
   `confirmation_count=1`。不得把“生成某算子”或仅提供 SDK 路径当成确认。
-- 确认后文档、代码、审查、构建、Host、固件、烧录、串口和回填全部由 agent 自动完成，不再逐阶段询问。
+- 确认后，文档、代码、审查、构建、Host、固件、烧录、串口和文档更新全部由 agent 自动完成，不再逐阶段询问。
 
 固件环境准备分流及安装/CLI 回退见
 [`references/environment-prep.md`](references/environment-prep.md)；Stage0 探测和通用依赖修复见
@@ -233,7 +233,7 @@ implementation unit、全部生成文件的哈希和 `HISPARK_ROOT`。只有 `PR
 
 启动 `stage3.mslite_build` 后读取
 [`references/build-and-toolchain.md`](references/build-and-toolchain.md)。该文件说明
-`converter_lite`、RISC-V Micro 库、受控构建、后台 `--wait`、构建新鲜度和失败分诊。此处构建的是
+`converter_lite`、RISC-V Micro 库、受控构建、后台 `--wait`、构建新鲜度和失败排查。此处构建的是
 MindSpore Lite 工具包，不是 `hs-dev-build` 负责的 fbb 固件。构建前由 workflow 使用
 同一`CODE_STYLE_SOURCE`重跑质量检查，并得到 `CODE_STYLE_AUDIT=PASS`、`CODE_STYLE_GATE=PASS` 和 `SECURITY_GATE=PASS`。
 
@@ -254,7 +254,7 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 `op_spec.py`；不把Host阶段当成正常改写计划用例的阶段。先通过 `pre-verify`/validator，
 再用 `--target all` 运行固定 harness，生成含逐 case 测试点的 `verify_summary.txt`、
 `board_expected_matrix.json`、两份 Excel 和逐 case 证据。Host 失败时，按实现、模型/spec 或工具链归类，
-并返回对应阶段；不能因为部分 case PASS 而缩小分母。具体要求按需读取 Host Skill 的 references。
+并返回对应阶段；不能因为部分 case PASS 而减少期望用例总数。具体要求按需读取 Host Skill 的 references。
 
 ## Stage5：AUTO_ALL 固件矩阵
 
@@ -262,7 +262,7 @@ python3 <hs-workflow-op-development>/scripts/check_build_freshness.py \
 [`references/board-orchestration.md`](references/board-orchestration.md) 和
 `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`，按
 `framework -> case_id -> mode(fp32,int8)` 逐行准备 Micro 工程、adaptor、Sample、CMake/Kconfig
-和 target，交给 `hs-dev-build`，再由 Board Skill 验收 `FIRMWARE_CONTENT_GATE=PASS`。不得挑代表 case；
+和 target，交给 `hs-dev-build`，再由 Board Skill 检查是否达到 `FIRMWARE_CONTENT_GATE=PASS`。不得挑代表 case；
 板端用例总数以 `board_expected_matrix.json` 为准。
 
 ## Stage6：烧录、串口和板端精度

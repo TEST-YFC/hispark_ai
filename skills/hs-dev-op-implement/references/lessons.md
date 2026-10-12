@@ -1,7 +1,7 @@
 # 已知故障与处置规则（按症状索引）
 
-这些已知故障是实现决策和失败回流的证据库。工具包构建与 Host 验证分别由
-`hs-workflow-op-development` Stage3/Stage4 持有，只有源码根因才回流 `hs-dev-op-implement`。
+这些已知故障为实现决策和失败处理提供依据。工具包构建与 Host 验证分别由
+`hs-workflow-op-development` Stage3/Stage4 持有，只有源码根因才交给 `hs-dev-op-implement` 处理。
 
 本文汇总从 SKILL.md 正文移出的实际问题，每条按“症状 → 根因 → 规则”组织。遇到错误或考虑绕过现有步骤时，先按当前阶段查表；命中后按对应规则处理。各条均来自既往问题记录。
 
@@ -10,12 +10,12 @@
 | 症状 / 想做的事 | 真实事故 | 规则 |
 |---|---|---|
 | scan 输出太长，想 `head`/`tail` 截断 | `tail -60` 恰好截掉 decision1 的 ONNX 语义摘要段，模型拿幸存的另一框架同名摘要误判 decision2 候选语义，错走新建分支 | scan 输出必须完整读；过长从 `/tmp/scan_op_<Op>.log` 读全文 |
-| 拿"与候选同名的其它框架算子"的摘要判语义 | 同一算子名在 ONNX 是三输入 numpy 广播选择、在 TFLite 是返回 true 坐标的单输入算子；拿后者裁决前者得出"语义完全不同"，错走新建 | 候选语义真值 = 仓内 ④infer + ⑤kernel 源码，Read 后裁决；同名异义是常态 |
+| 拿"与候选同名的其它框架算子"的摘要判语义 | 同一算子名在 ONNX 是三输入 numpy 广播选择、在 TFLite 是返回 true 坐标的单输入算子；拿后者判定前者得出"语义完全不同"，错走新建 | 候选的语义依据是仓内 ④infer + ⑤kernel 源码，Read 后再判定；同名异义是常态 |
 | 同族两个 builtin 看着差不多，想共用 parser | TFLite 把无广播的 `SelectV2` 调用规范化成 `SELECT`，真广播形状才发 `SELECT_V2`——两者语义不同、输入域不同 | 广播版/非广播版 = 两个独立算子；同形输入收敛到非广播版（优先保证其链路完整）；形状→builtin 映射用可达性探针实证，不凭 raw_op 名推断 |
 | 语义摘要里有 `SameOperandsAndResultsScale`，想据此让 int8 跳过重量化 | 该 trait 是源框架自家 runtime 的约定；MSLite 全量化器给每个张量独立分配 scale/zp，不落实同 scale 约束。以 trait 为据省重量化，只在量化器恰好分配相同 qparams 的用例上侥幸通过，判别用例下即暴露 | int8 通路一律按 ⑤‴ 模板逐输入重量化（qparams 相同时自动退化为拷贝，永远正确） |
 | 链路表 ⑤ 有文件就标「已有」 | 存量 kernel 仅 fp32：FULL_QUANT 的 bias_correction 在宿主运行时执行 int8 模型，缺口拖到 int8 转换才以堆越界/卡死现身，排查代价最高 | 看 scan ⑤′ 段；无 int8 处理标「已有(仅fp32)」并把 int8 分支列入缺失 |
 | 复用分支想"只补三层就完" | 存量广播 kernel 跨维广播算错、同 rank 广播被拒、int8 数据被按 fp32 写入致堆越界——全部到 hs-verify-op-host 才暴露 | 「已有」≠「已验证」；呈现复用方案时讲明存量层可能要修；FAIL 定位到存量代码也在本次范围内 |
-| 拿"既有 parser 已这样映射"当 decision2 复用依据 | 既有映射正是上一轮缺陷实现留下的，循环论证 → 超集 builtin 被并入子集 PrimType，且重复实现了仓内已有的广播设施 | 既有映射是审查对象不是裁决依据；四条判据独立裁决，冲突写进 decision4、改造既有代码 |
+| 拿"既有 parser 已这样映射"当 decision2 复用依据 | 既有映射正是上一轮缺陷实现留下的，循环论证 → 超集 builtin 被并入子集 PrimType，且重复实现了仓内已有的广播设施 | 既有映射是审查对象不是判定依据；四条判据分别判定，冲突写进 decision4、改造既有代码 |
 | 探针表只填"验证方法"列就当作做过探针 | step3 呈现了一张断言"两 builtin 各自独立可达、不存在归一化"的探针表，实际没跑任何解包命令——实测同形 SelectV2 被 converter 归一化成 SELECT，第一版用例整轮全测错算子 | 探针表每行必须附本会话解包命令的实际输出；"不存在归一化"恰是探针要证明的命题，不得以该断言豁免探针 |
 | 链路/能力清单标「已有」只看文件存在 | 某 optimizer pass 文件存在但只挂在 GE 流程，CPU converter 根本不跑它——能力被标"✅ 已有"，缺口拖到 workflow 的 Host/Board 验证阶段才暴露 | 「已有」须给定义点 + 注册/可达点两处证据；未注册进本目标路径 = 不可达，按缺失计 |
 | 想现写 python 内省 `onnx.defs` 查 opset/属性差异 | OpSchema 字段名靠猜（`.name`/`.num_inputs` 全不存在），连续 4 次 AttributeError 才拿到属性表，纯无谓消耗 | opset/属性规格只经 `fetch_op_spec.py --op <Op>`（scan 已内调）或 spec-sources.md 给定的单行命令**照抄执行**；禁止现场手写内省脚本 |
@@ -34,7 +34,7 @@
 | 新加 int8 分支只覆盖主路径 | 单元素条件走 `MoveData` 字节搬运，quantized 数据从旧快路漏过——单元素输出余弦恒 1.0，行为验证测不出 | 改造存量 kernel 必做全执行路径审计：枚举每条输出写入路径（dtype 分支/单元素快路/memcpy/in-place/早退），逐条确认 int8 经重量化或不可达 |
 | 放开存量 kernel 的入口守卫，却没修被放开的路径 | 删掉过严的广播形状检查后，从未被验证的存量广播路径暴露出来且算错——把"功能缺失（显式报错）"变成了"静默算错"，比改之前更危险 | 放开守卫与修通路径是同一件事的两半：放开前先验证（或修好）守卫背后的路径；验证不过就连守卫一起还原，不留半成品 |
 | 手写广播索引 | `i % num` 仅最外维广播碰巧正确；stride 公式漏乘 `shape[d+1]`；"任一输入是标量"式存在性守卫放过混合形态 | 按实现指南 ⑤⁗：优先复用 nnacl 既有广播设施；快路守卫对每个输入逐一成立 |
-| 能力清单列了，对应代码"回头再写" | 清单明列 rank-1 条件模式与 int8 广播「需新增」，代码从未落地，直到验证才暴露 | 每层完成立即回填落点 `文件:函数`；启动编译前清单上不得有无落点的「需新增」能力 |
+| 能力清单列了，对应代码"回头再写" | 清单明列 rank-1 条件模式与 int8 广播「需新增」，代码从未落地，直到验证才暴露 | 每层完成立即补充对应实现位置 `文件:函数`；启动编译前，清单中标为「需新增」的能力都必须有对应实现位置 |
 | 各层 rank 上限常量都对上了，就认为越界已防住 | Hardmax 各层数组/守卫都是 `DIMENSION_4D`（"同常量"判据满足），但 infer 用 `SetShapeTensor` 同形传播**无 rank 守卫**、nnacl fp32 kernel `input_shape_[DIMENSION_4D]` 在 `InitHardmaxParam` 里 `for i<n_dim` 直写**填充前无守卫**——5D 模型 infer 放行、fp32 校准期数组越界；用例全 ≤4D 跑出 48/48 全绿，缺陷完全不可见 | rank 上界是**两条独立判据**：① 同常量；② infer 显式拒绝超界 + 每个 `[DIMENSION_*]` 数组填充循环前有守卫。① 满足不蕴含 ②——"同常量"过了仍要单独查"infer 设闸 + 数组填充前守卫"。`quick_check.sh` rank advisory (2)/(3) 已秒级拦此型，命中即缺陷，不得因 ≤上限用例全绿放行 |
 | 新建 nnacl_c 头文件漏 `extern "C"` 守卫 | 编译全过、链接期 `undefined reference`，烧一轮 ~7 分钟构建才暴露（C 符号被 C++ 调用方按 mangle 名解析） | 模板起笔即带守卫（实现指南 ⑤‴）；`quick_check.sh` 已对 `nnacl_c/{fp32,int8,fp16,infer,base}/` 的 .h 做秒级 lint |
 | 用图层 pass 插 `BroadcastTo`/`Reshape` 节点实现广播 | 两次走该方案（挂存量 pass 进 CPU 列表、新写 pass）：converter 能过，micro codegen 缺被插算子的 coder（尤其 bool dtype），全部用例 ERR，整体回滚，净烧 3 轮构建 + 2 轮验证 | ⑤⁗ 歧路条目：被插算子 × dtype 有 coder + 全局回归面评估，两条查实前不得选图层方案；默认在 kernel/coder 内部处理 |
@@ -50,9 +50,9 @@
 | 用长 `sleep` 等构建，或不带 run identity 读取固定日志 | 工具超时与其他运行的 RC/日志会被误读为本轮失败 | 使用本轮 `RUN_ID`；陈旧/不完整记录开启新 run，不阻断为源码失败 |
 | 构建期间顺手改源码 | 中途改的文件不进本轮产物，得到"改完了但测的是旧码"的假状态 | 要改代码先 `--stop`（清整个进程组；裸 `kill` 留孤儿 make 互踩，`pkill -9 -f make` 误杀无关进程） |
 | 链接失败就清缓存/删 build 碰运气 | 盲目逐级清缓存连烧 4 轮构建约 1.5 小时仍未定位根因 | 先拿到 undefined 符号名与失败 target（`--status` 链接专项），读该 target 的 CMakeLists 看源收集方式、`nm` 核实符号归属，再动手 |
-| 编译报错文件不是本会话改的，顺手修掉 | 改了子模块内无关文件换编译通过，污染范围 | 对照本会话文件清单（`git status` 佐证）；预存问题停下报告用户裁决 |
+| 编译报错文件不是本会话改的，顺手修掉 | 改了子模块内无关文件换编译通过，污染范围 | 对照本会话文件清单（`git status` 佐证）；预存问题停下报告并交由用户决定 |
 | 重写报错文件时"简化实现" | coder 首版编译报错，重写时把广播分支整段删掉——编译变绿，缺口拖到 hs-verify-op-host 才暴露，且仅因用例恰好覆盖才被发现 | 修编译错误只许最小改动；重写后立即对照能力清单核对每条能力代码仍在 |
-| 工具链没搜到，上报"不存在"或退化 x86-only | 搜索命令被权限拒绝 / `-type f` 漏符号链接，得出假结论；x86-only 不产出交叉库，等于没验证 | 命令被拒或无果 = 未知不是否定证据；脚本报"未找到"的唯一动作 = 停下向用户要路径 |
+| 工具链没搜到，上报"不存在"或退化 x86-only | 搜索命令被权限拒绝 / `-type f` 漏符号链接，得出假结论；x86-only 不生成交叉库，等于没验证 | 命令被拒或无果 = 未知不是否定证据；脚本报"未找到"的唯一动作 = 停下向用户要路径 |
 | 用户手工修复后继续，`--status` 把其他运行的失败当成本轮失败 | 固定 RC/日志没有 run identity 和源码新鲜度 | 脚本校验 RUN_ID、日志头、RC 与源码指纹；修复后生成新 RUN_ID 重建，其他运行记录不作为本轮结论 |
 | 新建 `nnacl_c/{base,fp32,int8}/*.c` 后直接增量 build | nnacl_c 的 CMake 用 `file(GLOB ...)` 收集源文件，GLOB 只在 **configure 期**展开；增量 `make` 不重配 → 新 `.c` 静默不参与编译，链接期缺符号、或更糟用到旧对象得假结论 | 新增源文件后先 `touch` 对应目录的 `CMakeLists.txt`（强制 re-glob/重配）再 `build_mslite.sh`；新 `.c` 用 `NNACL_OK/ERR` 记得 `#include "nnacl_c/errorcode.h"`（op_base.h 不含，quick_check 秒级抓） |
 | 构建后之前全绿的用例成片 converter 报错 / 报 `gen_lite_ops.h: No such file` / converter 一启动就崩，于是去改算子代码 | `build.sh` 的 `update_submodule` 跑 `git submodule update --init --remote`，把受管 `mindspore` 子模块从基线 commit 静默推进到上游最新（如 `2365375a→0487e01a`）：converter 行为漂移、之前全绿用例成片失败，新 commit 还与已 configure 的 `build/` 不兼容报缺生成头。一次会话误判成算子 bug——先改 INT8/fp32 coder，再 `git checkout` 子模块到不同 commit、`git stash`、改 `build.sh`、反复清 `build/` 重建，越陷越深、数小时无果 | **成片回归先查环境不查算子。** `build_mslite.sh` 已在构建前记录子模块 SHA，漂移即 `[SUBMOD-LOCK] exit 7` 硬停；命中即按提示把子模块 `checkout` 回构建前 SHA、注释 `build.sh` 第一处 `update_submodule` 调用后经本脚本重建（红线 4）。**禁止** `git checkout` 子模块到别的 commit / `git stash` / 反复重建试错；改码前先用一个已知用例确认基线可过 |
@@ -66,8 +66,8 @@
 | INT8 余弦恰好 `1.0000` 当 PASS | 量化没真正生效（算子缺 `support_int8_ops_`，tensor 保持 fp32，选了 fp32 coder）——真 INT8 应落 `[0.99, 1.0)` | 恰好 1.0000 默认按 FAIL 查 ⑦ 量化器列表 |
 | 自写 `op_spec.py` 的 int8 输入（`linspace+shuffle`／随机），不用模板的 `make_distinct_axis_inputs` | 排序/归约类（Hardmax/ArgMax/TopK 等输出由"谁更大"决定）的算子，大 shape 下同轴相邻元素被量化进同一桶（间隔 < 量化桶宽），argmax 在量化后漂移——**fp32 全过、仅大 4D int8 用例 FAIL**（实证 Hardmax tc6/tc11 首轮 FAIL），易误判成 kernel bug，实为输入设计缺陷；而 `operator_spec_template.py` 早有现成的 `make_distinct_axis_inputs` 解决此事，自写绕开了它 | op_spec **一律从 `operator_spec_template.py` 拷贝改写**（hs-verify-op-host「唯一模板」），排序类 int8 用例直接用其 `make_distinct_axis_inputs`（沿轴等距铺开+广播，间距远大于桶宽）；诊断信号「fp32 过、大 shape int8 独 FAIL」先排除输入分桶塌缩再怀疑 kernel。算法依据见 `references/int8-coder-conventions.md §2b` |
 | 多算子任务只跑出一行 VERDICT 就宣布全部完成 | converter 按形状归一化 builtin（无广播用例被悄悄发成同族另一 builtin），目标算子可能从未被任何用例命中——"42/42 全绿"也证明不了它 | 逐算子各一行 VERDICT；同族多 builtin 附「形态→builtin」探针证据（解包命令见 decision2-reuse-decision.md） |
-| 贴着含 FAIL 的 VERDICT 写"状态: 完成"，理由是"存量缺陷，非本次引入，需后续修复" | 复用分支 = 接管存量质量，FAIL 在被复用 kernel 里同样是本任务的缺陷；"非本次引入"只是根因描述不是结案理由——格式合规（贴了 VERDICT）掩盖了实质造假（VERDICT 是红的） | `状态: 完成` 的判据是机械的：每行 VERDICT 0 FAIL + 退出码 0；做不完就如实写 `状态: 未完成（阻塞: ...）` 向用户求助——停下合法，包装失败不合法 |
+| 贴着含 FAIL 的 VERDICT 写"状态: 完成"，理由是"存量缺陷，非本次引入，需后续修复" | 复用分支 = 接管存量质量，FAIL 在被复用 kernel 里同样是本任务的缺陷；"非本次引入"只是根因描述不是结案理由——格式合规（贴了 VERDICT）掩盖了实质造假（VERDICT 是红的） | `状态: 完成` 的判定标准很明确：每行 VERDICT 0 FAIL + 退出码 0；做不完就如实写 `状态: 未完成（阻塞: ...）` 向用户求助——停下合法，包装失败不合法 |
 | FAIL 后不读现场、连换方案盲试 | 三个修复方案逐一全量构建后失败，每轮只浅层 grep 从未引用 stderr.log 的具体错误行；第三次失败后直接放弃整块能力 | workflow 验证失败修复循环固定步骤：先贴错误行原文 + 查本表 + 呈现根因，才许动代码；同一能力连续 2 个方案失败 → 强制停下向用户呈报选项 |
-| 修不动就删 FAIL 用例重跑，拿 0 FAIL 宣布"完成 + 已知局限" | 广播用例实跑 FAIL 后被从 op_spec 删除，重跑 "36/36 PASS" 当完成上报——能力清单里两行能力静默消失，且"已知局限"包装恰是 SKILL.md 明令禁止的措辞 | VERDICT 的分母是 step3 能力清单不是现存用例；hs-verify-op-host 的 CASES_REDUCED 闸门拒跑缩水的用例集，豁免须 `OP_VERIFY_ACK_REDUCED=1` 且经用户裁决、在 VERDICT 留痕 |
-| 回填能力清单时把行内容"顺手"改成实际跑的用例值 | step3 计划 `[1,8,32,32] axis=2`、`[4,10,16] axis=1` 两行，回填表被静默改写成实测的 axis=-1 形状——表面"全覆盖"，实际「大 shape × 中间轴」路径无任何用例，且漂移对用户不可见 | 回填只许**追加**落点/用例编号，形状/轴/属性照抄 step3 原文（SKILL.md 完成判据 4）；实测与计划不一致的行标「计划变更（原 X → 现 Y，理由）」呈现给用户裁决；对账存量 op_spec 的方向是改 spec 配清单，不得反向改清单配 spec |
+| 修不动就删 FAIL 用例重跑，拿 0 FAIL 宣布"完成 + 已知局限" | 广播用例实跑 FAIL 后被从 op_spec 删除，重跑 "36/36 PASS" 当完成上报——能力清单里两行能力静默消失，且"已知局限"包装恰是 SKILL.md 明令禁止的措辞 | VERDICT 的期望用例以 step3 能力清单为准，不以现存用例为准；hs-verify-op-host 的 CASES_REDUCED 闸门拒跑缩水的用例集，豁免须 `OP_VERIFY_ACK_REDUCED=1` 且由用户决定，并在 VERDICT 中记录 |
+| 回填能力清单时把行内容"顺手"改成实际跑的用例值 | step3 计划 `[1,8,32,32] axis=2`、`[4,10,16] axis=1` 两行，回填表被静默改写成实测的 axis=-1 形状——表面"全覆盖"，实际「大 shape × 中间轴」路径无任何用例，且计划与实测的差异对用户不可见 | 回填时只许**追加**对应实现位置/用例编号，形状/轴/属性照抄 step3 原文（SKILL.md 完成判据 4）；实测与计划不一致的行标「计划变更（原 X → 现 Y，理由）」呈现给用户决定；核对存量 op_spec 时，应修改 spec 以符合清单，不得反向改清单配 spec |
 | 结案不做 diff 终审 | 被回滚方案的伴生改动（只挂 GE 流程的 pass 里的死代码、为它加的 include）与拆掉一半的存量入口守卫留在仓里交付——守卫拆一半 = "显式报错"变"静默算错" | 完成检查清单 `git diff` 终审：每个改动文件映射到能力/用例；废案连伴生改动一起还原；放开的守卫要么其路径有 PASS 用例、要么连守卫还原 |

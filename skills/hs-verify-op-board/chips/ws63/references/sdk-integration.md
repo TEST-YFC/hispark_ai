@@ -71,8 +71,8 @@ board_expected_matrix=<绝对路径>
 
 ## 3. 逐项使用与 Host 完全相同的全部用例
 
-`board_expected_matrix.json`是唯一分母。必须按`framework/case_id/mode`固定顺序逐行执行，
-不得选择一个代表case。当前行以下文件必须来自同一Host case：
+`board_expected_matrix.json`是期望用例总数的唯一依据。必须按`framework/case_id/mode`固定顺序逐行执行，
+不得只选择一个代表case。当前行的以下文件必须来自同一Host case：
 
 ```text
 model/model.onnx 或 model/model.tflite
@@ -83,8 +83,8 @@ verify_summary.txt 中该case的PASS记录
 
 禁止跨轮、跨 case 或跨量化模式拼装。记录模型、输入和GT的绝对路径及哈希。
 
-每行独立追踪并完成第4节至后续交接，并写`board_result.json`；第11节中的构建、烧录、串口和
-精度由上层 Board/`hs-dev-build`/`hs-dev-flash` handoff 完成，不在本 reference 内绕过 owner
+每行都要独立跟踪、完成第4节之后的交接，并写入`board_result.json`；第11节中的构建、烧录、串口和
+精度由上层 Board/`hs-dev-build`/`hs-dev-flash` 按交接流程完成，不能在本 reference 内绕过负责方
 另起一轮。一行PASS不能替代其他行；只有矩阵汇总得到`expected=executed=pass`且
 `fail=not_run=0`才算完整板测通过。
 其中`executed=pass+fail`，NOT_RUN结果记录只计入`recorded`，不能计入`executed`。
@@ -206,7 +206,7 @@ python3 <hs-verify-op-board>/chips/ws63/scripts/integrate_sdk.py \
 3. `OH_AI_ModelPredict()`的CPU实现必须转发到生成模型的 `MSModelPredict()`。
 4. CPU/NPU选择沿用SDK现有构建配置，不临时以同名函数覆盖另一后端。
 5. 对SDK做的兼容性修改必须最小化，并在交付中单独列出。
-6. 已有adaptor或`ai.h`与HiSpark来源不同会硬失败；逐文件审阅后才能显式加
+6. 已有adaptor或`ai.h`与HiSpark来源不同时，脚本会直接报错；逐文件审阅后才能显式加
    `--replace-adaptor`，不得自动覆盖。
 
 不得把整个 `middleware/utils` 当作算子生成物；本阶段只处理 `ai_mcu`接入相关文件。
@@ -222,7 +222,7 @@ python3 <hs-verify-op-board>/chips/ws63/scripts/integrate_sdk.py \
    └─ libnet.a
 ```
 
-`integrate_sdk.py`机械创建该目录并生成环境文件。构建配置必须通过
+`integrate_sdk.py`会自动创建该目录并生成环境文件。构建配置必须通过
 `AI_MCU_MODEL_VARIANT`显式选择这一对库。不得把多个同名 `libnet.a`一起链接，也不得使用
 不带case身份的陈旧库冒充当前产物。
 
@@ -260,8 +260,8 @@ python3 <hs-verify-op-board>/chips/ws63/scripts/prepare_sample.py \
 只有 `SAMPLE_PREP_GATE=PASS`才能继续。该脚本同时读取源ONNX/TFLite规格和converter
 生成的 `model0.c` 公共Micro API Tensor元数据，以后者作为板端真实dtype/shape并要求
 二者一致，再逐字节嵌入Host `input*.bin`。这对INT8尤其重要：内部Kernel量化不等于
-公开输入一定变成int8；不能靠模式名猜。源模型与Micro API不一致、缺输入、字节数
-不符、动态shape或不支持dtype时硬失败。禁止“找不到输入填零”“按目录名猜dtype”或
+公开输入一定变成int8；不能靠模式名猜。源模型与Micro API不一致、缺少输入、字节数
+不符、动态shape或dtype不受支持时，脚本直接报错。禁止“找不到输入填零”“按目录名猜dtype”或
 原地覆盖示例Sample。
 
 脚本依赖Python环境中的 `onnx`（ONNX模型）或 `tflite_runtime/tensorflow`（TFLite
@@ -390,7 +390,7 @@ ACCURACY_VERDICT
 - 最终map/符号中存在模型Predict/Execute和目标Kernel；
 - `_all.fwpkg`时间戳晚于本轮配置与源码修改。
 
-这三项必须通过构建后机械门禁，不得只人工浏览：
+这三项必须通过构建后脚本门禁，不得只靠人工浏览：
 
 ```bash
 python3 <hs-verify-op-board>/chips/ws63/scripts/verify_firmware.py \
@@ -408,5 +408,5 @@ python3 <hs-verify-op-board>/chips/ws63/scripts/verify_firmware.py \
 
 只有 `FIRMWARE_CONTENT_GATE=PASS`才说明本轮Sample、模型外壳和Kernel真实进入最终固件。
 
-烧录成功不等于精度成功；只看到启动日志、标签或Sample自报PASS均不能签收。
+烧录成功不等于精度成功；只看到启动日志、标签或Sample自报PASS，都不能判定精度通过。
 

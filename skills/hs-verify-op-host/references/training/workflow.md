@@ -129,7 +129,7 @@ benchmark 位置参数按当前模板核对：
 - 直接梯度未导出时记录 `not_evaluated: raw_gradients`，结论为输出和参数更新对齐，不写“所有梯度逐元素通过”。若设计明确要求梯度单测，缺少直接梯度证据仍不满足计划。
 - 有状态 optimizer 需额外核对多步状态规则；不能因为源码存在 Adam 就宣称已验证 Adam。基线使用的 SGD 参数范围与未测 optimizer 分开报告。
 
-先用 `scripts/training/aggregate_training_results.py --export-board-expected` 按已锁定的 case 计划生成聚合报告和板端预期矩阵；缺少任一 summary 会自动记为 `NOT_RUN`，不会被忽略。`PASS` 只在所有数值 case 通过且预期拒绝项状态正确时产生。只有数值 PASS 用例进入板端矩阵；预期拒绝项保留在排除清单，不进入板端分母。
+先用 `scripts/training/aggregate_training_results.py --export-board-expected` 按已锁定的 case 计划生成聚合报告和板端预期矩阵；缺少任一 summary 会自动记为 `NOT_RUN`，不会被忽略。`PASS` 只在所有数值 case 通过且预期拒绝项状态正确时产生。只有数值 PASS 用例进入板端矩阵；预期拒绝项保留在排除清单，不计入板端应执行的用例总数。
 
 单 case 的 `train_summary.json` 由固定 runner 生成。结构检查与模型来源检查由执行者补充实际证据，runner 的数值 PASS 不会自动证明这些人工检查完成。聚合时在 `<opdir>/runs/<run_id>/train_verify_summary.json` 列出全部预期 case、测试点、类型、各阶段状态、summary 路径和 hash、结构检查、未测项，负向转换单列。缺少任一预期用例或必测项时 `TRAIN_HOST_VERIFY_GATE` 不能为 PASS。
 

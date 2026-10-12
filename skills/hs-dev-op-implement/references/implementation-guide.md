@@ -1,6 +1,6 @@
 # 实现指南：逐层代码模板（①–⑦）
 
-> 进入 step4 后**必须**对照本指南逐层实现——不得凭记忆/直觉写代码。路径相对 mindspore-lite 仓库根目录。每层“做/补/复用/不适用”取决于 `docs/decision.md` 的逐层裁决；本指南只给需要实现或修复时的模板与要点。
+> 进入 step4 后**必须**对照本指南逐层实现——不得凭记忆/直觉写代码。路径相对 mindspore-lite 仓库根目录。每层“做/补/复用/不适用”取决于 `docs/decision.md` 的逐层判定；本指南只给需要实现或修复时的模板与要点。
 
 ## 目录
 
@@ -301,7 +301,7 @@ REG_INFER(Xxx, PrimType_Xxx, XxxInferShape)
 
 要点（与实际代码核对过）：
 - **开头用 `CheckAugment*` 校验宏**（`tensor_c_utils.c`）：`CheckAugmentNullSize`（精确输入/输出数）、`CheckAugmentWithMinSize`（最小数，允许更多）。几乎所有 infer 都以此起手，跳过会在形状非法时直接崩。
-- **rank 上界闸门**：下游 kernel/coder 用定长 `[DIMENSION_xD]` 数组承载 shape 时，infer 必须在此显式拒绝 `shape_size_ > 上限`。**即使下游 kernel 自己也有守卫**，infer 仍要设这道闸——它是 rank 传播的第一道边界，缺它则超界 rank 流到 kernel 才暴露（实证 Hardmax：infer 用 `SetShapeTensor` 无守卫，5D 模型放行到 fp32 kernel 才越界）。直通算子（`SetShapeTensor(out,in)`）尤其容易漏——同形传播不“碰”维度，但下游数组仍会越界。守卫常量与下游所有层使用同一个 `DIMENSION_xD`，并按 `code-quality-gate.md` 的算子专项门禁复核。
+- **rank 上界闸门**：下游 kernel/coder 用定长 `[DIMENSION_xD]` 数组保存 shape 时，infer 必须在此显式拒绝 `shape_size_ > 上限`。**即使下游 kernel 自己也有守卫**，infer 仍要设这道闸——它是 rank 传播的第一道边界，缺它则超界 rank 流到 kernel 才暴露（实证 Hardmax：infer 用 `SetShapeTensor` 无守卫，5D 模型放行到 fp32 kernel 才越界）。直通算子（`SetShapeTensor(out,in)`）尤其容易漏——同形传播不“碰”维度，但下游数组仍会越界。守卫常量与下游所有层使用同一个 `DIMENSION_xD`，并按 `code-quality-gate.md` 的算子专项门禁复核。
 - 返回码用 `NNACL_OK` / `NNACL_INFER_INVALID`（不是 `RET_OK`）。
 - `REG_INFER(op, type, func)` 第一个参数是构造注册函数名的 C token（`Reg##op##Infer`），不是"昵称"——取唯一标识即可，习惯与 PrimType 短名一致。
 - 顺序：校验 → 传播 dtype/format → 动态 shape 早退 → 算维度 → 写回。此函数在转换时（codegen 的 `CreateOpCoders`）和运行时都会执行——保持无副作用。
@@ -444,8 +444,8 @@ for (int j = 1; j < axis_size; j++) { if (in[base + j * inner] > max_val) { ... 
 3. **注册在固定键（bool）上的那个 kernel 必须自己按数据张量 `in_[1]->data_type_` 分支**，处理 fp32 / int8 / fp16。**int8 分支按 ⑤‴ 模板做逐输入重量化**——重量化在各方 qparams 相同时自动退化为恒等拷贝，永远正确；直接字节拷贝只在量化器把各输入与输出绑到同一 scale+zp 时才对，**而这不能假设、必须从生成代码核实**，否则输入/输出 scale 不同的场景可能以接近阈值的结果假绿。
 4. **致命陷阱**：若 bool 键 kernel 对 int8 数据仍按 fp32 计算（把 int8 缓冲当 `float*` 写），每元素写 4 字节进 1 字节缓冲 → 堆越界，表现为全量化 **bias_correction** 阶段 `malloc(): corrupted top size` / `sysmalloc: Assertion failed`（**大张量崩、小张量侥幸过**，fp32/x86 路正常，ASAN 下因分配向上取整反而不崩——极难定位）。
 5. **放置**：这个唯一的运行时 kernel 放数据搬运类常规位置（C++ `LiteKernel` 放 `base/`，C `KernelBase` 放 `nnacl_c/kernel/`），按 bool 键注册一处；别散落多个按 dtype 注册的 kernel（其余都是死的）。
-6. **在已有 kernel 上加 int8 分支 = 先做全执行路径审计**。打开该 kernel 的 `Run()`/`Compute()`，列出**每一条**写输出的路径：按 dtype 的 switch 各分支、scalar/单元素条件的**快路**（`MoveData`/`memcpy` 整块搬运）、in-place 与 early-return 分支。逐条裁决「int8 数据可达吗？可达则经过重量化吗？」——只给主 switch 加 int8 case 而放过旧快路，quantized 数据从快路漏过去就是绕开重量化的字节拷贝，且这类路径常由单元素用例触发、其余弦恒为 1.0，行为验证无法暴露（详见 hs-verify-op-host 用例设计的单元素告诫）。快路对 int8 不安全时，把 int8 显式从快路条件中排除、并入重量化分支。
-7. **扩展既有 kernel 必须留在它既有的体系内，禁止另起平行 kernel。** 运行时 kernel 查找顺序：`REG_KERNEL` creator 注册表**优先**、nnacl 注册表兜底（`src/litert/kernel_registry.cc::GetLiteKernel`——creator 命中即不再查 nnacl）。给已由 `NNACL_KERNEL(...)` 承载的算子按同键再加一个 `REG_KERNEL` C++ kernel，新 kernel 会**整体劫持**该算子全部执行（首输入派发下，一个 bool 键覆盖所有数据 dtype），既有 nnacl kernel——连同其已验证的广播物化、快路、fp16 逻辑——全部沦为死代码；反向注册在 int8 键则永不被选中（第 2 条）。两个方向都是缺陷。正确路径按既有体系二选一：
+6. **在已有 kernel 上加 int8 分支 = 先做全执行路径审计**。打开该 kernel 的 `Run()`/`Compute()`，列出**每一条**写输出的路径：按 dtype 的 switch 各分支、scalar/单元素条件的**快路**（`MoveData`/`memcpy` 整块搬运）、in-place 与 early-return 分支。逐条判断 int8 数据是否可达；若可达，是否经过重量化——只给主 switch 加 int8 case 而放过旧快路，quantized 数据从快路漏过去就是绕开重量化的字节拷贝，且这类路径常由单元素用例触发、其余弦恒为 1.0，行为验证无法暴露（详见 hs-verify-op-host 用例设计的单元素告诫）。快路对 int8 不安全时，把 int8 显式从快路条件中排除、并入重量化分支。
+7. **扩展既有 kernel 必须留在它既有的体系内，禁止另起平行 kernel。** 运行时 kernel 查找顺序：`REG_KERNEL` creator 注册表**优先**、nnacl 注册表兜底（`src/litert/kernel_registry.cc::GetLiteKernel`——creator 命中即不再查 nnacl）。给已由 `NNACL_KERNEL(...)` 实现的算子按同键再加一个 `REG_KERNEL` C++ kernel，新 kernel 会**整体劫持**该算子全部执行（首输入派发下，一个 bool 键覆盖所有数据 dtype），既有 nnacl kernel——连同其已验证的广播物化、快路、fp16 逻辑——全部沦为死代码；反向注册在 int8 键则永不被选中（第 2 条）。两个方向都是缺陷。正确路径按既有体系二选一：
    - **nnacl `KernelBase` 体系**（`nnacl_c/kernel/xxx.c` + `src/litert/kernel/cpu/nnacl/nnacl_xxx.cc` 的 C++ shim）需要量化参数时：给 `XxxStruct` 加**扁平** quant 字段（⑤‴ 结构约束），在 shim 里从 `in_tensors_[i]->quant_params()` 填充——shim 是 `LiteKernel` 子类拿得到 `lite::Tensor`，而纯 C 的 `TensorC` 没有 qparams；int8 计算分支加在 `xxx.c` 内（调 ⑤‴ 的 `XxxInt8` 函数）。
    - **C++ `LiteKernel` 体系**：直接在既有 kernel 的 `Run()` 加数据 dtype 分支。
 
@@ -533,7 +533,7 @@ void XxxInt8(const bool *condition, const int8_t *in1, const int8_t *in2, int8_t
 
 适用于任何**多输入且各输入形状允许不同**（numpy 式广播）的算子——含给存量广播 kernel 补缺口的情形。
 
-**先排除一条诱人的歧路——图层 pass 插广播节点。** 往 `anf_transform.cc` 的 pass 列表插 `BroadcastTo`/`Reshape` 节点、把广播"前移"到图里，看似免改 kernel，实则有两个硬前置，**全部查实之前不得选该方案**：(a) 被插入的算子 × 它要承载的 dtype（广播 condition 时是 **bool**）必须在 micro opcoders 注册表里有 coder——`BroadcastTo(bool)`/`Reshape(bool)` 通常没有：converter 能过、codegen 即挂，报错位置远离根因；(b) `InitFusions` 列表对**所有模型全局生效**，回归面是全仓所有算子，不是本算子。实证事故：为条件选择类补广播，两次走图层 pass 方案，全部用例 ERR 后整体回滚，净烧 3 轮构建 + 2 轮验证。本节优先级 1/2（kernel/coder 内部处理）才是默认路径。
+**先排除一条诱人的歧路——图层 pass 插广播节点。** 往 `anf_transform.cc` 的 pass 列表插 `BroadcastTo`/`Reshape` 节点、把广播"前移"到图里，看似免改 kernel，实则有两个硬前置，**全部查实之前不得选该方案**：(a) 被插入的算子 × 它要支持的 dtype（广播 condition 时是 **bool**）必须在 micro opcoders 注册表里有 coder——`BroadcastTo(bool)`/`Reshape(bool)` 通常没有：converter 能过、codegen 即挂，报错位置远离根因；(b) `InitFusions` 列表对**所有模型全局生效**，回归面是全仓所有算子，不是本算子。实证事故：为条件选择类补广播，两次走图层 pass 方案，全部用例 ERR 后整体回滚，净烧 3 轮构建 + 2 轮验证。本节优先级 1/2（kernel/coder 内部处理）才是默认路径。
 
 **优先级 1 — 复用，不手写。** 仓库已有两类现成广播设施：把各输入物化成输出形状再走同形路径的 `nnacl_c/base/broadcast_to.{h,c}`（运行时 kernel 常用此法）；以及逐元素算术族里既有的按 stride 索引实现。先看参考算子怎么做，能调用就调用——每多手写一份索引逻辑，就多一份要做 ⑤″ 全路径审计的对象。
 

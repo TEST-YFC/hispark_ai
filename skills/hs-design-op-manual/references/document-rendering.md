@@ -14,7 +14,7 @@
 产物集成模式必须按以下两个模板分别维护两份主文档：
 
 - [`operator-design-doc-template.md`](operator-design-doc-template.md)：
-  `<opdir>/docs/{op}-operator-design-doc.md`，只记录规格范围、支持限制、七类能力复用裁决、关键场景和软件调用链。
+  `<opdir>/docs/{op}-operator-design-doc.md`，只记录规格范围、支持限制、七类能力复用判定、关键场景和软件调用链。
 - [`operator-verify-doc-template.md`](operator-verify-doc-template.md)：
   `<opdir>/docs/{op}-operator-verify-doc.md`，只记录测试设计、用例矩阵、Host/固件/烧录/串口/板端结果和证据索引。
 
@@ -28,7 +28,7 @@
 ### 独立模式的设计/验证文档构建
 
 `standalone-generate` 和 `standalone-update` 要求存在明确的 `<opdir>` 作为文档归属目录，但不要求
-冻结产物，也不套用产物集成模式的逐产物投影规则：
+冻结产物，也不套用产物集成模式的按产物逐项生成的规则：
 
 | 文档位置 | 独立模式事实来源与构建规则 |
 |---|---|
@@ -84,14 +84,14 @@
 source entry 重复 `2.1` 小节。无属性时写 `| — | — | — | — | 无属性 |`。spec 或独立模式
 证据明确 NOT_FOUND/无转换入口时写“不支持转换”，不编造属性、类型或布局。
 
-产物集成模式完全投影实现约定的输入、dtype、属性、输出、shape/layout、
+产物集成模式按实现约定完整呈现输入、dtype、属性、输出、shape/layout、
 量化语义和功能限制；独立模式从已查证支持链路构建。模型 dtype 与验证路径是两个概念，不能
 把 full-quant int8 验证路径改写成原生 int8 模型支持。本章不写用例数量、运行结果、烧录状态
 或验证任务名；这些内容全部放入验证文档。
 
 ### 第 3 章：MindSpore Lite Micro 软件设计
 
-`3.1 七类能力与复用裁决` 必须覆盖 Schema、Parser、Populate/Parameter、Infer、Kernel、
+`3.1 七类能力的复用判定` 必须覆盖 Schema、Parser、Populate/Parameter、Infer、Kernel、
 OpCoder 和 Quantizer，并写明复用/修改/新建/N/A、仓库相对文件或注册点、依据和限制。
 
 `3.2 关键场景与软件行为` 必须保留 capability checklist 中的全部能力，并使用 `scenario_groups`
@@ -131,7 +131,7 @@ Parameter、Infer、OpCoder、生成入口、Kernel 和应用模型 API；不适
 | TC-... | ... | ... | ... | ... | ... | ... | ... | ... |
 ```
 
-上述四个问题的文字和顺序固定，问答来自 facts 的 `coverage_principles`，每项包含 `question` 和 `answer`。答案必须先解释用户能理解的覆盖含义，再让验证文档的用例表给出精确数据；不要使用“逐用例投影”“冻结产物”“正向用例”等流程术语。
+上述四个问题的文字和顺序固定，问答来自 facts 的 `coverage_principles`，每项包含 `question` 和 `answer`。答案必须先解释用户能理解的覆盖含义，再让验证文档的用例表给出精确数据；不要使用“按用例逐项呈现”“冻结产物”“正向用例”等流程术语。
 
 第四个问题不能只罗列内部验证任务名。先按实际语义分类，再报告覆盖：
 

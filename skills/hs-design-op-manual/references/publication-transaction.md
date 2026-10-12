@@ -39,7 +39,7 @@
 |---|---|---|
 | step0 | 选择模式；独立模式一次性核对授权参数和两个精确目标路径，产物集成模式校验父参数和绝对路径 | 模式、范围、设计/验证目标明确 |
 | step1 | 产物集成模式运行输入 audit；`artifact-sync` 按 A/B/C/D 分级 | D 或核心冲突立即 FAIL |
-| step2 | 产物集成模式从原始主源创建/整份刷新 `operator-manual-facts.json`；独立模式整理已查证事实但不生成 facts 文件 | 集成模式 facts schema 完整；所有模式遇到缺失和冲突都停止，不发明 |
+| step2 | 产物集成模式根据原始核心材料创建或完整刷新 `operator-manual-facts.json`；独立模式整理已查证事实但不生成 facts 文件 | 集成模式 facts schema 完整；所有模式遇到缺失和冲突都停止，不发明 |
 | step3 | 产物集成模式从 facts、独立模式从已查证事实，在内存中分别生成设计和验证候选；终态重建验证用例表和结果章节 | 两份文档职责完整；验证 case 顺序和逐字段值一一对应 |
 | step4 | 对候选做格式、来源、支持措辞、敏感信息和 placeholder 自检 | 全部 PASS 才能进入发布门控 |
 | step5 | 将两份候选分别写入 `<opdir>/docs/` 的临时文件；产物集成模式对 facts 和两份候选运行完整 audit，独立模式运行格式、事实来源和职责边界自检 | 集成模式三项 audit 均 PASS；独立模式自检全部 PASS |
@@ -118,7 +118,7 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NO
 
 - [ ] 模式、授权和设计/验证输出路径与决策表一致。
 - [ ] 产物集成模式已从本次最新原始源刷新 `operator-manual-facts.json`；source path/hash、quote、case 顺序和 provenance 均正确。
-- [ ] 设计文档和验证文档各只有规定的三个一级编号章节；独立模式使用已查证事实构建，产物集成模式每章来自规定主源。
+- [ ] 设计文档和验证文档各只有规定的三个一级编号章节；独立模式使用已查证事实构建，产物集成模式每章均来自规定的核心材料。
 - [ ] capability 多于 7 项时，第 3 章已归并为 3～7 个读者场景；每个 capability 恰好出现一次，group 用例号是成员 `covered_by` 的准确并集。
 - [ ] 验证文档 `1.1 测试覆盖原则` 的四个问题和答案来自 `coverage_principles`，使用用户语言解释覆盖范围，没有流程术语堆叠。
 - [ ] 产物集成模式没有仓库重扫、外部查询、build、verify 或 board 重跑。
@@ -154,4 +154,4 @@ OP_MANUAL_SYNC=FAIL mode=<mode> publication=none design_path=NONE verify_path=NO
 | `verification path` | fp32、full-quant int8 等独立验证路径，不等于模型 dtype |
 | `value_domain` | 输入值域/输入数据特征，如 mixed、positive、negative、ties |
 
-所有模式都使用本 Skill 自带的设计/验证模板；不得以公共目录中的其它算子文档作为模板或事实源。
+所有模式都使用本 Skill 自带的设计/验证模板；不得以公共目录中的其它算子文档作为模板或事实依据。

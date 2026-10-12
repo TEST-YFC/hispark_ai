@@ -31,7 +31,7 @@ build_micro.py
 - 所有 case 使用新的独立 run/case 输出目录；`build_micro.py`、sample 和 receipt 必须绑定相同身份。
 - `integrate_sdk.py` 使用 sample 目录和 receipt 中的 `model_lib_dir`，不要把原始 archives 路径当作已安装库路径。
 - `verify_wiring.py` 只能从当前生成 receipt 中读取真实 observer 符号，不能手写 `GetTrainWeight*`。
-- 只有 `verify_firmware.py` 检查通过的 `*_all.fwpkg` 才交给 `hs-dev-flash`；不得用 fbb flash 绕过该 owner。
+- 只有 `verify_firmware.py` 检查通过的 `*_all.fwpkg` 才交给 `hs-dev-flash`；不得绕过负责方直接使用 fbb flash。
 - Host/WSL/Windows 混合执行时，每条命令记录自己路径空间中的等价路径；不要把 `/mnt/...` 和 `C:\...` 混在同一路径值里。`integrate_sdk.py` 生成的 `.sh` 使用 WSL 路径，生成的 `.ps1` 会把 `/mnt/<drive>/...` 转为 `<DRIVE>:/...`。
 
 ### 逐 case 命令模板
@@ -226,7 +226,7 @@ python -B collect_training_serial.py --input-log <saved-raw.log> --expected <exp
 python -B compare_training_board.py --expected <expected.json> --raw-log <saved-raw.log> --evidence-root <opdir> --output <new-report.json>
 ```
 
-collector 仅用于离线解析和归档 observed；数值复核直接读取 raw。compare 每次重验身份/BEGIN/DONE/tensor。离线数值复核没有传输回执，不能当作真实板端训练通过。
+collector 仅用于离线解析和归档 observed；数值复核直接读取 raw。compare 每次重新检查身份/BEGIN/DONE/tensor。离线数值复核没有传输结果记录，不能当作真实板端训练通过。
 
 ## 实时采集（仅设备拥有者执行）
 
@@ -248,7 +248,7 @@ fbb 固定传入 `--until '(?m)^TRAIN_DONE \{[^\r\n]*\}\r?\n'`，只匹配完整
 
 collector 保存实际身份、capture_attempt_id、采集时间、raw 路径/hash、backend_command/stdout/stderr/returncode、transport_status、parse_status 和错误。退出 0 仅表示采集后端成功且协议完整，或离线解析成功；后端非零保留原码到 JSON，collector 自身返回 2。异常也尽量保留部分原文。
 
-compare 的 0 只表示本 case 所声明检查 PASS，且传入 observed 时采集传输必须为 PASS、采集后端返回码必须为 0；缺少文件等前置条件为 NOT_RUN，协议/身份/集合/数值/采集回执错误为 FAIL，均非零。直接 raw replay 没有传输回执时状态为 UNKNOWN，只能作为离线数值复核，finalizer 不把它当作真实板端训练通过。
+compare 的 0 只表示本 case 所声明检查 PASS，且传入 observed 时采集传输必须为 PASS、采集后端返回码必须为 0；缺少文件等前置条件为 NOT_RUN，协议、身份、集合、数值或采集结果错误为 FAIL，均非零。直接 raw replay 没有传输结果记录时状态为 UNKNOWN，只能作为离线数值复核，finalizer 不把它当作真实板端训练通过。
 
 `tensor_count` 是单 case 检查项数，不是 case 数。固定固件 run_id 不会因采集而变化，本次采集以 attempt/time/hash 区分；工作流仍逐 case 核对固件、烧录和运行时快照来源证据。
 
@@ -256,7 +256,7 @@ compare 的 0 只表示本 case 所声明检查 PASS，且传入 observed 时采
 
 只有一个 Host 数值用例时，直接把该 case 的 comparator report 作为 `facts.board_evidence`。
 
-多个 Host 数值用例时，工作流生成一个 `board_matrix.json`。这个文件只做 case 到 report 的索引，不承载构建、烧录、设备、端口或采集过程；这些信息留在各自日志和 `facts.sources` 中。
+多个 Host 数值用例时，工作流生成一个 `board_matrix.json`。这个文件只做 case 到 report 的索引，不记录构建、烧录、设备、端口或采集过程；这些信息留在各自日志和 `facts.sources` 中。
 
 生成规则固定：`report.path` 是相对 `<opdir>` 的路径；`report.sha256` 是 report 文件字节的 64 位小写 SHA256；case 集合必须等于 Host expected 数值 case 集合；每行 report 自身必须 PASS，且 report 中的 `case_id` 与索引行一致。失败或未执行不生成通过索引，保留真实阶段状态和已生成的 report。
 

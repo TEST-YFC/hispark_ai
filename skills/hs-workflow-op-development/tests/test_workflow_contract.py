@@ -163,7 +163,7 @@ def test_workflow_requires_document_first_and_terminal_background_reporting():
     assert "PRE_SOURCE_GATE=PASS" in stage1
     assert "hs-dev-op-implement mode=apply" in stage2
     assert "不能先改代码再更新草稿" in stage1
-    for token in ("RUN_ID", "首个真实错误", "终态通知", "不能关闭承载任务的窗口"):
+    for token in ("RUN_ID", "首个真实错误", "终态通知", "不能关闭运行任务的窗口"):
         assert token in workflow, token
 
 

@@ -1,12 +1,12 @@
 # WS63 训练板端验证
 
-本分支复现 Host 已通过的 Micro 训练用例。复用 SDK 核对、交叉编译、构建、烧录和串口采集能力；训练 Sample、训练快照和训练数值判定按本文执行。推理 Sample 的 `OH_AI_ModelPredict` 和余弦结果不能替代训练验证。
+本流程复现 Host 已通过的 Micro 训练用例。复用 SDK 核对、交叉编译、构建、烧录和串口采集能力；训练 Sample、训练快照和训练数值判定按本文执行。推理 Sample 的 `OH_AI_ModelPredict` 和余弦结果不能替代训练验证。
 
 ## 1. 前置检查与用例矩阵
 
 输入：`verification_kind=training`、本轮 Host 汇总及其 hash、`runs/<run_id>/board_expected/training_board_expected_matrix.json` 及逐 case expected、原始 case/golden、训练配置、生成模型、输入/label、初值、参考 checkpoint、用户指定的 `FIRMWARE_SDK_ROOT`、`chip=ws63` 和 `BOARD_POLICY`。expected 矩阵由 Host aggregate 的 `--export-board-expected` 生成；本阶段不得手工改写、删减或另行拼装。
 
-先读取 [WS63 SDK 接入规范](../../chips/ws63/references/sdk-integration.md) 和 [设备说明](../../chips/ws63/references/device.md)，复用 SDK 身份、adaptor、库安装、Kconfig/CMake/target 接线要求。其中 ONNX/TFLite 推理矩阵、推理 Sample 生成和精度判定不适用于本分支；训练用例、Sample 与观测要求以本文为准。
+先读取 [WS63 SDK 接入规范](../../chips/ws63/references/sdk-integration.md) 和 [设备说明](../../chips/ws63/references/device.md)，复用 SDK 身份、adaptor、库安装、Kconfig/CMake/target 接线要求。其中 ONNX/TFLite 推理矩阵、推理 Sample 生成和精度判定不适用于本流程；训练用例、Sample 与观测要求以本文为准。
 
 执行端口探测并保存结果。Host 运行在 WSL 而 fbb、SDK、串口在 Windows 时，使用 `--target auto` 会同时探测 WSL 本地 `/dev` 和 Windows COM；只要探测 Windows 端口时也可显式加 `--target windows`。若 interop 不可用，必须回到 Windows 执行同一命令，不能把 WSL 的 `/dev` 为空解释为没有板卡：
 
@@ -19,7 +19,7 @@ python <hs-verify-op-board>/scripts/probe_serial_ports.py --target auto --output
 - 多设备无法唯一确定目标：询问端口，不擅自烧录。
 - Host 用例未通过：保留预期矩阵行但不执行，说明上游条件不满足。
 
-读取 Host 导出的 `training_board_expected_matrix.json`，逐行核对 run_id、case_id、framework、dtype、测试点、模型/数据/GT hash、steps、checkpoint、optimizer 参数和必测张量/参数集合。负向转换用例属于 Host 边界检查，不进入板端训练执行分母；Host 数值通过用例必须全覆盖，不能挑选或省略。矩阵缺失、状态不是 PASS 或内部 hash 不一致时，板端记 `NOT_RUN` 并说明上游阻断。
+读取 Host 导出的 `training_board_expected_matrix.json`，逐行核对 run_id、case_id、framework、dtype、测试点、模型/数据/GT hash、steps、checkpoint、optimizer 参数和必测张量/参数集合。负向转换用例属于 Host 边界检查，不计入板端训练的期望用例总数；Host 数值通过用例必须全覆盖，不能挑选或省略。矩阵缺失、状态不是 PASS 或内部 hash 不一致时，板端记 `NOT_RUN` 并说明上游阻断。
 
 ## 2. Micro 模型与交叉编译
 
@@ -34,7 +34,7 @@ build_micro.py --config <Host micro_train.cfg> --case-json <locked case.json> --
 → observer_adapter=true, nm_verified=true
 ```
 
-只有生成 C 的 mutable 参数表、case metadata、adapter、`libnet.a` 定义符号和 receipt 身份链全部通过后，才能调用 sample、SDK 接入和 `hs-dev-build`。任一前置失败记为 `NOT_RUN`/失败，不能以 Host 文件导出或 Sample 自报替代真实板端参数地址；固件构建仍必须使用 `hs-dev-build`，烧录仍必须由 `hs-dev-flash` 负责，不能直接绕过 owner 调用 fbb。
+只有生成 C 的 mutable 参数表、case metadata、adapter、`libnet.a` 定义符号，以及 receipt 中的身份信息全部核对通过后，才能准备 sample、接入 SDK 和调用 `hs-dev-build`。任何前置检查失败都记为 `NOT_RUN`/失败，不能以 Host 文件导出或 Sample 自报替代真实板端参数地址；固件构建仍必须使用 `hs-dev-build`，烧录仍必须由 `hs-dev-flash` 负责，不能绕过负责方直接调用 fbb。
 
 检查产物的架构、ABI、模型/运行时符号、重复库和训练源码收集。安装库、adaptor 和 Sample 到已授权 SDK 时保留原有文件及配置变更记录。固件构建交给 `hs-dev-build`，不绕过其 clean build 和 target 检查。
 
@@ -73,7 +73,7 @@ Sample 每个用例独立创建模型并恢复相同初始权重/optimizer state
 
 仅出现 `TRAIN_DONE`、仅有单个输出，或仅有烧录/进程退出成功，都不能作为 `TRAIN_BOARD_VERIFY=PASS`；缺少必需数据记 `NOT_RUN`/未完成，已发生的解析、采集或数值错误保留 `FAIL`。
 
-原文必须有同一 run_id/case_id/model_sha256 的 TRAIN_BEGIN、唯一 TRAIN_TENSOR 集合和 TRAIN_DONE；逐帧核对身份及顺序，collector 将实收身份提升到顶层。TRAIN_* 表示 training；显式 verification_kind 必须为 training。framework、数据/GT/配置指纹未由设备打印时，保留外部清单证据并标为 external_identity_fields，不从 expected 补造设备字段。
+原文必须有同一 run_id/case_id/model_sha256 的 TRAIN_BEGIN、唯一 TRAIN_TENSOR 集合和 TRAIN_DONE；逐帧核对身份及顺序，collector 将设备实际报告的身份写入顶层字段。TRAIN_* 表示 training；显式 verification_kind 必须为 training。framework、数据/GT/配置指纹未由设备打印时，保留外部清单证据并标为 external_identity_fields，不根据 expected 虚构设备字段。
 
 兼容现有 key/data；dtype、shape、元素数、阶段、step、名称等已声明元数据须检查，未打印的元数据不得宣称板端已核验。浮点文本须保留 FP32 精度。两侧数据拒绝重复 key、bool/字符串、NaN/Inf 和 FP32 溢出；tensor 集合与长度精确匹配。读取层支持串口半行拼接，目前不支持协议级 tensor 分块或二进制编码；不能忽略 chunk 字段后判通过。
 
@@ -103,14 +103,14 @@ Sample 每个用例独立创建模型并恢复相同初始权重/optimizer state
 
 使用 `scripts/training/collect_training_serial.py --input-log` 可离线解析已有原文；实时采集由唯一设备拥有者执行，禁止并行抢口。fbb 分支以 --log 原文为准，使用 FBB_SDK_DIR 环境变量、完整行 DONE 正则和可选 --reset，实际参数先查本地 help。保留后端退出码与解析状态；超时但原文完整可单独离线比较，不能把工具失败改记为成功。非协议行可包含任意启动噪声字节；解析器只把第一条严格合法的 `TRAIN_BEGIN` 之后的协议行计入会话，复位残帧不计入证据，计入会话后的协议行必须是完整、严格的 UTF-8 JSON。
 
-`compare_training_board.py` 从 --raw-log 或 collector JSON 引用的原文独立重放，核验 hash、BEGIN/DONE、身份、重复、完整 tensor 集合与数值。传入 observed 时还要求 `transport_status=PASS` 且 backend 返回码为 0；直接 raw replay 只保留 UNKNOWN 传输回执，供离线复核，不等价于真实板端训练通过。参数集合来自 expected.required_parameters 或既有 weight key/role 约定，不信任 parameters_observed 自报值；无参数预期且没有其他错误时返回 NOT_RUN，已知错误保持 FAIL。before/after、上游变化或冻结不变规则由 Host case 写入 expected.parameter_checks，不能硬编码参数名、步数或直接信任 observed 的更新结论。
+`compare_training_board.py` 从 --raw-log 或 collector JSON 引用的原文独立重放，核验 hash、BEGIN/DONE、身份、重复、完整 tensor 集合与数值。传入 observed 时还要求 `transport_status=PASS` 且 backend 返回码为 0；直接 raw replay 只保留 UNKNOWN 传输记录，供离线复核，不等价于真实板端训练通过。参数集合来自 expected.required_parameters 或既有 weight key/role 约定，不信任 parameters_observed 自报值；无参数预期且没有其他错误时返回 NOT_RUN，已知错误保持 FAIL。before/after、上游变化或冻结不变规则由 Host case 写入 expected.parameter_checks，不能硬编码参数名、步数或直接信任 observed 的更新结论。
 
 该脚本生成单 case `training_board_report.json`，包含必需身份、证据 hash、逐 tensor 数值及参数规则结果；`tensor_count` 不是 case 数。
 
 - **比较输入**：只接受同一 case 的期望数据、原始串口日志或 collector 输出。
 - **PASS 判定**：必须完成所有必测 tensor 与参数规则的真实数值比较。
 - **finalizer**：从逐 case 结果派生 `expected`、`recorded`、`executed`、`pass`、`fail`、`not_run`、`not_requested` 统计。
-- **文档同步**：将可追溯的阶段状态与明确排除原因写入验证文档，不得事后补造统计。
+- **文档同步**：将可追溯的阶段状态与明确排除原因写入验证文档，不得事后虚构统计。
 
 训练矩阵身份仍须包含验证类型和 checkpoint，不能和同名推理 case 合并。
 
@@ -126,4 +126,4 @@ finalizer 会重放每个 report，并核对 Host expected 数值用例集合；
 
 ## 6. 交回工作流
 
-交回模型/库/固件路径、SDK 变更、端口探测、flash JSON、完整串口、数值比较、逐行矩阵和重跑步骤。工作流更新独立验证文档。对尚未具备的板端参数观测接口如实记录，不宣称本分支已有未经实测的全自动板端训练能力。
+交回模型/库/固件路径、SDK 变更、端口探测、flash JSON、完整串口、数值比较、逐行矩阵和重跑步骤。工作流更新独立验证文档。对尚未具备的板端参数观测接口如实记录，不宣称当前流程已有未经实测的全自动板端训练能力。

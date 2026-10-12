@@ -12,13 +12,13 @@
 
 ## 本轮待办、检查点和自动续跑
 
-每次开始“生成/实现/适配算子”时，先创建本轮待办和临时状态文件，再调用会生成文档、写源码、
+每次开始“生成/实现/适配算子”时，先生成本轮待办和临时状态文件，再调用会生成文档、写源码、
 生成测试或构建的下游 Skill。待办模板是 `references/workflow-todo.template.md`，状态只能通过
 `scripts/workflow_state.py` 写入。不要凭对话记忆维护进度，也不要手工编辑生成的待办。
 状态目录放在本轮算子输出目录的临时子目录中，例如 `<opdir>/.workflow-state/<RUN_ID>/`；
 不要放在 skill 源目录或其他算子的目录中。
 
-初始化只创建控制文件，不代表算子产物已经生成，也不改变 Stage0 的只读限制。基于已确定的
+初始化只生成控制文件，不代表算子产物已经生成，也不改变 Stage0 的只读限制。基于已确定的
 算子输出根目录生成本轮唯一 ID，不复用历史 ID，然后立即执行：
 
 ```text
@@ -48,7 +48,7 @@ SDK 未在 `init` 时提供时，收到用户唯一一次回复后使用同一�
 <使用回复中的 SDK 路径自动完成 fbb/SDK/目标/端口等剩余只读探测>
 python <skill>/scripts/workflow_state.py finish \
   --state-dir <STATE_DIR> --run-id <RUN_ID> --task stage0.scope_environment \
-  --attempt-token <INIT输出的ATTEMPT_TOKEN> --status PASS --evidence <本轮Stage0探测回执绝对路径>
+  --attempt-token <INIT输出的ATTEMPT_TOKEN> --status PASS --evidence <本轮Stage0探测结果文件绝对路径>
 python <skill>/scripts/workflow_state.py confirm \
   --state-dir <STATE_DIR> --run-id <RUN_ID> \
   --phrase "确认执行" --confirmed-mode AUTO_ALL \
@@ -69,10 +69,10 @@ python <skill>/scripts/workflow_state.py confirm \
 
 | 对外阶段 | 任务 ID | 主要检查和最小证据 |
 |---|---|---|
-| Stage0 | `stage0.scope_environment`、`stage0.confirm` | 范围和环境只读探测回执；一次总确认和 `EXECUTION_CONFIRM_GATE=PASS` |
+| Stage0 | `stage0.scope_environment`、`stage0.confirm` | 范围和环境只读探测结果文件；一次总确认和 `EXECUTION_CONFIRM_GATE=PASS` |
 | Stage1 | `stage1.plan`、`stage1.initial_docs`、`stage1.pre_source_gate` | 实现约定、能力清单、计划 `op_spec.py`、初版文档、facts 和 `PRE_SOURCE_GATE=PASS` |
 | Stage2 | `stage2.implementation`、`stage2.code_review` | 源码 diff、`code-review.md`、质量/安全检查均 PASS |
-| Stage3 | `stage3.mslite_build` | 本轮 `MSLITE_PKG`、构建日志和新鲜度回执 |
+| Stage3 | `stage3.mslite_build` | 本轮 `MSLITE_PKG`、构建日志和新鲜度结果记录 |
 | Stage4 | `stage4.host_verify` | 全量 Host summary、`board_expected_matrix.json`、`HOST_VERIFY_GATE=PASS` |
 | Stage5 | `stage5.firmware_matrix` | 每个 framework/case/mode 独立 fwpkg、接线和固件内容检查 |
 | Stage6 | `stage6.board_matrix` | 每行 flash JSON、串口 Tensor、accuracy 结果和矩阵报告 |
@@ -88,7 +88,7 @@ python <skill>/scripts/workflow_state.py finish --state-dir <STATE_DIR> --run-id
   --task <TASK_ID> --attempt-token <ATTEMPT_TOKEN> --status PASS --evidence <本轮绝对路径>
 ```
 
-`finish` 不接受空证据；证据可以是本轮产物的绝对路径或明确的单行回执标识。`finalize` 同样
+`finish` 不接受空证据；证据可以是本轮产物的绝对路径或明确的单行结果标识。`finalize` 同样
 必须带终态报告证据。状态脚本会拒绝损坏、空白或多行证据，避免无产物的 PASS。
 
 `finish` 会推进到下一个未完成任务。失败时，后续执行任务冻结为 `BLOCKED`；板端不可用导致的
@@ -126,6 +126,6 @@ python <skill>/scripts/workflow_state.py finish --state-dir <STATE_DIR> --run-id
 只要本轮任一后台任务仍为 `RUNNING`，workflow 就不能结束当前任务或向用户提交最终答复。`--wait` 返回 10 时，必须携带同一 `RUN_ID` 继续等待，直至得到 `SUCCESS` 或 `FAILED`，随后立即向用户通知终态。
 
 所有后台任务都要登记 `RUN_ID`、启动时间、日志路径、状态查询命令和终态通知点。保持前台等待，
-或按状态命令查询；不能关闭承载任务的窗口后再假定结果。任务失败时，在当前会话报告首个真实错误、
+或按状态命令查询；不能关闭运行任务的窗口后再假定结果。任务失败时，在当前会话报告首个真实错误、
 所属阶段、可复现命令和下一步；任务成功时，报告终态和本轮产物路径。历史日志、其他运行的 RC
 和串口输出只能作为背景，不能作为本轮 PASS/FAIL 证据。

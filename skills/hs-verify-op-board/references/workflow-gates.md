@@ -9,15 +9,15 @@
 - [step0a：板端 Python 依赖预检](#step0a板端-python-依赖预检在-step1-前执行)
 - [step1：锁定完整板端期望矩阵](#step1锁定完整板端期望矩阵)
 
-进入对应阶段时读取本文件；SDK 授权、矩阵分母和进度步骤保持不变。
+进入对应阶段时读取本文件；SDK 授权、期望用例总数和进度步骤保持不变。
 
 # 算子真板精度验证
 
-本 skill 负责将本轮 Host 板端期望矩阵中的每条用例确定性地接入固件 SDK，并确认它们在真实
+本 skill 负责将本轮 Host 板端期望矩阵中的每条用例按固定流程接入固件 SDK，并确认它们在真实
 WS63 上均可执行且输出正确。它不重新设计测试规格，也不修改 MindSpore Lite 算子源码。
-固件构建和烧录由顶层 workflow 分别调用 `hs-dev-build`、`hs-dev-flash`；本 skill 输出明确的
-handoff，并在两个 Skill 完成后继续验收，不自行解释尚未读取的内部流程。
-构建前必须完整执行 Micro 模型、adaptor、Sample 和 SDK 接线步骤。验收的固件必须具有可追踪的来源。
+固件构建和烧录由顶层 workflow 分别调用 `hs-dev-build`、`hs-dev-flash`；本 skill 提供明确的
+交接信息，并在两个 Skill 完成后继续核对结果，不推测尚未读取的内部流程。
+构建前必须完整执行 Micro 模型、adaptor、Sample 和 SDK 接线步骤。待核对的固件必须具有可追踪的来源。
 
 两种入口模式：
 
@@ -44,9 +44,9 @@ Host 与 Board 不合并为一个 skill：
 |---|---|
 | `op_spec.py`、最小模型、输入和 GT | `hs-verify-op-host` |
 | 算子源码缺陷 | `hs-dev-op-implement` |
-| 固件 SDK 位置授权、Micro 模型、adaptor、Sample 和构建接线 | 本 skill step0-3；这些工作属于 workflow Stage5，完整 workflow 恢复同一轮状态处理 handoff |
-| fwpkg 构建 | workflow Stage5 调用 `hs-dev-build`；本 skill 输出构建 handoff 并验收返回证据 |
-| fwpkg 烧录 | workflow Stage6 调用 `hs-dev-flash`；本 skill 输出烧录 handoff 并验收返回证据 |
+| 固件 SDK 位置授权、Micro 模型、adaptor、Sample 和构建接线 | 本 skill step0-3；这些工作属于 workflow Stage5，完整 workflow 恢复同一轮状态并继续交接 |
+| fwpkg 构建 | workflow Stage5 调用 `hs-dev-build`；本 skill 输出构建交接信息并核对返回证据 |
+| fwpkg 烧录 | workflow Stage6 调用 `hs-dev-flash`；本 skill 输出烧录交接信息并核对返回证据 |
 | 串口完整 Tensor 与 GT 比对 | 本 skill |
 
 如果用户只说“烧录”，使用 `hs-dev-flash`；如果用户泛化地要求“适配算子并上板验证”，使用顶层 workflow。

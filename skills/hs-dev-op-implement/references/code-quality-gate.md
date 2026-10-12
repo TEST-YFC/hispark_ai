@@ -20,7 +20,7 @@
 1. 列出本次修改文件，并把每个文件映射到 capability、注册点或构建接线。
 2. 对修改的 C/C++ 文件使用代码根的 `.clang-format`；先检查 diff，再决定是否 `-i`，避免格式化无关代码。
 3. 运行 `git diff --check` 和 `quick_check.sh`。
-4. 按下表人工审计无法可靠机械判断的规则；按原规范规则编号记录适用性、证据和结果，不能只写笼统结论。
+4. 按下表人工审计脚本无法可靠判断的规则；按原规范规则编号记录适用性、证据和结果，不能只写笼统结论。
 5. 将全部规则ID及`applicability/evidence/status`写入`<opdir>/docs/code-style-audit.md`；缺少任一规则ID、适用项缺证据或任一FAIL时门禁为FAIL。
 6. 输出 PASS/FAIL 表；任何高风险项未确认时门禁为 FAIL。
 
@@ -89,8 +89,8 @@
 `evidence_location` 必须指向实际源码、生成 `net*.c` 或转换日志的路径与行号，或给出可复现命令。
 `mode` 必须覆盖 `blocked` 和 `allowed`，或以 `N/A` 加证据说明不适用；
 `semantic_coverage` 使用 `scenario,case_id,expected_behavior,evidence_location,status`，
-逐项记录输入形态、广播、索引/边界、折叠/重写和 dtype 场景（不适用时用 N/A 加证据）。门禁因此能机械拦截
-空表、未达分支、量化归属漂移、死代码和把重写结果冒充原算子执行等情况；具体算子名称
+逐项记录输入形态、广播、索引/边界、折叠/重写和 dtype 场景（不适用时用 N/A 加证据）。门禁因此能由脚本拦截
+空表、未达分支、量化归属不一致、死代码和把重写结果冒充原算子执行等情况；具体算子名称
 不写入规则。
 
 ## 建议命令

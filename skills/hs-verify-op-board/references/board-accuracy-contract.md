@@ -25,7 +25,7 @@ python3 <skill_root>/scripts/board_accuracy.py \
 
 字段至少包含`run_id/operator/framework/case_id/mode/status/reason`以及同轮
 `model/input_dir/gt_dir/firmware/flash_log/monitor/accuracy_log/serial_probe`绝对路径。
-`serial_probe`必须指向本轮 `probe_serial_ports.py` 回执；PASS行缺任一证据无效。
+`serial_probe`必须指向本轮 `probe_serial_ports.py` 生成的探测结果；PASS行缺少任何一项证据均无效。
 
 脚本解析 benchmark `PrintTensorHandle` 的 `Elements`/`Shape`/`Data`，或项目连续输出的 `[AI_MCU] Shape: [d1,d2,...]` 与 `[AI_MCU] Data: [v1]...`。它先精确核对 Tensor 数量、元素数和 shape，再使用与 Host 相同的余弦语义逐 Tensor 比较：fp32 `cos >= 0.999`，INT8 `cos >= 0.99`。只有 `[AI_MCU] Data` 而没有 shape 时结果判定为 `SHAPE_UNVERIFIED`，不得通过。未带 `OUTPUT: index=N` 的连续 Shape/Data 协议只支持单输出、单轮推理；出现多个没有 round/output 标识的 Data 行时按协议歧义判为 FAIL，不得默认取第一条。Host 与 Board 复用同一 GT，Board 不得另设更宽松的阈值，将 Host 精度不合格的结果判为通过。
 
@@ -53,7 +53,7 @@ python3 <skill_root>/scripts/board_matrix_report.py \
 
 失败分流：
 
-| 证据 | owner |
+| 证据 | 负责方 |
 |---|---|
 | 串口无输出、启动失败、模型/输入未接入 | workflow Stage5 的 sample/adaptor/固件接线 |
 | 固件未烧录或烧录 JSON 失败 | `hs-dev-flash` |
@@ -61,4 +61,4 @@ python3 <skill_root>/scripts/board_matrix_report.py \
 | GT、模型、输入跨轮或 case 不一致 | 回 step0 重新选择，不运行比较 |
 | Tensor 数量/shape 不匹配 | 先核对固件模型和串口格式，再决定是接入还是算子缺陷 |
 
-不要在本 skill 修改 kernel/opcoder、降低阈值或重写 GT。把首个失败原文、逐 Tensor 余弦、固件/case 身份和建议 owner 返回 workflow。
+不要在本 skill 修改 kernel/opcoder、降低阈值或重写 GT。把首个失败原文、逐 Tensor 余弦、固件/case 身份和建议负责方返回 workflow。

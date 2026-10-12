@@ -25,7 +25,7 @@ Skill 的可用性。完成 `stage0.scope_environment` 后立即调用 `finish`�
 
 若 `stage0.scope_environment` 失败或阻断，且用户尚未确认，状态机会自动将 `stage7.final_docs` 标为 `BLOCKED`。
 此时只允许 `terminal.report` 记录失败原因、恢复命令和状态证据，不得生成或修改算子设计/验证交付文档。
-常规终版文档回填必须等确认通过，且 Stage5、Stage6 到达终态后再执行。
+常规终版文档更新必须等确认通过，且 Stage5、Stage6 到达终态后再执行。
 
 开始前，先自动探测代码存储位置和各阶段的实际执行环境。可由当前会话、路径存在性和工具实测
 唯一确定的信息，不得再次询问用户。路径只直接证明“文件存在哪里”，不能单独证明“命令在哪里执行”。
@@ -79,7 +79,7 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
    `ttyUSB/ttyACM`。串口探测必须在 `DEVICE_IO_ENV` 执行：Windows 设备用 Windows Python/PowerShell
    运行脚本并保存 Windows 绝对路径；只有 `DEVICE_IO_ENV=WSL|Linux` 时才在 WSL/Linux 探测 `/dev`。
    `HISPARK_RUN_ENV=WSL` 不代表 Windows COM 会自动出现在 WSL；跨环境交接时必须复制并记录
-   `serial_probe.json`、固件的绝对路径和 SHA-256。保存的回执包括每个来源的端口、设备描述、VID/PID、错误和时间。
+   `serial_probe.json`、固件的绝对路径和 SHA-256。保存的结果文件包括每个来源的端口、设备描述、VID/PID、错误和时间。
    只有一个环境能看到唯一 USB-UART 候选且后续 `hs-dev-flash` 返回真实 `success=true` 时，
    才记录 `DEVICE_IO_ENV`和端口；未检测到、多个候选或来源冲突时进入用户交互，不能直接判定“无板”。
 6. 两个环境都能成功构建同一SDK且没有更强证据可唯一选择时，不擅自偏好某一边，在本次
@@ -93,7 +93,7 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 ### Stage0 完成只读探测后必须发出的执行确认模板
 
 处理“生成/实现/适配算子”请求时，工具调用前可以先发简短进度说明。完成上述Stage0只读探测后的
-第一条环境状态回复应集中展示算子范围、四类环境、探测依据、完整阶段、预计写入/产物位置，
+第一条环境状态回复应集中展示算子范围、四类环境、探测依据、完整阶段、预计修改位置和产物路径，
 以及仍需人工处理的条件，然后等待一次执行确认。只向用户询问无法自动确定的信息。
 
 正文使用通俗中文。不要用 `BOARD_POLICY`、`DEVICE_IO_ENV`、`TARGET_RUNTIME`、
@@ -138,8 +138,8 @@ TARGET_RUNTIME=<chip/board/OS/fbb-target>
 
 如果缺少`FIRMWARE_SDK_ROOT`，先展示已知的 HiSpark 存储/运行环境和默认 AUTO_ALL 范围，并在同一条
 Stage0 执行确认预览中索取 SDK 绝对路径和执行范围确认。不得猜测或自动挑选路径。收到回复后，不再
-重复询问：先用该路径完成其余只读探测，把回执作为 `stage0.scope_environment` 的 evidence 并调用 `finish`。
-Stage0 PASS 后，再调用 `confirm --confirmed-mode AUTO_ALL --sdk-root <绝对路径>`，将同一条回复作为唯一确认落盘并进入 Stage1。
+重复询问：先用该路径完成其余只读探测，把结果文件作为 `stage0.scope_environment` 的 evidence 并调用 `finish`。
+Stage0 PASS 后，再调用 `confirm --confirmed-mode AUTO_ALL --sdk-root <绝对路径>`，将同一条回复作为唯一确认写入状态文件并进入 Stage1。
 若某项仍有歧义，只列出该项及候选证据，请用户修正；随后以新 RUN_ID 展示最终方案。这属于 Stage0 初始确认的修正，
 不是后续阶段的再次确认。
 

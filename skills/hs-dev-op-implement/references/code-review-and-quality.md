@@ -60,7 +60,7 @@
 整图输出证据；对于 blocked case，必须记录生成代码中目标 Kernel/OpCoder 符号的命中位置。
 
 若本轮新增了 `.c/.cc`源文件而非只修改已有文件，进入构建前必须触发对应CMake重新
-configure：先确认该目录的 `CMakeLists.txt`通过GLOB或显式列表消费新文件，再由workflow
+configure：先确认该目录的 `CMakeLists.txt`通过 GLOB 或显式列表包含新文件，再由workflow
 构建前 `touch`该 `CMakeLists.txt`。否则增量构建可能不收新对象，却链接旧库产生假结论。
 
 ## step6：实现质量门禁
@@ -101,7 +101,7 @@ IMPLEMENT_GATE=PASS unit=<implementation_unit>
 在输出 `IMPLEMENT_GATE=PASS`前逐项执行以下结案检查；任一项不适用要写N/A及证据，
 不能静默删除：
 
-- decision2新建/复用裁决有候选排查和逐项等价/不等价证据；属性审计、构造型fusion
+- decision2新建/复用判定有候选排查和逐项等价/不等价证据；属性审计、构造型fusion
   审计、消除/重写pass审计均已呈现。
 - Parser注册名/builtin与规格逐字一致；激活子类型返回 `ops::Activation`；复用路线的
   Parser返回冻结的复用Primitive。
@@ -118,12 +118,12 @@ IMPLEMENT_GATE=PASS unit=<implementation_unit>
 - 广播实现使用真实stride/tile设施，快路条件逐输入成立，不以 `i % num`近似一般广播。
 - OpCoder `Collect()`列全所需 `.h/.c`，serializer结构与底层函数签名一致，无模板残留、
   魔数、错误arity或过期版权年。
-- `capability_checklist.json`原行内容未被静默改弱，每行均有实现落点和计划case；若验证
-  已回流，则只有真实PASS case可填covered_by，最终必须 `capabilities=N/M`且N=M，除非
-  用户裁决并由VERDICT记录 `ACK_REDUCED`。
+- `capability_checklist.json`原行内容未被静默改弱，每行均有对应实现位置和计划 case；若验证结果
+  已返回本阶段，则只有真实PASS case可填covered_by，最终必须 `capabilities=N/M`且N=M，除非
+  用户决定并由VERDICT记录 `ACK_REDUCED`。
 - `git diff`终审将每个修改文件映射到能力/注册点；失败方案的伴生include、dead pass、
   半拆守卫全部清理；被放开的路径有PASS用例，否则连守卫一起还原。
 - `docs/code-review.md` 已完成并且每个注册键、dtype 分支、量化列表、优化/折叠 case 和
   生成调用均有证据；死代码、重复注册和错误白名单归属均为 0 个未处置项。
 - 所有修改C/C++按代码根 `.clang-format`检查，`git diff --check`无错误；新增源文件的
-  CMake消费点与重新configure要求已交给workflow。
+  CMake 中包含该文件的位置及重新 configure 的要求已交给 workflow。

@@ -34,7 +34,7 @@ test -x "$MSLITE_PKG/tools/converter/converter/converter_lite" && echo OK || ech
 
 **`MSLITE_PKG` 必须指向构建产物顶层（`output/mindspore-lite-<ver>-linux-x64/`）——即解压后的 tar.gz 包。禁止指向原始 `build/` 目录。** 后者缺少 `include/c_api/`、`runtime/include/` 等头文件，共享库分散在多处，会导致 `converter_lite` 找不到 `.so` 或 `make` 缺头文件。用错目录时最常见症状是 `error while loading shared libraries` / `c_api/model_c.h: No such file`——遇到此症状先检查 `MSLITE_PKG` 是否为解压包。
 
-**解压包必须不早于最近一次构建——harness 自动校验并拒绝陈旧包。** 重新编译只刷新 tar.gz，不会自动重新解压；若忘记重解压，验证会运行陈旧的 `converter_lite`，结论不能反映当前代码。harness 发现旁边的 tar.gz 比解压包新即报错停止——处置就是重新解压（`build_mslite.sh` 构建成功后自动完成）。`OP_VERIFY_ALLOW_STALE=1` 只允许用于显式兼容性对比，不得用于结论性签收。`verify_summary.txt` 头部记录本轮 `converter_lite` 的构建时间，便于追溯结论对应哪次构建。
+**解压包必须不早于最近一次构建——harness 自动校验并拒绝陈旧包。** 重新编译只刷新 tar.gz，不会自动重新解压；若忘记重解压，验证会运行陈旧的 `converter_lite`，结论不能反映当前代码。harness 发现旁边的 tar.gz 比解压包新即报错停止——处置就是重新解压（`build_mslite.sh` 构建成功后自动完成）。`OP_VERIFY_ALLOW_STALE=1` 只允许用于显式兼容性对比，不得用于最终验证结论。`verify_summary.txt` 头部记录本轮 `converter_lite` 的构建时间，便于追溯结论对应哪次构建。
 
 未构建时**停止并告知用户先构建工具链**,不要继续、不要伪造结果。
 
@@ -92,7 +92,7 @@ spec **只描述"算什么",不碰"结果对不对"**。
 
 ### 能力清单锁定文件 `<proj>/scripts/capability_checklist.json`（完整 workflow 必需，implement step3 保存）
 
-把 `hs-dev-op-implement` step3 的「能力验收清单」逐行落成 JSON，harness 据此机械核对覆盖（详见「必守约束」对应红线）。结构：
+把 `hs-dev-op-implement` step3 的「能力验收清单」逐行落成 JSON，harness 据此自动核对覆盖情况（详见「必守约束」对应红线）。结构：
 
 ```json
 {

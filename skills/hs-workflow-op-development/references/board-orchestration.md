@@ -31,17 +31,17 @@ target=<fbb真实target>
 
 本阶段完整读取并逐节执行 `hs-verify-op-board` 内的 `chips/ws63/references/sdk-integration.md`
 和 `references/ws63-build-handoff.md`。下表只映射顶层编排与具体步骤，不删减任何步骤；
-每一项仍须按对应 reference 执行并回传证据。
+每一项仍须按对应 reference 执行并返回证据。
 
 对于 WS63，先调用 `hs-verify-op-board` step0-3 准备模型并完成 SDK 接线。收到构建 handoff 后，
-再调用 `hs-dev-build`。构建结果返回同一轮 Board Skill，由 step4 验收；烧录后不重新从 step0 启动。
+再调用 `hs-dev-build`。构建结果返回同一轮 Board Skill，由 step4 检查；烧录后不重新从 step0 启动。
 下表列出各项的权威步骤和必要交接：
 
-| 编排项 | 具体步骤归属 | 必须回传的交接 |
+| 编排项 | 具体步骤归属 | 必须返回的交接内容 |
 |---|---|---|
 | step0/0a | Board Skill step0/0a、SDK reference §1-2 | 用户授权 SDK、Git/dirty 基线、target、依赖和 `BOARD_SDK_GATE`/`PY_DEPS_GATE` |
 | step1 | Board Skill step1、SDK reference §3 | 同轮 `board_expected_matrix.json` 的全部 Host PASS 行及模型、输入、GT |
-| step2 | Board Skill step2、SDK reference §4-5、`ws63-build-handoff.md` | 每行 converter/Micro 工程、真实 RISC-V 编译、`libmicro_runtime.a`/`libnet.a` 及 receipt |
+| step2 | Board Skill step2、SDK reference §4-5、`ws63-build-handoff.md` | 每行 converter/Micro 工程、真实 RISC-V 编译、`libmicro_runtime.a`/`libnet.a` 及结果记录 |
 | step3 | Board Skill step3、SDK reference §6-10、`ws63-build-handoff.md` | adaptor、带 case 身份的模型库、Sample、CMake/Kconfig/target、`BOARD_WIRING_GATE=PASS` |
 | step4 | Board Skill step4、SDK reference §11、`ws63-build-handoff.md` | `hs-dev-build` 返回的新鲜 fwpkg 和 `FIRMWARE_CONTENT_GATE=PASS` |
 
@@ -87,7 +87,7 @@ flash、端口交叉探测、重插/RESET、monitor 时间和 JSON 解析规则�
 对 `board_expected_matrix.json` 的每一行，调用 `hs-dev-flash` 烧录该行在 Stage5 生成的新鲜固件。
 只接受本轮 flash 最后一行的 `success=true` JSON；然后采集串口并运行精度判定。不能绕过统一 flash 入口直接调用 BurnTool。
 进入本阶段以及每次 `PORT_NOT_FOUND` 重试前，按 `hs-verify-op-board` 内的
-`references/flash-serial-handoff.md` 运行 `probe_serial_ports.py`，并保存本轮回执。.NET/注册表交叉探测、
+`references/flash-serial-handoff.md` 运行 `probe_serial_ports.py`，并保存本轮结果文件。.NET/注册表交叉探测、
 PnP 超时和 USB-UART 候选排除规则都是强制门禁，不能简化为只判断端口名称。
 
 烧录前，核对 `FBB_SDK_DIR`、真实 target，以及通过 Stage5 内容门禁的新鲜 `_all.fwpkg`。
