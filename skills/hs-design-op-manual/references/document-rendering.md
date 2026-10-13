@@ -14,7 +14,7 @@
 产物集成模式必须按以下两个模板分别维护两份主文档：
 
 - [`operator-design-doc-template.md`](operator-design-doc-template.md)：
-  `<opdir>/docs/{op}-operator-design-doc.md`，只记录规格范围、支持限制、七类能力复用裁决、关键场景和软件调用链。
+  `<opdir>/docs/{op}-operator-design-doc.md`，只记录规格范围、支持限制、七类能力复用判定、关键场景和软件调用链。
 - [`operator-verify-doc-template.md`](operator-verify-doc-template.md)：
   `<opdir>/docs/{op}-operator-verify-doc.md`，只记录测试设计、用例矩阵、Host/固件/烧录/串口/板端结果和证据索引。
 
@@ -28,7 +28,7 @@
 ### 独立模式的设计/验证文档构建
 
 `standalone-generate` 和 `standalone-update` 要求存在明确的 `<opdir>` 作为文档归属目录，但不要求
-冻结产物，也不套用产物集成模式的逐产物投影规则：
+冻结产物，也不套用产物集成模式的按产物逐项生成的规则：
 
 | 文档位置 | 独立模式事实来源与构建规则 |
 |---|---|
@@ -50,13 +50,13 @@
 {来自 spec.md 的公开、已验证语义简述}
 ```
 
-产物集成模式只有 `spec.md` 明确给出英文全名、类别或公式时才写对应内容。独立模式使用其已查证来源。所选来源缺少全名/类别时使用不增加新事实的中性已验证描述；缺少公式时省略公式块，不使用通用名称或经验公式补造。
+产物集成模式只有 `spec.md` 明确给出英文全名、类别或公式时才写对应内容。独立模式使用其已查证来源。所选来源缺少全名/类别时使用不增加新事实的中性已验证描述；缺少公式时省略公式块，不得根据通用名称或经验公式自行添加内容。
 
 ### 第 1 章：算子概述
 
 严格使用模板中的 `1.1 功能和数学定义` 与 `1.2 最小示例`。产物集成模式只有 `spec.md`
 明确给出公式时才写公式；独立模式使用已交叉查证的规格。最小示例必须给出输入 dtype、shape、
-关键属性和预期输出，但不写运行结果。缺少可靠公式时省略公式，不使用经验公式补造。
+关键属性和预期输出，但不写运行结果。缺少可靠公式时省略公式，不得根据经验自行添加公式。
 
 ### 第 2 章：框架算子规格
 
@@ -84,22 +84,23 @@
 source entry 重复 `2.1` 小节。无属性时写 `| — | — | — | — | 无属性 |`。spec 或独立模式
 证据明确 NOT_FOUND/无转换入口时写“不支持转换”，不编造属性、类型或布局。
 
-产物集成模式完全投影实现约定的输入、dtype、属性、输出、shape/layout、
+产物集成模式按实现约定完整呈现输入、dtype、属性、输出、shape/layout、
 量化语义和功能限制；独立模式从已查证支持链路构建。模型 dtype 与验证路径是两个概念，不能
 把 full-quant int8 验证路径改写成原生 int8 模型支持。本章不写用例数量、运行结果、烧录状态
 或验证任务名；这些内容全部放入验证文档。
 
 ### 第 3 章：MindSpore Lite Micro 软件设计
 
-`3.1 七类能力与复用裁决` 必须覆盖 Schema、Parser、Populate/Parameter、Infer、Kernel、
+`3.1 七类能力的复用判定` 必须覆盖 Schema、Parser、Populate/Parameter、Infer、Kernel、
 OpCoder 和 Quantizer，并写明复用/修改/新建/N/A、仓库相对文件或注册点、依据和限制。
 
-`3.2 关键场景与软件行为` 先完整保留 capability checklist，再通过 `scenario_groups` 组织公开
-章节。当 capability 多于 7 项时，必须归并为 3～7 个面向读者的场景；每个场景回答“什么时候
-会遇到”“软件支持什么”“有什么限制”。每个 capability 必须恰好属于一个 group，group 的
-`covered_by` 等于成员 capability 用例号的有序并集，但不把用例号写入设计文档。找不到、重复
-或遗漏即 FAIL，禁止为补齐覆盖而新造用例。独立模式不要求 capability checklist，但仍按相同
-读者场景结构组织。
+`3.2 关键场景与软件行为` 必须保留 capability checklist 中的全部能力，并使用 `scenario_groups`
+按使用场景分组。capability 多于 7 项时，将其归并为 3～7 个便于读者理解的场景。每个场景说明
+“什么时候会遇到”“软件支持什么”“有什么限制”。
+
+每个 capability 必须且只能属于一个 group。group 的 `covered_by` 必须等于其成员 capability
+用例号的有序并集，但设计文档中不显示用例号。找不到、重复或遗漏 capability 时立即 FAIL，
+不得新造用例补齐覆盖。独立模式不要求 capability checklist，但仍按上述场景结构组织内容。
 
 `3.3 转换与运行调用链` 必须把模板的通用链替换为当前算子的真实 Parser、Primitive/Schema、
 Parameter、Infer、OpCoder、生成入口、Kernel 和应用模型 API；不适用环节写 N/A 及原因。
@@ -130,7 +131,7 @@ Parameter、Infer、OpCoder、生成入口、Kernel 和应用模型 API；不适
 | TC-... | ... | ... | ... | ... | ... | ... | ... | ... |
 ```
 
-上述四个问题的文字和顺序固定，问答来自 facts 的 `coverage_principles`，每项包含 `question` 和 `answer`。答案必须先解释用户能理解的覆盖含义，再让验证文档的用例表给出精确数据；不要使用“逐用例投影”“冻结产物”“正向用例”等流程术语。
+上述四个问题的文字和顺序固定，问答来自 facts 的 `coverage_principles`，每项包含 `question` 和 `answer`。答案必须先解释用户能理解的覆盖含义，再让验证文档的用例表给出精确数据；不要使用“按用例逐项呈现”“冻结产物”“正向用例”等流程术语。
 
 第四个问题不能只罗列内部验证任务名。先按实际语义分类，再报告覆盖：
 
@@ -138,7 +139,7 @@ Parameter、Infer、OpCoder、生成入口、Kernel 和应用模型 API；不适
 - 全量化 int8 通路：只统计 float32 模型经 FULL_QUANT 后确实生成 int8 张量/量化内核的 PASS 用例；必须有 `int8_genuine`、生成内核或等价产物证据。
 - 原生整数通路：单独说明 int32 等原生整数模型。即使它执行了名为 `riscv_int8` 的任务，只要张量和内核仍为原生整数，就不能计入 int8 量化覆盖。
 
-验证结论中的数量必须从 facts 的 cases、逐 case `verification_paths` 和实现/生成证据计算，不能从聚合路径列表或路径名称推断。`verification_paths` 保留机器任务名用于审计，但公开验证文档必须转换为“x86 主机非量化”“RISC-V 非量化”“RISC-V 全量化 int8”“RISC-V 原生整数”等实际含义；全文不得出现 `x86_fp32`、`riscv_fp32`、`riscv_int8`。
+验证结论中的数量必须根据 facts 的 cases、逐 case `verification_paths` 和实现或生成证据计算，不得根据聚合路径列表或路径名称推断。`verification_paths` 可保留机器任务名用于审计；公开验证文档必须将其表述为“x86 主机非量化”“RISC-V 非量化”“RISC-V 全量化 int8”或“RISC-V 原生整数”等实际运行含义。公开文档中不得出现 `x86_fp32`、`riscv_fp32` 或 `riscv_int8`。
 
 以下验证文档用例表规则只适用于产物集成模式：
 

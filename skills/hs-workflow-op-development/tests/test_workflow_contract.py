@@ -163,7 +163,7 @@ def test_workflow_requires_document_first_and_terminal_background_reporting():
     assert "PRE_SOURCE_GATE=PASS" in stage1
     assert "hs-dev-op-implement mode=apply" in stage2
     assert "不能先改代码再更新草稿" in stage1
-    for token in ("RUN_ID", "首个真实错误", "终态通知", "不能关闭承载任务的窗口"):
+    for token in ("RUN_ID", "首个真实错误", "终态通知", "不能关闭运行任务的窗口"):
         assert token in workflow, token
 
 
@@ -207,6 +207,10 @@ def test_frozen_contract_and_planned_cases_cannot_change_during_apply_or_host():
     assert re.search(r"读取并执行\s*Stage1\s*已锁定的完整\s*`op_spec\.py`", host_stage)
     assert "不把Host阶段当成正常改写计划用例的阶段" in host_stage
     assert "完整workflow的Host阶段不得直接新增、删除或改写case" in host
+    guardrails = read("hs-verify-op-host/references/host-guardrails.md")
+    assert "完整 workflow 中，`op_spec.py` 已在 Stage1 冻结" in guardrails
+    assert "必须返回 workflow Stage1" in guardrails
+    assert "不得在 Host 阶段改写冻结 spec 或 facts" in guardrails
 
 
 def test_final_manual_is_host_gated_and_board_report_is_signed_separately():
@@ -465,7 +469,8 @@ def test_individual_skill_trigger_is_explicit_and_board_stage_numbers_match():
     assert "A/B/C/D" in artifact_mode and "证据等级" in artifact_mode
     assert "D 不写文件" in artifact_mode
     assert "本 skill step0-3" in board
-    assert "workflow Stage5 的 sample/adaptor/固件接线" in board
+    assert "这些工作属于 workflow Stage5" in board
+    assert "workflow stage6 的 sample/adaptor/固件接线" not in board
     assert "Stage5 默认" in workflow and "Stage6 默认" in workflow
 
 
@@ -521,7 +526,7 @@ def test_stage0_does_not_conflate_wsl_with_firmware_environment():
     workflow = read_bundle("hs-workflow-op-development")
     for token in (
         "生成 BitShift 算子",
-        "默认宣布`AUTO_ALL`",
+        "默认采用 `AUTO_ALL` 模式",
         "HISPARK_STORAGE_ENV=<Windows|WSL|Linux>",
         "FIRMWARE_SDK_STORAGE_ENV=<Windows|WSL|Linux>",
         "FIRMWARE_BUILD_ENV=<Windows|WSL|Linux>",
@@ -545,7 +550,7 @@ def test_stage0_auto_detects_before_asking_user():
         "收到路径后再自动判断其存储、构建和设备I/O环境",
         "完成上述Stage0只读探测后的",
         "两个环境都能成功构建同一SDK",
-        "只把该项及候选证据列为",
+        "只列出该项及候选证据",
     ):
         assert token in workflow, token
     for forbidden in (
@@ -590,8 +595,8 @@ def test_stage0_user_message_uses_plain_language_before_internal_fields():
         "当前状态：等待你的确认",
         "请回复“确认执行”",
         "技术记录：STAGE0_PREVIEW=READY",
-        "开发板连接环境”是电脑在哪个系统中通过USB/串口烧录和读取",
-        "固件是后续构建出的`.fwpkg`文件",
+        "开发板连接环境”是电脑在哪个系统中通过 USB/串口烧录和读取",
+        "固件是后续构建出的 `.fwpkg` 文件",
     ):
         assert token in workflow, token
     assert workflow.index("执行方式：完整开发和验证（默认）") < workflow.index(
@@ -712,3 +717,55 @@ def test_mslite_build_concurrency_and_package_freshness_are_bounded():
     assert "mindspore-enterprise-lite-*-linux-x64.tar.gz" in build
     assert "candidate_mtime=$(stat -c '%Y'" in build
     assert '[ "${candidate_mtime}" -lt "${STARTED}" ]' in build
+
+
+def test_mslite_build_profiles_keep_training_enabled_and_traceable():
+    build = read("hs-workflow-op-development/scripts/build_mslite.sh")
+    train_workflow = read("hs-workflow-train-op-development/SKILL.md")
+    train_implementation = read("hs-dev-train-op-implement/SKILL.md")
+
+    assert "--profile inference|training" in build
+    assert 'PROFILE="inference"' in build
+    assert "inference|training" in build
+    assert 'if [ "${PROFILE}" = "training" ]; then' in build
+    assert "export MSLITE_ENABLE_TRAIN=ON" in build
+    assert "export MSLITE_ENABLE_TRAIN=OFF" in build
+    assert "PROFILE=${PROFILE}" in build
+    assert "BUILD_PROFILE=${PROFILE}" in build
+    assert "MSLITE_ENABLE_TRAIN=${MSLITE_ENABLE_TRAIN}" in build
+    assert "RESOLVED_MSLITE_ENABLE_TRAIN=${RESOLVED_TRAIN}" in build
+    assert "TRAIN_PACKAGE_ARTIFACTS=${TRAIN_ARTIFACTS}" in build
+    assert "runtime/lib/libmindspore-lite-train.so" in build
+    assert "runtime/lib/libmindspore-lite-train.a" in build
+    assert "read_result" in build
+
+    for text in (train_workflow, train_implementation):
+        assert "--profile training" in text
+        assert "BUILD_PROFILE=training" in text
+        assert "RESOLVED_MSLITE_ENABLE_TRAIN=ON" in text
+        assert "TRAIN_PACKAGE_ARTIFACTS=PASS" in text
+
+
+def test_inference_and_training_workflows_require_paired_documents_before_source_changes():
+    inference = read("hs-workflow-op-development/SKILL.md")
+    training = read("hs-workflow-train-op-development/SKILL.md")
+
+    inference_stage1 = inference.split("## Stage1：", 1)[1].split("## Stage2：", 1)[0]
+    inference_stage7 = inference.split("## Stage7：", 1)[1]
+    assert "生成并审计设计文档、验证文档初稿" in inference_stage1
+    assert "设计文档只记录规格、边界和实现方案" in inference_stage1
+    assert "验证文档列出计划用例" in inference_stage1
+    assert "实际执行结果只写入验证文档" in inference_stage7
+
+    train_stage1 = training.split("## train-stage1：", 1)[1].split("## train-stage2：", 1)[0]
+    train_stage6 = training.split("## train-stage6：", 1)[1]
+    train_implementation = read("hs-dev-train-op-implement/SKILL.md")
+    assert "verification_kind=training mode=integrated-initial" in train_stage1
+    assert "生成并审计设计文档和验证文档初稿" in train_stage1
+    assert "<opdir>/docs/{op}-operator-design-doc.md" in train_stage1
+    assert "<opdir>/docs/{op}-operator-verify-doc.md" in train_stage1
+    assert "verification_kind=training mode=integrated-final" in train_stage6
+    assert "实际运行结果只写验证文档" in train_stage6
+    assert "已审计的设计文档、验证文档和 prepare 产物" in train_implementation
+    assert "设计文档或验证文档缺失、任一文档未通过审计" in train_implementation
+    assert "已审计的正式设计文档、验证文档一致" in train_implementation

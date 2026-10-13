@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -136,7 +137,20 @@ def pass_to_host_or_board(
 
 def finish_terminal_docs_and_report(state_dir: Path) -> None:
     finish_current(state_dir, "stage7.final_docs", "PASS", "docs/design.md", "docs/verify.md")
-    invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
+    finalize_report(state_dir)
+
+
+def finalize_report(state_dir: Path) -> None:
+    report = state_dir / "workflow-summary.txt"
+    report.write_text(f"terminal report for {state_dir.name}\n", encoding="utf-8")
+    invoke(state_dir, "finalize", "--run-id", state_dir.name,
+           "--evidence", str(report.resolve()))
+    artifact = read_state(state_dir)["artifacts"]["terminal.report"]
+    assert artifact["evidence"] == [str(report.resolve())]
+    assert artifact["evidence_digests"] == [{
+        "path": str(report.resolve()),
+        "sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
+    }]
 
 
 def read_state(state_dir: Path) -> dict:
@@ -243,6 +257,18 @@ def test_auto_all_board_not_run_is_incomplete_but_final_docs_still_run(tmp_path)
     assert state["overall_status"] == "INCOMPLETE"
 
 
+def test_finalize_requires_existing_absolute_report_file(tmp_path):
+    state_dir = init_run(tmp_path)
+    pass_to_host_or_board(state_dir)
+    finish_current(state_dir, "stage7.final_docs", "PASS")
+    relative = invoke(state_dir, "finalize", "--run-id", state_dir.name,
+                      "--evidence", "missing-report.txt", expected=2)
+    assert "absolute file path" in relative.stderr
+    missing = invoke(state_dir, "finalize", "--run-id", state_dir.name,
+                     "--evidence", str((tmp_path / "missing-report.txt").resolve()), expected=2)
+    assert "does not exist" in missing.stderr
+
+
 def test_terminal_report_is_required_before_any_success_status(tmp_path):
     state_dir = init_run(tmp_path)
     pass_to_host_or_board(state_dir)
@@ -252,7 +278,7 @@ def test_terminal_report_is_required_before_any_success_status(tmp_path):
     assert state["overall_status"] == "INCOMPLETE"
     status = invoke(state_dir, "status", "--run-id", state_dir.name)
     assert "OP_WORKFLOW=INCOMPLETE" in status.stdout
-    invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
+    finalize_report(state_dir)
     assert read_state(state_dir)["overall_status"] == "PASS"
 
 
@@ -368,7 +394,7 @@ def test_host_only_marks_board_not_requested_and_has_scoped_terminal_status(tmp_
         "stage7.final_docs",
     ):
         finish_current(state_dir, task, "PASS", f"{task}.json")
-    invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
+    finalize_report(state_dir)
     state = read_state(state_dir)
     statuses = {item["id"]: item["status"] for item in state["tasks"]}
     assert statuses["stage5.firmware_matrix"] == "NOT_REQUESTED"
@@ -579,7 +605,7 @@ def test_upstream_retry_invalidates_previously_finalized_downstream_results(tmp_
         finish_current(state_dir, task, "PASS")
     finish_current(state_dir, "stage3.mslite_build", "FAIL")
     finish_current(state_dir, "stage7.final_docs", "PASS")
-    invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
+    finalize_report(state_dir)
     invoke(state_dir, "retry", "--run-id", state_dir.name, "--task", "stage3.mslite_build")
     state = read_state(state_dir)
     assert state["current_task"] == "stage3.mslite_build"
@@ -661,7 +687,7 @@ def test_environment_failure_blocks_document_backfill_and_allows_state_finalize(
         expected=2,
     )
     assert "OUT_OF_ORDER" in cannot_start_docs.stderr
-    invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
+    finalize_report(state_dir)
     state = read_state(state_dir)
     assert state["overall_status"] == "FAIL"
     assert state["tasks"][1]["status"] == "BLOCKED"
@@ -765,4 +791,4 @@ def test_terminal_report_is_finalize_only(tmp_path):
         expected=2,
     )
     assert "dedicated command" in finished.stderr
-    invoke(state_dir, "finalize", "--run-id", state_dir.name, "--evidence", "workflow-summary.txt")
+    finalize_report(state_dir)

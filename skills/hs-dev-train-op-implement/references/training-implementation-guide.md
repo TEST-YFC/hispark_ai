@@ -10,7 +10,7 @@ tools/converter/micro/coder/train/opcoders/
 src/litert/kernel/cpu/nnacl_c/fp32_grad/
 ```
 
-注册必须绑定到 `kBackward + PrimitiveType`。不要只新增源码文件而忘记显式 Micro CMake 列表。
+注册必须绑定到 `kBackward + PrimitiveType`。新增源码文件时，还要同步更新显式 Micro CMake 列表。
 
 ## GradRule 检查表
 
@@ -18,7 +18,7 @@ src/litert/kernel/cpu/nnacl_c/fp32_grad/
 - 是否把 parameter gradient 放进 `trainable_input_indices`。
 - 是否声明 backward 需要的 forward input。
 - 是否依赖 forward output；若依赖，builder 是否有可验证的保活机制。
-- 同一个 rule 被 builder 调用两次时是否仍确定性。
+- 同一个 rule 被 builder 调用两次时，结果是否仍然一致。
 
 ## TrainNodeCoder 检查表
 
@@ -39,12 +39,12 @@ src/litert/kernel/cpu/nnacl_c/fp32_grad/
 - `OutputGradForTensor()` 用于定位 output gradient；
 - header/source 收集完整；
 - `Serializer` 只输出一个 tagged block；
-- 不写 runtime allocation、m0 offset 或数值循环。
+- runtime allocation、m0 offset 和数值循环均不写入 coder。
 
 ## NNACL fp32_grad 检查表
 
 - 函数接口无状态；
-- 不 heap allocate；
+- 不使用 heap allocation；
 - NULL 参数含义明确；
 - alias 行为明确；
 - 对非法 shape/axis 的防护由转换期承担；

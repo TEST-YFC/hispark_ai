@@ -6,7 +6,7 @@
 - [step3：adaptor、Sample与SDK接线](#step3adaptorsample与sdk接线)
 - [step4：委托构建并核对固件身份](#step4委托构建并核对固件身份)
 
-以下内容从入口按需下沉；每一行独立模型库、Sample、接线和固件身份规则保持不变。
+入口按需读取以下内容；每一行使用独立模型库、Sample、接线和固件身份的规则保持不变。
 
 ## step2：生成Micro工程并交叉编译模型库
 
@@ -23,9 +23,9 @@
 - 使用真实RISC-V工具链构建 `libmicro_runtime.a`和 `libnet.a`；
 - 核对归档对象、模型身份、dtype和当前case，禁止使用陈旧库冒充。
 
-任何失败先保留converter/编译原文，再根据证据回流算子实现、工具链或模型配置。case局部失败
+任何失败都先保留converter/编译原文，再根据证据转交算子实现、工具链或模型配置的负责方处理。case局部失败
 时记录该行FAIL并继续其他安全可执行行；环境/工具链公共失败时停止后续动作，并把剩余行逐项
-记录为NOT_RUN，不能缩小expected分母。
+记录为NOT_RUN，不能减少期望用例总数。
 本步骤只能在Linux/WSL的`HISPARK_RUN_ENV`运行；Windows固件编译不意味着Linux版
 `converter_lite`也能在Windows运行。
 
@@ -40,8 +40,8 @@
 1. 以HiSpark.AI的 `src/adaptor`为来源安装或逐文件核对CPU adaptor和 `ai.h`；
 2. 把本轮两份模型库安装到带operator/case/mode身份的目录；
 3. 以仓库中经过验证的OH_AI Sample/API结构作为代码模板；
-4. 运行 `chips/ws63/scripts/prepare_sample.py`，使用同一Host输入生成多输入/多输出安全的
-   独立板端Sample；缺输入、dtype或大小不符必须硬失败；
+4. 运行 `chips/ws63/scripts/prepare_sample.py`，使用同一Host输入生成支持多输入、多输出的
+   独立板端Sample；缺少输入、dtype或大小不符时，脚本必须直接报错；
 5. Sample调用一次 `OH_AI_ModelPredict()`并打印每个完整Tensor和shape；
 6. 调用 `chips/ws63/scripts/integrate_sdk.py`按固定规则安装adaptor、`ai.h`、带
    operator/case/mode身份的模型库，并接入CMake、Kconfig、target和模型库选择；
@@ -77,8 +77,8 @@ target=<fbb target>
 构建进程还必须回显并核对 `AI_CUSTOM_SAMPLE_DIR`和`AI_MCU_MODEL_VARIANT`与receipt一致；
 缺任一变量时，即使`fbb build`退出0也判定接线FAIL。
 
-随后必须运行 `chips/ws63/scripts/verify_firmware.py`，机械检查Sample `.c.obj`、map中的模型
-Predict/Execute/目标Kernel及 `_all.fwpkg`相对本轮Sample、两份库和配置的新鲜度。只有
+随后必须运行 `chips/ws63/scripts/verify_firmware.py`，由脚本检查Sample `.c.obj`、map中的模型
+Predict/Execute/目标Kernel，以及 `_all.fwpkg`是否晚于本轮Sample、两份库和配置。只有
 `FIRMWARE_CONTENT_GATE=PASS`才能进入烧录；`fbb build`退出0但缺该门禁仍是FAIL。
 退出码0但Sample未编入固件仍是FAIL。
 

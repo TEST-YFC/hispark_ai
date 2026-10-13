@@ -4,9 +4,9 @@
 
 ## shape-only / view 类
 
-例如 Reshape、Squeeze 等视图类算子。通常只需要把 `dy` reshape 回 forward 输入形状，不对 shape、axes 等结构 tensor 求导。
+例如 Reshape、Squeeze 等视图类算子。通常只需把 `dy` reshape 回 forward 输入形状。shape、axes 等结构 tensor 不参与求导。
 
-注意 converter 优化后 forward primitive 可能已经归一化为 Reshape。以 `CoderGraph` 中真实 primitive 为准。
+converter 优化后，forward primitive 可能已经归一化为 Reshape。以 `CoderGraph` 中的真实 primitive 为准。
 
 拒绝边界：
 
@@ -62,7 +62,7 @@ Transpose backward 是反 permutation。Permutation tensor 是结构输入，不
 - group、stride、dilation、pad、transpose 等属性；
 - branch fan-out 时 parameter gradient 的累加归属。
 
-如果需要 workspace、大型 im2col 缓冲或特殊 lifetime，不要在 TrainNodeCoder 临时分配 runtime buffer；应先升级框架需求。
+如果需要 workspace、大型 im2col 缓冲或特殊 lifetime，不要在 TrainNodeCoder 临时分配 runtime buffer；应先上报框架变更。
 
 ## elementwise 类
 

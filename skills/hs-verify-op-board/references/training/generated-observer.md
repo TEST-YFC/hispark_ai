@@ -1,18 +1,16 @@
 # 生成训练 observer 说明
 
-生成训练模型可在 CMake 配置时启用 `MSLITE_TRAIN_OBSERVER=ON`，而不启用
-`MSLITE_TRAIN_BENCHMARK`。生成的 `GetTrainWeightCountN()` / `GetTrainWeightN()`
-是模型内部 accessor，不改变公共 ABI。
+训练 observer 属于验证基础设施，不属于算子特性代码。当前 Skill 不修改 `src/mindspore-lite` 生成器，也不向共享 SDK 写 observer；`build_micro.py` 在每个独立 `<opdir>/runs/<run_id>/<case_id>/micro/` 的生成工程内写入 `src/model0/observer_adapter.c/.h`。
 
-`GetTrainWeightN(index, &metadata, &data)` 当前接受生成 metadata 标记为
-`float32` 或 `int32` 的训练权重。bytes 非零且与 dtype 对应、shape 元素数与 bytes
-一致；越界 index、NULL 输出指针、未绑定的 runtime weight 指针和 bytes 不匹配都会
-被拒绝。`data` 指向 LoadWeight 后的训练 RAM，而不是只读的 `_const` 初始数组。
-调用者应遍历 count 和 metadata 的 `raw_name/rank/shape`，不要假设 `m0_weight0`、
-参数顺序或元素个数。
+adapter 使用本轮生成 `weight0.c` 的 `model_params[]`，通过 `*model_params[i].addr` 读取 mutable RAM 权重；权重名称、dtype、shape 和元素字节数来自 Host 已锁定的 `case.json`，并与生成 C 的参数数量、offset、size 校验。它不复制默认权重、不硬编码运行时地址或偏移，也不写入算子源码、共享模板或 SDK 源码。
 
-`float32` 权重仍按训练容差比较；`int32` 权重按整数精确相等判断。当前不支持其他
-训练权重 dtype，也不把这个能力扩大成通用混合精度训练。
+训练构建必须同时满足：
 
-本说明只描述生成接口。真实结论仍须使用与当前源码一致的 converter 生成训练模型，
-完成 Sample 接线、WS63 构建、烧录和串口采集，并按训练验证流程比较完整数据。
+- `--case-json` 指向当前 Host 通过的锁定 case；
+- adapter 只位于本轮 Micro 工程 `src/model0/`，路径和 SHA256 写入 `micro_build_receipt.json`；
+- `libnet.a` 中由 archive-aware `nm` 定义 `GetTrainWeightCount0` 与 `GetTrainWeight0`；
+- receipt 标记 `training_observer=true`、`nm_verified=true`，且 sample、integration、wiring 各阶段都核对同一 observer 能力和身份信息。
+
+`MSLITE_TRAIN_BENCHMARK` 仍只用于 Host/native 文件导出（例如 `ExportN` 和 `manifest.json`），不能替代 RISC-V adapter，也不能把 Host 文件当作板端参数快照。
+
+当前 WS63 脚本/fixture 测试覆盖 adapter 生成和 capability receipt；真实板端仍必须经过 SDK 构建、固件内容检查、烧录、串口采集和逐元素比较，脚本通过不等于 `TRAIN_BOARD_VERIFY=PASS`。任何 metadata、ABI、编译符号或 receipt 校验失败都记录 `NOT_RUN`/失败，不能只有 output 通过就宣称整体通过。

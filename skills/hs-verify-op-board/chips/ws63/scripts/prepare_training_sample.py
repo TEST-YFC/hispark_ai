@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import math
+import shutil
 from pathlib import Path, PureWindowsPath
 import re
 import sys
@@ -452,6 +453,7 @@ def render_c(expected: dict, inputs: list, outputs: list, labels: list, specs: d
 #include "osal_debug.h"
 #include "securec.h"
 #include "watchdog.h"
+#include "observer_adapter.h"
 
 #define AI_TASK_STACK_SIZE 0x4000
 #define AI_TASK_PRIORITY ((osPriority_t)17)
@@ -474,16 +476,6 @@ typedef struct {{
     bool has_step;
     size_t step;
 }} TrainingTensorMetadata;
-
-typedef struct {{
-    const char *raw_name;
-    const char *file_name;
-    uint32_t offset;
-    uint32_t bytes;
-    int32_t dtype;
-    uint8_t rank;
-    int32_t shape[8];
-}} TrainWeightExportItem;
 
 struct ai_training_param {{
     OH_AI_ModelHandle model;
@@ -959,13 +951,35 @@ def main() -> int:
             or receipt.get("config_sha256") != expected.get("training_config_sha256")
             or receipt.get("model_sha256") != expected.get("model_sha256")):
         fail("micro_build_receipt_training_identity_mismatch")
+    case_receipt = Path(str(receipt.get("case_json", ""))).resolve()
+    if case_receipt != case_path.resolve() or digest(case_receipt) != receipt.get("case_json_sha256"):
+        fail("micro_build_receipt_case_identity_mismatch")
     micro_project = Path(str(receipt.get("micro_project"))).resolve()
     if micro_source.parent != (micro_project / "src" / "model0").resolve():
         fail("micro_model_source_not_from_receipt_project")
+    observer = receipt.get("observer_adapter")
+    if (receipt.get("training_observer") is not True or not isinstance(observer, dict)
+            or observer.get("nm_verified") is not True
+            or observer.get("symbols") != ["GetTrainWeightCount0", "GetTrainWeight0"]):
+        fail("training_observer_capability_missing")
+    for key in ("header", "source"):
+        item = observer.get(key)
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            fail(f"training_observer_{key}_receipt_missing")
+        path = Path(item["path"]).resolve()
+        if path.parent != (micro_project / "src" / "model0").resolve() or not path.is_file():
+            fail(f"training_observer_{key}_path_mismatch")
+        if digest(path) != item.get("sha256"):
+            fail(f"training_observer_{key}_hash_mismatch")
 
     output.mkdir(parents=True, exist_ok=True)
     source = output / "src" / "ai_main.c"
     source.parent.mkdir(parents=True, exist_ok=True)
+    observer_header = output / "src" / "observer_adapter.h"
+    source_observer_header = Path(observer["header"]["path"]).resolve()
+    shutil.copy2(source_observer_header, observer_header)
+    if digest(observer_header) != observer["header"]["sha256"]:
+        fail("training_observer_header_copy_hash_mismatch")
     source.write_text(render_c(expected, micro_inputs, micro_outputs, micro_labels, specs),
                       encoding="utf-8", newline="\n")
     (output / "CMakeLists.txt").write_text(render_cmake(), encoding="utf-8", newline="\n")
@@ -975,9 +989,11 @@ def main() -> int:
         "model_sha256": expected["model_sha256"], "micro_model_source": str(micro_source),
         "framework": expected["framework"], "mode": "fp32",
         "training_config_sha256": receipt["config_sha256"],
+        "observer_adapter": observer,
         "micro_model_source_sha256": digest(micro_source),
         "micro_build_receipt": str(receipt_path), "output": str(output),
         "sample_source_sha256": digest(source), "sample_cmake_sha256": digest(output / "CMakeLists.txt"),
+        "observer_header": {"path": str(observer_header), "sha256": digest(observer_header)},
     }
     (output / "training_sample_receipt.json").write_text(
         json.dumps(sample_receipt, ensure_ascii=False, indent=2) + "\n",

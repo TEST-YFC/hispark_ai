@@ -50,7 +50,7 @@ python3 <hs-verify-op-host>/scripts/validate_op_spec.py <absolute-opdir>
 
 每个激活 framework 都必须得到 `ARTIFACT_GATE=PASS` 且 validator 退出 0。harness 自己还会检查目标节点/
 builtin 身份、动态输入与 initializer 数量、能力 `covered_by` 引用、常量折叠/节点重写双路径和 INT8 真
-实性；不得删除 FAIL case、缩小分母、降低阈值或改 GT 换绿。
+实性；不得删除 FAIL case、减少应执行的用例、降低阈值或改 GT 换绿。
 
 ## 运行和结论规则
 
@@ -90,7 +90,7 @@ next_owner=<hs-workflow-op-development|implementation|toolchain>
 
 `HOST_VERIFY_GATE=PASS` 只表示本轮 Host 范围的全部激活 cases 和路径已由 harness 记录，不表示源码实现、
 固件、烧录或板端精度通过。Host PASS 后交给 workflow 生成 `board_expected_matrix.json`；不能在此自行
-扩大或缩小板端分母。
+增减板端应执行的用例。
 
 ## 资源索引
 

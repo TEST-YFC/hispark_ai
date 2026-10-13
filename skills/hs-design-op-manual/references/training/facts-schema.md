@@ -2,7 +2,7 @@
 
 `operator-training-manual-facts.json` 保存已经核对的内容摘要、计划和结果引用。它不是验证结果生成器。下面的字段和固定渲染由 `scripts/training/audit_manual_inputs.py` 校验，不复用推理的 `op_spec.py` 或审计脚本。
 
-## 1. 设计主源
+## 1. 设计依据
 
 以下文件均在 `<opdir>` 内，必须记录相对路径与真实 SHA256：
 
@@ -35,8 +35,7 @@
     "parser": "NOT_RUN", "selection": "NOT_RUN", "helper": "NOT_RUN",
     "development_chain": "NOT_REQUESTED", "graph": "NOT_REQUESTED",
     "memory": "NOT_REQUESTED", "export": "NOT_REQUESTED",
-    "freeze_snapshot": "NOT_REQUESTED",
-    "matmul_kernel_dw_null_check": "NOT_REQUESTED"
+    "freeze_snapshot": "NOT_REQUESTED"
   },
   "capability_notes": "说明所检查的源码位置和实际限制；不需要冻结时明确未请求。",
   "design": {
@@ -63,15 +62,23 @@
       {"name": "training_graph_and_memory", "status": "NOT_RUN", "reason": "尚未转换。"},
       {"name": "inference_isolation", "status": "NOT_RUN", "reason": "尚未生成对照工程。"}
     ]
+  },
+  "inference_numerical": {
+    "status": "NOT_RUN",
+    "reason": "没有真实 inference 输入、输出、golden 和数值比较；inference_isolation 不替代该检查。"
   }
 }
 ```
 
-`sources` 示例只展示一行，实际必须包含全部主源和本轮证据。`operator/run_id/case_id` 只用英文字母、数字、下划线和连字符。
+`sources` 示例只展示一行，实际必须包含全部核心材料和本轮证据。`operator/run_id/case_id` 只用英文字母、数字、下划线和连字符。
 
-`checks.required` 至少保留上述四项，按任务增加必测项；`observed` 每项都要有状态和原因。PASS/FAIL 检查还要有 `evidence` 相对路径，且被 `sources` 记录。未执行项不伪造观察内容。
+`checks.required` 至少保留上述四项，按任务增加必测项；`observed` 每项都要有状态和原因。`inference_isolation` 只表示 inference-only 产物没有训练 artifact 泄漏；它不表示 `inference_numerical`，也不能满足训练模型生成、训练转换或 Host 训练验证门禁。`inference_numerical` 是独立结果字段，没有真实 inference 输入、输出、golden 和逐元素比较时必须为 `NOT_RUN`。PASS/FAIL 检查还要有 `evidence` 相对路径，且被 `sources` 记录。未执行项不伪造观察内容。
 
-冻结能力状态使用 `AVAILABLE/MISSING/BLOCKED/NOT_RUN/NOT_REQUESTED/UNSUPPORTED`。当 `requires_freezing=true` 且 Host 为 `PASS` 时，必须同时具备五项通用能力：`development_chain`、`graph`、`memory`、`export`、`freeze_snapshot`，并通过对应的开发链、训练图、训练内存、权重导出和冻结快照检查。MatMul 的 `matmul_kernel_dw_null_check` 仅在该算子适用时要求，不是通用冻结必填项。
+冻结能力状态使用 `AVAILABLE/MISSING/BLOCKED/NOT_RUN/NOT_REQUESTED/UNSUPPORTED`。当 `requires_freezing=true` 且 Host 为 `PASS` 时，必须同时满足：
+
+- 五项通用能力为 `AVAILABLE`：`development_chain`、`graph`、`memory`、`export`、`freeze_snapshot`；
+- 对应的开发链、训练图、训练内存、权重导出和冻结快照检查均为 PASS；
+- 算子专属能力写进该轮设计文档和验证证据，不加入这份通用 facts schema。
 
 case 级的离散梯度边界能力不新增到 facts 顶层 schema，仍由锁定的 `case.json` 表达。
 当 `graph_expectations.gradient_barrier=true` 时，测试设计和验证文档必须写明
@@ -105,7 +112,7 @@ Host PASS 要求：至少一个数值用例；全部数值用例 `PASS` 且 `num
 
 ## 4. 候选内容与结果含义
 
-设计正文由 `design` 四个章节及冻结能力说明组成；验证正文由测试设计、本轮结果、全部 case、结构检查和证据索引组成。渲染器使用固定章节，facts 中可写完整段落、公式、源码落点和表格，不应只填一句空泛概述。
+设计正文由 `design` 四个章节及冻结能力说明组成；验证正文由测试设计、本轮结果、全部 case、结构检查和证据索引组成。渲染器使用固定章节，facts 中可写完整段落、公式、源码位置和表格，不应只填一句空泛概述。
 
 候选必须与当前 facts 渲染内容完全一致，防止正文把 NOT_RUN 写成 PASS。源码事实仍由开发步骤核对；文件 hash 只能证明内容未变，不能证明事实本身正确。
 

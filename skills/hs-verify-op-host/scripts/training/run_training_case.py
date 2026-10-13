@@ -33,6 +33,14 @@ def graph_checker():
     return module
 
 
+def framework_adapter():
+    spec = importlib.util.spec_from_file_location(
+        'hs_training_framework_adapters', Path(__file__).with_name('framework_adapters.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def sha256(path):
     h = hashlib.sha256()
     with Path(path).open("rb") as stream:
@@ -56,7 +64,7 @@ def shape_size(shape):
     return math.prod(shape)
 
 
-def resolve_file(base, item):
+def resolve_file(base, item, legacy_schema=False):
     base = Path(base).resolve()
     require(isinstance(item, dict) and isinstance(item.get("path"), str), "missing file path")
     raw = Path(item["path"])
@@ -65,10 +73,16 @@ def resolve_file(base, item):
     require(p == base or base in p.parents, f"file path escapes case directory: {p}")
     require(p.is_file(), f"missing file: {p}")
     require(item.get("sha256") == sha256(p), f"source hash mismatch: {p}")
+    if "bytes" not in item:
+        # Schema-1 evidence was locked before byte counts became mandatory.
+        # Fill the in-memory value for this run only; never rewrite the case.
+        require(legacy_schema, f"source byte count missing: {p}")
+        item["bytes"] = p.stat().st_size
+    require(item["bytes"] == p.stat().st_size, f"source byte count mismatch: {p}")
     return p
 
 
-def read_tensor(path, shape, dtype="float32"):
+def read_tensor(path, shape, dtype):
     require(dtype in ("float32", "int32"), f"unsupported dtype: {dtype}")
     dt = np.dtype("<f4" if dtype == "float32" else "<i4")
     require(Path(path).stat().st_size == shape_size(shape) * dt.itemsize, f"tensor byte count: {path}")
@@ -90,19 +104,47 @@ def load_case(path):
     path = Path(path).resolve()
     c = json.loads(path.read_text(encoding="utf-8"))
     require(isinstance(c, dict), "case root must be an object")
-    require(c.get("schema_version") == 1 and c.get("verification_kind") == "training", "case version/kind")
+    schema_version = c.get("schema_version")
+    require(type(schema_version) is int and schema_version in (1, 2) and
+            c.get("verification_kind") == "training",
+            "case version/kind")
+    legacy_schema = schema_version == 1
+    if legacy_schema:
+        c["framework"] = c.get("framework", "onnx")
+        c["dtype"] = c.get("dtype", "float32")
+        for output in c.get("outputs", []):
+            if isinstance(output, dict):
+                output.setdefault("dtype", "float32")
+        for weight in c.get("weights", []):
+            if isinstance(weight, dict):
+                weight.setdefault("dtype", "float32")
+    framework = framework_adapter().framework_name(c.get("framework", ""))
+    if framework == "tflite":
+        for target in c.get("graph_expectations", {}).get("targets", []):
+            source = target.get("source_node", {})
+            require(type(source.get("index", target.get("operator_index"))) is int,
+                    "TFLite target requires source_node.index")
+            require(type(source.get("builtin_code", target.get("builtin_code"))) is int,
+                    "TFLite target requires source_node.builtin_code")
+    require(c.get("dtype") == "float32", "case dtype must be float32")
     require(isinstance(c.get("case_id"), str) and re.fullmatch(r"[A-Za-z0-9_-]+", c["case_id"]), "case_id")
     require(c.get("kind") in ("numerical", "reject"), "case kind")
     require(isinstance(c.get("test_point"), str) and bool(c["test_point"].strip()), "test_point")
     base = path.parent
-    model = resolve_file(base, c["model"])
+    model = resolve_file(base, c["model"], legacy_schema)
     files = [path, model]
     t = c.get("training", {})
-    for key, default in (("learning_rate", 0.01), ("momentum", 0.0)):
-        value = t.get(key, default)
+    for key in ("learning_rate", "momentum"):
+        if key not in t:
+            require(legacy_schema, f"training.{key} required")
+            t[key] = 0.01 if key == "learning_rate" else 0.0
+        value = t[key]
         require(type(value) in (float, int) and math.isfinite(value) and value >= 0, key)
         t[key] = value
-    require(re.fullmatch(r"[A-Za-z0-9_./-]+", t.get("label_tensor_name", "label")), "label name")
+    if "label_tensor_name" not in t:
+        require(legacy_schema, "training.label_tensor_name required")
+        t["label_tensor_name"] = "label"
+    require(re.fullmatch(r"[A-Za-z0-9_./-]+", t["label_tensor_name"]), "label name")
     blacklists = t.get("fusion_blacklists", [])
     require(isinstance(blacklists, list) and all(isinstance(x, str) and re.fullmatch(r"[A-Za-z0-9_./-]+", x) for x in blacklists), "fusion_blacklists")
     frozen = t.get("frozen_nodes", [])
@@ -151,7 +193,7 @@ def load_case(path):
                 require(spec.get("dtype") == expected_dtype, "sample dtype")
                 if role == "labels":
                     require(spec.get("shape") == [1], "batch=1 label shape")
-                f = resolve_file(base, spec)
+                f = resolve_file(base, spec, legacy_schema)
                 read_tensor(f, spec["shape"], expected_dtype)
                 require(not any(x in str(f) for x in (",", "\n", "\r")), "unsupported delimiter in input path")
                 files.append(f)
@@ -162,7 +204,7 @@ def load_case(path):
         require(layout == first_layout, "sample layouts differ")
         sample["argument"] = ",".join(paths)
     require(isinstance(c.get("reference_source"), str) and c["reference_source"].strip(), "reference_source")
-    golden = resolve_file(base, c["golden"])
+    golden = resolve_file(base, c["golden"], legacy_schema)
     files.append(golden)
     c["golden_path"] = str(golden)
     outputs = c.get("outputs", [])
@@ -171,7 +213,7 @@ def load_case(path):
     require(shape_size(outputs[-1]["shape"]) == 1, "scalar loss")
     for x in outputs:
         shape_size(x["shape"])
-        require(x.get("dtype", "float32") == "float32", "output dtype must be float32")
+        require(x.get("dtype") == "float32", "output dtype must be float32")
     weights = c.get("weights", [])
     require(weights, "weights required")
     names = [x.get("name") for x in weights]
@@ -180,7 +222,7 @@ def load_case(path):
     require(len(names) == len(set(names)) and len(refs) == len(set(refs)), "duplicate weight mapping")
     for x in weights:
         shape_size(x["shape"])
-        require(x.get("dtype", "float32") in ("float32", "int32"), "weight dtype must be float32 or int32")
+        require(x.get("dtype") in ("float32", "int32"), "weight dtype must be float32 or int32")
     upstream = c.get("upstream_weights", [])
     require(upstream and len(upstream) == len(set(upstream)) and set(upstream) <= set(names), "upstream weights")
     frozen_weights = c.get("frozen_weights", [])
@@ -197,7 +239,8 @@ def load_case(path):
     require(not set(barrier_weights) & set(frozen_weights), "barrier/frozen weight mapping")
     if frozen:
         require(frozen_weights, "frozen snapshots required")
-    c["source_graph"] = graph_checker().check_source_model(model, c["model"]["sha256"], ge)
+    c["source_graph"] = framework_adapter().validate_source_model(
+        model, c["model"]["sha256"], ge, c["framework"])
     return c, list(dict.fromkeys(files))
 
 
@@ -249,13 +292,13 @@ def weight_arrays(directory, specs):
     seen_files = set()
     for item in items:
         spec = by_name[item["name"]]
-        require(item["dtype"] == spec.get("dtype", "float32") and item["shape"] == spec["shape"],
+        require(item["dtype"] == spec["dtype"] and item["shape"] == spec["shape"],
                 "weight dtype/shape mismatch")
         require(item["bytes"] == 4 * shape_size(spec["shape"]), "weight manifest bytes mismatch")
         f = (directory / item["file"]).resolve()
         require(f.parent == directory.resolve() and f not in seen_files, "unsafe/duplicate weight file")
         seen_files.add(f)
-        result[item["name"]] = read_tensor(f, spec["shape"], spec.get("dtype", "float32"))
+        result[item["name"]] = read_tensor(f, spec["shape"], spec["dtype"])
     expected_bins = {directory / item["file"] for item in items}
     actual_bins = set(directory.glob("*.bin"))
     require(actual_bins == expected_bins, "weight binary file set mismatch")
@@ -281,7 +324,8 @@ def compare_run(case, run_dir):
         require(predict_files == {run_dir / "predict" / f"step_-001_output_{x['index']}.bin" for x in case["outputs"][:-1]}, "predict file set mismatch")
         for output in case["outputs"][:-1]:
             i = output["index"]
-            actual = read_tensor(run_dir / "predict" / f"step_-001_output_{i}.bin", output["shape"])
+            actual = read_tensor(run_dir / "predict" / f"step_-001_output_{i}.bin",
+                                 output["shape"], output["dtype"])
             checks.append(compare(actual, golden[f"predict/output_{i}"], f"predict/output_{i}"))
         dump = run_dir / "checkpoints"
         expected_output_files = {dump / f"step_{step:04d}_output_{x['index']}.bin" for step in checkpoints for x in case["outputs"]}
@@ -290,12 +334,13 @@ def compare_run(case, run_dir):
             for output in case["outputs"]:
                 i = output["index"]
                 key = f"step_{step}/output_{i}"
-                checks.append(compare(read_tensor(dump / f"step_{step:04d}_output_{i}.bin", output["shape"]), golden[key], key))
+                checks.append(compare(read_tensor(dump / f"step_{step:04d}_output_{i}.bin",
+                                                  output["shape"], output["dtype"]), golden[key], key))
             arrays[step] = weight_arrays(dump / f"step_{step:04d}_weights", case["weights"])
             for spec in case["weights"]:
                 key = f"step_{step}/weight/{spec['reference']}"
                 actual_weight = arrays[step][spec["name"]]
-                if spec.get("dtype", "float32") == "int32":
+                if spec["dtype"] == "int32":
                     require(actual_weight.dtype == golden[key].dtype == np.dtype("int32"),
                             f"int32 weight dtype mismatch: {key}")
                     require(np.array_equal(actual_weight, golden[key]), f"int32 weight mismatch: {key}")
@@ -306,7 +351,7 @@ def compare_run(case, run_dir):
             exported = weight_arrays(run_dir / phase, case["weights"])
             for spec in case["weights"]:
                 exported_weight = exported[spec["name"]]
-                if spec.get("dtype", "float32") == "int32":
+                if spec["dtype"] == "int32":
                     require(exported_weight.dtype == arrays[step][spec["name"]].dtype == np.dtype("int32"),
                             f"int32 weight dtype mismatch: {phase}/{spec['name']}")
                     require(np.array_equal(exported_weight, arrays[step][spec["name"]]),
@@ -431,7 +476,8 @@ def execute(case_path, pkg, run_dir, timeout=300, riscv_toolchain_path=None, job
         config = run_dir / "micro_train.cfg"
         config.write_text(config_text(c), encoding="utf-8")
         net = run_dir / "net"
-        convert_args = [str(converter), "--fmk=ONNX", f"--modelFile={c['model_path']}",
+        fmk = framework_adapter().converter_framework(c["framework"])
+        convert_args = [str(converter), f"--fmk={fmk}", f"--modelFile={c['model_path']}",
                         f"--configFile={config}", f"--outputFile={net}"]
         if supported:
             convert_args.append("--encryption=false")
@@ -441,7 +487,8 @@ def execute(case_path, pkg, run_dir, timeout=300, riscv_toolchain_path=None, job
             normal_rejection = isinstance(rc, int) and 1 <= rc < 0xC0000000
             require(normal_rejection and c["expected_error"] in log.read_text(encoding="utf-8", errors="replace"), "expected converter rejection not observed")
             stage("convert", "PASS_EXPECTED_ERROR")
-            summary["status"] = "PASS_EXPECTED_ERROR"
+            summary.update(status="PASS_EXPECTED_ERROR",
+                           reason="Converter rejected the case with the expected diagnostic; numerical training was not run.")
             return summary
         require(rc == 0, "converter failed; see convert.log")
         require((net / "CMakeLists.txt").is_file(), "generated CMakeLists.txt missing")

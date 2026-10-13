@@ -27,7 +27,7 @@
 默认采用已支持的 FP32、静态形状、batch=1、SoftmaxCrossEntropy 和 SGD momentum=0 基线；同一个训练单元按数学能力补充：
 
 - 正常与边界 shape/rank/axis/广播；有顺序区别的输入分别测试；
-- T+T（两个激活）、T+C（结构常量或普通常量）、T+W（可训练参数），不适用的组合写原因；不能只根据 ONNX initializer 身份区分可训练与常量，须检查优化后的图和参数选择；
+- 按组合覆盖输入：`T+T` 表示激活+激活，`T+C` 表示激活+常量，`T+W` 表示激活+可训练参数；不适用的组合写原因。不能只根据 ONNX initializer 身份区分可训练与常量，须检查优化后的图和参数选择；
 - branch fan-out 和梯度累加、可选输入、保活张量；
 - 转换期应拒绝的动态维度、非法属性或其他明确不支持组合；
 - 参数算子的冻结覆盖按第 6 节处理。没有参数的算子不凭空增加冻结逻辑。
@@ -44,7 +44,7 @@
 
 优先使用 PyTorch 同实例参考。参考框架缺失时，先记录依赖问题；对可独立推导的小模型，可以使用从同一初值生成的 NumPy 解析参考，并增加有限差分或独立等价性自检。必须说明替代参考的方法和局限，不写 PyTorch 已执行；复杂或无法独立核对的导数保持 NOT_RUN，不用被测 C 代码反算参考。
 
-生成后锁定 `case.json` 与所有模型、输入、label、参考文件的 hash。模型生成失败单独记 `TRAIN_MODEL_GENERATE=FAIL`，不能改用手写 generated C 继续宣称通过。
+生成后锁定 `case.json` 与所有模型、输入、label、参考文件的 SHA256 和字节数。模型生成失败单独记 `TRAIN_MODEL_GENERATE=FAIL`，不能改用手写 generated C 继续宣称通过。
 
 ## 3. 转换和结构检查
 
@@ -73,7 +73,7 @@ batch_size=1
 - `training_memory.json` 的对象类型、大小、保活时间、复用关系及所需 forward activation；
 - 生成 `net0.c` 中实际 backward/kernel 调用，不能仅搜索某个符号名即判定正确；
 - `net.cmake` 和独立工程中的新增头文件/源文件收集；
-- 同一前向模型不带训练配置的转换，不应泄漏训练符号和 fp32_grad 源码。
+- 同一前向模型不带训练配置的转换，不应泄漏训练符号和 fp32_grad 源码；这项对照只形成 `INFERENCE_ISOLATION` 证据，不是 inference 数值验证，也不替代训练模型生成、训练转换或 Host 训练门禁。
 
 结构检查保存到 `<run-dir>/generated-code-inspection.md`，每项绑定实际文件与 hash。预期拒绝用例要求 converter 非零退出且诊断符合预先指定的原因；依赖库找不到、崩溃等环境/实现错误不是预期拒绝。拒绝用例通过只表示边界检查通过，不计训练数值 PASS。
 
@@ -129,7 +129,7 @@ benchmark 位置参数按当前模板核对：
 - 直接梯度未导出时记录 `not_evaluated: raw_gradients`，结论为输出和参数更新对齐，不写“所有梯度逐元素通过”。若设计明确要求梯度单测，缺少直接梯度证据仍不满足计划。
 - 有状态 optimizer 需额外核对多步状态规则；不能因为源码存在 Adam 就宣称已验证 Adam。基线使用的 SGD 参数范围与未测 optimizer 分开报告。
 
-先用 `scripts/training/aggregate_training_results.py --export-board-expected` 按已锁定的 case 计划生成聚合报告和板端预期矩阵；缺少任一 summary 会自动记为 `NOT_RUN`，不会被忽略。`PASS` 只在所有数值 case 通过且预期拒绝项状态正确时产生。只有数值 PASS 用例进入板端矩阵；预期拒绝项保留在排除清单，不进入板端分母。
+先用 `scripts/training/aggregate_training_results.py --export-board-expected` 按已锁定的 case 计划生成聚合报告和板端预期矩阵；缺少任一 summary 会自动记为 `NOT_RUN`，不会被忽略。`PASS` 只在所有数值 case 通过且预期拒绝项状态正确时产生。只有数值 PASS 用例进入板端矩阵；预期拒绝项保留在排除清单，不计入板端应执行的用例总数。
 
 单 case 的 `train_summary.json` 由固定 runner 生成。结构检查与模型来源检查由执行者补充实际证据，runner 的数值 PASS 不会自动证明这些人工检查完成。聚合时在 `<opdir>/runs/<run_id>/train_verify_summary.json` 列出全部预期 case、测试点、类型、各阶段状态、summary 路径和 hash、结构检查、未测项，负向转换单列。缺少任一预期用例或必测项时 `TRAIN_HOST_VERIFY_GATE` 不能为 PASS。
 
@@ -155,4 +155,4 @@ benchmark 位置参数按当前模板核对：
 
 聚合报告使用 `schema_version=1`、`verification_kind=training`、`run_id`、`status` 和完整 `cases`。每行保留 case_id、kind、test_point、status、reason，以及单 case summary 的相对路径和 SHA256。详细字段见 `hs-design-op-manual/references/training/facts-schema.md`。
 
-必需来源/结构检查至少记录 `package_source_freshness`、`target_backward_path`、`training_graph_and_memory`、`inference_isolation`，每项写状态、原因及实际证据。缺少前置时也生成本轮完整矩阵，未执行 case 为 NOT_RUN，已失败 case 保留 FAIL；不得因不能运行而省略验证文档。
+必需来源/结构检查至少记录 `package_source_freshness`、`target_backward_path`、`training_graph_and_memory`、`inference_isolation`，每项写状态、原因及实际证据。`inference_isolation` 只核对 inference-only 生成物没有训练 artifact 泄漏；它不表示 `INFERENCE_NUMERICAL`，也不满足 `TRAIN_MODEL_GENERATE`、`TRAIN_CONVERT_GATE` 或 `TRAIN_HOST_VERIFY_GATE`。没有真实 inference 输入、输出、golden 和数值比较时，单独记录 `INFERENCE_NUMERICAL=NOT_RUN`。缺少前置时也生成本轮完整矩阵，未执行 case 为 NOT_RUN，已失败 case 保留 FAIL；不得因不能运行而省略验证文档。

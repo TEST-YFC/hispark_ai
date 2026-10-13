@@ -7,18 +7,79 @@ rejected unless --replace-adaptor is explicitly supplied after review.
 from __future__ import annotations
 
 import argparse
+import atexit
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shlex
 import shutil
 import sys
+import time
+from typing import NoReturn
 
 
-def fail(message: str) -> "NoReturn":
+_ACTIVE_LOCK = None
+
+
+def fail(message: str) -> NoReturn:
+    if _ACTIVE_LOCK is not None:
+        _ACTIVE_LOCK.release()
     print(f"SDK_INTEGRATION_GATE=FAIL reason={message}", file=sys.stderr)
     raise SystemExit(2)
+
+
+class SdkLock:
+    """Bounded cross-platform lock shared by integration and build wrappers."""
+
+    def __init__(self, path: Path, timeout: float = 30.0):
+        self.path = path
+        self.timeout = timeout
+        self.owner = path / "owner.json"
+        self.acquired = False
+
+    def acquire(self) -> None:
+        deadline = time.monotonic() + self.timeout
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        while True:
+            try:
+                self.path.mkdir()
+                self.owner.write_text(
+                    json.dumps({"pid": os.getpid()}, ensure_ascii=False) + "\n",
+                    encoding="utf-8",
+                )
+                self.acquired = True
+                return
+            except FileExistsError:
+                try:
+                    owner = json.loads(self.owner.read_text(encoding="utf-8-sig"))
+                    pid = owner.get("pid")
+                    alive = isinstance(pid, int) and pid > 0
+                    if alive:
+                        try:
+                            os.kill(pid, 0)
+                        except (OSError, ProcessLookupError):
+                            alive = False
+                    if not alive:
+                        self.owner.unlink(missing_ok=True)
+                        self.path.rmdir()
+                        continue
+                except (OSError, json.JSONDecodeError):
+                    pass
+                if time.monotonic() >= deadline:
+                    fail(f"sdk_lock_busy:{self.path}")
+                time.sleep(0.1)
+
+    def release(self) -> None:
+        if not self.acquired:
+            return
+        try:
+            self.owner.unlink(missing_ok=True)
+            self.path.rmdir()
+        except OSError:
+            pass
+        self.acquired = False
 
 
 def existing_absolute(value: str, name: str) -> Path:
@@ -34,6 +95,15 @@ def digest(path: Path) -> str:
 
 def powershell_literal(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
+
+
+def wsl_drive_path_to_windows(value: str) -> str:
+    """Convert a WSL drive mount for use in generated PowerShell files."""
+    match = re.fullmatch(r"/mnt/([A-Za-z])(/.*)?", value)
+    if not match:
+        return value
+    drive, remainder = match.groups()
+    return f"{drive.upper()}:{remainder or '/'}"
 
 
 def validate_target(value: str) -> str:
@@ -77,10 +147,11 @@ def load_training_sample_receipt(path_text: str, args: argparse.Namespace) -> di
         receipt = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         fail(f"invalid_training_sample_receipt:{path}:{exc}")
+    if not isinstance(receipt, dict):
+        fail(f"training_sample_receipt_identity_mismatch:{path}")
     framework = receipt.get("framework")
     config_sha = receipt.get("training_config_sha256")
-    if (not isinstance(receipt, dict)
-            or receipt.get("verification_kind") != "training"
+    if (receipt.get("verification_kind") != "training"
             or receipt.get("run_id") != args.run_id
             or receipt.get("case_id") != args.case
             or receipt.get("model_sha256") != args.model_sha256
@@ -178,15 +249,23 @@ def main() -> int:
     if args.jobs is not None and args.jobs < 1:
         parser.error("--jobs must be >= 1")
     validate_identity_arguments(parser, args)
-    training_sample = (load_training_sample_receipt(args.training_sample_receipt, args)
-                       if args.verification_kind == "training" else None)
-    if args.verification_kind == "inference" and args.training_sample_receipt:
+    training_sample = None
+    if args.verification_kind == "training":
+        training_sample = load_training_sample_receipt(args.training_sample_receipt, args)
+        observer = training_sample.get("observer_adapter")
+        if not isinstance(observer, dict) or observer.get("nm_verified") is not True:
+            fail("training_observer_capability_missing")
+    elif args.training_sample_receipt:
         parser.error("--training-sample-receipt is only valid for training verification")
 
     sdk_root = existing_absolute(args.sdk_root, "sdk_root")
     sdk = sdk_root / "src" if (sdk_root / "src/application").is_dir() else sdk_root
     if not (sdk / "application").is_dir() or not (sdk / "middleware/utils").is_dir():
         fail(f"not_a_ws63_sdk:{sdk}")
+    global _ACTIVE_LOCK
+    _ACTIVE_LOCK = SdkLock(sdk_root / ".hispark_ai_sdk.lock")
+    _ACTIVE_LOCK.acquire()
+    atexit.register(_ACTIVE_LOCK.release)
     hispark = existing_absolute(args.hispark_root, "hispark_root")
     sample = existing_absolute(args.sample_dir, "sample_dir")
     libraries = existing_absolute(args.model_lib_dir, "model_lib_dir")
@@ -212,7 +291,10 @@ def main() -> int:
     shutil.copy2(source_header, header)
     installed.append(str(header))
 
-    variant = re.sub(r"[^a-zA-Z0-9_.-]", "_", f"{args.operator}_{args.case}_{args.mode}")
+    variant_parts = [args.operator, args.case, args.mode]
+    if args.run_id:
+        variant_parts.append(args.run_id)
+    variant = re.sub(r"[^a-zA-Z0-9_.-]", "_", "_".join(variant_parts))
     variant_dir = sdk / "middleware/utils/ai_mcu/lib" / variant
     variant_dir.mkdir(parents=True, exist_ok=True)
     for name in ("libmicro_runtime.a", "libnet.a"):
@@ -259,6 +341,7 @@ if {target_literal} in target:
 
     environment = {
         "FIRMWARE_SDK_ROOT": str(sdk_root), "FBB_SDK_DIR": str(sdk),
+        "HISPARK_AI_SDK_LOCK": str(sdk_root / ".hispark_ai_sdk.lock"),
         "ENABLE_AI_CUSTOM_SAMPLE": "y", "AI_CUSTOM_SAMPLE_DIR": str(sample),
         "AI_MCU_MODEL_VARIANT": variant, "target": args.target,
     }
@@ -279,8 +362,12 @@ if {target_literal} in target:
         payload["training_config_sha256"] = training_sample["training_config_sha256"]
     jobs_suffix = f" -j{args.jobs}" if args.jobs is not None else ""
     receipt.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    powershell_environment = {
+        key: wsl_drive_path_to_windows(value) for key, value in environment.items()
+    }
     (receipt.parent / "ws63_board_env.ps1").write_text(
-        "\n".join(f"$env:{key}={powershell_literal(value)}" for key, value in environment.items()) + "\n",
+        "\n".join(f"$env:{key}={powershell_literal(value)}"
+                  for key, value in powershell_environment.items()) + "\n",
         encoding="utf-8")
     (receipt.parent / "ws63_board_env.sh").write_text(
         "\n".join(f"export {key}={shlex.quote(value)}" for key, value in environment.items()) + "\n",
@@ -289,15 +376,37 @@ if {target_literal} in target:
         ". $PSScriptRoot\\ws63_board_env.ps1\n"
         "if (-not $env:AI_CUSTOM_SAMPLE_DIR -or -not $env:AI_MCU_MODEL_VARIANT) { "
         "throw 'WS63 board environment was not loaded' }\n"
-        "Write-Output \"AI_CUSTOM_SAMPLE_DIR=$env:AI_CUSTOM_SAMPLE_DIR\"\n"
-        "Write-Output \"AI_MCU_MODEL_VARIANT=$env:AI_MCU_MODEL_VARIANT\"\n"
-        f"fbb build {powershell_literal(args.target)} --clean{jobs_suffix}\n"
-        "exit $LASTEXITCODE\n",
+        "$lock = $env:HISPARK_AI_SDK_LOCK\n"
+        "if (-not $lock) { throw 'HISPARK_AI_SDK_LOCK is missing' }\n"
+        "$deadline = (Get-Date).AddMinutes(5)\n"
+        "$held = $false\n"
+        "try {\n"
+        "  while (-not $held) {\n"
+        "    try { New-Item -ItemType Directory -Path $lock -ErrorAction Stop | Out-Null; $held = $true }\n"
+        "    catch { if ((Get-Date) -ge $deadline) { throw 'SDK integration/build lock timeout' }; Start-Sleep -Milliseconds 100 }\n"
+        "  }\n"
+        "  @{ pid = $PID } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $lock 'owner.json') -Encoding UTF8\n"
+        "  Write-Output \"AI_CUSTOM_SAMPLE_DIR=$env:AI_CUSTOM_SAMPLE_DIR\"\n"
+        "  Write-Output \"AI_MCU_MODEL_VARIANT=$env:AI_MCU_MODEL_VARIANT\"\n"
+        f"  fbb build {powershell_literal(args.target)} --clean{jobs_suffix}\n"
+        "  exit $LASTEXITCODE\n"
+        "} finally { if ($held) { Remove-Item -LiteralPath $lock -Recurse -Force -ErrorAction SilentlyContinue } }\n",
         encoding="utf-8")
     (receipt.parent / "invoke_hs_dev_build.sh").write_text(
         ". \"$(dirname \"$0\")/ws63_board_env.sh\"\n"
         ': "${AI_CUSTOM_SAMPLE_DIR:?missing AI_CUSTOM_SAMPLE_DIR}"\n'
         ': "${AI_MCU_MODEL_VARIANT:?missing AI_MCU_MODEL_VARIANT}"\n'
+        ': "${HISPARK_AI_SDK_LOCK:?missing HISPARK_AI_SDK_LOCK}"\n'
+        'lock_deadline=$(( $(date +%s) + 300 ))\n'
+        'while ! mkdir "$HISPARK_AI_SDK_LOCK" 2>/dev/null; do\n'
+        '  if [ "$(date +%s)" -ge "$lock_deadline" ]; then\n'
+        '    printf "%s\\n" "SDK integration/build lock timeout" >&2\n'
+        '    exit 2\n'
+        '  fi\n'
+        '  sleep 0.1\n'
+        'done\n'
+        "printf '{\"pid\":%s}\\n' \"$$\" > \"$HISPARK_AI_SDK_LOCK/owner.json\"\n"
+        "trap 'rm -f \"$HISPARK_AI_SDK_LOCK/owner.json\"; rmdir \"$HISPARK_AI_SDK_LOCK\" 2>/dev/null || true' EXIT\n"
         'printf "AI_CUSTOM_SAMPLE_DIR=%s\\n" "$AI_CUSTOM_SAMPLE_DIR"\n'
         'printf "AI_MCU_MODEL_VARIANT=%s\\n" "$AI_MCU_MODEL_VARIANT"\n'
         f"fbb build {shlex.quote(args.target)} --clean{jobs_suffix}\n",

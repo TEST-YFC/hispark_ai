@@ -11,15 +11,14 @@
 
 ### 环境准备分流（不修改外部环境 Skill）
 
-`hs-dev-env-prep` 是外部维护的环境准备专项 Skill；它的默认行为可能同时安装
-`fbb CLI`、构建工具链并下载芯片 SDK。算子工作流不得仅因为它存在就直接调用，必须先按
-用户意图和已提供路径分流：
+`hs-dev-env-prep` 是外部维护的环境准备专项 Skill，默认行为可能包括安装 `fbb CLI`、
+构建工具链和下载芯片 SDK。算子工作流不能因为该 Skill 存在就直接调用；应先根据用户意图和已提供的路径分流：
 
 **优先级约定：** 默认 `AUTO_ALL` 必须先由用户在 Stage0 提供
-`FIRMWARE_SDK_ROOT` 绝对路径；没有路径时停在 Stage0，不自动下载或从磁盘挑选 SDK。
-获取一份新的 SDK 属于独立的环境准备请求，不在本次算子工作流内隐式执行；完成后以得到的
-具体路径重新初始化本工作流。一次总确认通过后，agent 可自动为这份已提供的 SDK 补齐工具链，
-不再发起额外确认。
+`FIRMWARE_SDK_ROOT` 绝对路径。没有路径时停在 Stage0，不自动下载或从磁盘挑选 SDK。
+获取新 SDK 属于独立的环境准备请求，不在本次算子工作流中隐式执行。准备完成后，使用取得的
+具体路径重新初始化本工作流。一次总确认通过后，agent 可以自动为这份 SDK 补齐工具链，
+不再发起其他确认。
 
 | 用户情况 | 工作流动作 | 是否允许调用 `hs-dev-env-prep` |
 |---|---|---|
@@ -28,14 +27,13 @@
 | 没有 SDK，且明确要求编译/上板 | 停在 Stage0，要求用户提供 SDK 绝对路径；需要下载时先单独完成环境准备请求，再以实际路径开始新 run | 不在本算子 run 内调用 |
 | 只做算子源码、MindSpore Lite 构建或 Host 验证 | 不检查或下载固件 SDK；只使用对应阶段自己的依赖 | 不调用 |
 
-一次总确认同时覆盖对已提供 SDK 补齐工具链的授权；Stage5 只读取该确认和冻结的状态，
-不再发起工具链安装询问。若环境准备 Skill 或工具链不可用，直接记录 `BLOCKED` 及恢复命令，
-等待用户补齐外部条件后用同一 `RUN_ID` 恢复。
+一次总确认同时授权为已提供的 SDK 补齐工具链。Stage5 读取该确认和冻结状态，不再询问是否安装工具链。
+若环境准备 Skill 或工具链不可用，记录 `BLOCKED` 和恢复命令；用户补齐外部条件后，使用同一 `RUN_ID` 恢复。
 
-任何环境准备调用前，都必须在状态中记录：用户意图、用户提供的
-`FIRMWARE_SDK_ROOT`、SDK 来源为 `USER_PROVIDED`、以及调用返回的 `fbb describe --json`。
-不得把 `fbb sdk install <chip>` 当作默认补救动作；若没有 SDK 路径，就把板端阶段写为
-`BLOCKED` 和恢复条件，不在后续阶段再次请求确认。
+调用环境准备前，在状态中记录用户意图、用户提供的 `FIRMWARE_SDK_ROOT`、
+SDK 来源为 `USER_PROVIDED`，以及 `fbb describe --json` 的返回结果。
+不得把 `fbb sdk install <chip>` 当作默认补救动作。若没有 SDK 路径，将板端阶段写为
+`BLOCKED`，并记录恢复条件；后续阶段不再请求确认。
 
 ### 专项 Skill 安装地址
 
@@ -54,16 +52,15 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
 
 ### 环境准备 Skill 的可用性门禁
 
-该门禁针对每一位使用者自己的 Codex/Skill 环境在 Stage0 执行。通知发生在该使用者
-发起本次算子工作流的当前对话中，而不是串口、WSL 后台任务或开发板上。分发本 workflow
-不会自动分发外部 `hs-dev-env-prep`；每位使用者需要在自己的 Skill 集合中安装它，或在
-已有 `fbb CLI` 环境满足检查时直接使用 CLI/构建专项 Skill。
+该门禁在 Stage0 检查该使用者当前会话的 Skill 环境。结果应在发起本次算子工作流的当前对话中通知，
+而不是输出到串口、WSL 后台任务或开发板。分发本 workflow 不会同时安装外部 `hs-dev-env-prep`。
+使用者需要在自己的 Skill 集合中安装它；若现有 `fbb CLI` 环境已经通过检查，则可直接使用 CLI 或构建专项 Skill。
 
 1. 若用户只要求 CLI、算子源码、MindSpore Lite 工具包构建或 Host 验证，输出
    `ENV_PREP_SKILL=NOT_REQUIRED`，不检查也不要求加载 `hs-dev-env-prep`。
 2. 若用户要求固件编译/烧录，先执行 `fbb --version` 和 `fbb describe --json`，并核对用户给出的
-   `FIRMWARE_SDK_ROOT`以及SDK全局/目标芯片的`min_cli_version`。命令成功且CLI版本满足要求时，输出 `ENV_PREP_SKILL=NOT_REQUIRED`，直接进入
-   `hs-dev-build`/`hs-dev-flash`；“已安装并可用的 fbb CLI 环境”已经满足其前置条件。
+   `FIRMWARE_SDK_ROOT`以及SDK全局/目标芯片的`min_cli_version`。命令成功且 CLI 版本满足要求时，
+   输出 `ENV_PREP_SKILL=NOT_REQUIRED`，直接进入 `hs-dev-build`/`hs-dev-flash`。此时现有 fbb CLI 环境已满足前置条件。
 3. 若固件阶段需要补环境，按名称加载用户提供或已安装的 `hs-dev-env-prep`，
    完整读取它的 `SKILL.md`。加载不到时，必须立即在该使用者当前会话报告：
 
@@ -75,9 +72,9 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
    需要能按名称加载 hs-dev-env-prep，并读取其 SKILL.md 和配套资源。
    ```
 
-   此时不得假装环境已准备好、不得启动后台 `fbb build`/`fbb flash`，也不得自行下载一份
-   外部 Skill；将安装路径和恢复命令写入状态。用户安装或提供该 Skill 后，从 Stage0 重新检查；
-   不需要重做已通过的 Host 阶段。
+   此时环境尚未准备完成。不得启动后台 `fbb build`/`fbb flash`，也不得自行下载外部 Skill。
+   将安装路径和恢复命令写入状态。用户安装或提供该 Skill 后，从 Stage0 重新检查；
+   已通过的 Host 阶段不用重做。
 4. 若 `hs-dev-env-prep` 可加载且用户已经给出 SDK 路径，确认通过后自动调用，并明确“只补环境和
    工具链，使用该 SDK，禁止执行 `fbb sdk install`”。如果该 Skill 不能遵守已有 SDK 约束，
    记录 `BOARD_STAGE=BLOCKED`，等待外部条件修复，不在 Stage0 之后发起新确认。
@@ -90,12 +87,12 @@ https://gitcode.com/HiSpark/hibot-skills/tree/master/skills
   该目录包含 `hs-dev-env-prep`、`hs-dev-build` 和 `hs-dev-flash`；安装后应重新检查
   当前环境能否按名称加载对应 Skill，不得只复制 `SKILL.md`；必须保留该 Skill 目录下对应的
   `references/` 和 `scripts/` 子目录及其中脚本。
-- 用户未安装或当前环境不能加载：workflow 可按两者公开约定直接使用 CLI 回退，构建用
+- 用户未安装或当前环境不能加载：workflow 可按两者公开约定使用 CLI 回退。构建时用
   `fbb --version`、`fbb describe --json` 或 `fbb list-targets --json` 取得真实 target，
-  再执行 `fbb build --clean <target>`；烧录用 `fbb flash <target> --json-summary`，只按最后一行
-  JSON 的 `success` 和 `error.code` 判定。回退不降低 clean build、target 解析或 JSON 判定要求。
-  `fbb describe`/target 查询失败时阻塞固件阶段，不能猜 target；`fbb build` 非零时保留首个真实
-  stderr，并按工具链、接线或生成代码分流；`fbb flash` 返回 `success=false` 时不得宣称烧录成功。
+  再执行 `fbb build --clean <target>`；烧录时用 `fbb flash <target> --json-summary`，只根据最后一行
+  JSON 的 `success` 和 `error.code` 判定。CLI 回退仍须满足 clean build、target 解析和 JSON 判定要求。
+  `fbb describe`/target 查询失败时，阻塞固件阶段，不猜测 target。`fbb build` 返回非零时，保留首个真实
+  stderr，并按工具链、接线或生成代码分流。`fbb flash` 返回 `success=false` 时，不得宣称烧录成功。
 
 缺少对应专项 Skill 且没有可验证的 CLI 回退时，只阻塞对应阶段，不伪造结果。
 

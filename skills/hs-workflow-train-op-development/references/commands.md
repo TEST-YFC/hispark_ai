@@ -1,6 +1,6 @@
 # 训练阶段命令调度
 
-`run_training_workflow.py` 按顺序执行工作流已经准备好的命令，保存日志并在失败后运行报告收尾命令。它不会自行生成算子代码、模型或文档，也不审计训练数值和源码身份。不要把这个脚本等同于整套技能的自动化能力。
+`run_training_workflow.py` 按顺序执行工作流已经准备好的命令并保存日志。命令失败后，它仍运行报告收尾命令。它不会自行生成算子代码、模型或文档，也不审计训练数值和源码身份。不要把这个脚本等同于整套技能的自动化能力。
 
 ## 阶段与计划
 
@@ -57,13 +57,15 @@ python3 <workflow_skill_root>/scripts/run_training_workflow.py \
 - 必需命令缺失、被禁用或执行失败：`status=FAIL`、`command_status=FAIL`，退出码 2；
 - 本脚本不做业务证据审计，因此始终保留 `workflow_status=NOT_VERIFIED`、`evidence_status=NOT_CHECKED`、`board_verified=false`。最后一项表示调度器没有确认板测，不否认独立板端报告的真实结果。
 
-工作流必须继续读取并审计 Host 的 `train_verify_summary.json`、板端报告及两份文档，才能给出技能规定的最终结论。任何单纯退出码为 0 的命令，包括最终报告命令，都不能让本调度器输出训练验证 PASS。
+`COMMANDS_COMPLETED` 只表示要求执行的命令已经完成，不代表训练验证通过。工作流必须继续读取并审计 Host 的 `train_verify_summary.json`、板端报告及两份文档，才能给出技能规定的最终结论。任何命令退出码为 0，包括最终报告命令，都不能让调度器输出训练验证 PASS。
 
 板端证据交给 facts 时保持最小：单 case 直接引用 comparator report；多 case 使用只含 case、状态和 report 路径/hash 的 `board_matrix.json`。构建、烧录、端口和设备信息保留在各自证据及 `facts.sources` 中。finalizer 重放每个 report，并核对 Host expected 数值用例集合。
 
+训练 model 阶段可能额外生成 inference-only 对照探针。其 `INFERENCE_ISOLATION` 仅表示该对照产物没有训练 artifact 泄漏；不得将探针 PASS 当作模型生成、训练转换、Host 训练数值或 inference numerical PASS。若没有真实 inference 输入/输出/golden 执行与逐元素比较，终态必须写 `INFERENCE_NUMERICAL=NOT_RUN`；只有独立 inference runner 提供完整证据时才记录 PASS/FAIL。
+
 ## 终态 finalizer（调度结束后单独调用）
 
-`run_training_workflow.py` 只负责阶段命令调度。即使调度器输出 `COMMANDS_COMPLETED`，也不代表训练业务验证通过。调度器结束后，必须单独调用：
+`run_training_workflow.py` 只负责阶段命令调度。调度状态与业务验证结论的区别见“输出与状态”。调度器结束后，必须单独调用：
 
 ```bash
 python3 <workflow-skill-root>/scripts/finalize_training_workflow.py \
@@ -74,6 +76,8 @@ python3 <workflow-skill-root>/scripts/finalize_training_workflow.py \
   --verify <opdir>/<verify.md> \
   --board-policy AUTO_ALL
 ```
+
+finalizer 必须在完整的 skills 目录布局中运行：`hs-verify-op-host` 和 `hs-verify-op-board` 与训练工作流同级存在。Python 环境需要 NumPy；Host aggregate 复审还会使用 ONNX 依赖。finalizer 只重放和审计已有证据，不需要板卡、串口或 MindSpore 板端工具。
 
 `--board-policy` 默认为 `AUTO_ALL`；只有明确采用 Host-only 策略时才使用 `HOST_ONLY`。finalizer 读取已经结束的 `train_workflow_summary.json`、现有 `runs/<run_id>/train_verify_summary.json` 和 facts，不新增 facts schema 字段，不重跑训练、Host、构建、烧录或串口验证。
 
@@ -91,7 +95,7 @@ finalizer 必须在调度结束后独立运行，不能放入调度器的 `final
 
 ## 板端参考与锁定 golden 绑定
 
-finalizer 在每个 case 重放 comparator 前，调用只读 helper `check_board_reference.py` 的 `check_expected_against_golden(case_path, locked, expected, report)`。该检查使用原始 case 目录中的 golden，不把 run 目录内的归档 case 副本当作相对路径基准。
+finalizer 在每个 case 重放前，调用 `hs-verify-op-board` 中 `compare_training_board.py` 的只读函数 `check_expected_against_golden(case_path, locked, expected, report, evidence_root=root)`。该检查使用原始 case 目录中的 golden，不把 run 目录内的归档 case 副本当作相对路径基准；`expected.training_config` 若存在，必须是相对于 `<opdir>` 的普通文件证据，并由 finalizer 使用 opdir root 校验路径、字节数和 SHA256；训练工作流不单独提供这个入口。
 
 - 先校验 locked golden SHA256，以 `np.load(..., allow_pickle=False)` 读取 NPZ，检查 keys、shape 与有限值。输出和 loss 是 FP32；训练权重按 case 声明为 FP32 或 INT32。
 - 仅支持当前标准 Host 格式：Predict 使用 `outputs[:-1]`，Eval 覆盖 `checkpoints=[0,1,steps]` 的全部 outputs 与 weights reference；`before/after` 按明确的 weight name 映射到初末 checkpoint。映射必须唯一且覆盖完整集合，不做任意协议翻译。
@@ -102,12 +106,12 @@ finalizer 在每个 case 重放 comparator 前，调用只读 helper `check_boar
 
 默认输出为 `<run-dir>/train_final_verdict.json`；`--output` 可指定新文件路径。输出不得覆盖 facts、两份文档、summary、证据、已有 verdict 或其他任何既有目标；明确的输入路径即使缺失也不能用来写 verdict。相对路径别名、硬链接、符号链接不能绕过保护。
 
-重复执行请使用新的 `--output` 文件名，如 `train_final_verdict-recheck-01.json`（相对输出路径以当前工作目录为基准）。脚本在目标目录写入临时文件，再通过不覆盖的原子链接发布，不使用 `os.replace`。发生碰撞或文件系统不支持该操作时，仅向 stdout 报 FAIL（`output_written=false`，退出码 2），保留既有文件，不回退到其他路径写入。
+重复执行请使用新的 `--output` 文件名，如 `train_final_verdict-recheck-01.json`（相对输出路径以当前工作目录为基准）。脚本先在目标目录写入临时文件，再以原子方式发布；如果目标已存在，则不覆盖，也不使用 `os.replace`。发生碰撞或文件系统不支持该操作时，仅向 stdout 报 FAIL（`output_written=false`，退出码 2）。此时保留既有文件，不改用其他路径写入。
 
 ## 跨平台审计的证据可访问性
 
 manual audit 和 finalizer 所在环境必须能读取本轮 summary 引用的原工具包证据（包括 converter 与静态库），并按原记录校验文件 hash；只有 summary 或工具名称不足以通过审计。
 
 - 明确的绝对 evidence 路径复用 Host aggregate 的 `resolve_evidence_path`，仅对 Windows 盘符与 `/mnt/<drive>/...` 做确定性映射；相对路径仍按 opdir resolve 并检查边界。不放宽越界、符号链接或 hash 门禁。
-- 位于 Linux/WSL 用户目录下的绝对路径是 WSL 原生路径，不是 Windows 盘符别名。不得猜测映射、伪称 Windows 已读取，或跳过不可读工具的 hash 检查。若本轮工具证据位于这类路径，应在能访问原工具包的 WSL 环境执行 manual 审计，通过后再按文档流程发布。
-- Windows 下的 Host/board 阶段重放可单独留存报告，不替代完整 manual 审计，也不补造 scheduler 历史；缺少该历史时，工作流终态仍为 `NOT_VERIFIED`。
+- 位于 Linux/WSL 用户目录下的绝对路径是 WSL 原生路径，不是 Windows 盘符别名。不得猜测映射或跳过不可读工具的 hash 检查，必须如实报告 Windows 环境无法读取。若本轮工具证据位于这类路径，应在能访问原工具包的 WSL 环境执行 manual 审计，通过后再按文档流程发布。
+- Windows 下的 Host/board 阶段重放可单独留存报告，但不能替代完整 manual 审计，也不得虚构 scheduler 历史。缺少该历史时，工作流终态仍为 `NOT_VERIFIED`。

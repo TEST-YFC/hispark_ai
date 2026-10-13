@@ -5,7 +5,7 @@
 ## 目录
 
 - [固定顺序](#stage1实现计划和初版文档先行)
-- [源码冻结和回流](#源码冻结和回流)
+- [源码冻结和重新规划](#源码冻结和重新规划)
 
 > 进入 Stage1 后按入口表中的顺序读取。这里保留 prepare、integrated-initial、pre-source 的完整门禁关系。
 
@@ -13,42 +13,38 @@
 
 仅当`EXECUTION_CONFIRM_GATE=PASS`时进入本阶段；`PENDING`或缺少记录都必须停在Stage0。
 
-进入本阶段先将 `stage1.plan` 标为 `RUNNING`，并在计划、初版文档和
-`PRE_SOURCE_GATE` 各自完成后立即分别落盘 `PASS`；任一门禁失败要写入首个错误和证据路径，
-不得只在对话中口头记账。
+进入本阶段后，先将 `stage1.plan` 标为 `RUNNING`。计划、初版文档和 `PRE_SOURCE_GATE`
+各自完成后，立即将 `PASS` 分别写入状态文件。任一门禁失败时，写入首个错误和证据路径，不能只在对话中记录。
 
 本阶段固定按下面顺序执行，不能把三个动作合并或调换：
 
-1. 生成本轮唯一`OP_PLAN_RUN_ID`并调用`hs-dev-op-implement mode=prepare`。它先运行
-   `gate_artifacts.py --stage source-freeze --plan-run-id <ID>`生成绑定算子、框架范围和code root的
-   `source-freeze.json`，再执行step0-step3，生成并冻结
-   `spec.md`、`decision.md`、`link-analysis.md`、`existing-capability-review.md`、
-   实现约定文件`implementation-contract.md`、`capability_checklist.json`和计划版`op_spec.py`；每条 case 的
-   `test_point`必须明确说明该用例验证的行为、边界或缺陷类型；运行
-   `validate_op_spec.py`及带`--code-root`的`gate_artifacts.py --stage prepare`。prepare期间禁止修改Schema、
-   Parser、Populate、Infer、Kernel、OpCoder、Quantizer、注册或构建接线源码。只有
-   `OP_SPEC_GATE=PASS`和每个framework的`OP_PLAN_GATE=PASS`才继续。
-2. 顶层workflow调用`hs-design-op-manual mode=integrated-initial`。文档Skill只消费第1步
-   已确定的四个主源，不负责扫描或生成实现约定，输出
-   `operator-manual-facts.json`、`{op}-operator-design-doc.md`和`{op}-operator-verify-doc.md`。只有
-   `OP_MANUAL_SYNC=PASS mode=integrated-initial publication=record`才继续。
-3. 对每个framework运行带`--code-root`的`gate_artifacts.py --stage pre-source`，机械复核
-   `source-freeze.json`中的源码指纹、计划版`op_spec.py`、facts、两份文档以及facts记录的
-   `spec.md`、实现约定文件、能力清单和计划版`op_spec.py`这四份主源文件的哈希，并重新执行facts/content/case
-   三项文档audit。审计脚本位置通过 `--manual-audit-script` 传入，完整命令见
-   `hs-dev-op-implement` 内的 `references/implementation-detail.md` 的 pre-source 小节。
-   只有全部输出`PRE_SOURCE_GATE=PASS`才能进入Stage2。
+1. 生成本轮唯一的`OP_PLAN_RUN_ID`，并调用`hs-dev-op-implement mode=prepare`。先运行
+   `gate_artifacts.py --stage source-freeze --plan-run-id <ID>`，生成绑定算子、框架范围和 code root 的
+   `source-freeze.json`；再执行 step0-step3，生成并冻结 `spec.md`、`decision.md`、`link-analysis.md`、
+   `existing-capability-review.md`、实现约定文件`implementation-contract.md`、
+   `capability_checklist.json`和计划版`op_spec.py`。每条 case 的 `test_point`必须明确说明该用例验证的行为、
+   边界或缺陷类型。然后运行 `validate_op_spec.py`和带`--code-root`的`gate_artifacts.py --stage prepare`。
+   prepare 期间禁止修改 Schema、Parser、Populate、Infer、Kernel、OpCoder、Quantizer、注册或构建接线源码。
+   得到`OP_SPEC_GATE=PASS`和每个 framework 的`OP_PLAN_GATE=PASS`后，才能继续。
+2. 顶层 workflow 调用`hs-design-op-manual mode=integrated-initial`。文档 Skill 只使用第 1 步确定的四个主要输入，
+   不负责扫描或生成实现约定。输出包括`operator-manual-facts.json`、`{op}-operator-design-doc.md`和
+   `{op}-operator-verify-doc.md`。得到`OP_MANUAL_SYNC=PASS mode=integrated-initial publication=record`后，才能继续。
+3. 对每个 framework 运行带`--code-root`的`gate_artifacts.py --stage pre-source`。该命令复核
+   `source-freeze.json`中的源码指纹、计划版`op_spec.py`、facts、两份文档，以及 facts 记录的四份主要输入文件哈希：
+   `spec.md`、实现约定文件、能力清单和计划版`op_spec.py`。同时重新执行 facts/content/case 三项文档 audit。
+   审计脚本位置通过 `--manual-audit-script` 传入；完整命令见 `hs-dev-op-implement` 内的
+   `references/implementation-detail.md` 的 pre-source 小节。全部输出`PRE_SOURCE_GATE=PASS`后，才能进入 Stage2。
 
-## 源码冻结和回流
+## 源码冻结和重新规划
 
-`source-freeze.json`记录prepare开始前的Git可见源码指纹，prepare和pre-source使用同一
-`OP_PLAN_RUN_ID`机械复核指纹不变；`<opdir>`中的规划和草稿文件变化不算算子源码写入。
-任何`code_root`内的①-⑦源码、注册或MindSpore Lite构建接线在`PRE_SOURCE_GATE=PASS`前
-发生变化，都使本轮Stage1失败，必须查明来源并重新执行prepare，不能用后补文档掩盖顺序错误。
+`source-freeze.json` 记录 prepare 开始前 Git 可见的源码指纹。prepare 和 pre-source 使用同一
+`OP_PLAN_RUN_ID`，复核指纹是否保持不变；`<opdir>` 中的规划和草稿文件变化不算算子源码写入。
+如果 `code_root` 内的①-⑦源码、注册或 MindSpore Lite 构建接线在 `PRE_SOURCE_GATE=PASS` 前发生变化，
+本轮 Stage1 失败。查明来源后重新执行 prepare，不能用补写文档掩盖顺序错误。
 
-同一`OP_PLAN_RUN_ID`禁止覆盖freeze receipt。上一轮Stage1已结构化终止并明确开始新规划轮次时，
-才可生成新ID并显式rotate；旧receipt必须归档，不得静默重置基线。固件SDK不属于本门禁范围，
-其写入授权、接线receipt和新鲜度由Stage5单独门控。
+同一 `OP_PLAN_RUN_ID` 对应的源码冻结结果文件不得覆盖。只有上一轮 Stage1 已结束，并且明确开始新的规划轮次时，
+才能生成新 ID。归档原结果文件，保留原基线。固件 SDK 不属于本门禁范围；
+其写入授权、接线记录和新鲜度由 Stage5 单独控制。
 
-实现过程中若规格、实现约定、能力清单或计划用例需要变化，停止源码修改并回到Stage1完整重跑
-prepare→integrated-initial→pre-source；不能先改代码再更新草稿。
+实现过程中若规格、实现约定、能力清单或计划用例需要变化，停止源码修改并回到 Stage1，
+按入口规定的固定顺序完整重跑。

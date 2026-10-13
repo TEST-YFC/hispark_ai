@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Deterministically convert one Host-PASS model and build its WS63 Micro archives.
+"""Convert one Host-PASS model and build WS63 Micro archives.
 
-This step deliberately stops before modifying a firmware SDK.
+Inference builds and FP32 training builds are supported. Training builds generate
+an observer adapter inside the per-run Micro project and record its verified
+symbols and hashes in the build receipt.
 """
 from __future__ import annotations
 
@@ -45,6 +47,84 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def parse_observer_metadata(weight_source: Path, case_path: Path) -> tuple[list[dict], list[dict]]:
+    text = weight_source.read_text(encoding="utf-8", errors="replace")
+    params = re.findall(
+        r"\{\s*\(void \*\*\)&([^,]+),\s*([^,]+),\s*(\d+),\s*(\d+)\s*\}", text
+    )
+    try:
+        case = json.loads(case_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        fail(f"training_observer_case_invalid:{case_path}:{exc}")
+    weights = case.get("weights") if isinstance(case, dict) else None
+    if not isinstance(weights, list) or not weights:
+        fail(f"training_observer_case_weights_missing:{case_path}")
+    item_pattern = re.compile(
+        r'\{\s*"((?:\\.|[^"\\])*)",\s*"((?:\\.|[^"\\])*)",\s*'
+        r'(\d+),\s*(\d+),\s*([^,]+),\s*(\d+),\s*\{([^}]*)\}\s*\}'
+    )
+    items = []
+    for match in item_pattern.finditer(text):
+        shape = [int(value.strip()) for value in match.group(7).split(",") if value.strip()]
+        rank = int(match.group(6))
+        items.append({"name": match.group(1), "file": match.group(2),
+                      "offset": int(match.group(3)), "bytes": int(match.group(4)),
+                      "dtype": match.group(5).strip(), "rank": rank,
+                      "shape": shape[:rank]})
+    if not params or len(params) != len(items) or len(items) != len(weights):
+        fail(f"training_observer_parameter_count_mismatch:{weight_source}")
+    dtype_names = {"float32": "kMSDataTypeNumberTypeFloat32"}
+    for index, (param, item, spec) in enumerate(zip(params, items, weights)):
+        if not isinstance(spec, dict) or spec.get("dtype") != "float32":
+            fail(f"training_observer_only_supports_fp32_weights:index={index}")
+        if (item["name"] != spec.get("name") or item["dtype"] != dtype_names["float32"]
+                or item["shape"] != spec.get("shape")):
+            fail(f"training_observer_weight_binding_mismatch:index={index}:generated={item['name']}:case={spec.get('name')}")
+        size, offset = int(param[2]), int(param[3])
+        if (size != item["bytes"] or offset != item["offset"]
+                or item["rank"] != len(item["shape"])):
+            fail(f"training_observer_generated_metadata_mismatch:index={index}")
+    return ([{"size": int(param[2]), "offset": int(param[3]),
+              "runtime_symbol": param[0].strip(), "default_symbol": param[1].strip()}
+             for param in params], items)
+
+
+def render_observer_header() -> str:
+    return """#ifndef HISPARK_TRAIN_OBSERVER_ADAPTER_H\n#define HISPARK_TRAIN_OBSERVER_ADAPTER_H\n#include <stddef.h>\n#include <stdint.h>\n#include \"c_api/data_type_c.h\"\ntypedef struct {\n  const char *raw_name;\n  const char *file_name;\n  uint32_t offset;\n  uint32_t bytes;\n  MSDataType dtype;\n  unsigned char rank;\n  int shape[8];\n} TrainWeightExportItem;\nsize_t GetTrainWeightCount0(void);\nint GetTrainWeight0(size_t index, const TrainWeightExportItem **metadata, const void **data);\n#endif\n"""
+
+
+def render_observer_source(params: list[dict], items: list[dict]) -> str:
+    rows = []
+    for item in items:
+        shape = ", ".join(str(value) for value in item["shape"] + [0] * (8 - item["rank"]))
+        rows.append('  {"%s", "%s", %d, %d, %s, %d, {%s}}' %
+                    (item["name"].replace('\\', '\\\\').replace('"', '\\\"'),
+                     item["file"].replace('\\', '\\\\').replace('"', '\\\"'),
+                     item["offset"], item["bytes"], item["dtype"], item["rank"], shape))
+    max_end = max(item["offset"] + item["bytes"] for item in items)
+    return """#include \"observer_adapter.h\"\n\nstruct ModelParameter {\n  void **addr;\n  const void *default_addr;\n  size_t size;\n  size_t offset;\n};\nextern struct ModelParameter model_params[];\n\nstatic const TrainWeightExportItem kItems[] = {\n%s\n};\nstatic const size_t kTrainWeightBytes = %d;\n\nsize_t GetTrainWeightCount0(void) {\n  return sizeof(kItems) / sizeof(kItems[0]);\n}\n\nint GetTrainWeight0(size_t index, const TrainWeightExportItem **metadata, const void **data) {\n  if (metadata == NULL || data == NULL || index >= GetTrainWeightCount0()) return -1;\n  if (model_params[index].addr == NULL || *model_params[index].addr == NULL) return -1;\n  if (model_params[index].size != kItems[index].bytes ||\n      model_params[index].offset + model_params[index].size > kTrainWeightBytes) return -1;\n  *metadata = &kItems[index];\n  *data = *model_params[index].addr;\n  return 0;\n}\n""" % (",\n".join(rows), max_end)
+
+
+def generate_observer_adapter(micro: Path, case_path: Path) -> dict:
+    weight_source = micro / "src/model0/weight0.c"
+    if not weight_source.is_file():
+        fail(f"training_observer_weight_source_missing:{weight_source}")
+    params, items = parse_observer_metadata(weight_source, case_path)
+    header = micro / "src/model0/observer_adapter.h"
+    source = micro / "src/model0/observer_adapter.c"
+    header.write_text(render_observer_header(), encoding="utf-8", newline="\n")
+    source.write_text(render_observer_source(params, items), encoding="utf-8", newline="\n")
+    binding_payload = json.dumps(
+        [{"name": item["name"], "runtime_symbol": param["runtime_symbol"],
+          "default_symbol": param["default_symbol"], "offset": param["offset"],
+          "bytes": param["size"]}
+         for param, item in zip(params, items)], sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return {"header": header, "source": source, "model_index": 0,
+            "symbols": ["GetTrainWeightCount0", "GetTrainWeight0"],
+            "binding_sha256": hashlib.sha256(binding_payload).hexdigest()}
 
 
 def calibration_index(path: Path) -> int:
@@ -199,6 +279,24 @@ def run(command: list[str], cwd: Path, env: dict[str, str], log: Path) -> None:
         fail(f"command_failed:{shown}:log={log}")
 
 
+def verify_defined_symbols(archive: Path, symbols: list[str], log: Path) -> None:
+    nm = shutil.which("nm")
+    if not nm:
+        fail("training_observer_nm_unavailable")
+    process = subprocess.run([nm, "-A", str(archive)], text=True, capture_output=True, check=False)
+    log.write_text(process.stdout + process.stderr, encoding="utf-8")
+    if process.returncode:
+        fail(f"training_observer_nm_failed:{archive}")
+    defined = set()
+    for line in process.stdout.splitlines():
+        fields = line.split()
+        if len(fields) >= 3 and fields[-2] not in ("U", "w"):
+            defined.add(fields[-1])
+    missing = [symbol for symbol in symbols if symbol not in defined]
+    if missing:
+        fail(f"training_observer_symbols_missing:{','.join(missing)}")
+
+
 def converter_encryption_capability(convert: Path, env: dict[str, str], log: Path) -> tuple[list[str], str]:
     """Return the version-compatible argument that explicitly disables model encryption."""
     try:
@@ -231,6 +329,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", help="Host-generated micro_train.cfg for training models")
     parser.add_argument("--run-id", help="Host run identity; required with --config")
     parser.add_argument("--case-id", help="Host case identity; required with --config")
+    parser.add_argument("--case-json", help="Locked Host case.json; required for training observer metadata")
     parser.add_argument("--calib-dir",
                         help="Directory containing calib_0..calib_N in model-input order")
     parser.add_argument("--mslite-pkg", required=True)
@@ -246,7 +345,7 @@ def validate_identity_arguments(parser: argparse.ArgumentParser,
                                 args: argparse.Namespace) -> None:
     """Bind a training Micro build to one Host run and case."""
     if args.config:
-        missing = [name for name in ("run_id", "case_id") if not getattr(args, name)]
+        missing = [name for name in ("run_id", "case_id", "case_json") if not getattr(args, name)]
         if missing:
             parser.error("--config requires " + " and ".join(
                 f"--{name.replace('_', '-')}" for name in missing))
@@ -264,8 +363,6 @@ def cmake_arguments(config: str | None, micro: Path, build: Path, pkg: Path,
                  f"-DOP_LIB={pkg / 'tools/codegen/lib/riscv/libnnacl.a'}",
                  f"-DWRAPPER_LIB={pkg / 'tools/codegen/lib/riscv/libwrapper.a'}",
                  f"-DRISCV_TOOLCHAIN_PATH={toolchain}", f"-DPKG_PATH={pkg}"]
-    if config:
-        arguments.append("-DMSLITE_TRAIN_OBSERVER=ON")
     return arguments
 
 
@@ -282,7 +379,8 @@ def main() -> int:
     if args.jobs < 1:
         parser.error("--jobs must be >= 1")
     validate_identity_arguments(parser, args)
-
+    if args.config and args.mode != "fp32":
+        fail("training_config_requires_fp32_mode")
     model = absolute_existing(args.model, "model")
     pkg = absolute_existing(args.mslite_pkg, "mslite_pkg")
     toolchain = absolute_existing(args.toolchain_bin, "toolchain_bin")
@@ -298,9 +396,6 @@ def main() -> int:
     output = output.resolve()
     if any(output.iterdir()):
         fail(f"output_dir_must_be_empty:{output}")
-    if args.config and args.mode != "fp32":
-        fail("training_config_requires_fp32_mode")
-
     cfg = materialize_cfg(args, output)
     micro = output / "micro"
     convert = converter(pkg)
@@ -316,6 +411,11 @@ def main() -> int:
     run(command, output, env, output / "converter.log")
     if not (micro / "CMakeLists.txt").is_file():
         fail(f"converter_did_not_generate_micro_project:{micro}")
+
+    observer = None
+    if args.config:
+        case_path = absolute_existing(args.case_json, "case_json")
+        observer = generate_observer_adapter(micro, case_path)
 
     build = output / "build"
     cmake = cmake_arguments(args.config, micro, build, pkg, toolchain)
@@ -341,6 +441,19 @@ def main() -> int:
                 "path": str(generated_path), "sha256": sha256(generated_path)
             }
 
+    observer_receipt = {"enabled": False}
+    if observer is not None:
+        symbols = observer["symbols"]
+        verify_defined_symbols(net, symbols, output / "observer_nm.log")
+        observer_receipt = {
+            "enabled": True, "model_index": observer["model_index"], "symbols": symbols,
+            "header": {"path": str(observer["header"]), "sha256": sha256(observer["header"])},
+            "source": {"path": str(observer["source"]), "sha256": sha256(observer["source"])},
+            "binding_sha256": observer["binding_sha256"], "nm_verified": True,
+        }
+        generated_sources["src/model0/observer_adapter.c"] = {
+            "path": str(observer["source"]), "sha256": sha256(observer["source"])}
+
     calibration_files = []
     if args.mode == "int8":
         calibration_root = Path(args.calib_dir).resolve()
@@ -357,7 +470,10 @@ def main() -> int:
         "converter_library_dirs": list(converter_library_dirs),
         "toolchain_bin": str(toolchain), "config": str(cfg),
         "config_sha256": sha256(cfg),
-        "training_observer": bool(args.config),
+        "case_json": str(case_path) if args.config else None,
+        "case_json_sha256": sha256(case_path) if args.config else None,
+        "training_observer": observer_receipt["enabled"],
+        "observer_adapter": observer_receipt,
         "micro_project": str(micro), "calibration_files": calibration_files,
         "generated_sources": generated_sources,
         "archives": {path.name: {"path": str(path), "sha256": sha256(path)} for path in destinations},

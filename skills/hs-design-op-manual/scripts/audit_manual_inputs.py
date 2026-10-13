@@ -1266,7 +1266,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     + ",".join(sorted(facts_audit.issues))
                 )
 
-    verify_path = args.verify or args.manual
+    verify_path = args.verify
     if verify_path is None:
         print("OP_MANUAL_CASE_SYNC=SKIP")
     else:

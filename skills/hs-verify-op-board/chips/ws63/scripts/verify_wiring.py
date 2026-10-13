@@ -85,6 +85,12 @@ def verify_training_receipts(micro_path, sample_path, integration_path,
     integration = load_receipt(integration_path, "SDK integration receipt", errors)
     if errors:
         return
+    observer = micro.get("observer_adapter")
+    if (micro.get("training_observer") is not True or not isinstance(observer, dict)
+            or observer.get("nm_verified") is not True):
+        errors.append("micro receipt observer capability is not verified")
+    if sample.get("observer_adapter") != observer:
+        errors.append("sample receipt observer capability differs from micro receipt")
 
     identity_fields = ("verification_kind", "run_id", "case_id", "model_sha256",
                        "framework", "mode", "training_config_sha256")
@@ -123,6 +129,11 @@ def verify_training_receipts(micro_path, sample_path, integration_path,
     cmake = sample_dir / "CMakeLists.txt"
     if sample.get("sample_cmake_sha256") != digest(cmake):
         errors.append("training sample CMake hash differs from sample receipt")
+    sample_header = sample.get("observer_header", {})
+    sample_header_path = sample_dir / "src" / "observer_adapter.h"
+    if (not isinstance(sample_header, dict) or sample_header.get("sha256") != digest(sample_header_path)
+            or sample_header.get("sha256") != observer.get("header", {}).get("sha256")):
+        errors.append("observer adapter header hash chain mismatch")
 
     generated = micro.get("generated_sources")
     if not isinstance(generated, dict):
@@ -138,6 +149,17 @@ def verify_training_receipts(micro_path, sample_path, integration_path,
         source_path = Path(str(item.get("path")))
         if not source_path.is_file() or digest(source_path) != item.get("sha256"):
             errors.append(f"micro receipt generated {label} source hash mismatch")
+    observer_source = observer.get("source", {}) if isinstance(observer, dict) else {}
+    observer_path = Path(str(observer_source.get("path", "")))
+    observer_generated = generated.get("src/model0/observer_adapter.c")
+    if (not isinstance(observer_generated, dict) or not observer_path.is_file()
+            or digest(observer_path) != observer_source.get("sha256")
+            or digest(observer_path) != observer_generated.get("sha256")):
+        errors.append("observer adapter source hash chain mismatch")
+    for symbol in observer.get("symbols", []) if isinstance(observer, dict) else []:
+        if symbol not in sample.get("observer_adapter", {}).get("symbols", []):
+            errors.append(f"observer symbol missing from sample receipt: {symbol}")
+
     if (isinstance(generated.get(model_relative), dict)
             and sample.get("micro_model_source_sha256")
             != generated[model_relative].get("sha256")):
@@ -230,11 +252,6 @@ def main():
     parser.add_argument("--training-sample-receipt")
     parser.add_argument("--integration-receipt")
     args = parser.parse_args()
-    if args.verification_kind == "training":
-        required_receipts = (args.micro_build_receipt, args.training_sample_receipt,
-                             args.integration_receipt)
-        if not all(required_receipts) or not args.generated_symbol:
-            parser.error("training verification requires generated symbols and all three receipts")
     runtime_defaults = {
         "inference": ["MSModelPredict0", "Execute0"],
         "training": ["MSModelPredict0", "Execute0", "MSModelGetLabels",
@@ -302,10 +319,16 @@ def main():
                 errors.append(f"kernel symbol {symbol!r} missing from {net}")
 
     if args.verification_kind == "training":
-        receipt_paths = [Path(value) for value in (
-            args.micro_build_receipt, args.training_sample_receipt,
-            args.integration_receipt,
-        ) if value]
+        receipt_values = (
+            ("--micro-build-receipt", args.micro_build_receipt),
+            ("--training-sample-receipt", args.training_sample_receipt),
+            ("--integration-receipt", args.integration_receipt),
+        )
+        if any(value is None for _, value in receipt_values):
+            for option, value in receipt_values:
+                if value is None:
+                    errors.append(f"training wiring requires {option}")
+        receipt_paths = [Path(value) for _, value in receipt_values if value]
         for path in receipt_paths:
             if not path.is_absolute() or not path.is_file():
                 errors.append(f"receipt missing/not absolute: {path}")
@@ -314,6 +337,16 @@ def main():
                 receipt_paths[0], receipt_paths[1], receipt_paths[2],
                 paths["sdk_root"], paths["sample_dir"], paths["model_lib_dir"], net, errors
             )
+
+    generated_symbols = set(args.generated_symbol)
+    if args.verification_kind == "training" and args.micro_build_receipt:
+        try:
+            micro_payload = json.loads(Path(args.micro_build_receipt).read_text(encoding="utf-8"))
+            observer_payload = micro_payload.get("observer_adapter", {})
+            if isinstance(observer_payload, dict):
+                generated_symbols.update(observer_payload.get("symbols", []))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            pass
 
     if not errors:
         runtime_archive = paths["model_lib_dir"] / "libmicro_runtime.a"
@@ -324,9 +357,12 @@ def main():
         except RuntimeError as exc:
             errors.append(str(exc))
         else:
-            for symbol in runtime_symbols + args.generated_symbol:
+            for symbol in runtime_symbols:
                 if symbol not in runtime_defined:
                     errors.append(f"runtime symbol {symbol!r} missing from {runtime_archive}")
+            for symbol in generated_symbols:
+                if symbol not in net_defined:
+                    errors.append(f"observer symbol {symbol!r} missing from {net_archive}")
             for symbol in args.kernel_symbol:
                 if symbol not in net_defined:
                     errors.append(f"kernel symbol {symbol!r} missing from {net_archive}")

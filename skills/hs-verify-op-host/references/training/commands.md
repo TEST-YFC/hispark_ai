@@ -1,8 +1,8 @@
 # Host 训练执行器
 
-`run_training_case.py` 运行一个已确定的 ONNX FP32 训练用例：转换为 Micro C、native 编译、执行训练，并逐元素比较完整输出、loss 和参数。它不生成模型或参考数组；会独立解析源 ONNX，并在转换后、构建前执行目标节点保留、训练关键链及生成 C 调用检查。它不证明工具包对应当前源码，也不证明任意训练图/内存语义正确；完整审计仍按 [训练验证步骤](workflow.md) 完成。
+`run_training_case.py` 运行一个已确定的 ONNX 或 TFLite FP32 训练用例：转换为 Micro C、native 编译、执行训练，并逐元素比较完整输出、loss 和参数。它不生成模型或参考数组；会独立解析源模型，并在转换后、构建前执行目标节点保留、训练关键链及生成 C 调用检查。它不证明工具包对应当前源码，也不证明任意训练图/内存语义正确；完整审计仍按 [训练验证步骤](workflow.md) 完成。
 
-当前执行范围：Linux/WSL、batch=1、静态 shape、FP32 数据、int32 稀疏分类标签、softmax cross entropy、SGD with momentum。训练权重当前只接受 `float32` 和 `int32`；`int32` 权重按整数精确相等判定。其他 loss、batch、dtype、optimizer、TFLite 不在此脚本的已实现范围；遇到这些需求先报告范围差异，不要强行套用。本脚本依赖 Python 3.10+、NumPy、ONNX Python 包、CMake、C/C++ 编译器和同一版本的 converter/静态库。
+当前执行范围：Linux/WSL、batch=1、静态 shape、FP32 数据、int32 稀疏分类标签、softmax cross entropy、SGD with momentum。训练权重当前只接受 `float32` 和 `int32`；`int32` 权重按整数精确相等判定。其他 loss、batch、dtype、optimizer 不在此脚本的已实现范围；ONNX 和 TFLite 是当前支持的训练源格式。TF、Caffe、MINDIR、PyTorch、OM、MSLITE 等 converter 输入枚举不代表 generated-C 训练链支持，遇到这些格式必须报告 `UNSUPPORTED_FRAMEWORK`，不得静默改用 ONNX 或其他等价格式。MindIR 的 `trainModel=true` 属于另一条 Lite runtime 路径，不纳入本流程。本脚本依赖 Python 3.10+、NumPy、ONNX Python 包、CMake、C/C++ 编译器和同一版本的 converter/静态库。
 
 ## 用法
 
@@ -19,16 +19,18 @@ python3 <host_skill_root>/scripts/training/run_training_case.py \
 
 ## case.json
 
-以下是字段示意。`sha256` 要由实际文件计算，不能直接执行占位值；路径相对 case.json 所在目录解析，所有模型、输入、标签和参考文件必须归档在该 case 目录内，不能引用目录外文件。
+以下是字段示意。`sha256` 和 `bytes` 要由实际文件计算，不能直接执行占位值；路径相对 case.json 所在目录解析，所有模型、输入、标签和参考文件必须归档在该 case 目录内，不能引用目录外文件。
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "verification_kind": "training",
+  "framework": "onnx",
+  "dtype": "float32",
   "case_id": "TC_001",
   "kind": "numerical",
   "test_point": "静态 FP32 反向传播与上游参数更新",
-  "model": {"path": "model.onnx", "sha256": "实际SHA256"},
+  "model": {"path": "model.onnx", "sha256": "实际SHA256", "bytes": 12345},
   "graph_expectations_version": 1,
   "graph_expectations": {
     "targets": [{
@@ -48,19 +50,19 @@ python3 <host_skill_root>/scripts/training/run_training_case.py \
   "training": {"steps": 2, "learning_rate": 0.01, "momentum": 0.0,
                "label_tensor_name": "label", "frozen_nodes": []},
   "sequence": [
-    {"inputs": [{"path": "x0.bin", "sha256": "实际SHA256", "dtype": "float32", "shape": [1, 3]}],
-     "labels": [{"path": "y0.bin", "sha256": "实际SHA256", "dtype": "int32", "shape": [1]}]},
-    {"inputs": [{"path": "x1.bin", "sha256": "实际SHA256", "dtype": "float32", "shape": [1, 3]}],
-     "labels": [{"path": "y1.bin", "sha256": "实际SHA256", "dtype": "int32", "shape": [1]}]}
+    {"inputs": [{"path": "x0.bin", "sha256": "实际SHA256", "bytes": 12, "dtype": "float32", "shape": [1, 3]}],
+     "labels": [{"path": "y0.bin", "sha256": "实际SHA256", "bytes": 4, "dtype": "int32", "shape": [1]}]},
+    {"inputs": [{"path": "x1.bin", "sha256": "实际SHA256", "bytes": 12, "dtype": "float32", "shape": [1, 3]}],
+     "labels": [{"path": "y1.bin", "sha256": "实际SHA256", "bytes": 4, "dtype": "int32", "shape": [1]}]}
   ],
   "eval": {
-    "inputs": [{"path": "eval_x.bin", "sha256": "实际SHA256", "dtype": "float32", "shape": [1, 3]}],
-    "labels": [{"path": "eval_y.bin", "sha256": "实际SHA256", "dtype": "int32", "shape": [1]}]
+    "inputs": [{"path": "eval_x.bin", "sha256": "实际SHA256", "bytes": 12, "dtype": "float32", "shape": [1, 3]}],
+    "labels": [{"path": "eval_y.bin", "sha256": "实际SHA256", "bytes": 4, "dtype": "int32", "shape": [1]}]
   },
   "reference_source": "独立参考实现、版本和同一初始化模型的生成方式",
-  "golden": {"path": "golden.npz", "sha256": "实际SHA256"},
-  "outputs": [{"index": 0, "shape": [1, 4], "role": "logits"},
-              {"index": 1, "shape": [1], "role": "loss"}],
+  "golden": {"path": "golden.npz", "sha256": "实际SHA256", "bytes": 12345},
+  "outputs": [{"index": 0, "shape": [1, 4], "dtype": "float32", "role": "logits"},
+              {"index": 1, "shape": [1], "dtype": "float32", "role": "loss"}],
   "weights": [{"name": "实际导出参数名", "reference": "wup", "dtype": "float32", "shape": [3, 4]}],
   "upstream_weights": ["实际导出参数名"],
   "frozen_weights": []
@@ -68,6 +70,10 @@ python3 <host_skill_root>/scripts/training/run_training_case.py \
 ```
 
 上例使用通用占位，不对应任何具体算子，不能直接运行。所有 `<...>` 必须按当前源 ONNX、转换图和生成代码对应的明确预期填写；两个 primitive 字段中的 `0` 仅为保持 JSON 整数类型的占位，必须替换为实际 primitive 编号。`domain: ""` 表示预期默认 domain；非默认域须显式填写实际预期值。`forward_target` 的名称和 primitive 须与对应 target 一致。不得照搬占位、编号或符号，也不得将本次检查读出的实际值自动回填充当事先声明的预期。新 numerical case 必须按下文声明完整 `source_node`。
+
+TFLite case 将 `framework` 写为 `"tflite"`，模型路径指向归档的 `.tflite` 文件，并用 `"source_node": {"index": <operator-index>, "builtin_code": <builtin-code>}` 锁定目标算子。TFLite 没有等价于 ONNX 的稳定节点名、`op_type` 或 domain，因此不能填写这些字段；当前适配器校验目标 operator index、builtin code 及其输入输出 tensor 索引，`upstream_paths` 的完整源图拓扑检查仍只适用于 ONNX。
+
+新生成 case 使用 `schema_version=2`，`framework`、`dtype`、训练参数、输出/权重 dtype，以及每个归档文件的 `bytes` 都必须显式声明。既有 `schema_version=1` case 只支持只读复审：runner 和聚合器会在内存中按旧默认值补齐、从当前文件读取缺失字节数，然后继续执行完整校验；不要为了升级版本或补字段改写已锁定的历史证据。
 
 训练序列长度必须等于 steps，且至少两步；每步与 Eval 的输入顺序、dtype、shape 一致。输出下标连续，最后一个是 loss。参数名须与当前生成工程的导出 manifest 一一对应；若转换后的 layout 不同，先确定映射、更新计划和独立参考，不能为了让比较通过而盲目转置。
 
@@ -88,7 +94,7 @@ step_2/output_0    step_2/output_1    step_2/weight/wup
 配置由脚本写入 `micro_train.cfg`：`[micro_param]` 中设置 `target=RISCV`、`enable_micro=true`；`[train]` 中设置 `train_mode=fp32`、`dump_training_graph=true`、loss、optimizer、学习率等。真实 converter 命令为：
 
 ```bash
-converter_lite --fmk=ONNX --modelFile=<model.onnx> \
+converter_lite --fmk=<ONNX-or-TFLITE> --modelFile=<model-path> \
   --configFile=<micro_train.cfg> --outputFile=<run-dir>/net
 ```
 
@@ -139,15 +145,12 @@ python3 <host_skill_root>/scripts/training/aggregate_training_results.py \
 
 ### 新 case 的源节点与图预期
 
-每个新 `kind="numerical"` 用例必须声明 `graph_expectations_version: 1` 和非空 `graph_expectations.targets`。默认路径还必须声明非空 `graph_expectations.upstream_paths`。每个 target 必须完整填写：
+每个新 `kind="numerical"` 用例必须声明 `graph_expectations_version: 1` 和非空 `graph_expectations.targets`。ONNX 默认路径还必须声明非空 `graph_expectations.upstream_paths`。每个 target 的生成图字段都必须填写 `forward_name`、`forward_primitive` 和非空 `backward_symbols`；至少一个反向符号须在对应生成代码块中真实调用，`backward_name` 默认等于 `forward_name`，`backward_primitive` 可选。源模型身份按框架填写：
 
-- `source_node.name`：源 ONNX 中唯一节点的精确名称。
-- `source_node.op_type`：预期的 ONNX `op_type`，非空字符串。
-- `source_node.domain`：预期的 ONNX domain，必须显式填写；默认 domain 写 `""`，不自动补为其他字符串。
-- `forward_name`、`forward_primitive`：转换后 forward 节点的名称及 primitive。
-- 非空 `backward_symbols`：允许的反向 kernel 符号，至少一个须在对应生成代码块中真实调用。`backward_name` 默认等于 `forward_name`；`backward_primitive` 可选。
+- ONNX：`source_node.name`、`source_node.op_type`、`source_node.domain`；名称必须唯一，默认 domain 显式写 `""`。
+- TFLite：`source_node.index`、`source_node.builtin_code`；证据记录 `operator_index`、`builtin_code` 和 `declared_identity_checked`。index 必须命中当前 subgraph 的 operator，builtin code 按 TFLite deprecated-code 兼容规则解析。
 
-完整对象示例见上方 case.json。提供 `source_node` 对象后，三个源字段缺一不可，且不接受额外字段；名称必须唯一，`op_type` 或 `domain` 不匹配都会 FAIL。这些是生成用例时锁定的预期，不能把运行时读取的实际值自动回填后声称完成预期比对，也不能用转换图 primitive 推测源 `op_type/domain`。
+完整 ONNX 对象示例见上方 case.json。两种源身份字段不能混用，也不能把运行时读取的实际值自动回填后声称完成预期比对；生成图 primitive 不能反推源框架的节点身份。
 
 `upstream_paths` 每项声明 `forward_upstream`、`forward_target`、`upstream_backward`、`optimizer`。`forward_target` 必须唯一绑定已声明的 target。检查包含源模型 upstream→target、生成 forward 的 upstream→target、对应训练 ForwardRef→loss，以及 loss→目标 backward→上游 backward→ParameterGrad→optimizer。仅有任意 control 路径不能替代 ParameterGrad；绕行检查只屏蔽本项 target 的 backward，不能借其他 target 掩盖 loss 到上游 backward 的绕行。
 
@@ -158,7 +161,7 @@ python3 <host_skill_root>/scripts/training/aggregate_training_results.py \
 
 - 非空 `parallel_upstream_paths`：每项含 `forward_upstream`、`forward_sink`、
   `upstream_backward`、`parameter_grad`、`optimizer`，证明另一条 FP32 可训练路径仍有
-  loss→Backward→ParameterGrad→optimizer 链路；
+  loss→Backward→ParameterGrad→optimizer 路径；
 - 非空 `barrier_upstream_paths`：每项含 `forward_upstream` 和 `forward_target`，
   证明源模型中边界上游确实连到目标；
 - 非空 `barrier_weights`：这些权重必须出现在 `weights` 中，且不能列入
@@ -174,11 +177,11 @@ python3 <host_skill_root>/scripts/training/aggregate_training_results.py \
 
 `training.fusion_blacklists` 是明确输入，原样透传；runner 不自动追加任何算子特例。目标被融合掉时，即使数值相同也必须 FAIL。
 
-### 旧 case 兼容与 ONNX 依赖边界
+### 旧 case 兼容与框架依赖边界
 
-为只读复审既有 schema-1 证据，代码仍接受未声明 `source_node` 的旧 numerical case，**这不是新用例的推荐或允许省略规则**。旧 case 仍须重新读取并核对模型 SHA、实际解析 ONNX、运行模型检查，以 `forward_name` 唯一匹配源节点并验证上游拓扑。其实际 `name/op_type/domain` 会记录在源检查结果中，`declared_identity_checked=false`；只能报告“已解析源模型并验证节点名/拓扑”，不能报告“已比对预期 op_type/domain”。完整声明且比对通过时该标记才为 `true`。不要为了补字段改写已锁定的历史 case、summary 或日志。
+为只读复审既有 schema-1 证据，代码仍接受未声明 `source_node` 和上述新显式字段的旧 numerical case；这不是新用例的省略规则。旧 case 仍须重新读取并核对模型 SHA、实际解析 ONNX、运行模型检查，以 `forward_name` 唯一匹配源节点并验证上游拓扑。其实际 `name/op_type/domain` 会记录在源检查结果中，`declared_identity_checked=false`；只能报告“已解析源模型并验证节点名/拓扑”，不能报告“已比对预期 op_type/domain”。完整声明且比对通过时该标记才为 `true`。不要为了补字段改写已锁定的历史 case、summary 或日志。
 
-执行 numerical runner 和独立聚合复审的 Python 环境均须具备 `onnx` 包，包括在 Windows 上复审 WSL 生成的证据时；缺少依赖明确失败，没有静默跳过或 allow 模式。当前不支持 external-data ONNX：外部 tensor 文件没有单独锁定的身份链，模型不会被当成受支持的 numerical 输入放行。请为新用例生成数据内嵌的单文件 ONNX，并重新计算 SHA。`kind="reject"` 继续使用现有预期错误路径，不因源模型无法解析而提前取代 converter 的拒绝测试。
+执行 numerical runner 和独立聚合复审时，ONNX case 的 Python 环境须具备 `onnx` 包，TFLite case 须具备 TensorFlow 的 `schema_py_generated` FlatBuffer 定义；缺少对应依赖明确失败，没有静默跳过或 allow 模式。当前不支持 external-data ONNX：外部 tensor 文件没有单独锁定的身份链，模型不会被当成受支持的 numerical 输入放行。请为新用例生成数据内嵌的单文件 ONNX，并重新计算 SHA。`kind="reject"` 继续使用现有预期错误路径，不因源模型无法解析而提前取代 converter 的拒绝测试。
 
 ### 标准 Serializer 的 C 调用取证范围
 

@@ -23,7 +23,7 @@
 
 ### decision4 链路分析（填好的表）
 
-对被复用的 PrimitiveType 跑 decision4 的链路扫描（`scripts/scan_op.sh <算子名> <代码根>` 一条命令产出），得到它现存链路：
+对被复用的 PrimitiveType 跑 decision4 的链路扫描（`scripts/scan_op.sh <算子名> <代码根>` 一条命令即可生成结果），得到它现存链路：
 
 | 环节 | 状态 | 说明 |
 |------|------|------|
@@ -65,7 +65,7 @@
 
 ### decision1 查规格 + decision2 判定：新建
 
-先查清输入/输出/属性/dtype/广播，并做属性审计（每个属性标注支持/默认拒绝/不支持），再套 `decision2-reuse-decision.md` 的“完全等价”判据。无任何已有 PrimitiveType 匹配时裁决为**新建**，并在 `docs/decision.md` 逐层记录实现范围。
+先查清输入/输出/属性/dtype/广播，并做属性审计（每个属性标注支持/默认拒绝/不支持），再套 `decision2-reuse-decision.md` 的“完全等价”判据。无任何已有 PrimitiveType 匹配时判定为**新建**，并在 `docs/decision.md` 逐层记录实现范围。
 
 ### decision4 链路分析（填好的表）
 

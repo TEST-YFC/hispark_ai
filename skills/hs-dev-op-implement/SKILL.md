@@ -24,7 +24,7 @@ description: >-
 选择模式
   -> step0 范围/source entry
   -> step1 规格与仓内扫描
-  -> step2 grouping、复用/新建和层集裁决
+  -> step2 grouping、复用/新建和层集判定
   -> step3 链路、能力清单、实现约定、计划版 op_spec
      -> mode=prepare: OP_PLAN_GATE=PASS，返回 workflow
   -> workflow integrated-initial + PRE_SOURCE_GATE
@@ -46,7 +46,7 @@ description: >-
 
 | 模式 | 范围 | 源码写入 | 终态 |
 |---|---|---|---|
-| `prepare` | step0-step3 扫描、裁决、实现约束、能力清单、计划版 `op_spec.py` | 禁止 | `OP_PLAN_GATE=PASS` |
+| `prepare` | step0-step3 扫描、判定、实现约束、能力清单、计划版 `op_spec.py` | 禁止 | `OP_PLAN_GATE=PASS` |
 | `apply` | 验证 pre-source 后执行 step4-step6 | 允许 | `IMPLEMENT_GATE=PASS` 或结构化 FAIL |
 | `all` | 显式单独调用的 prepare → 外部检查 → apply | 分段允许 | 两段均有证据 |
 
@@ -71,7 +71,7 @@ description: >-
 
 | 本 skill 负责 | 不负责 | 交给谁 |
 |---|---|---|
-| source entry、七层链路、grouping、复用/新建裁决 | Host 用例和数值判定 | `hs-verify-op-host` |
+| source entry、七层链路、grouping、复用/新建判定 | Host 用例和数值判定 | `hs-verify-op-host` |
 | 实现约定、能力清单和计划版 `op_spec.py` | 两份正式算子文档 | `hs-design-op-manual` |
 | 七层源码、实现 code style、安全和质量检查 | 固件构建、烧录、板端精度 | workflow、`hs-dev-build`、`hs-dev-flash`、`hs-verify-op-board` |
 
@@ -112,7 +112,7 @@ prepare 必须先按能力清单生成计划版并校验，apply 只核对文档
 待办[<implementation_unit>]:
 - [ ] step0 确定范围和 source entry
 - [ ] step1 扫描规格与仓内现状
-- [ ] step2 完成 grouping、复用/新建和层集裁决
+- [ ] step2 完成 grouping、复用/新建和层集判定
 - [ ] step3 确定链路、能力清单、实现约定和计划用例
 - [ ] step4 编写或修复算子源码
 - [ ] step5 完成编码后交叉代码审查
@@ -145,7 +145,7 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 不要用 `head`/`tail` 截断；将日志复制到 `<opdir>/logs/`。规格来源和不可达回退读取
 `references/spec-sources.md`。文件存在不等于已注册或可达。
 
-## step2：裁决复用、新建和层集
+## step2：判定复用、新建和层集
 
 按需先读 `references/worked-example.md`、`references/decision2-reuse-decision.md` 和
 `references/implementation-detail.md`。逐项写 `decision.md`：激活子类型、量化 INT8 豁免、
@@ -219,7 +219,7 @@ git -C <code_root> diff --check
 保存首个真实错误，按 parser/infer/kernel/opcoder/quantizer/工具链分类，查
 `references/troubleshooting.md` 和 `references/lessons.md`，定位最小根因后重跑质量检查。
 实现、模型/spec、工具链和固件接线分别交给对应负责人处理；不删除能力、不降低阈值、不改 GT。
-同一能力连续两次有证据的方案失败时暂停并交用户裁决。完整循环和输出格式见
+同一能力连续两次有证据的方案失败时暂停并交由用户决定。完整循环和输出格式见
 [`references/recovery.md`](references/recovery.md)。
 
 结束时至少输出：
@@ -253,4 +253,4 @@ next_owner=hs-workflow-op-development
 | [`references/optimizer-fusion-template.md`](references/optimizer-fusion-template.md) | fusion |
 | [`references/code-quality-gate.md`](references/code-quality-gate.md)、[`references/code-style.md`](references/code-style.md) | 质量检查与团队规范 |
 | [`references/spec-sources.md`](references/spec-sources.md)、[`references/troubleshooting.md`](references/troubleshooting.md)、[`references/lessons.md`](references/lessons.md) | 规格来源和失败处理 |
-| [`references/worked-example.md`](references/worked-example.md)、[`references/decision2-reuse-decision.md`](references/decision2-reuse-decision.md) | 复用裁决示例 |
+| [`references/worked-example.md`](references/worked-example.md)、[`references/decision2-reuse-decision.md`](references/decision2-reuse-decision.md) | 复用判定示例 |

@@ -28,7 +28,7 @@
 | step1 | 查证事实 | 每个 source entry 运行并完整阅读 `scan_op.sh`；归档完整日志 | FOUND/NOT_FOUND/UNREACHABLE 与七层扫描证据 |
 | step2 | 锁定实现决策 | source grouping；decision2 复用/新建；decision3 层集开关 | `docs/decision.md` 与逐层做/跳表 |
 | step3 | 锁定编码前全部输入 | 生成spec、链路分析、能力清单和实现约定；review已有/复用能力；生成计划版`op_spec.py`并校验 | `OP_PLAN_GATE=PASS`，随后交给workflow生成初版文档 |
-| step4 | 实现源码 | 先通过`PRE_SOURCE_GATE`，必要时对比参考实现，再按七层模板最小修改 | 源码diff与能力落点 |
+| step4 | 实现源码 | 先通过`PRE_SOURCE_GATE`，必要时对比参考实现，再按七层模板最小修改 | 源码 diff 与能力对应的实现位置 |
 | step5 | 编码后交叉审查 | 审核注册键、分支可达性、量化归属、折叠/重写和死代码 | `docs/code-review.md` |
 | step6 | 实现质量检查 | 运行快速预检、code style、安全和 diff 审计 | `IMPLEMENT_GATE=PASS` 或结构化 FAIL |
 
@@ -62,13 +62,13 @@ bash <skill_root>/scripts/scan_op.sh <Op> <code_root>
 
 每个 source entry 单独运行。完整阅读输出，不用 `head`/`tail` 截断；将 `/tmp/scan_op_<Op>.log` 复制到 `<opdir>/logs/`。规格来源与不可达回退链见 `references/spec-sources.md`。
 
-## step2：裁决复用、新建和层集
+## step2：判定复用、新建和层集
 
 先读 `references/worked-example.md` 和 `references/decision2-reuse-decision.md`。
 
 非激活算子的复用必须逐项证明输入个数/顺序/语义、输出语义、属性集和广播规则完全一致；超集不等价。单数据输入、输出保形、逐元素非线性的激活优先走 `PrimitiveType_Activation` 子类型，不套非激活的四项等价测试。
 
-逐项裁决以下开关并写入 `decision.md`：激活子类型；量化 INT8 豁免；构造型 fusion pass；消除/重写 pass；首输入是否为 condition/index。TFLite 同族多 builtin 或疑似 converter 归一化时，先做可达性探针。
+逐项确定以下开关并写入 `decision.md`：激活子类型；量化 INT8 豁免；构造型 fusion pass；消除/重写 pass；首输入是否为 condition/index。TFLite 同族多 builtin 或疑似 converter 归一化时，先做可达性探针。
 
 向用户展示每层“做/补/复用/不适用”结论，不只写“复用”或“新建”。细化矩阵保留在 `references/decision2-reuse-decision.md` 和 `references/implementation-guide.md`。
 
@@ -93,7 +93,7 @@ dtype 逐项映射到独立 case，以及生成模型中的真实节点/输入�
 
 任何已有层存在 `FIX_REQUIRED` 都进入 step4 修复范围。禁止因为“这不是本次新增代码”而延期；Host 测试前才首次阅读存量实现，说明 step3 review 没完成。
 
-按名称定位 `hs-verify-op-host`，从它内部的 `scripts/capability_checklist.template.json` 复制能力清单结构，但内容由本 skill 根据规格与实现裁决填写。每条能力保留稳定 ID、可读描述和可机械匹配的 `match`；本 skill 不填写虚假的 PASS，也不为现有测试反向弱化能力。
+按名称定位 `hs-verify-op-host`，从它内部的 `scripts/capability_checklist.template.json` 复制能力清单结构，但内容由本 skill 根据规格与实现判定填写。每条能力保留稳定 ID、可读描述和可供脚本匹配的 `match`；本 skill 不填写虚假的 PASS，也不为现有测试反向弱化能力。
 
 同族多 builtin 场景把实际“输入形态 → builtin”解包证据写入 `builtin-probe.md`。缺实际命令输出时不能用“无归一化”代替证据。
 
@@ -106,7 +106,7 @@ dtype 逐项映射到独立 case，以及生成模型中的真实节点/输入�
 `hs-verify-op-host` 内的 `scripts/operator_spec_template.py` 作为唯一模板，把能力清单逐项落实到
 `<opdir>/scripts/op_spec.py`。每条 case 的 `test_point` 必须明确说明验证的行为、边界或缺陷类型；
 每条`covered_by`必须指向计划版中的真实case ID，非平凡能力
-保留可机械核对的`match`，然后运行：
+保留可供脚本核对的`match`，然后运行：
 
 ```bash
 python3 <hs-verify-op-host>/scripts/validate_op_spec.py <opdir>
@@ -150,7 +150,7 @@ python3 "<skill_root>/scripts/gate_artifacts.py" \
 
 只有每个framework都输出`PRE_SOURCE_GATE=PASS`才允许动源码。该检查会自动复算
 `source-freeze.json`中的Git可见源码指纹，检查计划版op_spec、初版facts/draft及facts记录的
-四个主源哈希，并重新运行文档Skill的facts/content/case三项audit；仅在对话中声称
+四项核心材料的哈希，并重新运行文档Skill的facts/content/case三项audit；仅在对话中声称
 “文档已生成”不算证据。
 
 能力清单、实现约定、op_spec或初版文档后续发生变化时，立即停止apply并回到workflow
@@ -176,7 +176,7 @@ CODE_STYLE_SOURCE_SHA256=<sha256>
 
 | 项目 | 必须记录的结论 |
 |---|---|
-| 每个属性 | 支持并转发到哪个字段 / 明确暂不支持并在Parser注释留痕 |
+| 每个属性 | 支持并转发到哪个字段 / 明确暂不支持并在 Parser 注释中记录 |
 | 每个opset版本变化 | 仅默认值变化 / 计算语义变化，分别列出，不可合并描述 |
 | 输入顺序 | source entry顺序 → Primitive/Parameter顺序的逐项映射 |
 | optional input | initializer还是dynamic input；缺省时由哪层补默认值 |
@@ -185,13 +185,13 @@ CODE_STYLE_SOURCE_SHA256=<sha256>
 项目策略是：默认值与语义按最新opset实现，不临时发明opset分支；扫描发现
 版本差异时Parser加入 `Project policy: parse per opset <N> semantics regardless of model
 opset.` 注释，语义差异另写事实注释。属性审计必须落到 `decision.md`或
-实现约定文件`implementation-contract.md`，并由`gate_artifacts.py --stage pre-source`机械验收。
+实现约定文件`implementation-contract.md`，并由`gate_artifacts.py --stage pre-source`脚本验收。
 
 组合算子还必须完成构造型fusion审计；任何算子都要完成消除/重写型pass审计。命中
 消除型pass时，必须记录触发/存活条件，并在能力清单设计“一条pass不触发且真到Kernel”
 和“一条pass触发且模型整体正确”的两类case；后者不得冒充Kernel覆盖。
 
-实现中持续回填能力落点。复用分支只补缺失或有缺陷的部分，不重建已经证明等价且可达的层；但验证反馈定位到存量代码时，该缺陷仍属于本 implementation unit。
+实现中持续补充各项能力对应的实现位置。复用分支只补缺失或有缺陷的部分，不重建已经证明等价且可达的层；但验证反馈定位到存量代码时，该缺陷仍属于本 implementation unit。
 
 新增代码完成后，再对“新增/修改代码 + 已复用代码的接口边界”做一次交叉review：逐条沿
 capability从parser输入走到生成代码调用，确认修改侧与复用侧的字段、dtype、shape、默认属性
