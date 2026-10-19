@@ -58,7 +58,7 @@
 
 | 文档版本 | 发布日期       | 修改说明                                                                                                                                   |
 | :--- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| 05   | 2026-09-02 | 新增Hi1156E芯片支持，修改“开发板准备”、“[Hi3322/Hi1156E样例运行](#ZH-CN_TOPIC_0000002530583195)”章节。                                                       |
+| 05   | 2026-09-02 | 新增tiangong2芯片支持，修改“开发板准备”、“[Hi3322/tiangong2样例运行](#ZH-CN_TOPIC_0000002530583195)”章节。                                                       |
 | 04   | 2026-07-03 | 更新“[Linux通路环境准备](#ZH-CN_TOPIC_0000002538542947)、[基础版环境准备](#ZH-CN_TOPIC_0000002504481524)、[GPU加速版环境准备](#ZH-CN_TOPIC_0000002504641364)”。 |
 | 03   | 2026-04-28 | 新增 HiSpark社区资源下载关联。                                                                                                                    |
 | 02   | 2026-03-24 | 新增“[3.2.1-Windows环境准备”（仅Windows端用户关注）](#ZH-CN_TOPIC_0000002504198312)、[WSL环境准备（仅Windows端用户关注）](#ZH-CN_TOPIC_0000002521720132)”章节。      |
@@ -70,7 +70,7 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 # 开发板准备<a name="ZH-CN_TOPIC_0000002530523791"></a>
 
-目前支持Hi3863、Hi3322以及Hi1156E三款芯片，需要提前准备单板资源。
+目前支持Hi3863、Hi3322以及tiangong2三款芯片，需要提前准备单板资源。
 
 # 开发环境准备<a name="ZH-CN_TOPIC_0000002498683832"></a>
 
@@ -95,10 +95,10 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 **图 1**  HiSilicon社区HiSpark.AI组件下载<a name="fig1031373761716"></a>  
 ![](figures/HiSilicon社区HiSpark-AI组件下载.png "HiSilicon社区HiSpark-AI组件下载")
 
-下载压缩包，解压后内部customer文件夹下包含 MSLite （Hi3863 AI工具链），CANN（Hi3322 & Hi1156E AI工具链），Tools（Dockerfile），samples（Hi3863、Hi3322、Hi1156E共用的AI相关Samples），adaptor（Hi3863、Hi3322、Hi1156E共用的AI相关适配层）。
+下载压缩包，解压后内部customer文件夹下包含 MSLite （Hi3863 AI工具链），CANN（Hi3322 & tiangong2 AI工具链），Tools（Dockerfile），samples（Hi3863、Hi3322、tiangong2共用的AI相关Samples），adaptor（Hi3863、Hi3322、tiangong2共用的AI相关适配层）。
 
 - [Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)部分会使用到adaptor文件夹中的 "HiSpark.AI\_xx.xx.x.xxxx-adaptor.tar.gz" 压缩包。
-- [Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)部分 以及  [Hi3322/Hi1156E环境准备](#ZH-CN_TOPIC_0000002530443753)部分 Linux通路会使用到 Tools文件夹中的“DockerFile.tar.gz”压缩包中Dockerfile\_mslite以及Dockerfile\_cann\_xxx文件；Windows通路以及WSL通路无需关注。
+- [Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)部分 以及  [Hi3322/tiangong2环境准备](#ZH-CN_TOPIC_0000002530443753)部分 Linux通路会使用到 Tools文件夹中的“DockerFile.tar.gz”压缩包中Dockerfile\_mslite以及Dockerfile\_cann\_xxx文件；Windows通路以及WSL通路无需关注。
 
 ### 插件安装<a name="ZH-CN_TOPIC_0000002541561749" id="ZH-CN_TOPIC_0000002541561749"></a>
 
@@ -319,7 +319,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
     2.  在do\_at\_cmd\_register函数中，增加“at\_ai\_cmd\_register\(\);”这一行。
 
-## Hi3322/Hi1156E环境准备<a name="ZH-CN_TOPIC_0000002530443753" id="ZH-CN_TOPIC_0000002530443753"></a>
+## Hi3322/tiangong2环境准备<a name="ZH-CN_TOPIC_0000002530443753" id="ZH-CN_TOPIC_0000002530443753"></a>
 
 HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化或转换（量化仅适用于Hi3322），请参考《Nano AI应用开发指南》，进行环境准备。
 
@@ -630,13 +630,13 @@ GPU加速版环境准备步骤如下：
 
 ### 准备SDK<a name="ZH-CN_TOPIC_0000002545173551" id="ZH-CN_TOPIC_0000002545173551"></a>
 
-取Hi3322/Hi1156E对应SDK发布包，解压SDK包到本地目录，SDK解压目标路径请勿带空格。
+取Hi3322/tiangong2对应SDK发布包，解压SDK包到本地目录，SDK解压目标路径请勿带空格。
 
 # 样例运行<a name="ZH-CN_TOPIC_0000002498683834"></a>
 
 -   **[Hi3863样例运行](#ZH-CN_TOPIC_0000002530443755)**  
 
--   **[Hi3322/Hi1156E样例运行](#ZH-CN_TOPIC_0000002530583195)**
+-   **[Hi3322/tiangong2样例运行](#ZH-CN_TOPIC_0000002530583195)**
 
 ## Hi3863样例运行<a name="ZH-CN_TOPIC_0000002530443755" id="ZH-CN_TOPIC_0000002530443755"></a>
 
@@ -812,7 +812,7 @@ GPU加速版环境准备步骤如下：
 
 2.  具体API的用法请参考文档《HiSpark.AI API开发指南》
 
-## Hi3322/Hi1156E样例运行<a name="ZH-CN_TOPIC_0000002530583195" id="ZH-CN_TOPIC_0000002530583195"></a>
+## Hi3322/tiangong2样例运行<a name="ZH-CN_TOPIC_0000002530583195" id="ZH-CN_TOPIC_0000002530583195"></a>
 
 本章节以LeNet5模型为例，介绍如何使用HiSpark Studio AI工具进行模型量化、转换、性能评估以及精度评估。如果需要使用命令行工具进行如上操作，请参考《Nano应用开发指南》。
 
@@ -834,7 +834,7 @@ GPU加速版环境准备步骤如下：
 
 1.  模型获取。若使用Linux服务器端环境，请将模型上传到容器内。
 	Hi3322进行训练后量化PTQ，请点击[Link](https://gitcode.com/HiSpark/hispark_ai/tree/master/src/samples/oh/lenet5/model)，下载ONNX模型；进行量化感知训练QAT，请点击[Link](https://gitcode.com/HiSpark/hispark_ai/tree/master/src/samples/oh/lenet5/model)，下载PyTorch模型权重文件。
-	Hi1156E请点击[Link](https://gitcode.com/HiSpark/hispark_ai/tree/master/src/samples/oh/lenet5/model)，下载ONNX模型。
+	tiangong2请点击[Link](https://gitcode.com/HiSpark/hispark_ai/tree/master/src/samples/oh/lenet5/model)，下载ONNX模型。
 
 2.  点击[Link](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/lenet5/scripts/preproc_mnist_data.py)，下载数据和预处理脚本“preproc\_mnist\_data.py”。请参考[文档](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/lenet5/README.md)，生成数据。
 
@@ -889,7 +889,7 @@ GPU加速版环境准备步骤如下：
 
 1.  进入HiSpark Studio AI插件单击“Home”按钮，单击“Import Project”按钮进入新建工程页面。在弹出框中选择对应的芯片、开发板、平台。选择已经下载的SDK路径；并为工程设置好名字和工程文件保存地址。
 
-    **图 1**  新建工程页面（以Hi1156E为例） <a name="fig186735351863"></a> 
+    **图 1**  新建工程页面（以tiangong2为例） <a name="fig186735351863"></a> 
     ![](figures/新建工程页面.png "新建工程页面")
 
 2.  单击“Finished”进入“Select Model”页面。
@@ -913,11 +913,11 @@ GPU加速版环境准备步骤如下：
     >首次连接请根据提示设置远端连接。注意端口选择映射到容器内的服务器端口。
 
 4.  Hi3322工程导入模型后，自动跳转到量化页面。如果导入的模型为ONNX模型，跳转到训练后量化页面。如果导入的模型为PyTorch模型，跳转到量化感知训练界面。
-      Hi1156E工程导入模型后，自动跳转到模型转换页面。
+      tiangong2工程导入模型后，自动跳转到模型转换页面。
 
 ### Hi3322模型量化<a name="ZH-CN_TOPIC_0000002504685348" id="ZH-CN_TOPIC_0000002504685348"></a>
 
-Hi1156E不支持模型量化。Hi1156E工程，导入模型后无需执行本章节，请直接进入“[模型转换](#ZH-CN_TOPIC_0000002506277190)”章节。
+tiangong2不支持模型量化。tiangong2工程，导入模型后无需执行本章节，请直接进入“[模型转换](#ZH-CN_TOPIC_0000002506277190)”章节。
 
 在“Quantize”页面对模型进行量化，并对量化后的评估模型进行精度验证，以帮助用户评估量化后的模型是否符合业务需求。精度验证的指标如[表1 精度验证指标](#table28001510142419)所示。
 
@@ -1080,7 +1080,7 @@ Hi1156E不支持模型量化。Hi1156E工程，导入模型后无需执行本章
 
 ### 模型转换<a name="ZH-CN_TOPIC_0000002506277190" id="ZH-CN_TOPIC_0000002506277190"></a>
 
-在“Convert”模型转换页面将模型进行转换，得到适配NPU IP加速器的离线模型：Hi3322转换量化后的模型，Hi1156E转换导入的浮点模型。具体步骤如下。
+在“Convert”模型转换页面将模型进行转换，得到适配NPU IP加速器的离线模型：Hi3322转换量化后的模型，tiangong2转换导入的浮点模型。具体步骤如下。
 
 1.  保持默认参数，单击“Convert”按钮完成模型转换。
 
@@ -1102,10 +1102,10 @@ Hi1156E不支持模型量化。Hi1156E工程，导入模型后无需执行本章
 1. 单击“Build”编译SDK，选择烧录串口与波特率，单击“Burn”开始烧录。
 
    > ![](public_sys-resources/icon-note.gif) **说明：** 
-   > Hi3322通过串口进行烧录，在界面中配置串口。Hi1156E通过串口和网口两个端口完成烧录，需同时配置串口与网口IP地址。
+   > Hi3322通过串口进行烧录，在界面中配置串口。tiangong2通过串口和网口两个端口完成烧录，需同时配置串口与网口IP地址。
    
-   **图 2** Hi1156E烧录端口配置
-![](figures/Hi1156E烧录端口配置.png "Hi1156E烧录端口配置")
+   **图 2** tiangong2烧录端口配置
+![](figures/tiangong2烧录端口配置.png "tiangong2烧录端口配置")
 
 2. 单击下方“Download Results”中的下载按钮下载前一步转换产物。
 
@@ -1113,7 +1113,7 @@ Hi1156E不支持模型量化。Hi1156E工程，导入模型后无需执行本章
 
 ### 性能评估和精度评估<a name="ZH-CN_TOPIC_0000002504685350" id="ZH-CN_TOPIC_0000002504685350"></a>
 
-HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能评估和精度评估前，请按照Hi3322/Hi1156E硬件指导完成对应单板硬件环境的准备。
+HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能评估和精度评估前，请按照Hi3322/tiangong2硬件指导完成对应单板硬件环境的准备。
 
 - 性能评估自动将转换的模型上传到单板，在端侧推理模型并统计模型推理性能。
 - 精度评估自动将转换的模型和验证集上传到单板，在端侧推理模型；并和原始浮点模型以及真值标签对比，计算精度指标。
@@ -1126,7 +1126,7 @@ HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能
    ![](figures/串口配置.png "串口配置")
 
    > ![](public_sys-resources/icon-note.gif) **说明：** 
-   > Hi1156E通过串口和网口两个接口连接单板，此处需同时配置串口与网口IP地址。
+   > tiangong2通过串口和网口两个接口连接单板，此处需同时配置串口与网口IP地址。
 
 2. 单击“Performance Evaluation”按钮，完成模型上板性能验证。验证完成后，在性能验证窗口显示推理时间和模型大小。
 
