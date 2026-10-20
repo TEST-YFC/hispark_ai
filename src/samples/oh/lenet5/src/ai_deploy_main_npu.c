@@ -272,6 +272,7 @@ static OH_AI_Status ai_npu_sample_init(struct ai_npu_param *sample_param)
     if (context == NULL) {
         int32_t error_code = OH_AI_GetErrorCode();
         ai_printf("[AI_NPU] OH_AI_ContextCreate failed (%d)\n", error_code);
+        OH_AI_ModelDestroy(&model);
         return OH_AI_STATUS_FAILED;
     }
     sample_param->model = model;
