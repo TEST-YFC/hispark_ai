@@ -76,14 +76,20 @@ elseif ("${CHIP_VERSION}" STREQUAL "1156")
     target_compile_definitions(${PROJECT_NAME} PRIVATE PROCESSOR_TYPE_TINY)
 
     target_link_libraries(${PROJECT_NAME}
-        ${LIB_PATH}/libascend_protobuf.so.3.13.0.0
+        ${LIB_PATH}/libacl_mdl_impl_om2.so
+        ${LIB_PATH}/libacl_mdl_impl.so
+        ${LIB_PATH}/libacl_mdl.so
+        ${LIB_PATH}/libacl_op_executor_impl.so
+        ${LIB_PATH}/libacl_op_executor.so
+        ${LIB_PATH}/libacl_rt_impl.so
+        ${LIB_PATH}/libacl_rt.so
         ${LIB_PATH}/libascend_dump.so
         ${LIB_PATH}/libascend_hal.so
+        ${LIB_PATH}/libascend_protobuf.so.3.13.0.0
         ${LIB_PATH}/libascend_watchdog.so
         ${LIB_PATH}/libascendalog.so
-        ${LIB_PATH}/libascendcl_impl.so
-        ${LIB_PATH}/libascendcl.so
         ${LIB_PATH}/libc_sec.so
+        ${LIB_PATH}/libcustom_op_runtime.so
         ${LIB_PATH}/libdavinci_executor.so
         ${LIB_PATH}/liberror_manager.so
         ${LIB_PATH}/libexe_graph.so
@@ -95,16 +101,18 @@ elseif ("${CHIP_VERSION}" STREQUAL "1156")
         ${LIB_PATH}/libgraph.so
         ${LIB_PATH}/libhybrid_executor.so
         ${LIB_PATH}/liblowering.so
+        ${LIB_PATH}/libmetadef.so
         ${LIB_PATH}/libmmpa.so
-        ${LIB_PATH}/libmsprofiler.so
+        ${LIB_PATH}/libom2_executor.so
+        ${LIB_PATH}/libopp_registry.so
         ${LIB_PATH}/libplatform.so
         ${LIB_PATH}/libprofapi.so
         ${LIB_PATH}/libprofimpl.so
-        ${LIB_PATH}/libqos_manager.so
         ${LIB_PATH}/libregister.so
         ${LIB_PATH}/libruntime_common.so
         ${LIB_PATH}/libruntime_v100.so
         ${LIB_PATH}/libruntime.so
         ${LIB_PATH}/libslog.so
+        ${LIB_PATH}/libunified_dlog.so
     )
 endif()
