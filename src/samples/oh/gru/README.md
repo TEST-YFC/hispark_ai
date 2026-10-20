@@ -234,12 +234,14 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 3322
     路径如下表示解压成功，且目录正确：
     {ADAPTOR_PATH}
         |---- adaptor
+        |---- at
         |---- include
         |---- README.md
 3. 获取此HiSpark.AI Samples包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
     路径如下表示解压成功，且目录正确：
     {SAMPLE_PATH}
+        |---- acl
         |---- amct
         |---- oh
         |---- CMakeLists.txt
@@ -261,8 +263,8 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 1156
 
 **运行指南**
 1. 创建一个目录，将其路径记作SRC_PATH。
-    将`${SDK_PATH}/software/tiangong2_image_release/NPU/npu_turing_master/release/lib`目录拷贝到SRC_PATH下
-    将`${SDK_PATH}/software/tiangong2_image_release/NPU/npu_turing_master/release/ko`目录拷贝到SRC_PATH下
+    将`${SDK_PATH}/software/tiangong2_image_release/NPU/release/lib`目录拷贝到SRC_PATH下
+    将`${SDK_PATH}/software/tiangong2_image_release/NPU/release/ko`目录拷贝到SRC_PATH下
     将编译指南中获得的可执行文件gru1156拷贝到SRC_PATH下
     将编译指南中获得的so文件libai_adaptor_tiny.so复制到SRC_PATH/lib下
     将模型转换指南中获得的模型文件，如./output/GRU_S.om，拷贝到SRC_PATH下并重命名为gru.om

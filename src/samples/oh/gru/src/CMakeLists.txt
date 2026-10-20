@@ -46,14 +46,17 @@ elseif ("${CHIP_VERSION}" STREQUAL "1156")
     ")
 
     set(COMPILER_LIB_DIR "${COMPILER_PATH}/lib")
+    set(SECURE_LIB_DIR "${COMPILER_PATH}/target/usr/lib/a55_soft")
 
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
         -Wl,-rpath-link=${LIB_PATH} \
         -Wl,-rpath=${LIB_PATH} \
         -Wl,-rpath-link=${COMPILER_LIB_DIR} \
         -Wl,-rpath=${COMPILER_LIB_DIR} \
+        -Wl,-rpath-link=${SECURE_LIB_DIR} \
         -L${LIB_PATH} \
         -L${COMPILER_LIB_DIR} \
+        -L${SECURE_LIB_DIR} \
         -Wl,--warn-unresolved-symbols \
     ")
 
@@ -73,6 +76,7 @@ elseif ("${CHIP_VERSION}" STREQUAL "1156")
 
     target_link_libraries(${PROJECT_NAME}
         ${ADAPTOR_SO_PATH}
+        ${SECURE_LIB_DIR}/libsecurec.so
         -lstdc++
         -lpthread
         -lm

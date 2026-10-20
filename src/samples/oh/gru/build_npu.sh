@@ -222,7 +222,7 @@ function set_1156_build_env()
     fi
 
     export LANG="C"
-    LIB_PATH=$SDK_PATH/software/tiangong2_image_release/NPU/npu_turing_master/release/lib
+    LIB_PATH=$SDK_PATH/software/tiangong2_image_release/NPU/release/lib
     ADAPTOR_TARGET_PATH=$ADAPTOR_PATH/adaptor/npu
     ADAPTOR_BUILD_PATH=$ADAPTOR_PATH/adaptor/npu/build
     ADAPTOR_CMAKELIST_PATH=$ADAPTOR_PATH/adaptor/npu/CMakeLists.txt
