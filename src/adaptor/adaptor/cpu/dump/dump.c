@@ -77,6 +77,11 @@ static MS_AI_DUMP_Status MS_AI_DUMP_Write_Header_Info_Table(void)
 static MS_AI_DUMP_Status MS_AI_DUMP_Write_Info(DumpInfo_t *info)
 {
     uint32_t write_base = g_dump_infotable[g_header_section.info_len].base;
+    if (info->ndims > AI_FILESYS_MAX_NDIMS) {
+        osal_printk("[ERROR] AI Dump Invalid info ndims (%u), ndims should be in [0, %u]\n", info->ndims,
+            AI_FILESYS_MAX_NDIMS);
+        return MS_AI_DUMP_STATUS_FAILED;
+    }
     if (write_base < MIN_DUMP_ADDR || write_base > MAX_DUMP_ADDR) {
         osal_printk("[ERROR] AI Dump Invalid info_item base (0x%04x), base in [0x%04x, 0x%04x]\n", write_base, MIN_DUMP_ADDR, MAX_DUMP_ADDR, MAX_DUMP_ADDR);
         return MS_AI_DUMP_STATUS_FAILED;
@@ -261,8 +266,9 @@ MS_AI_DUMP_Status MS_AI_DUMP_Data_With_Info(void *data, size_t size, MS_AI_DUMPI
     if (res != MS_AI_DUMP_STATUS_SUCCESS) {
         return res;
     }
-    if (data_info->ndims > AI_FILESYS_MAX_NDIMS) {
-        osal_printk("[ERROR] MS_AI_DUMP_Data_Without_Info nDims is too large\n");
+    if (data_info->ndims < 0 || data_info->ndims > AI_FILESYS_MAX_NDIMS) {
+        osal_printk("[ERROR] MS_AI_DUMP_Data_With_Info ndims (%d) out of range [0, %u]\n", data_info->ndims,
+            AI_FILESYS_MAX_NDIMS);
         return MS_AI_DUMP_STATUS_FAILED;
     }
     /* 1. Generate Info */
