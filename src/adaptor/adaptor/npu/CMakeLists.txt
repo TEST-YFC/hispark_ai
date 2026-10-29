@@ -45,7 +45,7 @@ if ("${CHIP_VERSION}" STREQUAL "")
 
     build_component()
     # install_sdk(${CMAKE_CURRENT_SOURCE_DIR} "*.h")
-elseif ("${CHIP_VERSION}" STREQUAL "1156")
+elseif ("${CHIP_VERSION}" STREQUAL "tiangong2")
     project(ai_adaptor_tiny LANGUAGES C)
 
     set(AI_ADAPTOR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../")
