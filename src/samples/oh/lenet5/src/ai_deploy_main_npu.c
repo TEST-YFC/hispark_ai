@@ -40,7 +40,7 @@ static long long get_time_ms(void)
     return uapi_tcxo_get_ms();
 }
 
-#elif CHIP_VERSION == 1156
+#elif defined(CHIP_VERSION) && (CHIP_VERSION == tiangong2)
 
 #include <stdio.h>
 #include <time.h>
@@ -371,7 +371,7 @@ void tasks_test_entry(void)
     }
 }
 
-#elif CHIP_VERSION == 1156
+#elif CHIP_VERSION == tiangong2
 
 int main()
 {

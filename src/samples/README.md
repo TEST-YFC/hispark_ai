@@ -10,8 +10,8 @@ HiSpark.AI 提供了以下 Sample 供开发参考：
 | ws63     | Gru-S 音频固定词识别    | MindSpore Lite 工具链量化、转换、编译、SDK 集成 |
 | HiDiTing | LeNet-5 手写数字图像识别 | CANN 工具链量化、转换、编译、SDK 集成           |
 | HiDiTing | Gru-S 音频固定词识别    | CANN 工具链量化、转换、编译、SDK 集成           |
-| 1156     | LeNet-5 手写数字图像识别 | CANN 工具链转换、编译、SDK 集成              |
-| 1156     | Gru-S 音频固定词识别    | CANN 工具链转换、编译、SDK 集成              |
+| tiangong2     | LeNet-5 手写数字图像识别 | CANN 工具链转换、编译、SDK 集成              |
+| tiangong2     | Gru-S 音频固定词识别    | CANN 工具链转换、编译、SDK 集成              |
 
 ## CPU 平台快速入门指南
 
@@ -255,7 +255,7 @@ DataType: 43
 
 ## NPU 平台快速入门指南
 
-NPU 平台对应 CANN 工具链，适用于 HiDiTing、Hi1156等端侧 NPU 平台。以下流程涵盖模型量化、转换、SDK 编译与上板调试，下面以HiDiTing为例演示快速入门方式。
+NPU 平台对应 CANN 工具链，适用于 HiDiTing、tiangong2等端侧 NPU 平台。以下流程涵盖模型量化、转换、SDK 编译与上板调试，下面以HiDiTing为例演示快速入门方式。
 
 ### SDK与Sample准备
 
@@ -306,11 +306,11 @@ HiSpark AI提供GUI和命令行两种模型量化与转换方式。**推荐基�
 **Step2：准备待部署模型与数据**
 
 - 准备好待部署模型。可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的mnist-12.onnx以及GRU_S_STREAM.onnx。
-- 准备好量化数据。**Hi1156E无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式，可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的 运行数据预处理脚本之后的npy_data文件夹。
+- 准备好量化数据。**tiangong2无需量化可跳过此步骤。** 准备一个文件夹，将float32格式的量化数据存储为.bin格式，可直接使用 HiSpark.AI LeNet-5以及Gru Sample中的 运行数据预处理脚本之后的npy_data文件夹。
 
 **Step3：HiDiTing模型量化**
 
-Hi1156E不涉及量化，直接参考模型转换章节。HiDiTing使用CANN工具链中的AMCT工具进行模型量化，具体可参考对应sample README中的量化指南
+tiangong2不涉及量化，直接参考模型转换章节。HiDiTing使用CANN工具链中的AMCT工具进行模型量化，具体可参考对应sample README中的量化指南
 
 ```
 amct_onnx calibration --model "xxx" --save_path "xxx" --input_shape "xxx" --data_dir "xxx" --data_types "xxx" --batch_num xxx
@@ -344,7 +344,7 @@ atc --model=xxx.onnx --framework=5 --output=xxx --input_fp16_nodes="xxx" --outpu
 - --output_type：指定网络输出数据类型
 - --soc_version：指定模型转换时昇腾AI处理器的版本
 - --input_shape：指定模型输入数据的shape
-- --mode：运行模式。HiDiTing指定30；Hi1156E指定0 模型转换成功后，HiDiTing生成.exeom模型，Hi1156E生成.om模型。
+- --mode：运行模式。HiDiTing指定30；tiangong2指定0 模型转换成功后，HiDiTing生成.exeom模型，tiangong2生成.om模型。
 
 ### Samples编译
 
@@ -359,7 +359,7 @@ bash build_npu.sh 3322 ${build_target}
 ```
 当前支持的target包括：pack_3322_wstp、3322_wstp_app、diting_community、pack_diting_community
 编译成功后3322-ai-liteos-sample.fwpkg镜像文件会生成在 `${sample_path}/output`目录下
-#### 1156 Sample 编译
+#### tiangong2 Sample 编译
 配置对应环境变量，在具体sample（如gru）下运行build_npu.sh脚本，即可完成编译
 
 ```
@@ -368,9 +368,9 @@ export SDK_PATH=${SDK_PATH}
 export ADAPTOR_PATH=${ADAPTOR_PATH}
 export COMPILER_PATH=${COMPILER_PATH}
 export ACL_HEADER_PATH=${ACL_HEADER_PATH}
-bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 1156
+bash ${SAMPLE_PATH}/oh/gru/build_npu.sh tiangong2
 ```
-编译成功后可执行文件gru1156会生成在 `${sample_path}/src/build`路径下，so文件libai_adaptor_tiny.so，在 `${ADAPTOR_PATH}/adaptor/npu/build`路径下
+编译成功后可执行文件grutiangong2会生成在 `${sample_path}/src/build`路径下，so文件libai_adaptor_tiny.so，在 `${ADAPTOR_PATH}/adaptor/npu/build`路径下
 - **3322 烧录调试**
 使用BurnTool工具进行3322-ai-liteos-sample.fwpkg的烧录。
 使用Debugkits工具将模型和输入数据上传到单板
@@ -383,7 +383,7 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 1156
 [AI_NPU] DataType: 42
 [AI_NPU] Data: [0.00000][0.01210][0.00000][0.00017][0.00000][0.00000][0.00000][0.00006][0.00000][0.00000][0.00012][0.98779]
 ```
-- **1156 上板调试**
+- **tiangong2 上板调试**
 将可执行文件，lib，ko挂载到单板
 重新加载ko，配置lib路径
 执行可执行文件,会看到串口打印的运行成功信息，如Gru下：
