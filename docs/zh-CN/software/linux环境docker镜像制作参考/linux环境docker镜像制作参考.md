@@ -49,8 +49,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends wget curl  buil
     && rm -rf /var/lib/apt/lists/*
 
 # GCC 14 工具链（官方依赖要求 GCC 14.3.x）。用 ubuntu-toolchain-r PPA（为 22.04 编译，不污染 glibc/binutils）
-RUN apt-get install -y --no-install-recommends gpg wget \
-    && wget -qO - https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60C317803A41BA51845E371A1E9377A2BA9EF27F | gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg \
+RUN apt-get update && apt-get install -y --no-install-recommends gpg wget \
+    && wget -qO - 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60C317803A41BA51845E371A1E9377A2BA9EF27F' | gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg \
     && echo "deb https://ppa.launchpadcontent.net/ubuntu-toolchain-r/test/ubuntu jammy main" > /etc/apt/sources.list.d/toolchain-r-test.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends gcc-14 g++-14 cmake \
