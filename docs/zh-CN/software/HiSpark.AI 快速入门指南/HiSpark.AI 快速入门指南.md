@@ -97,7 +97,6 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 下载压缩包，解压后内部customer文件夹下包含 MSLite （Hi3863 AI工具链），CANN（Hi3322 AI工具链），Tools（Dockerfile），samples（Hi3863、Hi3322共用的AI相关Samples），adaptor（Hi3863、Hi3322共用的AI相关适配层）。
 
-- [Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)部分会使用到adaptor文件夹中的 "HiSpark.AI\_xx.xx.x.xxxx-adaptor.tar.gz" 压缩包。
 - [Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)部分 以及  [Hi3322环境准备](#ZH-CN_TOPIC_0000002530443753)部分 Linux通路会使用到 Tools文件夹中的“DockerFile.tar.gz”压缩包中Dockerfile\_mslite以及Dockerfile\_cann\_xxx文件；Windows通路以及WSL通路无需关注。
 
 ### 插件安装<a name="ZH-CN_TOPIC_0000002541561749" id="ZH-CN_TOPIC_0000002541561749"></a>
@@ -278,46 +277,14 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
 ### 准备SDK<a name="ZH-CN_TOPIC_0000002536180835" id="ZH-CN_TOPIC_0000002536180835"></a>
 
-1.  取Hi3863对应SDK发布包，解压SDK包到本地目录。
-2.  将组件包中的“HiSpark.AI\_xx.xx.x.xxxx-adaptor.tar.gz”包解压，将adaptor以及include一级目录放置到SDK中“middleware/utils/ai\_mcu”下，目录结构如下所示：
+1.  在HiSpark Studio AI插件左侧边栏的“Environment Configuration”区域，单击“Download SDK from HiSpark”按钮，在顶部弹出的选择框中选择“WS63 SDK”（即Hi3863对应的SDK），完成SDK下载。
 
-    ```
-    middleware/utils/ai_mcu
-    ├─adaptor
-    │  ├─cpu
-    │  │  ├─dump
-    │  │  ├─infer
-    │  │  ├─load
-    │  │  └─include
-    │  └─npu
-    └─include
-    ```
+    **图 1**  插件内下载WS63 SDK  
+    ![](figures/download63SDK.png)
 
-    将at目录下at\_ai\_cmd目录放置到SDK的“middleware/utils/at”下，目录结构如下所示：
+2.  下载完成后，SDK目录下包含“fbb_ws63”（SDK源码仓，含docs、src、tools、vendor等目录）以及“hispark_ai”（HiSpark.AI组件仓）等文件夹。AI相关适配代码（如“middleware/utils/ai_mcu”、“middleware/utils/at/at_ai_cmd”）已预集成在SDK源码中，无需再手动解压组件包或修改编译配置脚本。
 
-    ```
-    middleware/utils/at
-    ├─at_ai_cmd
-    │  ├─at
-    │  ├─src
-    │  └─CMakeLists.txt
-    ├─at_plt_cmd
-    ├─at_bt_cmd
-    └─...
-    ```
-
-3.  按照如下步骤修改SDK中的编译配置脚本：
-    1.  在“middleware/utils/CMakeLists.txt”中加入“add\_subdirectory\_if\_exist\(ai\_mcu/adaptor/cpu\)”
-    2.  在“middleware/utils/at/CMakeLists.txt”中加入“add\_subdirectory\_if\_exist\(at\_ai\_cmd\)”
-    3.  在“build/config/target\_config/ws63/config.py”的ws63-liteos-app字段中的“ram\_component”选项加入“ai\_at”、“ai\_adaptor\_cpu”两个组件。
-
-1.  修改主流程，新增AT命令注册：
-
-    找到“application/ws63/ws63\_liteos\_application/main.c”：
-
-    1.  在app\_task\_definition\_t结构体定义上方增加“\#include "at\_ai\_cmd\_register.h"”。
-
-    2.  在do\_at\_cmd\_register函数中，增加“at\_ai\_cmd\_register\(\);”这一行。
+3.  后续在“[新建工程与选择模型](#ZH-CN_TOPIC_0000002504202638)”章节创建工程时，SDK路径请选择“fbb_ws63”下的“src”目录（如“D:\\ws63SDK0922\\fbb_ws63\\src”）。
 
 ## Hi3322环境准备<a name="ZH-CN_TOPIC_0000002530443753" id="ZH-CN_TOPIC_0000002530443753"></a>
 
