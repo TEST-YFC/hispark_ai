@@ -70,13 +70,13 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 # 开发板准备<a name="ZH-CN_TOPIC_0000002530523791"></a>
 
-目前支持Hi3863、Hi3322两款芯片，需要提前准备单板资源。
+目前支持WS63、Hi3322两款芯片，需要提前准备单板资源。
 
 # 开发环境准备<a name="ZH-CN_TOPIC_0000002498683832"></a>
 
 -   **[HiSpark Studio AI准备](#ZH-CN_TOPIC_0000002538543935)**  
 
--   **[Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)**  
+-   **[WS63环境准备](#ZH-CN_TOPIC_0000002498843814)**  
 
 -   **[Hi3322环境准备](#ZH-CN_TOPIC_0000002530443753)**  
 
@@ -95,9 +95,9 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 **图 1**  HiSilicon社区HiSpark.AI组件下载<a name="fig1031373761716"></a>  
 ![](figures/HiSilicon社区HiSpark-AI组件下载.png "HiSilicon社区HiSpark-AI组件下载")
 
-下载压缩包，解压后内部customer文件夹下包含 MSLite （Hi3863 AI工具链），CANN（Hi3322 AI工具链），Tools（Dockerfile），samples（Hi3863、Hi3322共用的AI相关Samples），adaptor（Hi3863、Hi3322共用的AI相关适配层）。
+下载压缩包，解压后内部customer文件夹下包含 MSLite （WS63 AI工具链），CANN（Hi3322 AI工具链），Tools（Dockerfile），samples（WS63、Hi3322共用的AI相关Samples），adaptor（WS63、Hi3322共用的AI相关适配层）。
 
-- [Hi3863环境准备](#ZH-CN_TOPIC_0000002498843814)部分 以及  [Hi3322环境准备](#ZH-CN_TOPIC_0000002530443753)部分 Linux通路会使用到 Tools文件夹中的“DockerFile.tar.gz”压缩包中Dockerfile\_mslite以及Dockerfile\_cann\_xxx文件；Windows通路以及WSL通路无需关注。
+- [WS63环境准备](#ZH-CN_TOPIC_0000002498843814)部分 以及  [Hi3322环境准备](#ZH-CN_TOPIC_0000002530443753)部分 Linux通路会使用到 Tools文件夹中的“DockerFile.tar.gz”压缩包中Dockerfile\_mslite以及Dockerfile\_cann\_xxx文件；Windows通路以及WSL通路无需关注。
 
 ### 插件安装<a name="ZH-CN_TOPIC_0000002541561749" id="ZH-CN_TOPIC_0000002541561749"></a>
 
@@ -125,7 +125,7 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
     **图 2**  下载成功提示<a name="fig96701933161720" id="fig96701933161720"></a>  
     ![](figures/下载成功提示.png "下载成功提示")
 
-## Hi3863环境准备<a name="ZH-CN_TOPIC_0000002498843814" id="ZH-CN_TOPIC_0000002498843814"></a>
+## WS63环境准备<a name="ZH-CN_TOPIC_0000002498843814" id="ZH-CN_TOPIC_0000002498843814"></a>
 
 HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1429717521912)、[图2](#fig55781161195)所示。若需要使用命令行工具进行模型的量化与转换，请参考《HiSpark.AI 转换工具使用指南》 以及 《HiSpark.AI API 开发指南》，进行环境准备。
 
@@ -277,7 +277,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
 ### 准备SDK<a name="ZH-CN_TOPIC_0000002536180835" id="ZH-CN_TOPIC_0000002536180835"></a>
 
-1.  在HiSpark Studio AI插件左侧边栏的“Environment Configuration”区域，单击“Download SDK from HiSpark”按钮，在顶部弹出的选择框中选择“WS63 SDK”（即Hi3863对应的SDK），完成SDK下载。
+1.  在HiSpark Studio AI插件左侧边栏的“Environment Configuration”区域，单击“Download SDK from HiSpark”按钮，在顶部弹出的选择框中选择“WS63 SDK”，完成SDK下载。
 
     **图 1**  插件内下载WS63 SDK  
     ![](figures/download63SDK.png)
@@ -601,11 +601,11 @@ GPU加速版环境准备步骤如下：
 
 # 样例运行<a name="ZH-CN_TOPIC_0000002498683834"></a>
 
--   **[Hi3863样例运行](#ZH-CN_TOPIC_0000002530443755)**  
+-   **[WS63样例运行](#ZH-CN_TOPIC_0000002530443755)**  
 
 -   **[Hi3322样例运行](#ZH-CN_TOPIC_0000002530583195)**
 
-## Hi3863样例运行<a name="ZH-CN_TOPIC_0000002530443755" id="ZH-CN_TOPIC_0000002530443755"></a>
+## WS63样例运行<a name="ZH-CN_TOPIC_0000002530443755" id="ZH-CN_TOPIC_0000002530443755"></a>
 
 -   **[模型与数据获取](#ZH-CN_TOPIC_0000002536162459)**  
 
