@@ -383,7 +383,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="6.239999999999999%" headers="mcps1.2.6.1.2 "><p id="p1181410249134"><a name="p1181410249134"></a><a name="p1181410249134"></a>21</p>
 </td>
-<td class="cellrowborder" valign="top" width="24.740000000000002%" headers="mcps1.2.6.1.3 "><p id="p1625122817175"><a name="p1625122817175"></a><a name="p1625122817175"></a>Hi3322V100 软件开发指南.pdf</p>
+<td class="cellrowborder" valign="top" width="24.740000000000002%" headers="mcps1.2.6.1.3 "><p id="p1625122817175"><a name="p1625122817175"></a><a name="p1625122817175"></a>3322V100 软件开发指南.pdf</p>
 </td>
 <td class="cellrowborder" valign="top" width="26.56%" headers="mcps1.2.6.1.4 "><p id="p881512219192"><a name="p881512219192"></a><a name="p881512219192"></a>3322版本编译、烧录指南</p>
 </td>

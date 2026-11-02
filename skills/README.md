@@ -15,7 +15,7 @@
 | `hs-dev-train-op-implement` | 开发 | 已落地 | 只实现或修复训练反向算子的 GradRule、TrainNodeCoder 和 NNACL FP32 梯度 kernel | "只实现训练算子"、"TrainNodeCoder"、"GradRule" |
 | `hs-dev-op-performance` | 开发 | 已落地 | 算子性能评估、可信基准、WS63 实测与逐变量调优 | "算子性能"、"benchmark"、"性能调优" |
 | `hs-verify-op-host` | 验证 | 已落地 | 推理用例覆盖 ONNX/TFLite、FP32/INT8 与 RISC-V 代码生成路径；训练用例覆盖 FP32 ONNX 生成的 Micro 训练 C 工程 | "只写算子测试"、"Host 验证"、"使用 hs-verify-op-host" |
-| `hs-verify-op-board` | 验证 | 已落地 | 复用对应 Host PASS 用例，在真实 WS63/Hi3863 上采集推理 Tensor 或训练参数/输出并判定板端精度 | "只做板端精度"、"使用 hs-verify-op-board" |
+| `hs-verify-op-board` | 验证 | 已落地 | 复用对应 Host PASS 用例，在真实 WS63 上采集推理 Tensor 或训练参数/输出并判定板端精度 | "只做板端精度"、"使用 hs-verify-op-board" |
 | `hs-workflow-mslite-env-setup` | 工作流 | 已落地 | MindSpore Lite 工具链、模型转换与静态库构建流程 | "搭建环境"、"转换模型"、"构建静态库" |
 
 > "规划中" 表示该 skill 目录暂为占位（仅含 `.gitkeep`），内容待补充。
