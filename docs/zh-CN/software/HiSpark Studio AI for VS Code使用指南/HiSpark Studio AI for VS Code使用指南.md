@@ -67,7 +67,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="26.119999999999997%" headers="mcps1.1.4.1.2 "><p id="p28901738175615"><a name="p28901738175615"></a><a name="p28901738175615"></a>2026-04-28</p>
 </td>
-<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p128901738135612"><a name="p128901738135612"></a><a name="p128901738135612"></a>修改Hi3322的“ <a href="#ZH-CN_TOPIC_0000002515955566">压缩历史显示界面</a> 中”Accuracy字段详细说明。</p>
+<td class="cellrowborder" valign="top" width="53.16%" headers="mcps1.1.4.1.3 "><p id="p128901738135612"><a name="p128901738135612"></a><a name="p128901738135612"></a>修改3322的“ <a href="#ZH-CN_TOPIC_0000002515955566">压缩历史显示界面</a> 中”Accuracy字段详细说明。</p>
 </td>
 </tr>
 <tr id="row5947359616410"><td class="cellrowborder" valign="top" width="20.72%" headers="mcps1.1.4.1.1 "><p id="p2149706016410"><a name="p2149706016410"></a><a name="p2149706016410"></a>01</p>
@@ -232,7 +232,7 @@ AMCT（Ascend Model Compression Toolkit，简称AMCT）是一个针对昇腾芯�
 
 环境配置请参考《HiSpark.AI 快速入门指南》。
 
-# Hi3863操作指南<a name="ZH-CN_TOPIC_0000002509766614"></a>
+# WS63操作指南<a name="ZH-CN_TOPIC_0000002509766614"></a>
 
 -   **[工程创建](#ZH-CN_TOPIC_0000002509726608)**  
 
@@ -1232,7 +1232,7 @@ AI上板存储占比如[图4.14](#fig205537152214)所示，蓝色显示为RAM占
 
 2.  具体API的用法请参考文档《HiSpark.AI API开发指南》
 
-# Hi3322操作指南<a name="ZH-CN_TOPIC_0000002541286617"></a>
+# 3322操作指南<a name="ZH-CN_TOPIC_0000002541286617"></a>
 
 -   **[工程创建](#ZH-CN_TOPIC_0000002509766618)**  
 
@@ -1256,7 +1256,7 @@ AI上板存储占比如[图4.14](#fig205537152214)所示，蓝色显示为RAM占
 
 ### 前提条件<a name="ZH-CN_TOPIC_0000002517226682"></a>
 
-在工程创建前，请先获取Hi3322 SDK，并存放于本地Windows环境。SDK存放路径请勿带空格。
+在工程创建前，请先获取3322 SDK，并存放于本地Windows环境。SDK存放路径请勿带空格。
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002517386758"></a>
 
@@ -1309,7 +1309,7 @@ AI上板存储占比如[图4.14](#fig205537152214)所示，蓝色显示为RAM占
 </tr>
 <tr id="row740213585413"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p154021058144117"><a name="p154021058144117"></a><a name="p154021058144117"></a>SDK</p>
 </td>
-<td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p12402185814119"><a name="p12402185814119"></a><a name="p12402185814119"></a>Hi3322 SDK存放路径。</p>
+<td class="cellrowborder" valign="top" width="74.07000000000001%" headers="mcps1.2.3.1.2 "><p id="p12402185814119"><a name="p12402185814119"></a><a name="p12402185814119"></a>3322 SDK存放路径。</p>
 </td>
 </tr>
 <tr id="row163064339427"><td class="cellrowborder" valign="top" width="25.929999999999996%" headers="mcps1.2.3.1.1 "><p id="p230720336422"><a name="p230720336422"></a><a name="p230720336422"></a>Finished</p>
@@ -1337,7 +1337,7 @@ AI上板存储占比如[图4.14](#fig205537152214)所示，蓝色显示为RAM占
 
 >![](public_sys-resources/icon-notice.gif) **须知：** 
 >在进行模型导入前，请务必查看如下约束要求：
->Hi3322平台只支持导入ONNX以及pt、pth模型。ONNX模型支持训练后量化。pt、pth模型支持量化感知训练。
+>3322平台只支持导入ONNX以及pt、pth模型。ONNX模型支持训练后量化。pt、pth模型支持量化感知训练。
 
 ### 前提条件<a name="ZH-CN_TOPIC_0000002517387150"></a>
 
@@ -1930,7 +1930,7 @@ AI上板存储占比如[图4.14](#fig205537152214)所示，蓝色显示为RAM占
 ### 调优前提<a name="ZH-CN_TOPIC_0000002548594339"></a>
 
 -   准备精度验证数据，并保存于本地Windows环境。具体数据格式见“[数据准备与环境搭建](#ZH-CN_TOPIC_0000002548828403)”。
--   准备并连接Hi3322单板。
+-   准备并连接3322单板。
 
 ### 界面介绍<a name="ZH-CN_TOPIC_0000002517114452"></a>
 
