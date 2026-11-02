@@ -2,24 +2,24 @@
 
 ## 背景
 
-HiSpark.AI 面向 Hi3863 / Hi3322 端侧 AI，模型需经 AMCT 量化、ATC / MSLite 转换后才能部署到芯片。由于该工具链依赖较重、版本严格锁定，手动安装易冲突且环境难一致，故将其打包为 Docker 镜像，作为 HiSpark Studio AI 插件在 Linux 服务器端的量化与转换后端。
+HiSpark.AI 面向 WS63 / 3322 端侧 AI，模型需经 AMCT 量化、ATC / MSLite 转换后才能部署到芯片。由于该工具链依赖较重、版本严格锁定，手动安装易冲突且环境难一致，故将其打包为 Docker 镜像，作为 HiSpark Studio AI 插件在 Linux 服务器端的量化与转换后端。
 
 本文档汇总 HiSpark.AI 各 AI 环境在 Linux 服务器端使用 Dockerfile 制作 Docker 镜像的方法，包含以下三种环境：
 
-- MSLite 环境（Hi3863）：使用 `Dockerfile_mslite`。
-- CANN 基础版环境（Hi3322）：使用 `Dockerfile_cann_cpu`。
-- CANN GPU 加速版环境（Hi3322）：使用 `Dockerfile_cann_gpu`。
+- MSLite 环境（WS63）：使用 `Dockerfile_mslite`。
+- CANN 基础版环境（3322）：使用 `Dockerfile_cann_cpu`。
+- CANN GPU 加速版环境（3322）：使用 `Dockerfile_cann_gpu`。
 
 ## 资源获取
 
 各环境所需的安装包，从 HiSilicon 社区的「资源下载」部分下载 [HiSpark.AI 组件](https://developers.hisilicon.com/cn/developerTool)（下载前请先注册登录 HiSilicon 社区账号）。下载压缩包解压后，内部 customer 文件夹下包含：
 
-- MSLite（Hi3863 AI 工具链）：内含 MSLite 环境所需的安装包（`HiSpark.AI_xx.xx.xx-mindspore-enterprise-lite-xx.xx.xx-linux-x64.tar.gz`）。
-- CANN（Hi3322 AI 工具链）：内含 CANN 环境所需的安装包（`CANN-runtime`、`CANN-compiler`、`CANN-opp`、`CANN-toolkit`、`CANN-amct` 等）。
+- MSLite（WS63 AI 工具链）：内含 MSLite 环境所需的安装包（`HiSpark.AI_xx.xx.xx-mindspore-enterprise-lite-xx.xx.xx-linux-x64.tar.gz`）。
+- CANN（3322 AI 工具链）：内含 CANN 环境所需的安装包（`CANN-runtime`、`CANN-compiler`、`CANN-opp`、`CANN-toolkit`、`CANN-amct` 等）。
 
 各环境的 Dockerfile 内容见下文对应章节。
 
-## MSLite 环境（Hi3863）
+## MSLite 环境（WS63）
 
 使用 Dockerfile 准备 Linux 服务器端 AI 环境。环境安装前，需要从发布包获取 Dockerfile 文件、MSLite 安装包，并放置于同级目录下。
 
@@ -166,7 +166,7 @@ RUN ln -sf /usr/bin/python3.11 /usr/bin/python
 # echo 'index-url=http://mirrors.aliyun.com/pypi/simple' >> /root/.pip/pip.conf
 ```
 
-## CANN 基础版环境（Hi3322）
+## CANN 基础版环境（3322）
 
 使用 Dockerfile 准备 Linux 服务器端 AI 环境。环境安装前需要从发布包获取 Dockerfile 文件、ATC 安装包、AMCT 安装包，并将其放置在同级目录下。
 
@@ -308,9 +308,9 @@ EXPOSE 22
     ssh root@{服务器IP地址} -p {服务器端口}
     ```
 
-> **说明：** 如遇到镜像代理未配置的网络问题，请参考上文「MSLite 环境（Hi3863）」中的「镜像源配置说明」完成代理配置。
+> **说明：** 如遇到镜像代理未配置的网络问题，请参考上文「MSLite 环境（WS63）」中的「镜像源配置说明」完成代理配置。
 
-## CANN GPU 加速版环境（Hi3322）
+## CANN GPU 加速版环境（3322）
 
 GPU 加速版环境使用 `Dockerfile_cann_gpu` 作为环境准备配置文件，GPU 可以加速量化感知训练的效率。
 

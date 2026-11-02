@@ -58,7 +58,7 @@
 
 | 文档版本 | 发布日期       | 修改说明                                                                                                                                   |
 | :--- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| 05   | 2026-09-02 | 修改“开发板准备”、“[Hi3322样例运行](#ZH-CN_TOPIC_0000002530583195)”章节。                                                       |
+| 05   | 2026-09-02 | 修改“开发板准备”、“[3322样例运行](#ZH-CN_TOPIC_0000002530583195)”章节。                                                       |
 | 04   | 2026-07-03 | 更新“[Linux通路环境准备](#ZH-CN_TOPIC_0000002538542947)、[基础版环境准备](#ZH-CN_TOPIC_0000002504481524)、[GPU加速版环境准备](#ZH-CN_TOPIC_0000002504641364)”。 |
 | 03   | 2026-04-28 | 新增 HiSpark社区资源下载关联。                                                                                                                    |
 | 02   | 2026-03-24 | 新增“[3.2.1-Windows环境准备”（仅Windows端用户关注）](#ZH-CN_TOPIC_0000002504198312)、[WSL环境准备（仅Windows端用户关注）](#ZH-CN_TOPIC_0000002521720132)”章节。      |
@@ -70,7 +70,7 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 # 开发板准备<a name="ZH-CN_TOPIC_0000002530523791"></a>
 
-目前支持WS63、Hi3322两款芯片，需要提前准备单板资源。
+目前支持WS63、3322两款芯片，需要提前准备单板资源。
 
 # 开发环境准备<a name="ZH-CN_TOPIC_0000002498683832"></a>
 
@@ -78,7 +78,7 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 -   **[WS63环境准备](#ZH-CN_TOPIC_0000002498843814)**  
 
--   **[Hi3322环境准备](#ZH-CN_TOPIC_0000002530443753)**  
+-   **[3322环境准备](#ZH-CN_TOPIC_0000002530443753)**  
 
 ## HiSpark Studio AI准备<a name="ZH-CN_TOPIC_0000002538543935" id="ZH-CN_TOPIC_0000002538543935"></a>
 
@@ -95,9 +95,9 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 **图 1**  HiSilicon社区HiSpark.AI组件下载<a name="fig1031373761716"></a>  
 ![](figures/HiSilicon社区HiSpark-AI组件下载.png "HiSilicon社区HiSpark-AI组件下载")
 
-下载压缩包，解压后内部customer文件夹下包含 MSLite （WS63 AI工具链），CANN（Hi3322 AI工具链），Tools（Dockerfile），samples（WS63、Hi3322共用的AI相关Samples），adaptor（WS63、Hi3322共用的AI相关适配层）。
+下载压缩包，解压后内部customer文件夹下包含 MSLite （WS63 AI工具链），CANN（3322 AI工具链），Tools（Dockerfile），samples（WS63、3322共用的AI相关Samples），adaptor（WS63、3322共用的AI相关适配层）。
 
-- [WS63环境准备](#ZH-CN_TOPIC_0000002498843814)部分 以及  [Hi3322环境准备](#ZH-CN_TOPIC_0000002530443753)部分 Linux通路会使用到 Tools文件夹中的“DockerFile.tar.gz”压缩包中Dockerfile\_mslite以及Dockerfile\_cann\_xxx文件；Windows通路以及WSL通路无需关注。
+- [WS63环境准备](#ZH-CN_TOPIC_0000002498843814)部分 以及  [3322环境准备](#ZH-CN_TOPIC_0000002530443753)部分 Linux通路会使用到 Tools文件夹中的“DockerFile.tar.gz”压缩包中Dockerfile\_mslite以及Dockerfile\_cann\_xxx文件；Windows通路以及WSL通路无需关注。
 
 ### 插件安装<a name="ZH-CN_TOPIC_0000002541561749" id="ZH-CN_TOPIC_0000002541561749"></a>
 
@@ -286,9 +286,9 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
 3.  后续在“[新建工程与选择模型](#ZH-CN_TOPIC_0000002504202638)”章节创建工程时，SDK路径请选择“fbb_ws63”下的“src”目录（如“D:\\ws63SDK0922\\fbb_ws63\\src”）。
 
-## Hi3322环境准备<a name="ZH-CN_TOPIC_0000002530443753" id="ZH-CN_TOPIC_0000002530443753"></a>
+## 3322环境准备<a name="ZH-CN_TOPIC_0000002530443753" id="ZH-CN_TOPIC_0000002530443753"></a>
 
-HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化或转换（量化仅适用于Hi3322），请参考《Nano AI应用开发指南》，进行环境准备。
+HiSpark Studio AI后端支持用户在Windows（推荐）和Linux环境中使用，环境准备步骤大致如[图1](#fig1560816183209)、[图2](#fig1180314211206)所示。若需要使用命令行工具进行模型的量化或转换（量化仅适用于3322），请参考《Nano AI应用开发指南》，进行环境准备。
 
 **图 1**  NPU环境准备（Linux通路）<a name="fig1560816183209" id="fig1560816183209"></a>  
 ![](figures/NPU环境准备（Linux通路）.png "NPU环境准备（Linux通路）")
@@ -562,11 +562,11 @@ GPU加速版环境准备步骤如下：
     ssh root@{服务器IP地址} -p {服务器端口}
     ```
 
-### Hi3322 Windows侧Bash环境准备<a name="ZH-CN_TOPIC_0000002536184615" id="ZH-CN_TOPIC_0000002536184615"></a>
+### 3322 Windows侧Bash环境准备<a name="ZH-CN_TOPIC_0000002536184615" id="ZH-CN_TOPIC_0000002536184615"></a>
 
-该小节仅针对于需要依赖bash环境才可以编译的Hi3322工程。
+该小节仅针对于需要依赖bash环境才可以编译的3322工程。
 
-如果需要编译Hi3322的工程，用户需手动下载Git并将bash路径添加到环境变量中。
+如果需要编译3322的工程，用户需手动下载Git并将bash路径添加到环境变量中。
 
 下载链接：[https://github.com/git-for-windows/git/releases/download/v2.48.1.windows.1/Git-2.48.1-64-bit.exe](https://github.com/git-for-windows/git/releases/download/v2.48.1.windows.1/Git-2.48.1-64-bit.exe)
 
@@ -597,13 +597,13 @@ GPU加速版环境准备步骤如下：
 
 ### 准备SDK<a name="ZH-CN_TOPIC_0000002545173551" id="ZH-CN_TOPIC_0000002545173551"></a>
 
-取Hi3322对应SDK发布包，解压SDK包到本地目录，SDK解压目标路径请勿带空格。
+取3322对应SDK发布包，解压SDK包到本地目录，SDK解压目标路径请勿带空格。
 
 # 样例运行<a name="ZH-CN_TOPIC_0000002498683834"></a>
 
 -   **[WS63样例运行](#ZH-CN_TOPIC_0000002530443755)**  
 
--   **[Hi3322样例运行](#ZH-CN_TOPIC_0000002530583195)**
+-   **[3322样例运行](#ZH-CN_TOPIC_0000002530583195)**
 
 ## WS63样例运行<a name="ZH-CN_TOPIC_0000002530443755" id="ZH-CN_TOPIC_0000002530443755"></a>
 
@@ -779,7 +779,7 @@ GPU加速版环境准备步骤如下：
 
 2.  具体API的用法请参考文档《HiSpark.AI API开发指南》
 
-## Hi3322样例运行<a name="ZH-CN_TOPIC_0000002530583195" id="ZH-CN_TOPIC_0000002530583195"></a>
+## 3322样例运行<a name="ZH-CN_TOPIC_0000002530583195" id="ZH-CN_TOPIC_0000002530583195"></a>
 
 本章节以LeNet5模型为例，介绍如何使用HiSpark Studio AI工具进行模型量化、转换、性能评估以及精度评估。如果需要使用命令行工具进行如上操作，请参考《Nano应用开发指南》。
 
@@ -787,7 +787,7 @@ GPU加速版环境准备步骤如下：
 
 -   **[新建工程与选择模型](#ZH-CN_TOPIC_0000002504525512)**  
 
--   **[Hi3322模型量化](#ZH-CN_TOPIC_0000002504685348)**  
+-   **[3322模型量化](#ZH-CN_TOPIC_0000002504685348)**  
 
 -   **[模型转换](#ZH-CN_TOPIC_0000002506277190)**  
 
@@ -800,7 +800,7 @@ GPU加速版环境准备步骤如下：
 ### 模型与数据获取<a name="ZH-CN_TOPIC_0000002536325315" id="ZH-CN_TOPIC_0000002536325315"></a>
 
 1.  模型获取。若使用Linux服务器端环境，请将模型上传到容器内。
-	Hi3322进行训练后量化PTQ，请点击[Link](https://gitcode.com/HiSpark/hispark_ai/tree/master/src/samples/oh/lenet5/model)，下载ONNX模型；进行量化感知训练QAT，请点击[Link](https://gitcode.com/HiSpark/hispark_ai/tree/master/src/samples/oh/lenet5/model)，下载PyTorch模型权重文件。
+	3322进行训练后量化PTQ，请点击[Link](https://gitcode.com/HiSpark/hispark_ai/tree/master/src/samples/oh/lenet5/model)，下载ONNX模型；进行量化感知训练QAT，请点击[Link](https://gitcode.com/HiSpark/hispark_ai/tree/master/src/samples/oh/lenet5/model)，下载PyTorch模型权重文件。
 
 2.  点击[Link](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/lenet5/scripts/preproc_mnist_data.py)，下载数据和预处理脚本“preproc\_mnist\_data.py”。请参考[文档](https://gitcode.com/HiSpark/hispark_ai/blob/master/src/samples/oh/lenet5/README.md)，生成数据。
 
@@ -860,7 +860,7 @@ GPU加速版环境准备步骤如下：
 
 2.  单击“Finished”进入“Select Model”页面。
 3.  单击“Import Model”，并选择“[模型与数据获取](#ZH-CN_TOPIC_0000002536325315)”章节下载的模型。
-	Hi3322可选择从Linux服务器或WSL（本地）选择模型。通过如下弹窗选择模型所在的位置。
+	3322可选择从Linux服务器或WSL（本地）选择模型。通过如下弹窗选择模型所在的位置。
 
     **图 2**  选择模型<a name="fig181684355208"></a>  
     ![](figures/选择模型.png "选择模型")
@@ -878,9 +878,9 @@ GPU加速版环境准备步骤如下：
     >![](public_sys-resources/icon-note.gif) **说明：** 
     >首次连接请根据提示设置远端连接。注意端口选择映射到容器内的服务器端口。
 
-4.  Hi3322工程导入模型后，自动跳转到量化页面。如果导入的模型为ONNX模型，跳转到训练后量化页面。如果导入的模型为PyTorch模型，跳转到量化感知训练界面。
+4.  3322工程导入模型后，自动跳转到量化页面。如果导入的模型为ONNX模型，跳转到训练后量化页面。如果导入的模型为PyTorch模型，跳转到量化感知训练界面。
 
-### Hi3322模型量化<a name="ZH-CN_TOPIC_0000002504685348" id="ZH-CN_TOPIC_0000002504685348"></a>
+### 3322模型量化<a name="ZH-CN_TOPIC_0000002504685348" id="ZH-CN_TOPIC_0000002504685348"></a>
 
 在“Quantize”页面对模型进行量化，并对量化后的评估模型进行精度验证，以帮助用户评估量化后的模型是否符合业务需求。精度验证的指标如[表1 精度验证指标](#table28001510142419)所示。
 
@@ -1043,7 +1043,7 @@ GPU加速版环境准备步骤如下：
 
 ### 模型转换<a name="ZH-CN_TOPIC_0000002506277190" id="ZH-CN_TOPIC_0000002506277190"></a>
 
-在“Convert”模型转换页面将模型进行转换，得到适配NPU IP加速器的离线模型：Hi3322转换量化后的模型。具体步骤如下。
+在“Convert”模型转换页面将模型进行转换，得到适配NPU IP加速器的离线模型：3322转换量化后的模型。具体步骤如下。
 
 1.  保持默认参数，单击“Convert”按钮完成模型转换。
 
@@ -1065,7 +1065,7 @@ GPU加速版环境准备步骤如下：
 1. 单击“Build”编译SDK，选择烧录串口与波特率，单击“Burn”开始烧录。
 
    > ![](public_sys-resources/icon-note.gif) **说明：** 
-   > Hi3322通过串口进行烧录，在界面中配置串口。
+   > 3322通过串口进行烧录，在界面中配置串口。
 
 2. 单击下方“Download Results”中的下载按钮下载前一步转换产物。
 
@@ -1073,7 +1073,7 @@ GPU加速版环境准备步骤如下：
 
 ### 性能评估和精度评估<a name="ZH-CN_TOPIC_0000002504685350" id="ZH-CN_TOPIC_0000002504685350"></a>
 
-HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能评估和精度评估前，请按照Hi3322硬件指导完成对应单板硬件环境的准备。
+HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能评估和精度评估前，请按照3322硬件指导完成对应单板硬件环境的准备。
 
 - 性能评估自动将转换的模型上传到单板，在端侧推理模型并统计模型推理性能。
 - 精度评估自动将转换的模型和验证集上传到单板，在端侧推理模型；并和原始浮点模型以及真值标签对比，计算精度指标。
@@ -1131,11 +1131,11 @@ HiSpark Studio AI提供连板性能评估和精度评估功能。在开始性能
 
 # 常见错误<a name="ZH-CN_TOPIC_0000002549186481"></a>
 
--   **[Hi3322 DebugKits弹窗告警“The board does not respond!”](#ZH-CN_TOPIC_0000002517746614)**  
+-   **[3322 DebugKits弹窗告警“The board does not respond!”](#ZH-CN_TOPIC_0000002517746614)**  
 
-## Hi3322 DebugKits弹窗告警“The board does not respond!”<a name="ZH-CN_TOPIC_0000002517746614" id="ZH-CN_TOPIC_0000002517746614"></a>
+## 3322 DebugKits弹窗告警“The board does not respond!”<a name="ZH-CN_TOPIC_0000002517746614" id="ZH-CN_TOPIC_0000002517746614"></a>
 
-可能原因，Hi3322单板开启低功耗模式，请关闭低功耗模式后重试。请先手动通过SSCOM下发如下AT命令关闭低功耗模式。
+可能原因，3322单板开启低功耗模式，请关闭低功耗模式后重试。请先手动通过SSCOM下发如下AT命令关闭低功耗模式。
 ```
 AT^PM=0
 ```
