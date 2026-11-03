@@ -78,6 +78,10 @@ static Result ModelMemAlloc(void)
     ret = aclrtMalloc(&g_modelOutput, g_outputSize[LENET5_MODEL_OUTPUT], ACL_MEM_MALLOC_NORMAL_ONLY);
     if (ret != ACL_SUCCESS) {
         osal_printk("aclrtMalloc failed, output_size[%u]\n", g_outputSize[LENET5_MODEL_OUTPUT]);
+        if (g_modelInput != NULL) {
+            aclrtFree(g_modelInput);
+            g_modelInput = NULL;
+        }
         return FAILED;
     }
     return SUCCESS;

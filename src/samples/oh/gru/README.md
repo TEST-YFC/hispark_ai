@@ -6,7 +6,7 @@ Gru固定词识别Sample基于Google开源的Open-Speech数据集以及ARM Softm
 支持的芯片列表如下：
 - **WS63**: 基于 MindSpore Lite 工具链（CPU 平台）部署，依靠 RISC-V CPU 核进行 AI 推理。
 - **HiDiTing**: 基于 CANN 工具链（NPU 平台）部署，依靠 Nano NPU 核进行 AI 推理。
-- **Hi1156**: 基于 CANN 工具链（NPU 平台）部署，依靠 Tiny NPU 核进行 AI 推理。
+- **tiangong2**: 基于 CANN 工具链（NPU 平台）部署，依靠 Tiny NPU 核进行 AI 推理。
 
 ## 数据处理 & 量化指南
 ### 预处理
@@ -228,18 +228,20 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 3322
     LABELS = ["silence", "unknown", "yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"]
 
 ## Tiny平台编译指南
-1. 获取Hi1156 SDK的代码，保存在用户指定路径
+1. 获取tiangong2 SDK的代码，保存在用户指定路径
 2. 获取HiSpark.AI Adaptor包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
     路径如下表示解压成功，且目录正确：
     {ADAPTOR_PATH}
         |---- adaptor
+        |---- at
         |---- include
         |---- README.md
 3. 获取此HiSpark.AI Samples包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
     路径如下表示解压成功，且目录正确：
     {SAMPLE_PATH}
+        |---- acl
         |---- amct
         |---- oh
         |---- CMakeLists.txt
@@ -250,20 +252,20 @@ export SDK_PATH=${SDK_PATH}
 export ADAPTOR_PATH=${ADAPTOR_PATH}
 export COMPILER_PATH=${COMPILER_PATH}
 export ACL_HEADER_PATH=${ACL_HEADER_PATH}
-bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 1156
+bash ${SAMPLE_PATH}/oh/gru/build_npu.sh tiangong2
 ```
 注：
 (1) COMPILER_PATH即交叉编译工具的路径，例如：/subsystem/prebuilts/compiler/gcc-arm-v01c01-linux-musleabi/arm-v01c01-linux-musleabi-gcc
 (2) ACL_HEADER_PATH即AscendCL头文件目录，例如：/image/hi5612/npu/cann_lib/acl
 
-5. 获取编译成功的可执行文件gru1156，在./src/build路径下
+5. 获取编译成功的可执行文件grutiangong2，在./src/build路径下
    获取编译成功的so文件libai_adaptor_tiny.so，在`${ADAPTOR_PATH}/adaptor/npu/build`路径下
 
 **运行指南**
 1. 创建一个目录，将其路径记作SRC_PATH。
-    将`${SDK_PATH}/software/tiangong2_image_release/NPU/npu_turing_master/release/lib`目录拷贝到SRC_PATH下
-    将`${SDK_PATH}/software/tiangong2_image_release/NPU/npu_turing_master/release/ko`目录拷贝到SRC_PATH下
-    将编译指南中获得的可执行文件gru1156拷贝到SRC_PATH下
+    将`${SDK_PATH}/software/tiangong2_image_release/NPU/release/lib`目录拷贝到SRC_PATH下
+    将`${SDK_PATH}/software/tiangong2_image_release/NPU/release/ko`目录拷贝到SRC_PATH下
+    将编译指南中获得的可执行文件grutiangong2拷贝到SRC_PATH下
     将编译指南中获得的so文件libai_adaptor_tiny.so复制到SRC_PATH/lib下
     将模型转换指南中获得的模型文件，如./output/GRU_S.om，拷贝到SRC_PATH下并重命名为gru.om
     将数据处理指南中获得的输入数据，如./data/validation_data/down/0c40e715_nohash_0.bin，拷贝到SRC_PATH下并重命名为sample.bin
@@ -279,8 +281,8 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 1156
     insmod drv_tsdrv.ko
 4. 进入/etc/workspace文件夹，
     配置LIB库路径，export LD_LIBRARY_PATH=/etc/workspace/lib:$LD_LIBRARY_PATH
-    修改可执行文件gru1156的权限，chmod 777 ./gru1156
-    运行可执行文件gru1156, ./gru1156
+    修改可执行文件grutiangong2的权限，chmod 777 ./grutiangong2
+    运行可执行文件grutiangong2, ./grutiangong2
     运行结束后可以看到[AI_NPU] Data相关日志，其结果即各个标签预测结果
     LABELS = ["silence", "unknown", "yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"]
 

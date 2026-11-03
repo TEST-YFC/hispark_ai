@@ -194,7 +194,7 @@ function build_cfbb()
     
 }
 
-function set_1156_build_env()
+function set_tiangong2_build_env()
 {
     if [ -z "$SDK_PATH" ]; then
         echo "ERROR: env SDK_PATH is empty, please set SDK_PATH"
@@ -222,7 +222,7 @@ function set_1156_build_env()
     fi
 
     export LANG="C"
-    LIB_PATH=$SDK_PATH/software/tiangong2_image_release/NPU/npu_turing_master/release/lib
+    LIB_PATH=$SDK_PATH/software/tiangong2_image_release/NPU/release/lib
     ADAPTOR_TARGET_PATH=$ADAPTOR_PATH/adaptor/npu
     ADAPTOR_BUILD_PATH=$ADAPTOR_PATH/adaptor/npu/build
     ADAPTOR_CMAKELIST_PATH=$ADAPTOR_PATH/adaptor/npu/CMakeLists.txt
@@ -230,7 +230,7 @@ function set_1156_build_env()
     SAMPLE_BUILD_PATH="${CUR_DIR}/src/build"
 }
 
-function build_1156_adaptor()
+function build_tiangong2_adaptor()
 {
     if [ -d "$ADAPTOR_BUILD_PATH" ]; then
         echo "The $ADAPTOR_BUILD_PATH directory already exists. Clearing its contents..."
@@ -281,7 +281,7 @@ function build_1156_adaptor()
     fi
 }
 
-function build_1156_sample()
+function build_tiangong2_sample()
 {
     if [ -d "$SAMPLE_BUILD_PATH" ]; then
         echo "The $SAMPLE_BUILD_PATH directory already exists. Clearing its contents..."
@@ -322,28 +322,28 @@ function build_1156_sample()
     make -j4 2>&1 | tee tiny_sample_build.log
 
     # Only determine whether the target file exists
-    if [ -f "gru1156" ]; then
+    if [ -f "grutiangong2" ]; then
         echo "Success: Compilation completed! Sample file generated: $SAMPLE_BUILD_PATH"
         echo "Success: Build log saved to: $SAMPLE_BUILD_PATH/tiny_sample_build.log"
         return 0
     else
-        echo "Error: Compilation failed! Sample file 'gru1156' not found in $SAMPLE_BUILD_PATH"
+        echo "Error: Compilation failed! Sample file 'grutiangong2' not found in $SAMPLE_BUILD_PATH"
         echo "Error: Check build log for details: $SAMPLE_BUILD_PATH/tiny_sample_build.log"
         return 1
     fi
 }
 
 
-if [ "$CHIP_VERSION" = "1156" ]; then
-    set_1156_build_env
-    build_1156_adaptor
-    build_1156_sample
+if [ "$CHIP_VERSION" = "tiangong2" ]; then
+    set_tiangong2_build_env
+    build_tiangong2_adaptor
+    build_tiangong2_sample
 elif [ "$CHIP_VERSION" = "3322" ]; then
     if [ $# -ne 2 ]; then
         all_supported_target=("${SUPPORTED_WSPT_TARGETS[@]}" "${SUPPORTED_DITING_TARGETS[@]}")
 
         echo "Usage: $0 <CHIP_VERSION> <BUILD_TARGET>"
-        echo " CHIP_VERSION: 1156, 3322"
+        echo " CHIP_VERSION: tiangong2, 3322"
         echo " BUILD_TARGET: ${all_supported_target[@]}"
         exit 1
     fi
