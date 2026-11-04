@@ -90,7 +90,7 @@ HiSpark Studio AI是面向开发者提供的超轻量级AI应用开发平台，�
 
 ### 准备资源<a name="ZH-CN_TOPIC_0000002589236769" id="ZH-CN_TOPIC_0000002589236769"></a>
 
-从HiSilicon社区的资源下载部分下载[HiSpark.AI组件](https://developers.hisilicon.com/cn/developerTool)，下载按钮如下图所示。下载前请先注册登陆Hisicon社区账号。
+从HiSilicon社区的资源下载部分下载[HiSpark.AI组件](https://developers.hisilicon.com/cn/devcenter/tools?tool=HiSpark.AI%20%E7%BB%84%E4%BB%B6&version=Ver%2026.03.1%C2%B7%E6%9C%80%E6%96%B0)，下载按钮如下图所示。
 
 **图 1**  HiSilicon社区HiSpark.AI组件下载<a name="fig1031373761716"></a>  
 ![](figures/HiSilicon社区HiSpark-AI组件下载.png "HiSilicon社区HiSpark-AI组件下载")
