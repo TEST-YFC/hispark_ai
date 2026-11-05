@@ -2,8 +2,6 @@
 
 ## 功能描述
 对于一次完整的模型推理，需要调用多个acl接口进行实现，为方便用户快速上手开发，现提供sample供用户学习。
-https://gitcode.com/HiSpark/hispark_ai/releases/26.9.1      访问该链接获取示例sample
-本示例sample为压缩包中的ai_samples/acl/tiny_sample
 用户需根据实际情况更改模型文件路径，输入文件路径与输出路径
 
 ## 目录结构
