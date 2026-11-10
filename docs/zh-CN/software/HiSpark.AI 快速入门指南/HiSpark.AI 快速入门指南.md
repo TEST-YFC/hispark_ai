@@ -168,7 +168,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 基础版环境准备步骤如下：
 
 1.  准备 Docker 镜像：
-    -   方式一：下载并导入 Docker 镜像（推荐）
+    -   下载并导入 Docker 镜像（推荐）
 
         已构建完成的 Docker 镜像下载链接如下：
 
@@ -188,92 +188,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 
         如果镜像列表中包含已导入的镜像，则表示 Docker 镜像导入成功。请根据 docker images 查询结果，确认后续运行容器时使用的镜像名称和镜像标签。
 
-    -   方式二：自行构建 Docker 镜像
-
-        执行如下命令构建Docker镜像：
-
-        ```
-        docker build -f Dockerfile_mslite -t {镜像名称}:{镜像标签} .
-        ```
-
-        如需要配置代理，请执行如下命令：
-
-        ```
-        docker build -f Dockerfile_mslite --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
-        ```
-
-        如果打印如下类似信息，表示Docker构建成功。
-
-        ```
-        Successfully built xxx
-        Successfully tagged xxx
-        ```
-
-2.  执行如下命令运行容器，并关联端口及挂载文件夹：
-
-    ```
-    docker run -itd --ipc=host -p {服务器端口}:22 -v {服务器路径}:{容器路径} --name {容器名称} {镜像名称}:{镜像标签}
-    ```
-
-    其中：
-
-    -   --ipc=host：可选，配置后容器共享宿主机的内存。
-    -   -p参数：表示将服务器对应端口映射到容器的\[服务器端口\}:22端口。
-    -   -v参数：表示将服务器相应路径映射到容器内的相应路径。该参数为可选参数。
-
-3.  执行如下命令启动容器：
-
-    ```
-    docker start {容器名称}
-    ```
-
-    使用如下指令查询运行的容器，如果查询的表格中包含启动的容器，则表示启动成功。
-
-    ```
-    docker ps
-    ```
-
-4.  配置容器root密码。
-    1.  使用如下命令进入容器：
-
-        ```
-        docker exec -it {容器名称} /bin/bash
-        ```
-
-    2.  配置密码：
-
-        ```
-        passwd
-        ```
-
-5.  执行如下命令测试ssh连接。按照提示输入root密码，能够顺利进入容器，则表示ssh连接正常。
-
-    ```
-    ssh root@{服务器IP地址} -p {服务器端口}
-    ```
-
->![](public_sys-resources/icon-note.gif) **说明：** 
->由于镜像构建过程中使用的镜像源由基础镜像Ubuntu XX.XX决定，请用户根据基础镜像决定是否更换镜像源。更换镜像源可参考common文件夹中“Mirror\_conf.sh”中提供的示例进行修改，示例仅供参考，并不适用所有环境，请用户根据环境需要自行设置合适的镜像源。 如用户Ubuntu XX.XX中配置的镜像源在Docker镜像构建过程中无法正常下载所需软件包，请参考“Mirror\_conf.sh”修改合适的镜像源。
-
-下述示例中，设置了http://mirrors.aliyun.com为镜像源，该镜像源并不一定适用所有的环境，请用户选择适合的镜像源进行替换。
-
-```
- #!/bin/bash  
- # Mirror source configuration 
-  
- # The following configuration of mirror sources is for reference only.  
- # You need to configure proper mirror sources based on your environment requirements. 
- # Configure the image source according to the following example to ensure that the software package can be downloaded during image construction. 
- 
- ############## Modify the following information as required .################## 
- # cp -a /etc/apt/sources.list /etc/apt/sources.list.bak 
- # sed -i "s@http://.*archive.ubuntu.com@http://mirrors.aliyun.com@g" /etc/apt/sources.list 
- # sed -i "s@http://.*security.ubuntu.com@http://mirrors.aliyun.com@g" /etc/apt/sources.list 
- # mkdir -p /root/.pip/ 
- # echo '[global]' >> /root/.pip/pip.conf 
- # echo 'trusted-host=mirrors.aliyun.com' >> /root/.pip/pip.conf 
- # echo 'index-url=http://mirrors.aliyun.com/pypi/simple' >> /root/.pip/pip.conf
-```
+> **说明：** 如需自行构建 Docker 镜像，或需了解运行容器、进入容器、配置密码、测试 SSH 等后续步骤，请参见《linux环境docker镜像制作参考》。
 
 ### 准备SDK<a name="ZH-CN_TOPIC_0000002536180835" id="ZH-CN_TOPIC_0000002536180835"></a>
 
@@ -371,8 +286,8 @@ Dockerfile包括Dockerfile\_cann\_cpu和Dockerfile\_cann\_gpu。其中Dockerfile
 
 基础版环境准备步骤如下：
 
-1.  构建Docker镜像：
-    -   方式一：下载并导入Docker镜像（推荐）
+1.  准备 Docker 镜像：
+    -   下载并导入 Docker 镜像（推荐）
 
         已构建完成的 Docker 镜像下载链接如下：
 
@@ -392,70 +307,7 @@ Dockerfile包括Dockerfile\_cann\_cpu和Dockerfile\_cann\_gpu。其中Dockerfile
 
         如果镜像列表中包含已导入的镜像，则表示 Docker 镜像导入成功。请根据 docker images 查询结果，确认后续运行容器时使用的镜像名称和镜像标签。
 
-    -   方式二：自行构建Docker镜像
-
-        ```
-        docker build -f Dockerfile_cann_cpu -t {镜像名称}:{镜像标签} .
-        ```
-
-        如需要配置代理，请执行如下命令：
-
-        ```
-        docker build -f Dockerfile_cann_cpu --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
-        ```
-
-        如果打印如下类似信息，表示Docker构建成功。
-
-        ```
-        Successfully built 61bc7fae9f9e
-        Successfully tagged {镜像名称}:{镜像标签}
-        ```
-
-2.  执行如下命令运行容器，并关联端口及挂载文件夹：
-
-    ```
-    docker run -itd  --ipc=host -p {服务器端口}:22 -v {服务器路径}:{容器路径} --name {容器名称} {镜像名称}:{镜像标签}
-    ```
-
-    其中：
-
-    -   --ipc=host：可选，配置后容器共享宿主机的内存。
-    -   -p参数：表示将服务器对应端口映射到容器的\{服务器端口\}:22端口。
-    -   -v参数：表示将服务器相应路径映射到容器内的相应路径。该参数为可选参数。
-
-3.  执行如下命令启动容器：
-
-    ```
-    docker start {容器名称}
-    ```
-
-    使用如下指令查询运行的容器，如果查询的表格中包含启动的容器，则表示启动成功。
-
-    ```
-    docker ps
-    ```
-
-4.  配置容器root密码。
-    -   使用如下命令进入容器：
-
-        ```
-        docker exec -it {容器名称} /bin/bash
-        ```
-
-    -   配置密码：
-
-        ```
-        passwd
-        ```
-
-5.  执行如下命令测试ssh连接。按照提示输入root密码，能够顺利进入容器，则表示ssh连接正常。
-
-    ```
-    ssh root@{服务器IP地址} -p {服务器端口}
-    ```
-
->![](public_sys-resources/icon-note.gif) **说明：** 
->如遇到镜像代理未配置的网络问题，请参考“[Linux通路环境准备](#ZH-CN_TOPIC_0000002538542947)”中的说明完成代理配置。
+> **说明：** 如需自行构建 Docker 镜像，或需了解运行容器、进入容器、配置密码、测试 SSH 等后续步骤，请参见《linux环境docker镜像制作参考》。
 
 #### GPU加速版环境准备<a name="ZH-CN_TOPIC_0000002504641364" id="ZH-CN_TOPIC_0000002504641364"></a>
 
@@ -467,8 +319,8 @@ GPU加速版环境准备前，请先保证Linux服务器：
 
 GPU加速版环境准备步骤如下：
 
-1.  执行如下命令构建Docker镜像：
-    -   方式一：下载并导入Docker镜像（推荐）
+1.  准备 Docker 镜像：
+    -   下载并导入 Docker 镜像（推荐）
 
         已构建完成的 Docker 镜像下载链接如下：
 
@@ -488,79 +340,7 @@ GPU加速版环境准备步骤如下：
 
         如果镜像列表中包含已导入的镜像，则表示 Docker 镜像导入成功。请根据 docker images 查询结果，确认后续运行容器时使用的镜像名称和镜像标签。
 
-    -   方式二：自行构建Docker镜像：
-
-        ```
-        docker build -f Dockerfile_cann_gpu -t {镜像名称}:{镜像标签} .
-        ```
-
-        如需要配置代理，请执行如下命令：
-
-        ```
-        docker build -f Dockerfile_cann_gpu --build-arg http_proxy={http代理地址} --build-arg https_proxy={https代理地址} --build-arg no_proxy={排除代理地址} -t {镜像名称}:{镜像标签} .
-        ```
-
-        如果打印如下类似信息，表示Docker构建成功。
-
-        ```
-        Successfully built 61bc7fae9f9e
-        Successfully tagged {镜像名称}:{镜像标签}
-        ```
-
-2.  执行如下命令运行容器，并关联端口及挂载文件夹：
-
-    ```
-    docker run -itd --ipc=host -p {服务器端口}:22 --gpus all -v {服务器路径}:{容器路径} --name {容器名称} {镜像名称}:{镜像标签}
-    ```
-
-    其中：
-
-    -   --ipc=host：可选，配置后容器共享宿主机的内存。
-    -   -p参数：表示将服务器对应端口映射到容器的22端口。
-    -   --gpus参数：表示GPU对容器可见。
-    -   -v参数：表示将服务器相应路径映射到容器内的相应路径。该参数为可选参数。
-
-3.  执行如下命令启动容器：
-
-    ```
-    docker start {容器名称}
-    ```
-
-    使用如下指令查询运行的容器，如果查询的表格中包含启动的容器，则表示启动成功。
-
-    ```
-    docker ps
-    ```
-
-4.  配置容器root密码。
-    -   使用如下命令进入容器：
-
-        ```
-        docker exec -it {容器名称} /bin/bash
-        ```
-
-    -   配置密码：
-
-        ```
-        passwd
-        ```
-
-5.  在容器内执行如下命令测试GPU是否可用。
-
-    ```
-    nvidia-smi
-    ```
-
-    命令输出如[图1](#fig48521345151615)类似信息，表示GPU可用。
-
-    **图 1**  GPU查询结果<a name="fig48521345151615" id="fig48521345151615"></a>  
-    ![](figures/GPU查询结果.png "GPU查询结果")
-
-6.  在Linux服务器执行如下命令测试ssh连接。按照提示输入root密码，能够顺利进入容器，则表示ssh连接正常。
-
-    ```
-    ssh root@{服务器IP地址} -p {服务器端口}
-    ```
+> **说明：** 如需自行构建 Docker 镜像，或需了解运行容器、进入容器、配置密码、测试 GPU/SSH 等后续步骤，请参见《linux环境docker镜像制作参考》。
 
 ### 3322 Windows侧Bash环境准备<a name="ZH-CN_TOPIC_0000002536184615" id="ZH-CN_TOPIC_0000002536184615"></a>
 
