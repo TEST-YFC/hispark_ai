@@ -168,7 +168,7 @@ Dockerfile包括Dockerfile\_mslite。Dockerfile\_mslite为基础版环境准备�
 基础版环境准备步骤如下：
 
 1.  准备 Docker 镜像：
-    -   方式一：下载并导入 Docker 镜像（推荐）
+    -   下载并导入 Docker 镜像（推荐）
 
         已构建完成的 Docker 镜像下载链接如下：
 
@@ -286,8 +286,8 @@ Dockerfile包括Dockerfile\_cann\_cpu和Dockerfile\_cann\_gpu。其中Dockerfile
 
 基础版环境准备步骤如下：
 
-1.  构建Docker镜像：
-    -   方式一：下载并导入Docker镜像（推荐）
+1.  准备 Docker 镜像：
+    -   下载并导入 Docker 镜像（推荐）
 
         已构建完成的 Docker 镜像下载链接如下：
 
@@ -319,8 +319,8 @@ GPU加速版环境准备前，请先保证Linux服务器：
 
 GPU加速版环境准备步骤如下：
 
-1.  执行如下命令构建Docker镜像：
-    -   方式一：下载并导入Docker镜像（推荐）
+1.  准备 Docker 镜像：
+    -   下载并导入 Docker 镜像（推荐）
 
         已构建完成的 Docker 镜像下载链接如下：
 
