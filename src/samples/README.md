@@ -242,7 +242,7 @@ export ADAPTOR_PATH=${hispark_ai_root}/src/adaptor
 
 ### 烧录调试
 
-使用 [BurnTool 工具](https://developers.hisilicon.com/cn/developerTool) 进行 `ws63-ai-liteos-sample.fwpkg` 的烧录。烧录成功运行后，会看到串口打印的运行成功信息，Gru 打印如下：
+使用 [BurnTool 工具](https://developers.hisilicon.com/cn/devcenter/tools?tool=BurnTool) 进行 `ws63-ai-liteos-sample.fwpkg` 的烧录。烧录成功运行后，会看到串口打印的运行成功信息，Gru 打印如下：
 
 ```
 [AI_MCU] Get Tcxo Time 115 ms

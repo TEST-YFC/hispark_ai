@@ -12,7 +12,7 @@ HiSpark.AI 面向 WS63 / 3322 端侧 AI，模型需经 AMCT 量化、ATC / MSLit
 
 ## 资源获取
 
-各环境所需的安装包，从 HiSilicon 社区的「资源下载」部分下载 [HiSpark.AI 组件](https://developers.hisilicon.com/cn/developerTool)（下载前请先注册登录 HiSilicon 社区账号）。下载压缩包解压后，内部 customer 文件夹下包含：
+各环境所需的安装包，从 HiSilicon 社区的「资源下载」部分下载 [HiSpark.AI 组件](https://developers.hisilicon.com/cn/devcenter/tools?tool=HiSpark.AI%20%E7%BB%84%E4%BB%B6)（下载前请先注册登录 HiSilicon 社区账号）。下载压缩包解压后，内部 customer 文件夹下包含：
 
 - MSLite（WS63 AI 工具链）：内含 MSLite 环境所需的安装包（`HiSpark.AI_xx.xx.xx-mindspore-enterprise-lite-xx.xx.xx-linux-x64.tar.gz`）。
 - CANN（3322 AI 工具链）：内含 CANN 环境所需的安装包（`CANN-runtime`、`CANN-compiler`、`CANN-opp`、`CANN-toolkit`、`CANN-amct` 等）。
