@@ -174,7 +174,7 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 7. 获取编译成功的fwpkg文件，在${SDK_PATH}/output/ws63/fwpkg/ws63-liteos-app/ws63-liteos-app_all.fwpkg路径下
 
 **烧录调试**
-1. 使用[BurnTool工具](https://developers.hisilicon.com/cn/developerTool)将编译生成的fwpkg镜像烧录到WS63单板
+1. 使用[BurnTool工具](https://developers.hisilicon.com/cn/devcenter/tools?tool=BurnTool)将编译生成的fwpkg镜像烧录到WS63单板
 2. 烧录成功运行后，会看到串口打印的推理结果信息
 
 ## Nano平台编译指南

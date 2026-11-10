@@ -13,8 +13,8 @@ HiSpark.AI 是海思嵌入式 AI 应用开发解决方案，功能覆盖模型�
 | ①   | 统一 API & 适配层（adaptor）         | 提供统一面向CPU与NPU平台的AI 接口，及对应适配层源码                                       | 源码       | 本仓库 src/adaptor                                                                                                                                                         |
 | ②   | Samples                       | 基于统一 AI 接口（ai.h）的应用示例，覆盖 CPU / NPU 平台，演示模型转换、量化、编译、SDK 集成及端侧训练的端到端流程 | 源码       | 本仓库 src/samples                                                                                                                                                         |
 | ③   | HiSpark Studio AI for VS Code | IDE 插件，图形化界面覆盖模型编译、量化转换、烧录等操作，极大提升 AI 应用开发易用性                        | 源码 / 安装包 | 源码：[vscode-hispark-studio](https://gitcode.com/HiSpark/vscode-hispark-studio)；安装包：[VS Code 插件市场](https://marketplace.visualstudio.com/items?itemName=HiSpark.hisparkai) |
-| ④   | MindSpore-Lite                | 用于CPU平台，支持推理与端侧训练，可自动生成推理模块代码并提供 RISC-V 算子库                          | 源码/ 预构建  | 源码：本仓库 submodule；直接获取：[developerTool](https://developers.hisilicon.com/cn/devcenter/tools?tool=HiSpark.AI%20%E7%BB%84%E4%BB%B6&version=Ver%2026.03.1%C2%B7%E6%9C%80%E6%96%B0)                                                                                |
-| ⑤   | CANN                          | 用于 NPU 平台，昇腾 AI 异构计算架构（ATC 模型编译、AMCT 模型压缩、ACL 推理库）                   | 预构建      | [developerTool](https://developers.hisilicon.com/cn/devcenter/tools?tool=HiSpark.AI%20%E7%BB%84%E4%BB%B6&version=Ver%2026.03.1%C2%B7%E6%9C%80%E6%96%B0)                                                                                                      |
+| ④   | MindSpore-Lite                | 用于CPU平台，支持推理与端侧训练，可自动生成推理模块代码并提供 RISC-V 算子库                          | 源码/ 预构建  | 源码：本仓库 submodule；直接获取：[developerTool](https://developers.hisilicon.com/cn/devcenter/tools?tool=HiSpark.AI%20%E7%BB%84%E4%BB%B6)                                                                                |
+| ⑤   | CANN                          | 用于 NPU 平台，昇腾 AI 异构计算架构（ATC 模型编译、AMCT 模型压缩、ACL 推理库）                   | 预构建      | [developerTool](https://developers.hisilicon.com/cn/devcenter/tools?tool=HiSpark.AI%20%E7%BB%84%E4%BB%B6)                                                                                                      |
 | ⑥   | modelzoo                      | 生态组件，汇聚多类别的AI模型样例与AI应用开发参考方案。                                        | 源码       | [fbb-modelzoo](https://gitcode.com/HiSpark/fbb-modelzoo) 仓库                                                                                                         |
 
 
@@ -80,7 +80,7 @@ MindSpore Lite 支持源码编译，步骤如下：
     cd ${hispark_ai_root}
     git submodule update --init --remote --progress src/mindspore-lite
     ```
-  > **提示**：如需保证转换器与 [developerTool](https://developers.hisilicon.com/cn/devcenter/tools?tool=HiSpark.AI%20%E7%BB%84%E4%BB%B6&version=Ver%2026.03.1%C2%B7%E6%9C%80%E6%96%B0) 提供的 runtime 版本一致，请使用 `git submodule update --init`（不带 `--remote`）以 checkout 到本仓库记录的固定 commit，或显式 checkout 到对应 release tag。
+  > **提示**：如需保证转换器与 [developerTool](https://developers.hisilicon.com/cn/devcenter/tools?tool=HiSpark.AI%20%E7%BB%84%E4%BB%B6) 提供的 runtime 版本一致，请使用 `git submodule update --init`（不带 `--remote`）以 checkout 到本仓库记录的固定 commit，或显式 checkout 到对应 release tag。
 
 - 编译：
     ```
