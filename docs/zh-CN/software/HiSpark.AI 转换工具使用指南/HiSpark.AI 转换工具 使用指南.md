@@ -97,7 +97,6 @@
 
 >![](public_sys-resources/icon-notice.gif) **须知：** 
 >-   converter\_lite工具包依赖于GCC-14.3版本，可以通过点击链接访问官网（[GCC-14.3](https://github.com/gcc-mirror/gcc/releases/tag/releases%2Fgcc-14.3.0)），选择下载14.3.0版本。
->-   converter\_lite工具包依赖于Python3.11环境。
 >-   “[必选环境变量](#section15381219152316)”中步骤必须按顺序执行，否则可能导致converter\_lite工具无法链接到动态库。
 
 **必选环境变量<a name="section15381219152316" id="section15381219152316"></a>**
@@ -106,12 +105,6 @@
 
     ```
     export LD_LIBRARY_PATH=mindspore-enterprise-lite-{version}-linux-x64安装目录/tools/converter/lib:$LD_LIBRARY_PATH
-    ```
-
-1.  将Python3.11的路径添加到LD\_LIBRARY\_PATH中。
-
-    ```
-    export LD_LIBRARY_PATH=${py311_install_path}/lib:$LD_LIBRARY_PATH
     ```
 
 2.  将GCC的libstdc++6.0.30库路径添加到LD\_LIBRARY\_PATH中。
@@ -190,11 +183,6 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
 <tr id="row2982557181213"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p2753431131020"><a name="p2753431131020"></a><a name="p2753431131020"></a>Ubuntu</p>
 </td>
 <td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p19753113191012"><a name="p19753113191012"></a><a name="p19753113191012"></a>22.04</p>
-</td>
-</tr>
-<tr id="row14120345152815"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p8121194513282"><a name="p8121194513282"></a><a name="p8121194513282"></a>Python</p>
-</td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p10816952102817"><a name="p10816952102817"></a><a name="p10816952102817"></a>3.11</p>
 </td>
 </tr>
 </tbody>
