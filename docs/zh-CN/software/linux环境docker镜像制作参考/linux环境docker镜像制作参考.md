@@ -45,7 +45,7 @@ ARG http_proxy https_proxy no_proxy
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends wget curl build-essential cmake ssh \
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake ssh \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/src/mindspore
