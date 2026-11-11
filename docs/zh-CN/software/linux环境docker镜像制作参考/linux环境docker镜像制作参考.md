@@ -45,17 +45,7 @@ ARG http_proxy https_proxy no_proxy
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends wget curl build-essential ssh vim git \
-    && rm -rf /var/lib/apt/lists/*
-
-# GCC 14 工具链（官方依赖要求 GCC 14.3.x）。用 ubuntu-toolchain-r PPA（为 22.04 编译，不污染 glibc/binutils）
-RUN apt-get update && apt-get install -y --no-install-recommends gpg wget \
-    && wget -qO - 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60C317803A41BA51845E371A1E9377A2BA9EF27F' | gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg \
-    && echo "deb https://ppa.launchpadcontent.net/ubuntu-toolchain-r/test/ubuntu jammy main" > /etc/apt/sources.list.d/toolchain-r-test.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends gcc-14 g++-14 cmake \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 \
-    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100 \
+RUN apt-get update && apt-get install -y --no-install-recommends wget curl build-essential cmake ssh vim git \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/src/mindspore
