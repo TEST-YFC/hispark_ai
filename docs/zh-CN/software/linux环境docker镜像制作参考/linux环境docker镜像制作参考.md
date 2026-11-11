@@ -45,7 +45,7 @@ ARG http_proxy https_proxy no_proxy
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends wget curl  build-essential python3.11-dev libpython3.11 python3-pip python3-dev ssh vim git \
+RUN apt-get update && apt-get install -y --no-install-recommends wget curl build-essential ssh vim git \
     && rm -rf /var/lib/apt/lists/*
 
 # GCC 14 工具链（官方依赖要求 GCC 14.3.x）。用 ubuntu-toolchain-r PPA（为 22.04 编译，不污染 glibc/binutils）
@@ -58,8 +58,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends gpg wget \
     && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100 \
     && rm -rf /var/lib/apt/lists/*
 
-# 1. 软链接：RUN ln -S /usr/bin/python3.11 python
-RUN /usr/bin/python3.11 -m pip install wheel decorator sympy scipy==1.10.1 onnx==1.14.0 onnxruntime==1.15.0 numpy==1.24.3 tensorflow==2.13.0 torch==2.1.0 torchvision==0.16.0
 RUN mkdir -p /usr/src/mindspore
 COPY HiSpark.AI*-mindspore-*-x64.tar.gz /usr/src/env/mindspore-lite.tar.gz
 RUN /usr/bin/tar -zxvf /usr/src/env/mindspore-lite.tar.gz -C /usr/src/mindspore
@@ -70,8 +68,6 @@ RUN echo "service ssh start" >> /root/.bashrc
 RUN sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config \
     && sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/#*StrictModes yes/StrictModes yes/g' /etc/ssh/sshd_config
-
-RUN ln -sf /usr/bin/python3.11 /usr/bin/python
 ```
 
 ### 环境准备步骤
