@@ -16,9 +16,6 @@
  #if defined(PROCESSOR_TYPE_NANO)
 #include "std_def.h"
 #endif
-#include "acl_mdl.h"
-#include "acl_base.h"
-#include "acl_rt.h"
 #include "acl.h"
 #include "tensor.h"
 #include "ai.h"
