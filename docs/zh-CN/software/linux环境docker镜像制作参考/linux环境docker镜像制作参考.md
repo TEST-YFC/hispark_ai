@@ -41,6 +41,7 @@ Dockerfile 包括 `Dockerfile_mslite`，为基础版环境准备配置文件。
 
 ```dockerfile
 ARG http_proxy https_proxy no_proxy
+ENV http_proxy=$http_proxy https_proxy=$https_proxy no_proxy=$no_proxy
 
 FROM ubuntu:22.04
 
@@ -48,7 +49,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake ssh \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /usr/src/mindspore
+RUN mkdir -p /usr/src/mindspore /usr/src/env
 COPY HiSpark.AI*-mindspore-*-x64.tar.gz /usr/src/env/mindspore-lite.tar.gz
 RUN /usr/bin/tar -zxvf /usr/src/env/mindspore-lite.tar.gz -C /usr/src/mindspore
 
@@ -58,6 +59,9 @@ RUN echo "service ssh start" >> /root/.bashrc
 RUN sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config \
     && sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/#*StrictModes yes/StrictModes yes/g' /etc/ssh/sshd_config
+
+# converter_lite 动态库链接路径（{version}替换为实际版本，如 106.1.0）
+ENV LD_LIBRARY_PATH=/usr/src/mindspore/mindspore-enterprise-lite-{version}-linux-x64/tools/converter/lib
 ```
 
 ### 环境准备步骤
