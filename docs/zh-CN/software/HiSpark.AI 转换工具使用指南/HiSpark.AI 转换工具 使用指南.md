@@ -96,7 +96,7 @@
 使用export方式设置环境变量后，环境变量仅在当前窗口有效。如果用户之前已在.bashrc文件中设置过环境变量，则需要在执行上述命令前，先手动删除原来设置的环境变量。
 
 >![](public_sys-resources/icon-notice.gif) **须知：** 
->-   converter\_lite工具包依赖GLIBCXX 3.4.30 / GLIBC 2.34及以上版本（GCC 12.1起，Ubuntu 22.04默认的libstdc++6 12.3.0与glibc 2.35已满足，无需额外安装）。
+>-   converter\_lite工具包依赖GLIBCXX 3.4.29 / GLIBC 2.34及以上版本（GCC 11.1起，Ubuntu 22.04默认的libstdc++6 12.3.0与glibc 2.35已满足，无需额外安装）。
 >-   “[必选环境变量](#section15381219152316)”中步骤必须按顺序执行，否则可能导致converter\_lite工具无法链接到动态库。
 
 **必选环境变量<a name="section15381219152316" id="section15381219152316"></a>**
@@ -140,7 +140,7 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
 </thead>
 <tbody><tr id="row89811757171215"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p167523317105"><a name="p167523317105"></a><a name="p167523317105"></a>libstdc++</p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p16752031121014"><a name="p16752031121014"></a><a name="p16752031121014"></a>GLIBCXX 3.4.30 及以上（GCC 12.1 起）</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p16752031121014"><a name="p16752031121014"></a><a name="p16752031121014"></a>GLIBCXX 3.4.29 及以上（GCC 11.1 起）</p>
 </td>
 </tr>
 <tr id="row179810570129"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p15486432191119"><a name="p15486432191119"></a><a name="p15486432191119"></a>CMake</p>
