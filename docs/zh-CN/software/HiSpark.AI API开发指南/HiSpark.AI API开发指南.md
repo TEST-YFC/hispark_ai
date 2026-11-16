@@ -1,4 +1,6 @@
-# 前言<a name="ZH-CN_TOPIC_0000002483457685"></a>
+# HiSpark.AI API开发指南
+
+## 前言<a name="ZH-CN_TOPIC_0000002483457685"></a>
 
 **概述<a name="section4537382116410"></a>**
 
@@ -119,7 +121,7 @@
 </tbody>
 </table>
 
-# 简介<a name="ZH-CN_TOPIC_0000002356428965"></a>
+## 简介<a name="ZH-CN_TOPIC_0000002356428965"></a>
 
 本文用于指导开发人员基于MNIST模型、利用HiSpark.AI提供的C语言API库，实现第三方开源框架（如TFLite、ONNX等）网络模型轻量化部署与推理任务。
 
@@ -129,11 +131,11 @@
 
 -   **[获取Sample方法](#ZH-CN_TOPIC_0000002356410665)**  
 
-## HiSpark.AI接口定义<a name="ZH-CN_TOPIC_0000002322571836"></a>
+### HiSpark.AI接口定义<a name="ZH-CN_TOPIC_0000002322571836"></a>
 
 HiSpark.AI API提供了用于环境初始化、上下文配置、模型创建、推理以及Tensor创建与修改的C语言API库，供用户开发模型轻量化部署与推理应用。
 
-## 基本概念<a name="ZH-CN_TOPIC_0000002356450521"></a>
+### 基本概念<a name="ZH-CN_TOPIC_0000002356450521"></a>
 
 **表 1**  概念介绍
 
@@ -167,7 +169,7 @@ HiSpark.AI API提供了用于环境初始化、上下文配置、模型创建、
 </tbody>
 </table>
 
-## 获取Sample方法<a name="ZH-CN_TOPIC_0000002356410665"></a>
+### 获取Sample方法<a name="ZH-CN_TOPIC_0000002356410665"></a>
 
 当前MindSpore Lite提供的样例如[表1](#table1976211111820)所示，从[mnist网络模型](https://download.mindspore.cn/model_zoo/official/lite/quick_start/micro/mnist.tar.gz)链接中获取mnist网络的模型文件，下载后解压得到mnist.tflite、mnist.tflite.ms.bin（mnist输入数据）、mnist.tflite.ms.out（标杆输出数据，可用于精度对比），该模型为已经训练完成的mnist分类模型。
 
@@ -201,7 +203,7 @@ cd "sample安装目录"
 tar -xvf mnist.tar.gz
 ```
 
-# 接口调用流程介绍<a name="ZH-CN_TOPIC_0000002322390472"></a>
+## 接口调用流程介绍<a name="ZH-CN_TOPIC_0000002322390472"></a>
 
 本章主要介绍HiSpark.AI API接口调用流程。
 
@@ -217,7 +219,7 @@ tar -xvf mnist.tar.gz
 
 -   **[运行管理资源释放](#ZH-CN_TOPIC_0000002323808054)**  
 
-## 接口调用流程图<a name="ZH-CN_TOPIC_0000002323808050"></a>
+### 接口调用流程图<a name="ZH-CN_TOPIC_0000002323808050"></a>
 
 HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)所示。
 
@@ -242,14 +244,14 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 1.  运行管理资源释放：所有数据处理完成后，需要释放运行管理资源（OH\_AI\_Context、OH\_AI\_Tensor）。具体流程请参见“[3.2-系统配置](#ZH-CN_TOPIC_0000002486873536)[3.2-系统配置](#ZH-CN_TOPIC_0000002486873536)、[Context管理](#ZH-CN_TOPIC_0000002357273153)、[Tensor管理](#ZH-CN_TOPIC_0000002357393253)”以销毁资源。
 
-## 系统初始化<a name="ZH-CN_TOPIC_0000002519243831"></a>
+### 系统初始化<a name="ZH-CN_TOPIC_0000002519243831"></a>
 
 **图 1**  系统初始化流程<a name="fig5442015164412"></a>  
 ![](figures/系统初始化流程.png "系统初始化流程")
 
 通过调用OH\_AI\_InitFromFile/OH\_AI\_Init接口，实现系统初始化。
 
-## 运行管理资源申请<a name="ZH-CN_TOPIC_0000002357566825"></a>
+### 运行管理资源申请<a name="ZH-CN_TOPIC_0000002357566825"></a>
 
 运行管理资源包含OH\_AI\_Context、OH\_AI\_Tensor，其创建的流程如[图1](#fig440882011596)所示。
 
@@ -261,14 +263,14 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 -   在创建OH\_AI\_Tensor资源时，需要调用OH\_AI\_GetInputs/OH\_AI\_GetOutputs接口，接着从返回的OH\_AI\_TensorHandleArray结构体中获取对应OH\_AI\_Tensor的句柄。
 -   在创建OH\_AI\_Context资源时，需要调用OH\_AI\_ContextCreate接口，并获取句柄。
 
-## 模型加载<a name="ZH-CN_TOPIC_0000002357726713"></a>
+### 模型加载<a name="ZH-CN_TOPIC_0000002357726713"></a>
 
 **图 1**  模型加载流程<a name="fig249712620441"></a>  
 ![](figures/模型加载流程.png "模型加载流程")
 
 通过调用OH\_AI\_ModelBuild接口，实现模型权重的自动加载。
 
-## 模型执行<a name="ZH-CN_TOPIC_0000002323648222"></a>
+### 模型执行<a name="ZH-CN_TOPIC_0000002323648222"></a>
 
 **图 1**  模型执行流程图<a name="fig2313444155911"></a>  
 ![](figures/模型执行流程图.png "模型执行流程图")
@@ -277,7 +279,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 -   调用OH\_AI\_ModelPredict接口做模型推理，调用OH\_AI\_ModelRunstep接口做模型评估或训练，详情请参见“[模型加载与执行](#ZH-CN_TOPIC_0000002323314674)”。
 -   获取模型推理的结果，用于后续处理。
 
-## 运行管理资源释放<a name="ZH-CN_TOPIC_0000002323808054"></a>
+### 运行管理资源释放<a name="ZH-CN_TOPIC_0000002323808054"></a>
 
 运行管理资源包含OH\_AI\_Context、OH\_AI\_Tensor，其释放的流程如[图1](#fig166821235204418)所示。
 
@@ -289,7 +291,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 -   在销毁OH\_AI\_Tensor资源时，需要调用OH\_AI\_ModelDestroy接口，来销毁modelHandle所关联的OH\_AI\_TensorHandleArray结构体中的OH\_AI\_Tensor资源。
 -   在销毁OH\_AI\_Context资源时，需要调用OH\_AI\_ContextDestroy接口。
 
-# HiSpark.AI API参考<a name="ZH-CN_TOPIC_0000002356389125"></a>
+## HiSpark.AI API参考<a name="ZH-CN_TOPIC_0000002356389125"></a>
 
 -   **[接口列表](#ZH-CN_TOPIC_0000002323474462)**  
 
@@ -303,7 +305,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 -   **[错误码](#ZH-CN_TOPIC_0000002486910898)**  
 
-## 接口列表<a name="ZH-CN_TOPIC_0000002323474462"></a>
+### 接口列表<a name="ZH-CN_TOPIC_0000002323474462"></a>
 
 **表 1**  接口列表
 
@@ -512,7 +514,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 </tbody>
 </table>
 
-## 系统配置<a name="ZH-CN_TOPIC_0000002486873536"></a>
+### 系统配置<a name="ZH-CN_TOPIC_0000002486873536"></a>
 
 -   **[OH\_AI\_InitFromFile](#ZH-CN_TOPIC_0000002486885042)**  
 
@@ -520,7 +522,7 @@ HiSpark.AI API接口调用流程如[接口调用流程图](#fig18338134105017)�
 
 -   **[OH\_AI\_Deinit](#ZH-CN_TOPIC_0000002519044903)**  
 
-### OH\_AI\_InitFromFile<a name="ZH-CN_TOPIC_0000002486885042"></a>
+#### OH\_AI\_InitFromFile<a name="ZH-CN_TOPIC_0000002486885042"></a>
 
 【描述】
 
@@ -551,7 +553,7 @@ OH\_AI\_Status OH\_AI\_InitFromFile\(char\* config\_file\_path\)
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功
 
-### OH\_AI\_Init<a name="ZH-CN_TOPIC_0000002519124901"></a>
+#### OH\_AI\_Init<a name="ZH-CN_TOPIC_0000002519124901"></a>
 
 【描述】
 
@@ -587,7 +589,7 @@ OH\_AI\_Status OH\_AI\_Init\(void\* config\_data, size\_t data\_size\)
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功
 
-### OH\_AI\_Deinit<a name="ZH-CN_TOPIC_0000002519044903"></a>
+#### OH\_AI\_Deinit<a name="ZH-CN_TOPIC_0000002519044903"></a>
 
 【描述】
 
@@ -601,13 +603,13 @@ OH\_AI\_Status OH\_AI\_Deinit\(\)
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
-## Context管理<a name="ZH-CN_TOPIC_0000002357273153"></a>
+### Context管理<a name="ZH-CN_TOPIC_0000002357273153"></a>
 
 -   **[OH\_AI\_ContextCreate](#ZH-CN_TOPIC_0000002357729493)**  
 
 -   **[OH\_AI\_ContextDestroy](#ZH-CN_TOPIC_0000002357569605)**  
 
-### OH\_AI\_ContextCreate<a name="ZH-CN_TOPIC_0000002357729493"></a>
+#### OH\_AI\_ContextCreate<a name="ZH-CN_TOPIC_0000002357729493"></a>
 
 【描述】
 
@@ -621,7 +623,7 @@ OH\_AI\_ContextHandle OH\_AI\_ContextCreate\(\)
 
 指向创建的OH\_AI\_Context的指针。
 
-### OH\_AI\_ContextDestroy<a name="ZH-CN_TOPIC_0000002357569605"></a>
+#### OH\_AI\_ContextDestroy<a name="ZH-CN_TOPIC_0000002357569605"></a>
 
 【描述】
 
@@ -648,7 +650,7 @@ void OH\_AI\_ContextDestroy\(OH\_AI\_ContextHandle\* context\)
 </tbody>
 </table>
 
-## Tensor管理<a name="ZH-CN_TOPIC_0000002357393253"></a>
+### Tensor管理<a name="ZH-CN_TOPIC_0000002357393253"></a>
 
 -   **[OH\_AI\_TensorGetDataSize](#ZH-CN_TOPIC_0000002487055488)**  
 
@@ -660,7 +662,7 @@ void OH\_AI\_ContextDestroy\(OH\_AI\_ContextHandle\* context\)
 
 -   **[OH\_AI\_TensorGetMutableData](#ZH-CN_TOPIC_0000002323651014)**  
 
-### OH\_AI\_TensorGetDataSize<a name="ZH-CN_TOPIC_0000002487055488"></a>
+#### OH\_AI\_TensorGetDataSize<a name="ZH-CN_TOPIC_0000002487055488"></a>
 
 【描述】
 
@@ -689,7 +691,7 @@ size\_t OH\_AI\_TensorGetDataSize \(const OH\_AI\_TensorHandle tensor\)
 
 【返回值】OH\_AI\_Tensor的数据字节数大小。返回值为0说明入参为空指针。
 
-### OH\_AI\_TensorGetShape<a name="ZH-CN_TOPIC_0000002519215373"></a>
+#### OH\_AI\_TensorGetShape<a name="ZH-CN_TOPIC_0000002519215373"></a>
 
 【描述】
 
@@ -723,7 +725,7 @@ const int64\_t \*OH\_AI\_TensorGetShape\(const OH\_AI\_TensorHandle tensor, size
 
 【返回值】OH\_AI\_Tensor的张量形状信息的内存地址。
 
-### OH\_AI\_TensorGetDataType<a name="ZH-CN_TOPIC_0000002486895522"></a>
+#### OH\_AI\_TensorGetDataType<a name="ZH-CN_TOPIC_0000002486895522"></a>
 
 【描述】
 
@@ -752,7 +754,7 @@ OH\_AI\_DataType OH\_AI\_TensorGetDataType\(const OH\_AI\_TensorHandle tensor\)
 
 【返回值】OH\_AI\_Tensor的张量数据类型。
 
-### OH\_AI\_TensorGetElementNum<a name="ZH-CN_TOPIC_0000002323810834"></a>
+#### OH\_AI\_TensorGetElementNum<a name="ZH-CN_TOPIC_0000002323810834"></a>
 
 【描述】
 
@@ -781,7 +783,7 @@ int64\_t OH\_AI\_TensorGetElementNum\(const OH\_AI\_TensorHandle tensor\)
 
 【返回值】OH\_AI\_Tensor的元素个数。返回值为-1说明入参为空指针。
 
-### OH\_AI\_TensorGetMutableData<a name="ZH-CN_TOPIC_0000002323651014"></a>
+#### OH\_AI\_TensorGetMutableData<a name="ZH-CN_TOPIC_0000002323651014"></a>
 
 【描述】
 
@@ -812,7 +814,7 @@ void\* OH\_AI\_TensorGetMutableData\(const OH\_AI\_TensorHandle tensor\)
 
 指向OH\_AI\_Tensor的可变数据的指针。
 
-## 模型加载与执行<a name="ZH-CN_TOPIC_0000002323314674"></a>
+### 模型加载与执行<a name="ZH-CN_TOPIC_0000002323314674"></a>
 
 -   **[OH\_AI\_ModelCreate](#ZH-CN_TOPIC_0000002323810842)**  
 
@@ -846,7 +848,7 @@ void\* OH\_AI\_TensorGetMutableData\(const OH\_AI\_TensorHandle tensor\)
 
 -   **[OH\_AI\_ModelLoadWeight](#ZH-CN_TOPIC_0000002654970203)**  
 
-### OH\_AI\_ModelCreate<a name="ZH-CN_TOPIC_0000002323810842"></a>
+#### OH\_AI\_ModelCreate<a name="ZH-CN_TOPIC_0000002323810842"></a>
 
 【描述】
 
@@ -860,7 +862,7 @@ OH\_AI\_ModelHandle OH\_AI\_ModelCreate\(\)
 
 模型对象指针。
 
-### OH\_AI\_ModelDestroy<a name="ZH-CN_TOPIC_0000002323651018"></a>
+#### OH\_AI\_ModelDestroy<a name="ZH-CN_TOPIC_0000002323651018"></a>
 
 【描述】
 
@@ -887,7 +889,7 @@ void OH\_AI\_ModelDestroy\(OH\_AI\_ModelHandle\* model\)
 </tbody>
 </table>
 
-### OH\_AI\_ModelGetInputs<a name="ZH-CN_TOPIC_0000002323651022"></a>
+#### OH\_AI\_ModelGetInputs<a name="ZH-CN_TOPIC_0000002323651022"></a>
 
 【描述】
 
@@ -916,7 +918,7 @@ OH\_AI\_TensorHandleArray OH\_AI\_ModelGetInputs\(const OH\_AI\_ModelHandle mode
 
 【返回值】模型输入对应的张量数组结构体。
 
-### OH\_AI\_ModelGetOutputs<a name="ZH-CN_TOPIC_0000002357729505"></a>
+#### OH\_AI\_ModelGetOutputs<a name="ZH-CN_TOPIC_0000002357729505"></a>
 
 【描述】
 
@@ -947,7 +949,7 @@ OH\_AI\_TensorHandleArray OH\_AI\_ModelGetOutputs\(const OH\_AI\_ModelHandle mod
 
 模型输出对应的张量数组结构体。
 
-### OH\_AI\_ModelBuild<a name="ZH-CN_TOPIC_0000002357729501"></a>
+#### OH\_AI\_ModelBuild<a name="ZH-CN_TOPIC_0000002357729501"></a>
 
 【描述】
 
@@ -996,7 +998,7 @@ OH\_AI\_Status OH\_AI\_ModelBuild\(OH\_AI\_ModelHandle model, const void\* model
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
-### OH\_AI\_ModelBuildFromFile<a name="ZH-CN_TOPIC_0000002519226557"></a>
+#### OH\_AI\_ModelBuildFromFile<a name="ZH-CN_TOPIC_0000002519226557"></a>
 
 【描述】
 
@@ -1037,7 +1039,7 @@ OH\_AI\_Status OH\_AI\_ModelBuildFromFile\(OH\_AI\_ModelHandle model, const char
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
-### OH\_AI\_ModelBuildFromName<a name="ZH-CN_TOPIC_0000002519146547"></a>
+#### OH\_AI\_ModelBuildFromName<a name="ZH-CN_TOPIC_0000002519146547"></a>
 
 【描述】
 
@@ -1078,7 +1080,7 @@ OH\_AI\_Status OH\_AI\_ModelBuildFromName\(OH\_AI\_ModelHandle model, const char
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
-### OH\_AI\_ModelPredict<a name="ZH-CN_TOPIC_0000002323810846"></a>
+#### OH\_AI\_ModelPredict<a name="ZH-CN_TOPIC_0000002323810846"></a>
 
 【描述】
 
@@ -1119,7 +1121,7 @@ OH\_AI\_Status OH\_AI\_ModelPredict\(OH\_AI\_ModelHandle model, const OH\_AI\_Te
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
-### OH\_AI\_ModelGetInputByTensorName<a name="ZH-CN_TOPIC_0000002547275447"></a>
+#### OH\_AI\_ModelGetInputByTensorName<a name="ZH-CN_TOPIC_0000002547275447"></a>
 
 【描述】
 
@@ -1155,7 +1157,7 @@ OH\_AI\_TensorHandle OH\_AI\_ModelGetInputByTensorName\(const OH\_AI\_ModelHandl
 
 与张量名称匹配的目标输入张量。
 
-### OH\_AI\_ModelGetOutputByTensorName<a name="ZH-CN_TOPIC_0000002515675614"></a>
+#### OH\_AI\_ModelGetOutputByTensorName<a name="ZH-CN_TOPIC_0000002515675614"></a>
 
 【描述】
 
@@ -1191,7 +1193,7 @@ OH\_AI\_TensorHandle OH\_AI\_ModelGetOutputByTensorName\(const OH\_AI\_ModelHand
 
 与张量名称匹配的目标输出张量。
 
-### OH\_AI\_ModelGetLabels<a name="ZH-CN_TOPIC_0000002624446888"></a>
+#### OH\_AI\_ModelGetLabels<a name="ZH-CN_TOPIC_0000002624446888"></a>
 
 【描述】
 
@@ -1220,7 +1222,7 @@ OH\_AI\_TensorHandleArray OH\_AI\_ModelGetLabels\(const OH\_AI\_ModelHandle mode
 
 【返回值】模型标签对应的张量数组结构体。
 
-### OH\_AI\_ModelRunStep<a name="ZH-CN_TOPIC_0000002624618606"></a>
+#### OH\_AI\_ModelRunStep<a name="ZH-CN_TOPIC_0000002624618606"></a>
 
 【描述】
 
@@ -1251,7 +1253,7 @@ OH\_AI\_Status OH\_AI\_ModelRunStep\(OH\_AI\_ModelHandle model\)
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
-### OH\_AI\_ModelSetTrainMode<a name="ZH-CN_TOPIC_0000002654831425"></a>
+#### OH\_AI\_ModelSetTrainMode<a name="ZH-CN_TOPIC_0000002654831425"></a>
 
 【描述】
 
@@ -1287,7 +1289,7 @@ OH\_AI\_Status OH\_AI\_ModelSetTrainMode\(OH\_AI\_ModelHandle model, bool mode\)
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明状态设置成功。
 
-### OH\_AI\_ModelGetTrainMode<a name="ZH-CN_TOPIC_0000002655193541"></a>
+#### OH\_AI\_ModelGetTrainMode<a name="ZH-CN_TOPIC_0000002655193541"></a>
 
 【描述】
 
@@ -1323,7 +1325,7 @@ OH\_AI\_Status OH\_AI\_ModelGetTrainMode\(OH\_AI\_ModelHandle model, bool \*mode
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明状态获取成功。
 
-### OH\_AI\_ModelSaveWeight<a name="ZH-CN_TOPIC_0000002654890155"></a>
+#### OH\_AI\_ModelSaveWeight<a name="ZH-CN_TOPIC_0000002654890155"></a>
 
 【描述】
 
@@ -1359,7 +1361,7 @@ OH\_AI\_Status OH\_AI\_ModelSaveWeight\(OH\_AI\_ModelHandle model, uintptr\_t fl
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
-### OH\_AI\_ModelLoadWeight<a name="ZH-CN_TOPIC_0000002654970203"></a>
+#### OH\_AI\_ModelLoadWeight<a name="ZH-CN_TOPIC_0000002654970203"></a>
 
 【描述】
 
@@ -1395,11 +1397,11 @@ OH\_AI\_Status OH\_AI\_ModelLoadWeight\(OH\_AI\_ModelHandle model, uintptr\_t fl
 
 枚举类型的状态码OH\_AI\_Status，若返回“OH\_AI\_Status::OH\_AI\_STATUS\_SUCCESS”则证明成功。
 
-## 错误码<a name="ZH-CN_TOPIC_0000002486910898"></a>
+### 错误码<a name="ZH-CN_TOPIC_0000002486910898"></a>
 
 -   **[OH\_AI\_GetErrorCode](#ZH-CN_TOPIC_0000002519230807)**  
 
-### OH\_AI\_GetErrorCode<a name="ZH-CN_TOPIC_0000002519230807"></a>
+#### OH\_AI\_GetErrorCode<a name="ZH-CN_TOPIC_0000002519230807"></a>
 
 【描述】
 
@@ -1425,13 +1427,13 @@ int32\_t OH\_AI\_GetErrorCode\(\)
 
 WS63、3066H错误码定义参考文档《MindSpore Lite API文档》
 
-# 样例使用指导<a name="ZH-CN_TOPIC_0000002356428969"></a>
+## 样例使用指导<a name="ZH-CN_TOPIC_0000002356428969"></a>
 
 -   **[RISC-V平台样例使用指导](#ZH-CN_TOPIC_0000002522762115)**  
 
 -   **[NPU平台样例使用指导](#ZH-CN_TOPIC_0000002522762563)**  
 
-## RISC-V平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762115"></a>
+### RISC-V平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762115"></a>
 
 本章节介绍如何调用HiSpark.AI API，并在x86\_64平台实现mnist.tflite的部署推理。板端Sample请参考交付包中的AI Sample部署。
 
@@ -1439,11 +1441,11 @@ WS63、3066H错误码定义参考文档《MindSpore Lite API文档》
 
 -   **[编译及运行应用](#ZH-CN_TOPIC_0000002359684261)**  
 
-### 样例模型获取<a name="ZH-CN_TOPIC_0000002325645682"></a>
+#### 样例模型获取<a name="ZH-CN_TOPIC_0000002325645682"></a>
 
 请参考“[获取Sample方法](#ZH-CN_TOPIC_0000002356410665)”章节。
 
-### 编译及运行应用<a name="ZH-CN_TOPIC_0000002359684261"></a>
+#### 编译及运行应用<a name="ZH-CN_TOPIC_0000002359684261"></a>
 
 1.  环境初始化。
 
@@ -1526,7 +1528,7 @@ WS63、3066H错误码定义参考文档《MindSpore Lite API文档》
     OH_AI_Deinit();
     ```
 
-## NPU平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762563"></a>
+### NPU平台样例使用指导<a name="ZH-CN_TOPIC_0000002522762563"></a>
 
 本章节介绍如何调用HiSpark.AI API在NPU平台实现的部署推理；本部署推理指导当前支持3322芯片。
 
@@ -1534,11 +1536,11 @@ WS63、3066H错误码定义参考文档《MindSpore Lite API文档》
 
 -   **[编译及运行应用](#ZH-CN_TOPIC_0000002490682810)**  
 
-### 样例模型获取<a name="ZH-CN_TOPIC_0000002490686598"></a>
+#### 样例模型获取<a name="ZH-CN_TOPIC_0000002490686598"></a>
 
 使用HiSpark Studio.AI或者amct、atc工具链将原始模型转化为exeom或者om模型。模型和数据获取的具体步骤请参考交付包中的AI Sample部署。
 
-### 编译及运行应用<a name="ZH-CN_TOPIC_0000002490682810"></a>
+#### 编译及运行应用<a name="ZH-CN_TOPIC_0000002490682810"></a>
 
 使用HiSpark.AI API执行推理，主要包括以下步骤，更详细的步骤请参考板端sample。
 
@@ -1626,13 +1628,12 @@ WS63、3066H错误码定义参考文档《MindSpore Lite API文档》
     OH_AI_Deinit();
     ```
 
-# FAQ<a name="ZH-CN_TOPIC_0000002347972074"></a>
+## FAQ<a name="ZH-CN_TOPIC_0000002347972074"></a>
 
 -   **[APP Sample持续在单Task环境下运行内存崩溃](#ZH-CN_TOPIC_0000002348131826)**  
 
-## APP Sample持续在单Task环境下运行内存崩溃<a name="ZH-CN_TOPIC_0000002348131826"></a>
+### APP Sample持续在单Task环境下运行内存崩溃<a name="ZH-CN_TOPIC_0000002348131826"></a>
 
 **问题描述：**APP Sample循环调用OH\_AI\_ModelPredict推理接口，会导致运行内存崩溃。
 
 **解决方法：**基于WS63-liteos-app或3322-wstp-app进行开发时，若整个系统仅有AI Task，Task持续循环运行不进行切换导致系统内存崩溃（原因：WatchDog被饿死）。当前解决方案：在系统若干次推理以后，增加、osDelay\(1\)，手动引入AI Task与内置Idle Task进程切换，即可避免此原因导致的内存崩溃。
-

@@ -1,4 +1,6 @@
-# 简介<a name="ZH-CN_TOPIC_0000002505903679"></a>
+# 应用开发指南
+
+## 简介<a name="ZH-CN_TOPIC_0000002505903679"></a>
 
 本节介绍AscendCL的主要功能、基本概念，并给出本文档的学习顺序建议。
 
@@ -68,7 +70,7 @@
 
 **具备C/C++语言程序开发能力、对机器学习或深度学习有一定了解的开发者，可以更好地理解本文档。**
 
-# 准备环境<a name="ZH-CN_TOPIC_0000002506018293"></a>
+## 准备环境<a name="ZH-CN_TOPIC_0000002506018293"></a>
 
 部署开发环境，请参见《开发环境安装指南》。
 
@@ -79,12 +81,12 @@
 -   从“CANN软件安装后文件存储路径/include/acl”目录下获取头文件。
 -   从“CANN软件安装后文件存储路径/lib64”目录下获取库文件。
 
-# 编程接口与调用流程<a name="ZH-CN_TOPIC_0000002473743724"></a>
+## 编程接口与调用流程<a name="ZH-CN_TOPIC_0000002473743724"></a>
 
 本节介绍接口分类以及调用接口时依赖的头文件和库文件。
 本节介绍应用开发接口调用流程。
 
-## 头文件和库文件说明<a name="ZH-CN_TOPIC_0000002506023529"></a>
+### 头文件和库文件说明<a name="ZH-CN_TOPIC_0000002506023529"></a>
 
 本节介绍接口分类以及调用接口时依赖的头文件和库文件。
 
@@ -158,7 +160,7 @@ acl接口的头文件在“$\{INSTALL\_DIR\}/include/”目录下，库文件在
 </tbody>
 </table>
 
-## 接口调用流程<a name="ZH-CN_TOPIC_0000002473743734"></a>
+### 接口调用流程<a name="ZH-CN_TOPIC_0000002473743734"></a>
 
 本节介绍应用开发接口调用流程。
 
@@ -205,7 +207,7 @@ acl接口的头文件在“$\{INSTALL\_DIR\}/include/”目录下，库文件在
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >在应用开发过程中，各环节都涉及内存的申请与释放、数据传输（通过内存复制实现）、数据类型的创建与销毁，因此未在图中一一标识，关于内存申请与释放、内存复制的接口请参见[内存管理](内存管理.md)，数据类型的创建与销毁的接口请参见[数据类型及其操作接口](数据类型及其操作接口.md)。
 
-# 初始化与去初始化<a name="ZH-CN_TOPIC_0000002505903541"></a>
+## 初始化与去初始化<a name="ZH-CN_TOPIC_0000002505903541"></a>
 
 本节介绍初始化与去初始化的相关接口、注意事项，并给出示例代码。
 
@@ -239,7 +241,7 @@ ret = aclFinalize();
 // ......
 ```
 
-# 运行时资源管理<a name="ZH-CN_TOPIC_0000002506023569"></a>
+## 运行时资源管理<a name="ZH-CN_TOPIC_0000002506023569"></a>
 
 
 本节介绍运行时资源包括哪些、如何申请&释放这些资源，并给出示例代码。
@@ -247,7 +249,7 @@ ret = aclFinalize();
 本节介绍单Stream、多Stream的创建、销毁流程，以及多Stream同步等待的流程。
 本节介绍Device、Stream、Event、Notify在异步场景下的使用示例及关键接口。
 
-## 概念说明<a name="ZH-CN_TOPIC_0000002473743620"></a>
+### 概念说明<a name="ZH-CN_TOPIC_0000002473743620"></a>
 
 **基本概念<a name="section232017449302"></a>**
 
@@ -340,7 +342,7 @@ ret = aclFinalize();
 -   当前NPU IP加速器有不同的执行部件，如AI Core、AI CPU、Vector Core等，对应使用不同执行部件的任务，建议多Stream的创建按照算子执行引擎划分。
 -   单线程多Stream与多线程多Stream（一个进程中可以包含多个线程，每个线程中一个Stream）性能上哪个更优，具体取决于应用本身的逻辑实现，一般来说前者性能略好，原因是相对后者，应用层少了线程调度开销。
 
-## 运行时资源申请与释放<a name="ZH-CN_TOPIC_0000002506023523"></a>
+### 运行时资源申请与释放<a name="ZH-CN_TOPIC_0000002506023523"></a>
 
 本节介绍运行时资源包括哪些、如何申请&释放这些资源，并给出示例代码。
 
@@ -422,7 +424,7 @@ ret = aclrtResetDevice(deviceId);
 // ......
 ```
 
-## 数据传输<a name="ZH-CN_TOPIC_0000002473903580"></a>
+### 数据传输<a name="ZH-CN_TOPIC_0000002473903580"></a>
 
 本节介绍数据传输的相关接口、注意事项，并给出示例代码。
 
@@ -483,7 +485,7 @@ aclrtFree(devPtrB);
 // ......
 ```
 
-## Stream管理<a name="ZH-CN_TOPIC_0000002473903536"></a>
+### Stream管理<a name="ZH-CN_TOPIC_0000002473903536"></a>
 
 本节介绍单Stream、多Stream的创建、销毁流程，以及多Stream同步等待的流程。
 
@@ -622,7 +624,7 @@ t1.join();
 t2.join();
 ```
 
-## 同步等待<a name="ZH-CN_TOPIC_0000002506023645"></a>
+### 同步等待<a name="ZH-CN_TOPIC_0000002506023645"></a>
 
 本节介绍Device、Stream、Event、Notify在异步场景下的使用示例及关键接口。
 
@@ -663,13 +665,13 @@ aclrtDestroyStreamConfigHandle(handle);
 // ......
 ```
 
-# 模型管理<a name="ZH-CN_TOPIC_0000002473903484"></a>
+## 模型管理<a name="ZH-CN_TOPIC_0000002473903484"></a>
 
 本节以模型推理为例介绍基于acl接口开发应用的流程。
 推理场景下，对于开源框架的网络模型（如ONNX、TensorFlow等），不能直接在NPU IP加速器上做推理，需要先使用ATC（Ascend Tensor Compiler）工具将开源框架的网络模型转换为适配昇腾AI处理器的离线模型适配NPU IP加速器的离线模型（\*.om文件）。
 
 
-## 开发流程<a name="ZH-CN_TOPIC_0000002473903528"></a>
+### 开发流程<a name="ZH-CN_TOPIC_0000002473903528"></a>
 
 本节以模型推理为例介绍基于acl接口开发应用的流程。
 
@@ -724,7 +726,7 @@ aclrtDestroyStreamConfigHandle(handle);
 
 5.  **编译运行应用**，包括编译代码、运行应用，请参见[应用编译&运行](应用编译-运行.md)。
 
-## 模型构建<a name="ZH-CN_TOPIC_0000002473743698"></a>
+### 模型构建<a name="ZH-CN_TOPIC_0000002473743698"></a>
 
 推理场景下，对于开源框架的网络模型（如ONNX、TensorFlow等），不能直接在NPU IP加速器上做推理，需要先使用ATC（Ascend Tensor Compiler）工具将开源框架的网络模型转换为适配昇腾AI处理器的离线模型适配NPU IP加速器的离线模型（\*.om文件）。
 
@@ -755,13 +757,13 @@ aclrtDestroyStreamConfigHandle(handle);
 >-   如果模型转换时，提示有算子编译相关问题，但根据报错信息无法定位问题、需要联系技术支持时，则需设置DUMP\_GE\_GRAPH、DUMP\_GRAPH\_LEVEL环境变量，再重新转换模型，收集模型转换过程中各个阶段的图描述信息。关于环境变量以及图描述信息的说明，请参见《ATC离线模型编译工具用户指南》中的“参考 \> dump图详细信息”。
 >-   如果现有网络不满足您的需求，您可以使用NPU IP加速器支持的算子、调用Ascend Graph接口自行构建自己的网络，再编译成om离线模型文件。详细说明请参见《Ascend Graph开发指南》。
 
-## 静态Shape输入模型推理<a name="ZH-CN_TOPIC_0000002505903687"></a>
+### 静态Shape输入模型推理<a name="ZH-CN_TOPIC_0000002505903687"></a>
 
 本节介绍如何加载模型，为模型执行做准备。
 本节结合接口调用流程、示例代码介绍模型执行前需要准备哪些数据、模型执行接口以及模型执行之后需要释放哪些资源。
 模型执行结束后，需及时卸载模型，释放模型资源。
 
-### 模型加载<a name="ZH-CN_TOPIC_0000002506023413"></a>
+#### 模型加载<a name="ZH-CN_TOPIC_0000002506023413"></a>
 
 本节介绍如何加载模型，为模型执行做准备。
 
@@ -819,7 +821,7 @@ ret = aclmdlLoadFromFileWithMem(omModelPath, &modelId_, modelMemPtr_, modelMemSi
 // ......
 ```
 
-### 模型执行<a name="ZH-CN_TOPIC_0000002505903595"></a>
+#### 模型执行<a name="ZH-CN_TOPIC_0000002505903595"></a>
 
 本节结合接口调用流程、示例代码介绍模型执行前需要准备哪些数据、模型执行接口以及模型执行之后需要释放哪些资源。
 
@@ -1093,7 +1095,7 @@ if (cnt % batchSize != 0)
     }
 ```
 
-### 模型卸载<a name="ZH-CN_TOPIC_0000002506023481"></a>
+#### 模型卸载<a name="ZH-CN_TOPIC_0000002506023481"></a>
 
 模型执行结束后，需及时卸载模型，释放模型资源。
 
@@ -1130,7 +1132,7 @@ if (modelWeightPtr_ != nullptr) {
 }
 ```
 
-## 多模型串联推理<a name="ZH-CN_TOPIC_0000002473743514"></a>
+### 多模型串联推理<a name="ZH-CN_TOPIC_0000002473743514"></a>
 
 多模型推理的基本流程与单模型类似，请参见[静态Shape输入模型推理](静态Shape输入模型推理.md)。
 
@@ -1141,11 +1143,11 @@ if (modelWeightPtr_ != nullptr) {
 
     例如，调用[aclmdlExecuteV2](aclmdlExecuteV2.md)接口实现同步模型推理。
 
-# 更多特性<a name="ZH-CN_TOPIC_0000002506023623"></a>
+## 更多特性<a name="ZH-CN_TOPIC_0000002506023623"></a>
 
 用户通过内存管理接口申请内存后，若需二次分配管理，需关注各内存接口的约束，防止出现内存越界。
 
-## 内存二次分配管理<a name="ZH-CN_TOPIC_0000002473903598"></a>
+### 内存二次分配管理<a name="ZH-CN_TOPIC_0000002473903598"></a>
 
 用户通过内存管理接口申请内存后，若需二次分配管理，需关注各内存接口的约束，防止出现内存越界。
 
@@ -1181,7 +1183,7 @@ if (modelWeightPtr_ != nullptr) {
 </tbody>
 </table>
 
-## 溢出算子数据采集及分析<a name="ZH-CN_TOPIC_0000002473743706"></a>
+### 溢出算子数据采集及分析<a name="ZH-CN_TOPIC_0000002473743706"></a>
 
 **前提条件<a name="section290223194712"></a>**
 
@@ -1211,7 +1213,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
 
 以上两类文件的解析请参见《精度调试工具用户指南》中的“扩展功能 \> 溢出算子数据采集与解析”章节。
 
-# 应用编译&运行<a name="ZH-CN_TOPIC_0000002473743640"></a>
+## 应用编译&运行<a name="ZH-CN_TOPIC_0000002473743640"></a>
 
 完成程序代码编写后，可按照本节中的指导编译程序、执行应用。
 
@@ -1221,22 +1223,22 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
 
 -   如果是接口约束导致接口调用逻辑不对，需查看总体的[使用约束](使用约束.md)以及各接口本身的约束，再调整接口调用逻辑。
 
-# 精度/性能优化<a name="ZH-CN_TOPIC_0000002505903663"></a>
+## 精度/性能优化<a name="ZH-CN_TOPIC_0000002505903663"></a>
 
 
 
-## 调优简介<a name="ZH-CN_TOPIC_0000002505903479"></a>
+### 调优简介<a name="ZH-CN_TOPIC_0000002505903479"></a>
 
 本章重点介绍推理应用的精度、性能调优，由于是调优，因此在调优前，请确保已经完成了整网推理功能调测，功能不阻塞，只是推理精度错误、推理精度与标杆数据存在少量差距、模型推理性能不符合预期或待提升等问题。
 
 -   **应用的精度问题**可能由于推理功能与其它功能之间的串接问题、整网中算子本身的精度问题等，可参考本章中的建议排查功能串接时的接口参数配置问题、借助工具获取详细数据定位分析问题。
 -   **应用的性能问题**可能由于模型在NPU IP加速器上的算子适配或数据读写问题、DVPP接口使用问题等，可参考本章中的建议排查接口使用问题、借助工具优化模型、借助工具获取详细数据定位分析问题。
 
-## 模型推理精度提升建议<a name="ZH-CN_TOPIC_0000002506023433"></a>
+### 模型推理精度提升建议<a name="ZH-CN_TOPIC_0000002506023433"></a>
 
 
 
-### 精度提升简介<a name="ZH-CN_TOPIC_0000002473743492"></a>
+#### 精度提升简介<a name="ZH-CN_TOPIC_0000002473743492"></a>
 
 本文介绍整网推理场景下的精度调优流程、相关配置及典型案例等。由于是调优，因此在调优前，请确保已经完成了整网推理功能调测，功能不阻塞，只是推理精度错误，或推理精度与标杆数据存在少量差距。
 
@@ -1250,7 +1252,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >本文中的“推理”，当前限定为使用om离线模型文件进行推理的场景。
 
-### 算子精度导致推理结果不达标<a name="ZH-CN_TOPIC_0000002473903584"></a>
+#### 算子精度导致推理结果不达标<a name="ZH-CN_TOPIC_0000002473903584"></a>
 
 
 
@@ -1259,7 +1261,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
 
 
 
-#### 问题描述<a name="ZH-CN_TOPIC_0000002505903549"></a>
+##### 问题描述<a name="ZH-CN_TOPIC_0000002505903549"></a>
 
 推理结果不达标，包括以下两种情况：
 
@@ -1268,7 +1270,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
     -   分类网络om模型，Top1/Top5分别为：0.90/0.70,；标杆网络Top1/Top5分别为：0.92/0.71。
     -   检测网络om模型MAP精度：0.54；标杆网络MAP精度：0.55。
 
-#### 问题定位流程<a name="ZH-CN_TOPIC_0000002473903474"></a>
+##### 问题定位流程<a name="ZH-CN_TOPIC_0000002473903474"></a>
 
 **图 1**  定位流程<a name="fig7715115914366"></a>  
 ![](figures/定位流程.png "定位流程")
@@ -1340,7 +1342,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
     2.  根据[6.a](#li834517172188)中的比对结果识别计算有差异的算子。
     3.  联系技术支持，提供有差异的算子，进一步分析。
 
-#### 配置精度模式<a name="ZH-CN_TOPIC_0000002506023405"></a>
+##### 配置精度模式<a name="ZH-CN_TOPIC_0000002506023405"></a>
 
 如果在模式转换时不指定网络模型或算子的精度模式，默认采用fp16（float16）数据类型进行计算。
 
@@ -1382,7 +1384,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
 
 2.  使用转换后的om模型重新推理。
 
-#### 关闭数据缓存优化<a name="ZH-CN_TOPIC_0000002473743490"></a>
+##### 关闭数据缓存优化<a name="ZH-CN_TOPIC_0000002473743490"></a>
 
 如果在模型转换时不指定关闭数据缓存优化功能，当前默认开启数据缓存优化，开启数据缓存优化可提高计算效率、提升性能，但由于部分算子在实现上可能存在未考虑的场景，导致影响精度，因此在出现精度问题时可以尝试关闭数据缓存优化。
 
@@ -1403,7 +1405,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >在联系技术支持前，设置DUMP\_GE\_GRAPH、DUMP\_GRAPH\_LEVEL环境变量，重新模型转换，打印模型转换过程中各个阶段的图描述信息。关于环境变量以及图描述信息的说明，请参见《ATC离线模型编译工具用户指南》中的“参考\>dump图详细信息”。
 
-#### 关闭融合规则<a name="ZH-CN_TOPIC_0000002473743736"></a>
+##### 关闭融合规则<a name="ZH-CN_TOPIC_0000002473743736"></a>
 
 如果在模型转换时不指定关闭融合规则，当前默认开启融合规则，开启融合规则可提高计算效率、提升性能，但算子之间可能会融合，融合后的部分算子在实现上可能存在未考虑的场景，导致影响精度，因此在出现精度问题时可以尝试关闭融合规则。
 
@@ -1439,7 +1441,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >在联系技术支持前，设置DUMP\_GE\_GRAPH、DUMP\_GRAPH\_LEVEL环境变量，重新模型转换，打印模型转换过程中各个阶段的图描述信息。关于环境变量以及图描述信息的说明，请参见《ATC离线模型编译工具用户指南》中的“参考 \> dump图详细信息”。
 
-#### 检查数据处理或配置<a name="ZH-CN_TOPIC_0000002473743634"></a>
+##### 检查数据处理或配置<a name="ZH-CN_TOPIC_0000002473743634"></a>
 
 1.  检查om模型与标杆网络推理的输入数据以及输入数据的处理是否一致，如果不一致，需调整成一致。
 2.  检查AIPP配置。
@@ -1450,7 +1452,7 @@ json配置文件中的示例内容如下，示例中的dump\_path以相对路径
 
 3.  检查om模型与标杆网络推理结果的后处理方式是否一致，如果不一致，需调整成一致。
 
-#### 案例介绍<a name="ZH-CN_TOPIC_0000002506023507"></a>
+##### 案例介绍<a name="ZH-CN_TOPIC_0000002506023507"></a>
 
 **案例描述<a name="section1640411463342"></a>**
 
@@ -1489,7 +1491,7 @@ FastRCNN网络，模型转换时，保持默认高性能模式、force\_fp16精�
 
 6.  从[5](#li3131552105917)获取到的AddN算子第0个输出的最大值、最小值，可以看出高精度模式下AddN算子输出tensor的最大值为109508.0，而高性能模式（fp16）下，输出tensor的最大值为65504.0（FP16能表达的最大值域范围为（-65505\~65504）），由此可以得出高精度模式下AddN算子的输出值大于fp16类型域表达范围，因此需要配置该算子走高精度模式，参见[配置部分算子保持原始网络中的数据类型](配置精度模式.md#section1692005315415)。
 
-# acl API参考<a name="ZH-CN_TOPIC_0000002505903639"></a>
+## acl API参考<a name="ZH-CN_TOPIC_0000002505903639"></a>
 
 
 
@@ -1498,7 +1500,7 @@ FastRCNN网络，模型转换时，保持默认高性能模式、force\_fp16精�
 
 
 
-## 废弃接口/返回码列表<a name="ZH-CN_TOPIC_0000002473901520"></a>
+### 废弃接口/返回码列表<a name="ZH-CN_TOPIC_0000002473901520"></a>
 
 **接口<a name="section189061436195719"></a>**
 
@@ -1540,7 +1542,7 @@ FastRCNN网络，模型转换时，保持默认高性能模式、force\_fp16精�
 
     此返回码后续版本会废弃，请使用[ACL\_ERROR\_RT\_GROUP\_NOT\_CREATE](aclError.md#table1089051917356)返回码。
 
-## 同步&异步API说明<a name="ZH-CN_TOPIC_0000002473741670"></a>
+### 同步&异步API说明<a name="ZH-CN_TOPIC_0000002473741670"></a>
 
 CANN支持以下几类显式同步，调用此类接口后，主机线程会阻塞直到相关的任务执行完成。
 
@@ -1550,7 +1552,7 @@ CANN支持以下几类显式同步，调用此类接口后，主机线程会阻�
 
 **对于异步接口**，主机线程调用异步接口后仅代表下发任务，在任务未完成前，异步接口已向主机线程返回成功。用户需要调用上面的显式同步接口阻塞主机线程，等待任务完成，否则可能会导致训练或推理等业务异常、Device断链掉卡等未知情况。
 
-## 头文件和库文件说明<a name="ZH-CN_TOPIC_0000002505901269"></a>
+### 头文件和库文件说明<a name="ZH-CN_TOPIC_0000002505901269"></a>
 
 本节介绍接口分类以及调用接口时依赖的头文件和库文件。
 
@@ -1624,13 +1626,13 @@ acl接口的头文件在“$\{INSTALL\_DIR\}/include/”目录下，库文件在
 </tbody>
 </table>
 
-## 系统配置<a name="ZH-CN_TOPIC_0000002506021783"></a>
+### 系统配置<a name="ZH-CN_TOPIC_0000002506021783"></a>
 
 
 
 
 
-### aclInit<a name="ZH-CN_TOPIC_0000002473901150"></a>
+#### aclInit<a name="ZH-CN_TOPIC_0000002473901150"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -1948,7 +1950,7 @@ err\_msg\_mode参数取值范围：0为默认值，表示按线程级别获取�
 
 接口调用示例，参见[初始化与去初始化](初始化与去初始化.md)。
 
-### aclFinalize<a name="ZH-CN_TOPIC_0000002506021589"></a>
+#### aclFinalize<a name="ZH-CN_TOPIC_0000002506021589"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -1995,7 +1997,7 @@ err\_msg\_mode参数取值范围：0为默认值，表示按线程级别获取�
 
 接口调用示例，参见[初始化与去初始化](初始化与去初始化.md)。
 
-### aclrtGetVersion<a name="ZH-CN_TOPIC_0000002505902001"></a>
+#### aclrtGetVersion<a name="ZH-CN_TOPIC_0000002505902001"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2063,7 +2065,7 @@ err\_msg\_mode参数取值范围：0为默认值，表示按线程级别获取�
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-### aclGetRecentErrMsg<a name="ZH-CN_TOPIC_0000002473741246"></a>
+#### aclGetRecentErrMsg<a name="ZH-CN_TOPIC_0000002473741246"></a>
 
 **产品支持情况<a name="section15254644421"></a>**
 
@@ -2106,20 +2108,20 @@ const char *aclGetRecentErrMsg()
 
 获取错误描述信息失败时，返回nullptr。
 
-## 运行时管理<a name="ZH-CN_TOPIC_0000002473742098"></a>
+### 运行时管理<a name="ZH-CN_TOPIC_0000002473742098"></a>
 
 
 
 
 
 
-### Device管理<a name="ZH-CN_TOPIC_0000002505901407"></a>
+#### Device管理<a name="ZH-CN_TOPIC_0000002505901407"></a>
 
 
 
 
 
-#### aclrtSetDevice<a name="ZH-CN_TOPIC_0000002473901490"></a>
+##### aclrtSetDevice<a name="ZH-CN_TOPIC_0000002473901490"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -2187,7 +2189,7 @@ const char *aclGetRecentErrMsg()
 
 接口调用流程及示例，参见[运行时资源申请与释放](运行时资源申请与释放.md)。
 
-#### aclrtResetDevice<a name="ZH-CN_TOPIC_0000002473741968"></a>
+##### aclrtResetDevice<a name="ZH-CN_TOPIC_0000002473741968"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -2255,7 +2257,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 接口调用流程及示例，参见[运行时资源申请与释放](运行时资源申请与释放.md)。
 
-#### aclrtGetDevice<a name="ZH-CN_TOPIC_0000002473741460"></a>
+##### aclrtGetDevice<a name="ZH-CN_TOPIC_0000002473741460"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2313,7 +2315,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 如果没有提前指定Device，则调用aclrtGetDevice接口时，返回错误。指定Device的方式包括：调用[aclrtSetDevice](aclrtSetDevice.md)接口显式指定Device、调用[aclrtCreateContext](aclrtCreateContext.md)接口隐式指定Device。
 
-#### aclrtGetRunMode<a name="ZH-CN_TOPIC_0000002506021737"></a>
+##### aclrtGetRunMode<a name="ZH-CN_TOPIC_0000002506021737"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2372,13 +2374,13 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 接口调用流程及示例代码，参见[运行时资源申请与释放](运行时资源申请与释放.md)。
 
-### Context管理<a name="ZH-CN_TOPIC_0000002473741974"></a>
+#### Context管理<a name="ZH-CN_TOPIC_0000002473741974"></a>
 
 
 
 
 
-#### aclrtCreateContext<a name="ZH-CN_TOPIC_0000002473901358"></a>
+##### aclrtCreateContext<a name="ZH-CN_TOPIC_0000002473901358"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2444,7 +2446,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 -   在某一进程中指定Device，该进程内的多个线程可共用在此Device上显式创建的Context（调用[aclrtCreateContext](aclrtCreateContext.md)接口显式创建Context）。
 -   若在某一进程内创建多个Context（Context的数量与Stream相关，Stream数量有限制，请参见[aclrtCreateStreamV2](aclrtCreateStreamV2.md)），当前线程在同一时刻内只能使用其中一个Context，建议通过[aclrtSetCurrentContext](aclrtSetCurrentContext.md)接口明确指定当前线程的Context，增加程序的可维护性**。**
 
-#### aclrtDestroyContext<a name="ZH-CN_TOPIC_0000002506021641"></a>
+##### aclrtDestroyContext<a name="ZH-CN_TOPIC_0000002506021641"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2498,7 +2500,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclrtSetCurrentContext<a name="ZH-CN_TOPIC_0000002473902158"></a>
+##### aclrtSetCurrentContext<a name="ZH-CN_TOPIC_0000002473902158"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2561,7 +2563,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 -   若给线程设置的Context所对应的Device已经被复位，则不能将该Context设置为线程的Context，否则会导致业务异常。
 -   推荐在某一线程中创建的Context，在该线程中使用。若在线程A中调用[aclrtCreateContext](aclrtCreateContext.md)接口创建Context，在线程B中使用该Context，则需由用户自行保证两个线程中同一个Context下同一个Stream中任务执行的顺序。
 
-#### aclrtGetCurrentContext<a name="ZH-CN_TOPIC_0000002473901108"></a>
+##### aclrtGetCurrentContext<a name="ZH-CN_TOPIC_0000002473901108"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2617,13 +2619,13 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-### Stream管理<a name="ZH-CN_TOPIC_0000002473741616"></a>
+#### Stream管理<a name="ZH-CN_TOPIC_0000002473741616"></a>
 
 
 
 
 
-#### aclrtCreateStreamV2<a name="ZH-CN_TOPIC_0000002506021237"></a>
+##### aclrtCreateStreamV2<a name="ZH-CN_TOPIC_0000002506021237"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -2691,7 +2693,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclrtSetStreamConfigOpt<a name="ZH-CN_TOPIC_0000002506021425"></a>
+##### aclrtSetStreamConfigOpt<a name="ZH-CN_TOPIC_0000002506021425"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -2775,7 +2777,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclrtDestroyStream<a name="ZH-CN_TOPIC_0000002506022039"></a>
+##### aclrtDestroyStream<a name="ZH-CN_TOPIC_0000002506022039"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2839,7 +2841,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 接口调用流程及示例，参见[运行时资源申请与释放](运行时资源申请与释放.md)。
 
-#### aclrtSynchronizeStream<a name="ZH-CN_TOPIC_0000002506021885"></a>
+##### aclrtSynchronizeStream<a name="ZH-CN_TOPIC_0000002506021885"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -2898,7 +2900,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 接口调用示例，参见[Stream内任务的同步等待](同步等待.md#section8263140214)。
 
-### 内存管理<a name="ZH-CN_TOPIC_0000002506021643"></a>
+#### 内存管理<a name="ZH-CN_TOPIC_0000002506021643"></a>
 
 
 
@@ -2906,7 +2908,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 
 
-#### 总体说明<a name="ZH-CN_TOPIC_0000002506022135"></a>
+##### 总体说明<a name="ZH-CN_TOPIC_0000002506022135"></a>
 
 各产品型号在内存使用上有一些注意事项，如下表所示。
 
@@ -2925,7 +2927,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 </tbody>
 </table>
 
-#### aclrtMalloc<a name="ZH-CN_TOPIC_0000002473741904"></a>
+##### aclrtMalloc<a name="ZH-CN_TOPIC_0000002473741904"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3017,7 +3019,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 接口调用示例，参见[数据传输](数据传输.md)。
 
-#### aclrtFree<a name="ZH-CN_TOPIC_0000002505901579"></a>
+##### aclrtFree<a name="ZH-CN_TOPIC_0000002505901579"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3081,7 +3083,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 接口调用示例，参见[数据传输](数据传输.md)。
 
-#### aclrtMemset<a name="ZH-CN_TOPIC_0000002506021529"></a>
+##### aclrtMemset<a name="ZH-CN_TOPIC_0000002506021529"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3160,7 +3162,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 本接口会立刻进行内存初始化，函数内部不会进行隐式的device同步或流同步。
 
-#### aclrtMemcpy<a name="ZH-CN_TOPIC_0000002506021863"></a>
+##### aclrtMemcpy<a name="ZH-CN_TOPIC_0000002506021863"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3250,7 +3252,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 接口调用示例，参见[数据传输](数据传输.md)。
 
-#### aclrtGetMemInfo<a name="ZH-CN_TOPIC_0000002506022119"></a>
+##### aclrtGetMemInfo<a name="ZH-CN_TOPIC_0000002506022119"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3327,7 +3329,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
     IPV350
 
-### 执行控制<a name="ZH-CN_TOPIC_0000002506021423"></a>
+#### 执行控制<a name="ZH-CN_TOPIC_0000002506021423"></a>
 
 
 
@@ -3336,7 +3338,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 
 
-#### aclrtSubscribeReport<a name="ZH-CN_TOPIC_0000002473901736"></a>
+##### aclrtSubscribeReport<a name="ZH-CN_TOPIC_0000002473901736"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3412,7 +3414,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 -   为确保Stream内的任务按调用顺序执行，不支持调用aclrtSubscribeReport接口给同一个Stream注册多个处理回调函数的线程；
 -   同一个进程内，在不同的Device上注册回调函数的线程时，不能指定同一个线程ID。
 
-#### aclrtLaunchCallback<a name="ZH-CN_TOPIC_0000002473901470"></a>
+##### aclrtLaunchCallback<a name="ZH-CN_TOPIC_0000002473901470"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3505,7 +3507,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclrtProcessReport<a name="ZH-CN_TOPIC_0000002473741844"></a>
+##### aclrtProcessReport<a name="ZH-CN_TOPIC_0000002473741844"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3570,7 +3572,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclrtUnSubscribeReport<a name="ZH-CN_TOPIC_0000002473901146"></a>
+##### aclrtUnSubscribeReport<a name="ZH-CN_TOPIC_0000002473901146"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3641,7 +3643,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclrtSubscribeHostFunc<a name="ZH-CN_TOPIC_0000002473901310"></a>
+##### aclrtSubscribeHostFunc<a name="ZH-CN_TOPIC_0000002473901310"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -3710,7 +3712,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 -   支持多次调用aclrtSubscribeHostFunc接口给多个Stream（仅支持同一Device内的多个Stream）注册同一个处理回调函数的线程。
 -   为确保Stream内的任务按调用顺序执行，不支持调用aclrtSubscribeHostFunc接口给同一个Stream注册多个处理回调函数的线程。
 
-#### aclrtProcessHostFunc<a name="ZH-CN_TOPIC_0000002473742208"></a>
+##### aclrtProcessHostFunc<a name="ZH-CN_TOPIC_0000002473742208"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -3768,7 +3770,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclrtUnSubscribeHostFunc<a name="ZH-CN_TOPIC_0000002473741220"></a>
+##### aclrtUnSubscribeHostFunc<a name="ZH-CN_TOPIC_0000002473741220"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -3830,16 +3832,16 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-## 模型管理<a name="ZH-CN_TOPIC_0000002505901281"></a>
+### 模型管理<a name="ZH-CN_TOPIC_0000002505901281"></a>
 
 
 
-### 模型加载和卸载<a name="ZH-CN_TOPIC_0000002473901778"></a>
+#### 模型加载和卸载<a name="ZH-CN_TOPIC_0000002473901778"></a>
 
 
 
 
-#### aclmdlSetConfigOpt<a name="ZH-CN_TOPIC_0000002473741790"></a>
+##### aclmdlSetConfigOpt<a name="ZH-CN_TOPIC_0000002473741790"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -3927,7 +3929,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 使用[aclmdlSetConfigOpt](aclmdlSetConfigOpt.md)接口、[aclmdlLoadWithConfig](aclmdlLoadWithConfig.md)接口时，是通过配置对象中的属性来区分，在加载模型时是从文件加载，还是从内存加载，以及内存是由系统内部管理，还是由用户管理。
 
-#### aclmdlLoadWithConfig<a name="ZH-CN_TOPIC_0000002473901168"></a>
+##### aclmdlLoadWithConfig<a name="ZH-CN_TOPIC_0000002473901168"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -4000,7 +4002,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 使用[aclmdlSetConfigOpt](aclmdlSetConfigOpt.md)接口、[aclmdlLoadWithConfig](aclmdlLoadWithConfig.md)接口时，是通过配置对象中的属性来区分，在加载模型时是从文件加载，还是从内存加载，以及内存是由系统内部管理，还是由用户管理。
 
-#### aclmdlUnload<a name="ZH-CN_TOPIC_0000002506022151"></a>
+##### aclmdlUnload<a name="ZH-CN_TOPIC_0000002506022151"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -4060,14 +4062,14 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 接口调用流程，参见[接口调用流程](接口调用流程.md)。
 
-### 模型执行<a name="ZH-CN_TOPIC_0000002473741578"></a>
+#### 模型执行<a name="ZH-CN_TOPIC_0000002473741578"></a>
 
 
 
 
 
 
-#### aclmdlSetExecConfigOpt<a name="ZH-CN_TOPIC_0000002506021121"></a>
+##### aclmdlSetExecConfigOpt<a name="ZH-CN_TOPIC_0000002506021121"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -4151,7 +4153,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlExecuteV2<a name="ZH-CN_TOPIC_0000002473902178"></a>
+##### aclmdlExecuteV2<a name="ZH-CN_TOPIC_0000002473902178"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -4267,7 +4269,7 @@ aclUpdateDataBuffer(dataBuffer, nullptr, 0); // 重置dataBuffer里面内容，�
     -   各内存申请接口的使用场景、使用约束请参见各内存申请接口的说明。
     -   由于硬件对内存有对齐和补齐要求，若用户使用这些接口申请大块内存并自行划分、管理内存时，需满足对应接口的对齐和补齐约束，请参见[内存二次分配管理](内存二次分配管理.md)。
 
-#### aclmdlExecuteAsyncV2<a name="ZH-CN_TOPIC_0000002505901905"></a>
+##### aclmdlExecuteAsyncV2<a name="ZH-CN_TOPIC_0000002505901905"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -4392,7 +4394,7 @@ aclUpdateDataBuffer(dataBuffer, nullptr, 0); // 重置dataBuffer里面内容，�
     -   各内存申请接口的使用场景、使用约束请参见各内存申请接口的说明。
     -   由于硬件对内存有对齐和补齐要求，若用户使用这些接口申请大块内存并自行划分、管理内存时，需满足对应接口的对齐和补齐约束，请参见[内存二次分配管理](内存二次分配管理.md)。
 
-#### aclmdlQuerySize<a name="ZH-CN_TOPIC_0000002473741918"></a>
+##### aclmdlQuerySize<a name="ZH-CN_TOPIC_0000002473741918"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -4471,7 +4473,7 @@ aclUpdateDataBuffer(dataBuffer, nullptr, 0); // 重置dataBuffer里面内容，�
 
 接口调用流程及示例代码，参见[模型加载](模型加载.md)。
 
-#### aclmdlQueryExeOMDesc<a name="ZH-CN_TOPIC_0000002505901685"></a>
+##### aclmdlQueryExeOMDesc<a name="ZH-CN_TOPIC_0000002505901685"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -4535,7 +4537,7 @@ aclUpdateDataBuffer(dataBuffer, nullptr, 0); // 重置dataBuffer里面内容，�
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-## 数据类型及其操作接口<a name="ZH-CN_TOPIC_0000002506021085"></a>
+### 数据类型及其操作接口<a name="ZH-CN_TOPIC_0000002506021085"></a>
 
 
 
@@ -4557,7 +4559,7 @@ aclUpdateDataBuffer(dataBuffer, nullptr, 0); // 重置dataBuffer里面内容，�
 
 
 
-### aclError<a name="ZH-CN_TOPIC_0000002506022127"></a>
+#### aclError<a name="ZH-CN_TOPIC_0000002506022127"></a>
 
 ```
 typedef int aclError;
@@ -5964,7 +5966,7 @@ typedef int aclError;
 </tbody>
 </table>
 
-### aclDataType<a name="ZH-CN_TOPIC_0000002505901243"></a>
+#### aclDataType<a name="ZH-CN_TOPIC_0000002505901243"></a>
 
 ```
 typedef enum {
@@ -5999,7 +6001,7 @@ typedef enum {
 } aclDataType;
 ```
 
-### aclFormat<a name="ZH-CN_TOPIC_0000002506021287"></a>
+#### aclFormat<a name="ZH-CN_TOPIC_0000002506021287"></a>
 
 ```
 typedef enum {
@@ -6040,7 +6042,7 @@ typedef enum {
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >各维度的含义如下：N（Batch）表示批量大小、H（Height）表示特征图高度、W（Width）表示特征图宽度、C（Channels）表示特征图通道、D（Depth）表示特征图深度、L是特征图长度。
 
-### aclrtMemMallocPolicy<a name="ZH-CN_TOPIC_0000002505902179"></a>
+#### aclrtMemMallocPolicy<a name="ZH-CN_TOPIC_0000002505902179"></a>
 
 ```
 typedef enum aclrtMemMallocPolicy {
@@ -6155,7 +6157,7 @@ typedef enum aclrtMemMallocPolicy {
 </tbody>
 </table>
 
-### aclrtMemcpyKind<a name="ZH-CN_TOPIC_0000002473741178"></a>
+#### aclrtMemcpyKind<a name="ZH-CN_TOPIC_0000002473741178"></a>
 
 ```
 typedef enum aclrtMemcpyKind {
@@ -6170,19 +6172,19 @@ typedef enum aclrtMemcpyKind {
 } aclrtMemcpyKind;
 ```
 
-### aclrtContext<a name="ZH-CN_TOPIC_0000002505902193"></a>
+#### aclrtContext<a name="ZH-CN_TOPIC_0000002505902193"></a>
 
 ```
 typedef void *aclrtContext;
 ```
 
-### aclrtStream<a name="ZH-CN_TOPIC_0000002506021559"></a>
+#### aclrtStream<a name="ZH-CN_TOPIC_0000002506021559"></a>
 
 ```
 typedef void *aclrtStream;
 ```
 
-### aclrtRunMode<a name="ZH-CN_TOPIC_0000002473901528"></a>
+#### aclrtRunMode<a name="ZH-CN_TOPIC_0000002473901528"></a>
 
 ```
 typedef enum aclrtRunMode {
@@ -6191,7 +6193,7 @@ typedef enum aclrtRunMode {
 } aclrtRunMode;
 ```
 
-### aclmdlIODims<a name="ZH-CN_TOPIC_0000002473901450"></a>
+#### aclmdlIODims<a name="ZH-CN_TOPIC_0000002473901450"></a>
 
 ```
 #define ACL_MAX_DIM_CNT          128
@@ -6203,7 +6205,7 @@ typedef struct aclmdlIODims {
 } aclmdlIODims;
 ```
 
-### aclmdlConfigAttr<a name="ZH-CN_TOPIC_0000002505901937"></a>
+#### aclmdlConfigAttr<a name="ZH-CN_TOPIC_0000002505901937"></a>
 
 ```
 typedef enum {
@@ -6436,7 +6438,7 @@ typedef enum {
 >-   \*.om文件不感知具体的硬件调度能力、包含中间态的抽象数据结构，在模型加载阶段，再根据具体执行平台的调度特性，生成运行时数据结构。
 >-   \*.exeom文件感知具体的硬件调度能力、包含目标执行平台的运行时数据结构（这些数据以二进制的形式保存在\*.exeom文件中），在模型加载阶段，加载恢复二进制内容，根据用户应用程序传递的数据区地址，或实际申请到的数据地址，刷新二进制中的地址指针值后，将二进制内容直接拷贝至Device，达到提升模型加载性能、降低模型加载内存峰值占用的效果。**在一些资源受限的场景，建议使用\*.exeom模型文件，增强产品的商用竞争力。**
 
-### aclmdlExecConfigAttr<a name="ZH-CN_TOPIC_0000002473901524"></a>
+#### aclmdlExecConfigAttr<a name="ZH-CN_TOPIC_0000002473901524"></a>
 
 ```
 typedef enum {
@@ -6510,7 +6512,7 @@ typedef enum {
 </tbody>
 </table>
 
-### aclrtStreamConfigAttr<a name="ZH-CN_TOPIC_0000002473741414"></a>
+#### aclrtStreamConfigAttr<a name="ZH-CN_TOPIC_0000002473741414"></a>
 
 ```
 typedef enum {
@@ -6554,7 +6556,7 @@ typedef enum {
 </tbody>
 </table>
 
-### aclrtMemAttr<a name="ZH-CN_TOPIC_0000002473901992"></a>
+#### aclrtMemAttr<a name="ZH-CN_TOPIC_0000002473901992"></a>
 
 ```
 typedef enum aclrtMemAttr {
@@ -6575,7 +6577,7 @@ typedef enum aclrtMemAttr {
 
 对于申请大页内存的场景，当内存申请粒度为2M时，如果要申请1G大小的大页内存，会占用1024/2=512个页表，当内存申请粒度为1G时，1G大页内存只占用1个页表，能有效降低页表数量，有效扩大TLB（Translation Lookaside Buffer）缓存的地址范围，从而提升离散访问的性能。
 
-### aclmdlExeOMDesc<a name="ZH-CN_TOPIC_0000002505901757"></a>
+#### aclmdlExeOMDesc<a name="ZH-CN_TOPIC_0000002505901757"></a>
 
 ```
 typedef struct aclmdlExeOMDesc {
@@ -6647,14 +6649,14 @@ typedef struct aclmdlExeOMDesc {
 </tbody>
 </table>
 
-### aclDataBuffer<a name="ZH-CN_TOPIC_0000002473901700"></a>
+#### aclDataBuffer<a name="ZH-CN_TOPIC_0000002473901700"></a>
 
 
 
 
 
 
-#### aclCreateDataBuffer<a name="ZH-CN_TOPIC_0000002473901660"></a>
+##### aclCreateDataBuffer<a name="ZH-CN_TOPIC_0000002473901660"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -6719,7 +6721,7 @@ typedef struct aclmdlExeOMDesc {
 
 返回aclDataBuffer类型的指针。
 
-#### aclDestroyDataBuffer<a name="ZH-CN_TOPIC_0000002505902149"></a>
+##### aclDestroyDataBuffer<a name="ZH-CN_TOPIC_0000002505902149"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -6775,7 +6777,7 @@ typedef struct aclmdlExeOMDesc {
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclGetDataBufferAddr<a name="ZH-CN_TOPIC_0000002506021979"></a>
+##### aclGetDataBufferAddr<a name="ZH-CN_TOPIC_0000002506021979"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -6830,7 +6832,7 @@ void *aclGetDataBufferAddr(const [aclDataBuffer](aclDataBuffer.md) *dataBuffer)
 
 返回aclDataBuffer类型中的数据的内存地址。
 
-#### aclGetDataBufferSize（废弃）<a name="ZH-CN_TOPIC_0000002506021605"></a>
+##### aclGetDataBufferSize（废弃）<a name="ZH-CN_TOPIC_0000002506021605"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -6888,7 +6890,7 @@ uint32 aclGetDataBufferSize(const [aclDataBuffer](aclDataBuffer.md) *dataBuffer)
 
 aclDataBuffer类型中数据的内存大小。
 
-#### aclGetDataBufferSizeV2<a name="ZH-CN_TOPIC_0000002473901428"></a>
+##### aclGetDataBufferSizeV2<a name="ZH-CN_TOPIC_0000002473901428"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -6943,14 +6945,14 @@ size_t aclGetDataBufferSizeV2(const [aclDataBuffer](aclDataBuffer.md) *dataBuffe
 
 aclDataBuffer类型中数据的内存大小。
 
-### aclmdlDataset<a name="ZH-CN_TOPIC_0000002506021497"></a>
+#### aclmdlDataset<a name="ZH-CN_TOPIC_0000002506021497"></a>
 
 
 
 
 
 
-#### aclmdlCreateDataset<a name="ZH-CN_TOPIC_0000002473741256"></a>
+##### aclmdlCreateDataset<a name="ZH-CN_TOPIC_0000002473741256"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -6989,7 +6991,7 @@ aclDataBuffer类型中数据的内存大小。
 
 返回aclmdlDataset类型的指针。
 
-#### aclmdlDestroyDataset<a name="ZH-CN_TOPIC_0000002473741694"></a>
+##### aclmdlDestroyDataset<a name="ZH-CN_TOPIC_0000002473741694"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7043,7 +7045,7 @@ aclDataBuffer类型中数据的内存大小。
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlAddDatasetBuffer<a name="ZH-CN_TOPIC_0000002473742008"></a>
+##### aclmdlAddDatasetBuffer<a name="ZH-CN_TOPIC_0000002473742008"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7106,7 +7108,7 @@ aclDataBuffer类型中数据的内存大小。
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlGetDatasetNumBuffers<a name="ZH-CN_TOPIC_0000002473741328"></a>
+##### aclmdlGetDatasetNumBuffers<a name="ZH-CN_TOPIC_0000002473741328"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7161,7 +7163,7 @@ size_t aclmdlGetDatasetNumBuffers(const [aclmdlDataset](aclmdlDataset.md) *datas
 
 aclDataBuffer的个数。
 
-#### aclmdlGetDatasetBuffer<a name="ZH-CN_TOPIC_0000002473741942"></a>
+##### aclmdlGetDatasetBuffer<a name="ZH-CN_TOPIC_0000002473741942"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7224,7 +7226,7 @@ aclDataBuffer的个数。
 -   获取成功，返回aclDataBuffer的地址。
 -   获取失败返回空地址。
 
-### aclmdlDesc<a name="ZH-CN_TOPIC_0000002473901424"></a>
+#### aclmdlDesc<a name="ZH-CN_TOPIC_0000002473901424"></a>
 
 
 
@@ -7246,7 +7248,7 @@ aclDataBuffer的个数。
 
 
 
-#### aclmdlCreateDesc<a name="ZH-CN_TOPIC_0000002473741990"></a>
+##### aclmdlCreateDesc<a name="ZH-CN_TOPIC_0000002473741990"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7285,7 +7287,7 @@ aclDataBuffer的个数。
 
 返回aclmdlDesc类型的指针。
 
-#### aclmdlDestroyDesc<a name="ZH-CN_TOPIC_0000002473901764"></a>
+##### aclmdlDestroyDesc<a name="ZH-CN_TOPIC_0000002473901764"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7339,7 +7341,7 @@ aclDataBuffer的个数。
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlGetDesc<a name="ZH-CN_TOPIC_0000002473901330"></a>
+##### aclmdlGetDesc<a name="ZH-CN_TOPIC_0000002473901330"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7402,7 +7404,7 @@ aclDataBuffer的个数。
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlGetNumInputs<a name="ZH-CN_TOPIC_0000002473901578"></a>
+##### aclmdlGetNumInputs<a name="ZH-CN_TOPIC_0000002473901578"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7457,7 +7459,7 @@ size_t aclmdlGetNumInputs([aclmdlDesc](aclmdlDesc.md) *modelDesc)
 
 模型的输入个数。
 
-#### aclmdlGetNumOutputs<a name="ZH-CN_TOPIC_0000002506021207"></a>
+##### aclmdlGetNumOutputs<a name="ZH-CN_TOPIC_0000002506021207"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7512,7 +7514,7 @@ size_t aclmdlGetNumOutputs([aclmdlDesc](aclmdlDesc.md) *modelDesc)
 
 模型的输出个数。
 
-#### aclmdlGetInputSizeByIndex<a name="ZH-CN_TOPIC_0000002505901471"></a>
+##### aclmdlGetInputSizeByIndex<a name="ZH-CN_TOPIC_0000002505901471"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7578,7 +7580,7 @@ size_t aclmdlGetInputSizeByIndex([aclmdlDesc](aclmdlDesc.md) *modelDesc, size_t 
 
 如果模型输入的Shape是动态的、且维度的取值为-1（表示此维度可以使用\>=1的任意取值），则通过本接口获取的大小为0，用户需根据实际数据占用的内存大小来申请内存。
 
-#### aclmdlGetOutputSizeByIndex<a name="ZH-CN_TOPIC_0000002473742158"></a>
+##### aclmdlGetOutputSizeByIndex<a name="ZH-CN_TOPIC_0000002473742158"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7651,7 +7653,7 @@ size_t aclmdlGetOutputSizeByIndex([aclmdlDesc](aclmdlDesc.md) *modelDesc, size_t
 
     -   在应用程序中调用[aclGetRecentErrMsg](aclGetRecentErrMsg.md)接口获取报错。
 
-#### aclmdlGetInputDims<a name="ZH-CN_TOPIC_0000002506021659"></a>
+##### aclmdlGetInputDims<a name="ZH-CN_TOPIC_0000002506021659"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7797,7 +7799,7 @@ size_t aclmdlGetOutputSizeByIndex([aclmdlDesc](aclmdlDesc.md) *modelDesc, size_t
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlGetOutputDims<a name="ZH-CN_TOPIC_0000002506022105"></a>
+##### aclmdlGetOutputDims<a name="ZH-CN_TOPIC_0000002506022105"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7871,7 +7873,7 @@ size_t aclmdlGetOutputSizeByIndex([aclmdlDesc](aclmdlDesc.md) *modelDesc, size_t
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlGetInputNameByIndex<a name="ZH-CN_TOPIC_0000002473901488"></a>
+##### aclmdlGetInputNameByIndex<a name="ZH-CN_TOPIC_0000002473901488"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -7933,7 +7935,7 @@ const char *aclmdlGetInputNameByIndex(const [aclmdlDesc](aclmdlDesc.md) *modelDe
 
 返回指定输入的输入名称。
 
-#### aclmdlGetOutputNameByIndex<a name="ZH-CN_TOPIC_0000002473901928"></a>
+##### aclmdlGetOutputNameByIndex<a name="ZH-CN_TOPIC_0000002473901928"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8045,7 +8047,7 @@ const char *aclmdlGetOutputNameByIndex(const [aclmdlDesc](aclmdlDesc.md) *modelD
 
     -   同时指定输出节点名称（node\_name）和输出名称（output的name），接口返回报错。
 
-#### aclmdlGetInputFormat<a name="ZH-CN_TOPIC_0000002473741950"></a>
+##### aclmdlGetInputFormat<a name="ZH-CN_TOPIC_0000002473741950"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8107,7 +8109,7 @@ const char *aclmdlGetOutputNameByIndex(const [aclmdlDesc](aclmdlDesc.md) *modelD
 
 返回指定输入的Format。
 
-#### aclmdlGetOutputFormat<a name="ZH-CN_TOPIC_0000002505901277"></a>
+##### aclmdlGetOutputFormat<a name="ZH-CN_TOPIC_0000002505901277"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8169,7 +8171,7 @@ const char *aclmdlGetOutputNameByIndex(const [aclmdlDesc](aclmdlDesc.md) *modelD
 
 返回指定输出的Format。
 
-#### aclmdlGetInputDataType<a name="ZH-CN_TOPIC_0000002473741812"></a>
+##### aclmdlGetInputDataType<a name="ZH-CN_TOPIC_0000002473741812"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8231,7 +8233,7 @@ const char *aclmdlGetOutputNameByIndex(const [aclmdlDesc](aclmdlDesc.md) *modelD
 
 返回指定输入的数据类型。
 
-#### aclmdlGetOutputDataType<a name="ZH-CN_TOPIC_0000002505902073"></a>
+##### aclmdlGetOutputDataType<a name="ZH-CN_TOPIC_0000002505902073"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8293,7 +8295,7 @@ const char *aclmdlGetOutputNameByIndex(const [aclmdlDesc](aclmdlDesc.md) *modelD
 
 返回指定输出的数据类型。
 
-#### aclmdlGetInputIndexByName<a name="ZH-CN_TOPIC_0000002506021549"></a>
+##### aclmdlGetInputIndexByName<a name="ZH-CN_TOPIC_0000002506021549"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8362,7 +8364,7 @@ const char *aclmdlGetOutputNameByIndex(const [aclmdlDesc](aclmdlDesc.md) *modelD
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlGetOutputIndexByName<a name="ZH-CN_TOPIC_0000002505901541"></a>
+##### aclmdlGetOutputIndexByName<a name="ZH-CN_TOPIC_0000002505901541"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8431,7 +8433,7 @@ const char *aclmdlGetOutputNameByIndex(const [aclmdlDesc](aclmdlDesc.md) *modelD
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlGetTensorRealName<a name="ZH-CN_TOPIC_0000002473901880"></a>
+##### aclmdlGetTensorRealName<a name="ZH-CN_TOPIC_0000002473901880"></a>
 
 **产品支持情况<a name="section15254644421"></a>**
 
@@ -8497,7 +8499,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 若modelDesc或name为空，则返回nullptr。
 
-#### aclmdlGetDescFromFile<a name="ZH-CN_TOPIC_0000002506021257"></a>
+##### aclmdlGetDescFromFile<a name="ZH-CN_TOPIC_0000002506021257"></a>
 
 **产品支持情况<a name="section15254644421"></a>**
 
@@ -8560,7 +8562,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-#### aclmdlGetDescFromMem<a name="ZH-CN_TOPIC_0000002506021155"></a>
+##### aclmdlGetDescFromMem<a name="ZH-CN_TOPIC_0000002506021155"></a>
 
 **产品支持情况<a name="section15254644421"></a>**
 
@@ -8629,11 +8631,11 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-### aclmdlConfigHandle<a name="ZH-CN_TOPIC_0000002473901560"></a>
+#### aclmdlConfigHandle<a name="ZH-CN_TOPIC_0000002473901560"></a>
 
 
 
-#### aclmdlCreateConfigHandle<a name="ZH-CN_TOPIC_0000002506021471"></a>
+##### aclmdlCreateConfigHandle<a name="ZH-CN_TOPIC_0000002506021471"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8673,7 +8675,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 -   返回aclmdlConfigHandle类型的指针，表示成功。
 -   返回nullptr，表示失败。
 
-#### aclmdlDestroyConfigHandle<a name="ZH-CN_TOPIC_0000002505901401"></a>
+##### aclmdlDestroyConfigHandle<a name="ZH-CN_TOPIC_0000002505901401"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8727,11 +8729,11 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-### aclmdlExecConfigHandle<a name="ZH-CN_TOPIC_0000002473901276"></a>
+#### aclmdlExecConfigHandle<a name="ZH-CN_TOPIC_0000002473901276"></a>
 
 
 
-#### aclmdlCreateExecConfigHandle<a name="ZH-CN_TOPIC_0000002473741868"></a>
+##### aclmdlCreateExecConfigHandle<a name="ZH-CN_TOPIC_0000002473741868"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8771,7 +8773,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 -   返回aclmdlExecConfigHandle类型的指针，表示成功。
 -   返回NULL，表示失败。
 
-#### aclmdlDestroyExecConfigHandle<a name="ZH-CN_TOPIC_0000002506021809"></a>
+##### aclmdlDestroyExecConfigHandle<a name="ZH-CN_TOPIC_0000002506021809"></a>
 
 **产品支持情况<a name="section16107182283615"></a>**
 
@@ -8825,11 +8827,11 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-### aclrtStreamConfigHandle<a name="ZH-CN_TOPIC_0000002505901873"></a>
+#### aclrtStreamConfigHandle<a name="ZH-CN_TOPIC_0000002505901873"></a>
 
 
 
-#### aclrtCreateStreamConfigHandle<a name="ZH-CN_TOPIC_0000002506021981"></a>
+##### aclrtCreateStreamConfigHandle<a name="ZH-CN_TOPIC_0000002506021981"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -8869,7 +8871,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 -   返回aclrtStreamConfigHandle类型的指针，表示成功。
 -   返回NULL，表示失败。
 
-#### aclrtDestroyStreamConfigHandle<a name="ZH-CN_TOPIC_0000002473901890"></a>
+##### aclrtDestroyStreamConfigHandle<a name="ZH-CN_TOPIC_0000002473901890"></a>
 
 **产品支持情况<a name="section8178181118225"></a>**
 
@@ -8923,13 +8925,13 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](aclError.md)。
 
-# FAQ案例集<a name="ZH-CN_TOPIC_0000002473903566"></a>
+## FAQ案例集<a name="ZH-CN_TOPIC_0000002473903566"></a>
 
 
 
 
 
-## 运行时资源异常问题<a name="ZH-CN_TOPIC_0000002505903487"></a>
+### 运行时资源异常问题<a name="ZH-CN_TOPIC_0000002505903487"></a>
 
 
 
@@ -8941,7 +8943,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 
 
-### 内存未释放导致内存泄漏<a name="ZH-CN_TOPIC_0000002506023553"></a>
+#### 内存未释放导致内存泄漏<a name="ZH-CN_TOPIC_0000002506023553"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002505903219_zh-cn_topic_0000001312713077_section32145724"></a>**
 
@@ -8962,7 +8964,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 排查所有的内存申请和释放的地方，保证申请与释放一一对应。例如aclrtMalloc与aclrtFree，aclrtMallocHost与aclrtFreeHost、aclrtCreateStream与aclrtDestroyStream等。
 
-### Event数量超过上限导致aclrtRecordEvent接口返回失败<a name="ZH-CN_TOPIC_0000002506023443"></a>
+#### Event数量超过上限导致aclrtRecordEvent接口返回失败<a name="ZH-CN_TOPIC_0000002506023443"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002506023113_zh-cn_topic_0000001265233034_section32145724"></a>**
 
@@ -8997,7 +8999,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 需要用户按照复用Event ID的流程优化代码逻辑。
 
-### 进程异常退出后重新执行任务失败<a name="ZH-CN_TOPIC_0000002473743710"></a>
+#### 进程异常退出后重新执行任务失败<a name="ZH-CN_TOPIC_0000002473743710"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473903150_zh-cn_topic_0000001265073062_section32145724"></a>**
 
@@ -9011,7 +9013,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 进程异常退出后需要等待一分钟，才能保证下一次重新执行任务成功。
 
-### 进程异常，下一次执行任务报错“unbind model stream failed”<a name="ZH-CN_TOPIC_0000002505903537"></a>
+#### 进程异常，下一次执行任务报错“unbind model stream failed”<a name="ZH-CN_TOPIC_0000002505903537"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473743174_section128794133612"></a>**
 
@@ -9028,7 +9030,7 @@ const char *aclmdlGetTensorRealName(const [aclmdlDesc](aclmdlDesc.md) *modelDesc
 
 用户无需关注进程异常退出信号，不要对异常退出信号做处理。
 
-### 用户进程异常退出后重启进程失败<a name="ZH-CN_TOPIC_0000002473903668"></a>
+#### 用户进程异常退出后重启进程失败<a name="ZH-CN_TOPIC_0000002473903668"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473743176_zh-cn_topic_0000001265073070_section32145724"></a>**
 
@@ -9066,7 +9068,7 @@ Runtime日志信息：halResourceIdAlloc xxx failed
 -   停止其他进程或者等其他进程执行完成后再启动进程。
 -   如果通过上述方式处理后仍然申请失败，建议检查是否超过了可用的资源上限，如果未超上限，则需要重启环境强行释放资源、恢复环境。
 
-### AI应用进程未退出，导致休眠唤醒失败<a name="ZH-CN_TOPIC_0000002506023407"></a>
+#### AI应用进程未退出，导致休眠唤醒失败<a name="ZH-CN_TOPIC_0000002506023407"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002505903147_section1579051113718"></a>**
 
@@ -9087,7 +9089,7 @@ Runtime日志信息：halResourceIdAlloc xxx failed
 
 用户需要确保AI应用进程已经运行结束或者优雅退出，推荐使用**kill -2  _PID_**退出相关进程，**_PID_**需替换为实际进程ID。
 
-### 内存申请失败，出现OOM<a name="ZH-CN_TOPIC_0000002473743754"></a>
+#### 内存申请失败，出现OOM<a name="ZH-CN_TOPIC_0000002473743754"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002505903139_zh-cn_topic_0229033163_section17474517"></a>**
 
@@ -9111,7 +9113,7 @@ Runtime日志信息：halResourceIdAlloc xxx failed
 1.  查看运行网络时是否存在并行情况。
 2.  查询网络运行需要内存大小或者减少batchsize，查看网络是否可以正常运行。
 
-### 异步拷贝调用查询接口报错<a name="ZH-CN_TOPIC_0000002505903651"></a>
+#### 异步拷贝调用查询接口报错<a name="ZH-CN_TOPIC_0000002505903651"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473903100_section128794133612"></a>**
 
@@ -9133,7 +9135,7 @@ Runtime日志信息：halResourceIdAlloc xxx failed
 
 方案二：使用aclrtQueryEventStatus接口时，先调用aclrtDestroyEvent接口，再调用aclrtFreeHost接口，保证无时序问题。
 
-### 低版本内核使用asan导致单算子执行失败<a name="ZH-CN_TOPIC_0000002506023519"></a>
+#### 低版本内核使用asan导致单算子执行失败<a name="ZH-CN_TOPIC_0000002506023519"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473903080_section89715399419"></a>**
 
@@ -9169,7 +9171,7 @@ Runtime日志信息：halResourceIdAlloc xxx failed
 -   解决方法1：升级内核版本到5.10或更高版本。
 -   解决方法2：在用户程序编译选项中去掉地址消毒（-lasan）。
 
-### 析构函数中调用去初始化接口aclFinalize导致应用进程coredump<a name="ZH-CN_TOPIC_0000002473743742"></a>
+#### 析构函数中调用去初始化接口aclFinalize导致应用进程coredump<a name="ZH-CN_TOPIC_0000002473743742"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473743208_zh-cn_topic_0000001949771436_section89715399419"></a>**
 
@@ -9306,11 +9308,11 @@ Runtime日志信息：halResourceIdAlloc xxx failed
     }
     ```
 
-## 模型推理问题<a name="ZH-CN_TOPIC_0000002506023551"></a>
+### 模型推理问题<a name="ZH-CN_TOPIC_0000002506023551"></a>
 
 
 
-### 使用dump功能未获取dump结果<a name="ZH-CN_TOPIC_0000002473743546"></a>
+#### 使用dump功能未获取dump结果<a name="ZH-CN_TOPIC_0000002473743546"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002506023045_section32145724"></a>**
 
@@ -9357,7 +9359,7 @@ Runtime日志信息：halResourceIdAlloc xxx failed
 
 方式二：通过ATC命令生成模型的json文件，在json文件中查找“name“字段对应值，查找模型名称和算子名称，模型名称在"graph"字段外、算子名称在"graph"字段内。
 
-### 注册算子数超过最大规格<a name="ZH-CN_TOPIC_0000002473903516"></a>
+#### 注册算子数超过最大规格<a name="ZH-CN_TOPIC_0000002473903516"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473743200_zh-cn_topic_0258218225_section32145724"></a>**
 
@@ -9385,7 +9387,7 @@ Runtime日志信息：halResourceIdAlloc xxx failed
 -   避免同一算子在不同模型中反复注册。
 -   注册算子数不超过最大规格。
 
-## 算子执行问题<a name="ZH-CN_TOPIC_0000002505903601"></a>
+### 算子执行问题<a name="ZH-CN_TOPIC_0000002505903601"></a>
 
 
 
@@ -9396,7 +9398,7 @@ Runtime日志信息：halResourceIdAlloc xxx failed
 
 
 
-### 算子插件未注册报错<a name="ZH-CN_TOPIC_0000002506023497"></a>
+#### 算子插件未注册报错<a name="ZH-CN_TOPIC_0000002506023497"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473743236_section1694272615198"></a>**
 
@@ -9443,7 +9445,7 @@ Check op[%s]'s type[%s] failed, it is not supported.
 
 3.  如果算子插件so未加载成功，参考失败告警中Message提示内容处理。
 
-### 算子原型未注册报错<a name="ZH-CN_TOPIC_0000002473743500"></a>
+#### 算子原型未注册报错<a name="ZH-CN_TOPIC_0000002473743500"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002505903207_section1694272615198"></a>**
 
@@ -9495,7 +9497,7 @@ IR for op[%s] optype[%s] is not registered.
 
 3.  如果算子原型so未加载成功，参考失败告警中Message提示内容处理。
 
-### AI Core算子执行报错<a name="ZH-CN_TOPIC_0000002506023629"></a>
+#### AI Core算子执行报错<a name="ZH-CN_TOPIC_0000002506023629"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473743234_section32145724"></a>**
 
@@ -9552,7 +9554,7 @@ Runtime执行报错，在应用程序运行日志中Runtime打印了类似fault 
 [ERROR] ASCENDCL(2856615,xaclfk):2022-09-15-11:36:47.818.315 [model.cpp:2216]2856939 aclmdlCreateAndGetOpDesc: [EXEC][DEFAULT][Get][OpDescInfo]get op desc failed, ge result[-1], deviceId[0], streamId[0], taskId[615]
 ```
 
-### AI CPU算子Kernel执行报错<a name="ZH-CN_TOPIC_0000002473743496"></a>
+#### AI CPU算子Kernel执行报错<a name="ZH-CN_TOPIC_0000002473743496"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473743246_section32145724"></a>**
 
@@ -9626,7 +9628,7 @@ Runtime执行报错，在应用程序运行日志中Runtime打印了PrintAicpuEr
 
 若仍无法解决请联系技术支持定位排查。 
 
-### AI CPU算子维度超过8维报错<a name="ZH-CN_TOPIC_0000002506023469"></a>
+#### AI CPU算子维度超过8维报错<a name="ZH-CN_TOPIC_0000002506023469"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473903128_section123115221018"></a>**
 
@@ -9650,7 +9652,7 @@ AI CPU算子输入/输出参数的维度超过最大维度限制（8维）。
 
 若仍无法解决请联系技术支持定位排查。 
 
-### AI CPU算子执行超时报错<a name="ZH-CN_TOPIC_0000002473903466"></a>
+#### AI CPU算子执行超时报错<a name="ZH-CN_TOPIC_0000002473903466"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002473743198_section32145724"></a>**
 
@@ -9688,7 +9690,7 @@ AI CPU算子输入/输出参数的维度超过最大维度限制（8维）。
 
 2.  若[步骤1](#zh-cn_topic_0000002473743198_li32821448165317)仍未能解决问题，可联系技术支持定位排查。
 
-### 单算子匹配失败<a name="ZH-CN_TOPIC_0000002505903613"></a>
+#### 单算子匹配失败<a name="ZH-CN_TOPIC_0000002505903613"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002505903179_section128794133612"></a>**
 
@@ -9716,7 +9718,7 @@ EH9999 [Match][OpModel]MatchOpModel fail from static map or dynamic map. Please 
 -   离线场景：重新编译缺少的算子，并复制到aclSetModelDir中指定的路径下，余下步骤按离线单算子推理步骤进行。
 -   在线场景：根据报错信息检查前后两次编译的算子的opType、dataType、format等信息是否一致。
 
-### 执行单算子产生coredump的定位处理<a name="ZH-CN_TOPIC_0000002473743548"></a>
+#### 执行单算子产生coredump的定位处理<a name="ZH-CN_TOPIC_0000002473743548"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002505903187_section32145724"></a>**
 
@@ -9745,7 +9747,7 @@ double free or corruption(!prev)
 
     如果该问题非用户代码问题，需要联系技术支持定位排查。 
 
-### 算子库包版本问题导致加载单算子失败<a name="ZH-CN_TOPIC_0000002473903460"></a>
+#### 算子库包版本问题导致加载单算子失败<a name="ZH-CN_TOPIC_0000002473903460"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002506023115_section128794133612"></a>**
 
@@ -9764,10 +9766,10 @@ E19999 The opp version of the model does not match the current opp run package, 
 
 动态Shape算子场景下，单算子模型数据加载环境中的算子库包安装版本需与om模型文件编译环境的**算子库包安装版本保持一致**，出现该报错后，需排查安装版本，选择更换算子加载环境的opp包版本或更换编译算子om文件环境的opp包版本，若选择更换后者，则需要重新转换模型。
 
-## 编译/执行AI应用问题<a name="ZH-CN_TOPIC_0000002506023587"></a>
+### 编译/执行AI应用问题<a name="ZH-CN_TOPIC_0000002506023587"></a>
 
 
-### acl接口执行无输出无报错<a name="ZH-CN_TOPIC_0000002506023431"></a>
+#### acl接口执行无输出无报错<a name="ZH-CN_TOPIC_0000002506023431"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002505903205_section128794133612"></a>**
 
@@ -9784,10 +9786,10 @@ E19999 The opp version of the model does not match the current opp run package, 
 
 针对第二种情况：对于异步接口，主机线程调用异步接口后仅代表下发任务，在任务未完成前，异步接口已向主机线程返回成功。用户需要调用显式同步接口（例如aclrtSynchronizeStream）阻塞主机线程，等待任务完成，否则可能会导致训练或推理等业务异常、Device断链掉卡等未知情况。
 
-# 附录<a name="ZH-CN_TOPIC_0000002473903666"></a>
+## 附录<a name="ZH-CN_TOPIC_0000002473903666"></a>
 
 
-## 使用约束<a name="ZH-CN_TOPIC_0000002473743682"></a>
+### 使用约束<a name="ZH-CN_TOPIC_0000002473743682"></a>
 
 **表 1**  总体约束列表
 
@@ -9820,4 +9822,3 @@ E19999 The opp version of the model does not match the current opp run package, 
 </tr>
 </tbody>
 </table>
-

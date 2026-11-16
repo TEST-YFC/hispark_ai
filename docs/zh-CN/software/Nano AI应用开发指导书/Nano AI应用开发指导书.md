@@ -1,4 +1,6 @@
-# Nano AI应用界面<a name="ZH-CN_TOPIC_0000002517015540"></a>
+# Nano AI应用开发指导书
+
+## Nano AI应用界面<a name="ZH-CN_TOPIC_0000002517015540"></a>
 
 **图 1**  Nano软硬件架构图<a name="fig177211017312"></a>  
 ![](figures/Nano软硬件架构图.png "Nano软硬件架构图")
@@ -18,7 +20,7 @@
 -   NPU调用接口
 -   NPU调用Sample
 
-# Nano 芯片支持数据类型和典型模型性能<a name="ZH-CN_TOPIC_0000002517935726"></a>
+## Nano 芯片支持数据类型和典型模型性能<a name="ZH-CN_TOPIC_0000002517935726"></a>
 
 -   使用场景：音频，感知，控制
 -   支持算子：60+
@@ -166,7 +168,7 @@
 </tbody>
 </table>
 
-# Nano AI资料清单<a name="ZH-CN_TOPIC_0000002518097118"></a>
+## Nano AI资料清单<a name="ZH-CN_TOPIC_0000002518097118"></a>
 
 **表 1**  Nano AI资料清单
 
@@ -413,7 +415,7 @@
 </tbody>
 </table>
 
-# Nano AI应用开发流程<a name="ZH-CN_TOPIC_0000002549496971"></a>
+## Nano AI应用开发流程<a name="ZH-CN_TOPIC_0000002549496971"></a>
 
 **图 1**  Nano AI应用开发流程<a name="fig61321557400"></a>  
 ![](figures/Nano-AI应用开发流程.png "Nano-AI应用开发流程")
@@ -422,11 +424,11 @@
 
 
 
-## 前期评估<a name="ZH-CN_TOPIC_0000002549502145"></a>
+### 前期评估<a name="ZH-CN_TOPIC_0000002549502145"></a>
 
 
 
-### 算子可用性评估<a name="ZH-CN_TOPIC_0000002518102300"></a>
+#### 算子可用性评估<a name="ZH-CN_TOPIC_0000002518102300"></a>
 
 -   背景&适用范围
 
@@ -841,7 +843,7 @@
 </tbody>
 </table>
 
-### 模型评估<a name="ZH-CN_TOPIC_0000002549622137"></a>
+#### 模型评估<a name="ZH-CN_TOPIC_0000002549622137"></a>
 
 **表 1**  模型评估项
 
@@ -905,7 +907,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
     **图 3**  插入量化反量化算子<a name="fig758816220508"></a>  
     ![](figures/插入量化反量化算子.png "插入量化反量化算子")
 
-## 模型编译<a name="ZH-CN_TOPIC_0000002517940618"></a>
+### 模型编译<a name="ZH-CN_TOPIC_0000002517940618"></a>
 
 **图 1**  模型编译部署流程<a name="fig1588754414012"></a>  
 ![](figures/模型编译部署流程.png "模型编译部署流程")
@@ -915,7 +917,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
 
 
 
-### 开发环境安装指南<a name="ZH-CN_TOPIC_0000002549620391"></a>
+#### 开发环境安装指南<a name="ZH-CN_TOPIC_0000002549620391"></a>
 
 **图 1**  部署架构图<a name="fig9172516411"></a>  
 ![](figures/部署架构图.png "部署架构图")
@@ -955,7 +957,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
 
         source /home/xxxxx/local/Ascend/latest/bin/setenv.bash
 
-### 模型量化<a name="ZH-CN_TOPIC_0000002518100534"></a>
+#### 模型量化<a name="ZH-CN_TOPIC_0000002518100534"></a>
 
 -   背景
 
@@ -1198,7 +1200,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
     }
     ```
 
-### 模型编译<a name="ZH-CN_TOPIC_0000002549500395"></a>
+#### 模型编译<a name="ZH-CN_TOPIC_0000002549500395"></a>
 
 -   背景
 
@@ -1278,12 +1280,12 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
 </tbody>
 </table>
 
-## 模型部署<a name="ZH-CN_TOPIC_0000002517940620"></a>
+### 模型部署<a name="ZH-CN_TOPIC_0000002517940620"></a>
 
 
 
 
-### ACL接口<a name="ZH-CN_TOPIC_0000002549620393"></a>
+#### ACL接口<a name="ZH-CN_TOPIC_0000002549620393"></a>
 
 -   背景&适用范围
 
@@ -1308,7 +1310,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
     -   文档中会附带代码示例，所有代码示例均为关键步骤的示例，不可直接拷贝编译运行，仅供参考，详细例子可以参考Sample
     -   此文档中仅包含AscendCL的错误码和定位流程，对于部分特殊场景下的报错，需要结合驱动日志来定位问题
 
-### 参考Sample<a name="ZH-CN_TOPIC_0000002518100536"></a>
+#### 参考Sample<a name="ZH-CN_TOPIC_0000002518100536"></a>
 
 -   背景
 
@@ -1355,7 +1357,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
 **图 2**  详细流程<a name="fig740384284313"></a>  
 ![](figures/详细流程.png "详细流程")
 
-### SDK编译&烧录<a name="ZH-CN_TOPIC_0000002549500397"></a>
+#### SDK编译&烧录<a name="ZH-CN_TOPIC_0000002549500397"></a>
 
 -   背景
 
@@ -1379,12 +1381,12 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
 
 注意：**如果用户需要将自己的代码编译为.a文件，需要使用miniSDK，参考相关指导文档进行编译**
 
-## 模型调优<a name="ZH-CN_TOPIC_0000002517940622"></a>
+### 模型调优<a name="ZH-CN_TOPIC_0000002517940622"></a>
 
 
 
 
-### 分析日志<a name="ZH-CN_TOPIC_0000002549620395"></a>
+#### 分析日志<a name="ZH-CN_TOPIC_0000002549620395"></a>
 
 -   背景&适用范围
     -   在部分场景下，仅AscendCL错误码不能定位到根本原因，需要通过驱动日志来辅助定位
@@ -1440,7 +1442,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
 
         acl层接口返回的错误码是145002，对应错误是模型路径无效，实际上对应模型文件路径正确。从驱动错误日志可以看出，文件系统未初始化导致找不到对应的模型文件，在加载模型之前执行uapi\_npu\_file\_sys\_init即可
 
-### 精度对比分析<a name="ZH-CN_TOPIC_0000002518100538"></a>
+#### 精度对比分析<a name="ZH-CN_TOPIC_0000002518100538"></a>
 
 -   背景&适用范围
 
@@ -1488,7 +1490,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
      }
     ```
 
-### 精度优化建议<a name="ZH-CN_TOPIC_0000002549500399"></a>
+#### 精度优化建议<a name="ZH-CN_TOPIC_0000002549500399"></a>
 
 -   量化精度
     -   合适的QAT算法量化精度相比PTQ更高，因此尽量选择QAT算法
@@ -1508,7 +1510,7 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
 
         由于数据位宽限制，对于绝对值较小的输入数据，会产生较大的相对误差，<u>**应避免数据范围较小**</u>
 
-# FAQ<a name="ZH-CN_TOPIC_0000002549920595"></a>
+## FAQ<a name="ZH-CN_TOPIC_0000002549920595"></a>
 
 -   Q：模型编译工具（ATC）中input\_fp16\_nodes、output\_type参数怎么理解，什么时候需要配置？
 
@@ -1537,4 +1539,3 @@ python3 onnx\_estimate.py -m estimate\_model\_path -p
 -   Q：调用NPU时最多能创建多少个device、context，是建议使用1个context对应多个流还是多个context对应多个流？
 
     A：通常1个NPU就只创建1个device，<u>**按照模型优先级的数量创建**</u><u>**context**</u>，同一个优先级的网络对应1个context和1条流。
-
