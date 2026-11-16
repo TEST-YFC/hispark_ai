@@ -96,8 +96,7 @@
 使用export方式设置环境变量后，环境变量仅在当前窗口有效。如果用户之前已在.bashrc文件中设置过环境变量，则需要在执行上述命令前，先手动删除原来设置的环境变量。
 
 >![](public_sys-resources/icon-notice.gif) **须知：** 
->-   converter\_lite工具包依赖于GCC-14.3版本，可以通过点击链接访问官网（[GCC-14.3](https://github.com/gcc-mirror/gcc/releases/tag/releases%2Fgcc-14.3.0)），选择下载14.3.0版本。
->-   converter\_lite工具包依赖于Python3.11环境。
+>-   converter\_lite工具包依赖GLIBCXX 3.4.29 / GLIBC 2.34及以上版本（GCC 11.1起，Ubuntu 22.04默认的libstdc++6 12.3.0与glibc 2.35已满足，无需额外安装）。
 >-   “[必选环境变量](#section15381219152316)”中步骤必须按顺序执行，否则可能导致converter\_lite工具无法链接到动态库。
 
 **必选环境变量<a name="section15381219152316" id="section15381219152316"></a>**
@@ -106,24 +105,6 @@
 
     ```
     export LD_LIBRARY_PATH=mindspore-enterprise-lite-{version}-linux-x64安装目录/tools/converter/lib:$LD_LIBRARY_PATH
-    ```
-
-1.  将Python3.11的路径添加到LD\_LIBRARY\_PATH中。
-
-    ```
-    export LD_LIBRARY_PATH=${py311_install_path}/lib:$LD_LIBRARY_PATH
-    ```
-
-2.  将GCC的libstdc++6.0.30库路径添加到LD\_LIBRARY\_PATH中。
-
-    ```
-    export LD_LIBRARY_PATH=${libc++6.0.30_path}/libxx:$LD_LIBRARY_PATH
-    ```
-
-3.  切换到GCC中libstdc++.so.6.0.30的安装目录，为libstdc++建立软链接。
-
-    ```
-    ln -s libstdc++.so.6.0.30 libstdc++.so.6
     ```
 
 **可选环境变量<a name="section119106478270"></a>**
@@ -157,14 +138,14 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
 </th>
 </tr>
 </thead>
-<tbody><tr id="row89811757171215"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p167523317105"><a name="p167523317105"></a><a name="p167523317105"></a>GCC</p>
+<tbody><tr id="row89811757171215"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p167523317105"><a name="p167523317105"></a><a name="p167523317105"></a>libstdc++</p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p16752031121014"><a name="p16752031121014"></a><a name="p16752031121014"></a>14.3.0</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p16752031121014"><a name="p16752031121014"></a><a name="p16752031121014"></a>GLIBCXX 3.4.29 及以上（GCC 11.1 起）</p>
 </td>
 </tr>
 <tr id="row179810570129"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p15486432191119"><a name="p15486432191119"></a><a name="p15486432191119"></a>CMake</p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p177528319108"><a name="p177528319108"></a><a name="p177528319108"></a>4.2.3</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p177528319108"><a name="p177528319108"></a><a name="p177528319108"></a>3.18 及以上</p>
 </td>
 </tr>
 <tr id="row898115716128"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p379013544113"><a name="p379013544113"></a><a name="p379013544113"></a>riscv32-linux-musl-gcc</p>
@@ -189,12 +170,7 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
 </tr>
 <tr id="row2982557181213"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p2753431131020"><a name="p2753431131020"></a><a name="p2753431131020"></a>Ubuntu</p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p19753113191012"><a name="p19753113191012"></a><a name="p19753113191012"></a>22.04</p>
-</td>
-</tr>
-<tr id="row14120345152815"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p8121194513282"><a name="p8121194513282"></a><a name="p8121194513282"></a>Python</p>
-</td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p10816952102817"><a name="p10816952102817"></a><a name="p10816952102817"></a>3.11</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p19753113191012"><a name="p19753113191012"></a><a name="p19753113191012"></a>22.04 及以上</p>
 </td>
 </tr>
 </tbody>
@@ -372,14 +348,14 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
 
         ```
         #转换TFLite框架的MNIST模型生成Micro工程代码，converter_lite转换时参数请参见“5-参数说明”章节
-        ./converter_lite --fmk=TFLITE --modelFile=mnist.tflite --outputFile=mnist --configFile=micro.cfg --encryption=false --inputDataFormat=NHWC --outputDataFormat=NHWC --inputDataType=FLOAT --outputDataType=FLOAT
+        ./converter_lite --fmk=TFLITE --modelFile=mnist.tflite --outputFile=mnist --configFile=micro.cfg --inputDataFormat=NHWC --outputDataFormat=NHWC --inputDataType=FLOAT --outputDataType=FLOAT
         ```
 
     2.  ONNX模型converter\_lite转换命令：
 
         ```
         #转换ONNX框架的MNIST模型生成Micro工程代码，converter_lite转换时参数请参见“5-参数说明”章节
-        ./converter_lite --fmk=ONNX --modelFile=mnist-7.onnx --outputFile=mnist --configFile=micro.cfg --encryption=false --inputDataFormat=NCHW --outputDataFormat=NCHW --inputDataType=FLOAT --outputDataType=FLOAT
+        ./converter_lite --fmk=ONNX --modelFile=mnist-7.onnx --outputFile=mnist --configFile=micro.cfg --inputDataFormat=NCHW --outputDataFormat=NCHW --inputDataType=FLOAT --outputDataType=FLOAT
         ```
 
     3.  运行成功后的结果显示为：
