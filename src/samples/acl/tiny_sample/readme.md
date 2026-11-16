@@ -2,8 +2,6 @@
 
 ## 功能描述
 对于一次完整的模型推理，需要调用多个acl接口进行实现，为方便用户快速上手开发，现提供sample供用户学习。
-https://gitcode.com/HiSpark/hispark_ai/releases/26.9.1      访问该链接获取示例sample
-本示例sample为压缩包中的ai_samples/acl/tiny_sample
 用户需根据实际情况更改模型文件路径，输入文件路径与输出路径
 
 ## 目录结构
@@ -587,7 +585,7 @@ DESTROY:
 用户在本地环境将自己的代码编译为可执行文件，将可执行文件、模型相关文件、ko、so文件部署到可执行环境上，配置可执行环境，执行可执行文件，得到结果
 
 - sample编译
-1. 获取Tiny SDK的代码，保存在用户指定路径{SDK_PATH}
+1. 获取npu so目录，保存在用户指定路径{LIB_PATH}
 2. 获取HiSpark.AI Adaptor包，并进行解压
     解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
     路径如下表示解压成功，且目录正确：
@@ -607,7 +605,7 @@ DESTROY:
 4. 切换到tiny_sample目录，在命令行输入：
 
 ``` C++
-export SDK_PATH=${SDK_PATH}
+export LIB_PATH=${LIB_PATH}
 export ADAPTOR_PATH=${ADAPTOR_PATH}
 export COMPILER_PATH=${COMPILER_PATH}
 export ACL_HEADER_PATH=${ACL_HEADER_PATH}
@@ -623,8 +621,8 @@ bash ${SAMPLE_PATH}/acl/tiny_sample/build_npu.sh tiangong2
 
 - sample执行
 1. 创建一个目录，将其路径记作SRC_PATH。
-    将\${SDK_PATH}/software/tiangong2_image_release/NPU/npu_turing_master/release/lib目录拷贝到SRC_PATH下
-    将\${SDK_PATH}/software/tiangong2_image_release/NPU/npu_turing_master/release/ko目录拷贝到SRC_PATH下
+    将NPU so拷贝到SRC_PATH/lib下
+    将NPU ko拷贝到SRC_PATH/ko下
     将可执行文件名称记作user_sample，拷贝到SRC_PATH下
     将编译指南中获得的so文件libai_adaptor_tiny.so复制到SRC_PATH/lib下
     将模型文件与输入数据拷贝到SRC_PATH下

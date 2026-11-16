@@ -6,7 +6,6 @@ Gru固定词识别Sample基于Google开源的Open-Speech数据集以及ARM Softm
 支持的芯片列表如下：
 - **WS63**: 基于 MindSpore Lite 工具链（CPU 平台）部署，依靠 RISC-V CPU 核进行 AI 推理。
 - **HiDiTing**: 基于 CANN 工具链（NPU 平台）部署，依靠 Nano NPU 核进行 AI 推理。
-- **tiangong2**: 基于 CANN 工具链（NPU 平台）部署，依靠 Tiny NPU 核进行 AI 推理。
 
 ## 数据处理 & 量化指南
 ### 预处理
@@ -20,7 +19,7 @@ Gru固定词识别Sample基于Google开源的Open-Speech数据集以及ARM Softm
 python scripts/preproc_wav_data.py --data_root_dir ./data/origin_data --quant_data_dir ./data/quant_data --validation_data_dir ./data/validation_data --onnx_model_path ./model/GRU_S_STREAM.onnx [--fp16 true] [--sample_num 2593]
 ```
 Tips:
-1. 如果为Nano、Tiny平台需要在之后加上 [--fp16 true] 选项，RISC-V平台则不需要。
+1. 如果为Nano平台需要在之后加上 [--fp16 true] 选项，RISC-V平台则不需要。
 2. 网络问题导致下载出现问题，可以手动创建./data/origin_data文件夹，并下载数据包 [speech_commands_v0.02.tar.gz](http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz)到origin_data下，再执行脚本。
 3. 由于MindSpore Lite平台限制，最大处理65535组数据，因此在MindSpore Lite平台上对sample_num进行裁剪，指定为2593。(共25个timestamp，每个timestamp产生一组输入数据)
 
@@ -119,23 +118,6 @@ atc --model=./output/GRU_S_deploy_model.onnx --framework=5 --output=./output/GRU
 - ./output/GRU_S.exeom
 - ./output/GRU_S.dbg
 
-## Tiny平台模型转换指南
-```
-atc --model=./model/GRU_S_STREAM.onnx --framework=5 --output=./output/GRU_S --input_fp16_nodes="mfcc_input;hidden_states" --output_type=FP16 --soc_version=Ascend031 --input_shape="mfcc_input:1,10;hidden_states:1,154"
-```
-参数说明
-- --model: 网络模型文件路径与文件名
-- --framework: 原始网络模型框架类型。5表示ONNX
-- --output：存放转换后的离线模型的路径以及文件名
-- --input_fp16_nodes：指定输入数据类型为FP16的输入节点名称
-- --output_type：指定网络输出数据类型
-- --soc_version：指定模型转换时昇腾AI处理器的版本
-- --input_shape：指定模型输入数据的shape
-- --mode：运行模式
-
-运行成功后生成
-- ./output/GRU_S.om
-
 ## RISC-V平台编译指南
 1. 获取WS63 SDK的代码，保存在用户指定路径，其路径为{SDK_PATH}。
     路径如下表示解压成功，且目录正确：
@@ -225,65 +207,6 @@ bash ${SAMPLE_PATH}/oh/gru/build_npu.sh 3322
 **运行指南**
 1. 使用sscom发送AT指令：AT^SAMPLE
 2. 运行结束后可以看到[AI_NPU] Data相关日志，其结果即各个标签预测结果
-    LABELS = ["silence", "unknown", "yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"]
-
-## Tiny平台编译指南
-1. 获取tiangong2 SDK的代码，保存在用户指定路径
-2. 获取HiSpark.AI Adaptor包，并进行解压
-    解压命令为；tar -zxvf HiSpark.AI_{version}-adaptor.tar.gz
-    路径如下表示解压成功，且目录正确：
-    {ADAPTOR_PATH}
-        |---- adaptor
-        |---- at
-        |---- include
-        |---- README.md
-3. 获取此HiSpark.AI Samples包，并进行解压
-    解压命令为；tar -zxvf HiSpark.AI_{version}-sample.tar.gz
-    路径如下表示解压成功，且目录正确：
-    {SAMPLE_PATH}
-        |---- acl
-        |---- amct
-        |---- oh
-        |---- CMakeLists.txt
-        |---- README.md
-4. 切换到gru目录，在命令行输入：
-```
-export SDK_PATH=${SDK_PATH}
-export ADAPTOR_PATH=${ADAPTOR_PATH}
-export COMPILER_PATH=${COMPILER_PATH}
-export ACL_HEADER_PATH=${ACL_HEADER_PATH}
-bash ${SAMPLE_PATH}/oh/gru/build_npu.sh tiangong2
-```
-注：
-(1) COMPILER_PATH即交叉编译工具的路径，例如：/subsystem/prebuilts/compiler/gcc-arm-v01c01-linux-musleabi/arm-v01c01-linux-musleabi-gcc
-(2) ACL_HEADER_PATH即AscendCL头文件目录，例如：/image/hi5612/npu/cann_lib/acl
-
-5. 获取编译成功的可执行文件grutiangong2，在./src/build路径下
-   获取编译成功的so文件libai_adaptor_tiny.so，在`${ADAPTOR_PATH}/adaptor/npu/build`路径下
-
-**运行指南**
-1. 创建一个目录，将其路径记作SRC_PATH。
-    将`${SDK_PATH}/software/tiangong2_image_release/NPU/release/lib`目录拷贝到SRC_PATH下
-    将`${SDK_PATH}/software/tiangong2_image_release/NPU/release/ko`目录拷贝到SRC_PATH下
-    将编译指南中获得的可执行文件grutiangong2拷贝到SRC_PATH下
-    将编译指南中获得的so文件libai_adaptor_tiny.so复制到SRC_PATH/lib下
-    将模型转换指南中获得的模型文件，如./output/GRU_S.om，拷贝到SRC_PATH下并重命名为gru.om
-    将数据处理指南中获得的输入数据，如./data/validation_data/down/0c40e715_nohash_0.bin，拷贝到SRC_PATH下并重命名为sample.bin
-2. 在板端/etc目录下创建workspace目录，利用nfs工具将SRC_PATH挂载到板端/etc/workspace
-3. 进入/etc/workspace/ko文件夹,依次执行以下命令
-    #若之前加载过，就先卸载ko
-    rmmod drv_tsdrv.ko
-    rmmod drv_tsmem.ko
-    rmmod drv_log.ko
-    #加载ko
-    insmod drv_log.ko
-    insmod drv_tsmem.ko
-    insmod drv_tsdrv.ko
-4. 进入/etc/workspace文件夹，
-    配置LIB库路径，export LD_LIBRARY_PATH=/etc/workspace/lib:$LD_LIBRARY_PATH
-    修改可执行文件grutiangong2的权限，chmod 777 ./grutiangong2
-    运行可执行文件grutiangong2, ./grutiangong2
-    运行结束后可以看到[AI_NPU] Data相关日志，其结果即各个标签预测结果
     LABELS = ["silence", "unknown", "yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"]
 
 ## 目录结构

@@ -46,7 +46,6 @@ function set_tiangong2_build_env()
     fi
 
     export LANG="C"
-    LIB_PATH=$SDK_PATH/software/tiangong2_image_release/NPU/release/lib
     ADAPTOR_BUILD_PATH=$ADAPTOR_PATH/adaptor/npu/build
     ADAPTOR_SO_PATH="$ADAPTOR_BUILD_PATH/libai_adaptor_tiny.so"
     SAMPLE_BUILD_PATH="${CUR_DIR}/src/build"
