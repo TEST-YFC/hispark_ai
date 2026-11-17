@@ -1380,6 +1380,12 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     <td class="cellrowborder">大于0</td>
     <td class="cellrowborder">1e-8</td>
     </tr>
+    <tr><td class="cellrowborder">frozen_node</td>
+    <td class="cellrowborder">否</td>
+    <td class="cellrowborder">冻结指定节点的可训练权重，仅端侧训练时选择。</td>
+    <td class="cellrowborder">逗号分隔的节点名列表</td>
+    <td class="cellrowborder">-</td>
+    </tr>
     </tbody>
     </table>
 
