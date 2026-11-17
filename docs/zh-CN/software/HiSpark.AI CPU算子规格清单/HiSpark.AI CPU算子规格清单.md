@@ -365,7 +365,7 @@
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 支持INT8输入/权重/输出、INT32 bias、rank为4、group为1、3x3卷积、无融合激活或融合ReLU；权重为OHWI格式，支持per-tensor或per-output-channel量化 |
+| QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为4、batch为1、无bias、无融合激活、stride和dilation均为1的depthwise等价卷积；要求group=input_channel=output_channel，权重为OHWI格式且I=1 |
 
 ### Conv3D<a name="ZH-CN_TOPIC_0000003190115702" id="ZH-CN_TOPIC_0000003190115702"></a>
@@ -406,6 +406,13 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | 无bias两输入节点 | CONV_3D节点仅input/filter输入 | 偏置按0处理。 |
 | 全量化int8通路 | float32模型 + FULL_QUANT | 转换后使用int8输入/权重/输出和int32偏置执行。 |
 | 不支持规格命中 | dilation factor不为1或fused_activation_function不为NONE | 转换期报错，不生成模型。 |
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 输入x为[N, D, H, W, C]，权重w为[KD, KH, KW, IC, OC]；padding支持SAME或VALID；stride_d、stride_h和stride_w均大于或等于1；dilation_d_factor、dilation_h_factor和dilation_w_factor仅支持1；bias可选；fused_activation_function仅支持NONE |
 
 ### MaxPool2D<a name="ZH-CN_TOPIC_0000002360102989" id="ZH-CN_TOPIC_0000002360102989"></a>
 
@@ -525,8 +532,8 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 仅支持MaxPool，输入和输出均为INT8 NHWC四维张量，且必须携带量化参数 |
-| FP32 | 不支持 | - |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 仅支持单输入、单输出的二维MaxPool，输入、输出及梯度均为FP32四维张量，且所有维度均为正数；池化仅改变空间维度，输出的batch和channel与输入保持一致；输入必须为非常量张量；非global模式下kernel和stride的H、W必须为正数；不支持动态Shape、MaxPool1D和MaxPool3D |
 
 ### FullyConnected<a name="ZH-CN_TOPIC_0000002326344486" id="ZH-CN_TOPIC_0000002326344486"></a>
 
@@ -646,7 +653,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 支持INT8输入/权重/输出，rank为2，A不转置、B转置、无融合激活；可选INT32 bias，权重支持per-tensor或per-output-channel量化 |
+| QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为2、2个或3个输入、A不转置、B可转置；融合激活仅支持无融合激活或ReLU，bias元素数量必须等于输出通道数 |
 
 ### BatchMatmul<a name="ZH-CN_TOPIC_0000002421627894" id="ZH-CN_TOPIC_0000002421627894"></a>
@@ -858,8 +865,8 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | Activation训练反向仅支持ReLU，输入和输出均为INT8且必须携带量化参数 |
-| FP32 | 支持 | Activation训练反向仅支持ReLU |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | - |
 
 ### Tanh<a name="ZH-CN_TOPIC_0000002474804265" id="ZH-CN_TOPIC_0000002474804265"></a>
 
@@ -1020,8 +1027,8 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 输入和输出元素数量必须一致，且输入和输出为INT8或INT32 |
-| FP32 | 支持 | 输入和输出元素数量必须一致，且为FP32静态非空张量 |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | shape属性为int32离线常量；Squeeze、ExpandDims和Flatten统一降级为RESHAPE；输出最多为4维，且元素数与输入相等 |
 
 ### Mul<a name="ZH-CN_TOPIC_0000002421789214" id="ZH-CN_TOPIC_0000002421789214"></a>
 
@@ -1344,6 +1351,13 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | axis支持负值；data为1～4维且各维为正数；indices支持int32离线常量，允许重复索引和负索引，索引越界在训练运行时报错，不支持int64；输出维数等于data维数减1再加indices维数 |
+
 ### Split<a name="ZH-CN_TOPIC_0000002455529089" id="ZH-CN_TOPIC_0000002455529089"></a>
 
 Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Split表示均匀划分，tfl.SplitV自定义非均匀划分。
@@ -1578,7 +1592,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
 | QAS INT8 | 不支持 | - |
-| FP32 | 支持 | 仅支持2个输入和1个输出；输入和输出rank必须相同且非空，非axis维度一致，axis维度等于两个输入对应维度之和 |
+| FP32 | 支持 | 仅支持2个输入和1个输出，输入和输出数据类型均为FP32；输入和输出rank必须相同且为1~4，所有维度为正数；axis支持负值归一化，归一化后必须在有效范围内；非axis维度一致，输出axis维度等于两个输入axis维度之和；不支持动态Shape |
 
 ### AveragePool2D<a name="ZH-CN_TOPIC_0000002455282373" id="ZH-CN_TOPIC_0000002455282373"></a>
 
@@ -2041,7 +2055,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </td>
 <td class="cellrowborder" valign="top" width="30.556944305569438%" headers="mcps1.2.6.1.4 "><p id="p123531648164412"><a name="p123531648164412"></a><a name="p123531648164412"></a>缩放填充模式，是否对齐输入输出的角落像素。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p187252223"><a name="p187252223"></a><a name="p187252223"></a>配置范围：true、false，与half_pixel_centers必须配置一个且仅一个配置为true</p>
+<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p187252223"><a name="p187252223"></a><a name="p187252223"></a>配置范围：true、false；align_corners与half_pixel_centers不能同时为true，两者均为false时表示asymmetric坐标配置</p>
 </td>
 </tr>
 <tr id="row116462211215"><td class="cellrowborder" valign="top" width="19.068093190680933%" headers="mcps1.2.6.1.1 "><p id="p86471027120"><a name="p86471027120"></a><a name="p86471027120"></a>half_pixel_centers</p>
@@ -2122,7 +2136,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </td>
 <td class="cellrowborder" valign="top" width="30.556944305569438%" headers="mcps1.2.6.1.4 "><p id="p123531648164412"><a name="p123531648164412"></a><a name="p123531648164412"></a>缩放填充模式，是否对齐输入输出的角落像素。</p>
 </td>
-<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p143521048174416"><a name="p143521048174416"></a><a name="p143521048174416"></a>配置范围：true、false，与half_pixel_centers必须配置一个且仅一个配置为true</p>
+<td class="cellrowborder" valign="top" width="25.497450254974503%" headers="mcps1.2.6.1.5 "><p id="p143521048174416"><a name="p143521048174416"></a><a name="p143521048174416"></a>配置范围：true、false；align_corners与half_pixel_centers不能同时为true，两者均为false时表示asymmetric坐标配置</p>
 </td>
 </tr>
 <tr id="row116462211215"><td class="cellrowborder" valign="top" width="19.068093190680933%" headers="mcps1.2.6.1.1 "><p id="p86471027120"><a name="p86471027120"></a><a name="p86471027120"></a>half_pixel_centers</p>
@@ -2138,6 +2152,13 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持静态rank-4 NHWC；TFLite asymmetric坐标配置由两个坐标属性均为false的组合表达 |
 
 ### Squeeze<a name="ZH-CN_TOPIC_0000002515130287" id="ZH-CN_TOPIC_0000002515130287"></a>
 
@@ -2202,8 +2223,8 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 输入和输出元素数量必须一致，且输入和输出为INT8或INT32 |
-| FP32 | 支持 | 输入和输出元素数量必须一致，且为FP32静态非空张量 |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 仅支持1个数据输入和1个输出，输入和输出均为FP32静态非空张量，且元素总数相等；支持axis为空、正axis和负axis，指定axis对应的输入维度必须为1；不支持动态Shape |
 
 ### ExpandDims<a name="ZH-CN_TOPIC_0000002482930280" id="ZH-CN_TOPIC_0000002482930280"></a>
 
@@ -2936,6 +2957,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | begin和size必须为int32或int64类型的离线常量，且每轴对应一个值；begin必须大于或等于0；size小于0时按“取到末尾”折叠；切片必须非空且不越界，size必须与输出Shape逐轴一致 |
+
 #### StridedSlice<a name="ZH-CN_TOPIC_0000002496933624" id="ZH-CN_TOPIC_0000002496933624"></a>
 
 **功能描述<a name="section270785104414"></a>**
@@ -3089,7 +3117,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
 | QAS INT8 | 不支持 | - |
-| FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；要求full-rank归一化参数，不支持slice mask，stride必须为正，不支持空切片 |
+| FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；要求full-rank归一化参数，不支持slice mask，step非零（正、负步长均支持），不支持空切片 |
 
 ### DepthwiseConv2D<a name="ZH-CN_TOPIC_0000002529736261" id="ZH-CN_TOPIC_0000002529736261"></a>
 
@@ -3301,8 +3329,8 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | perm必须是合法的int32常量全排列；输入和输出为INT8或INT32，元素数量和rank必须一致 |
-| FP32 | 支持 | perm必须是合法的int32常量全排列；输入和输出为FP32静态非空张量，rank为1～19 |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 输入和输出必须为FP32静态非空张量，元素数量及rank一致，rank为1～16；perm必须是长度等于rank的int32离线常量，且为[0, rank)的合法全排列。反向仅计算数据输入梯度，按perm的逆排列对输出梯度进行转置；perm不参与求导。 |
 
 ### ArgMax<a name="ZH-CN_TOPIC_0000002509946184" id="ZH-CN_TOPIC_0000002509946184"></a>
 
@@ -3525,7 +3553,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
 | QAS INT8 | 不支持 | - |
-| FP32 | 支持 | 支持广播兼容shape，rank不超过10；不支持融合激活 |
+| FP32 | 支持 | 前向输入为2个、输出为1个，输入和输出数据类型均为FP32；支持静态Shape和标准右对齐广播，输出rank不超过4，所有维度必须为正数；输入rank不得大于输出rank，且每一维满足输入维度为1或等于输出维度；反向需保留两个输入，支持同时生成两个输入梯度；仅支持无融合激活（NONE），不支持动态Shape |
 
 ### ReduceMax<a name="ZH-CN_TOPIC_0000002526421590" id="ZH-CN_TOPIC_0000002526421590"></a>
 
@@ -3857,6 +3885,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 仅支持输入和输出均为FP32的恒等Cast；输入和输出必须为静态非空张量且形状一致。反向仅传递数据输入梯度，梯度张量按元素复制；不产生可训练参数梯度。 |
 
 ### Quantize<a name="ZH-CN_TOPIC_0000002557589767" id="ZH-CN_TOPIC_0000002557589767"></a>
 
@@ -4289,6 +4324,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | alpha为常量 |
+
 ### HardSwish<a name="ZH-CN_TOPIC_0000002574309498" id="ZH-CN_TOPIC_0000002574309498"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -4461,6 +4503,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 不可微；梯度不经Equal回传，其上游仅当存在其他可微路径时才参与训练 |
 
 ### GreaterEqual<a name="ZH-CN_TOPIC_0000002574817236" id="ZH-CN_TOPIC_0000002574817236"></a>
 
@@ -5268,6 +5317,13 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持静态、非空张量，广播对齐后的rank不超过4，并按trailing broadcast对齐 |
 
 ### TopK<a name="ZH-CN_TOPIC_0000003050115702" id="ZH-CN_TOPIC_0000003050115702"></a>
 
@@ -6727,7 +6783,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 支持INT8输入/权重/输出、INT32 bias、rank为4、group为1、3x3卷积、无融合激活或融合ReLU；权重为OHWI格式，支持per-tensor或per-output-channel量化 |
+| QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为4、batch为1、无bias、无融合激活、stride和dilation均为1的depthwise等价卷积；要求group=input_channel=output_channel，权重为OHWI格式且I=1 |
 
 ### Conv3D<a name="ZH-CN_TOPIC_0000003190115802" id="ZH-CN_TOPIC_0000003190115802"></a>
@@ -6770,6 +6826,13 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | 无bias两输入节点 | Conv节点仅X/W输入 | 偏置按0处理。 |
 | 全量化int8通路 | float32模型 + FULL_QUANT | 转换后使用int8数据通路执行，requant按乘法量化因子q=round(acc * mult) + zp计算。 |
 | 不支持规格命中 | group大于1、dilations不等于[1, 1, 1]、auto_pad不等于NOTSET | 转换期报错，不生成模型。 |
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 输入x为[N, C, D, H, W]，权重w为[OC, C, KD, KH, KW]；D、H、W方向的stride均大于或等于1；pads按[d1, h1, w1, d2, h2, w2]配置且均大于或等于0；auto_pad仅支持NOTSET，group仅支持1，dilation仅支持1；bias可选；不支持融合激活 |
 
 ### MaxPool<a name="ZH-CN_TOPIC_0000002325993104" id="ZH-CN_TOPIC_0000002325993104"></a>
 
@@ -6903,8 +6966,8 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 仅支持MaxPool，输入和输出均为INT8 NHWC四维张量，且必须携带量化参数 |
-| FP32 | 不支持 | - |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 仅支持单输入、单输出的二维MaxPool，输入、输出及梯度均为FP32四维张量，且所有维度均为正数；池化仅改变空间维度，输出的batch和channel与输入保持一致；输入必须为非常量张量；非global模式下kernel和stride的H、W必须为正数；不支持动态Shape、MaxPool1D和MaxPool3D |
 
 ### Gemm<a name="ZH-CN_TOPIC_0000002360071441" id="ZH-CN_TOPIC_0000002360071441"></a>
 
@@ -7024,7 +7087,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 支持INT8输入/权重/输出，rank为2，A不转置、B转置、无融合激活；可选INT32 bias，权重支持per-tensor或per-output-channel量化 |
+| QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为2、2个或3个输入、A不转置、B可转置；融合激活仅支持无融合激活或ReLU，bias元素数量必须等于输出通道数 |
 
 ### Matmul<a name="ZH-CN_TOPIC_0000002455345333" id="ZH-CN_TOPIC_0000002455345333"></a>
@@ -7093,7 +7156,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 支持INT8输入/权重/输出，rank为2，A不转置、B转置、无融合激活；可选INT32 bias，权重支持per-tensor或per-output-channel量化 |
+| QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为2、2个或3个输入、A不转置、B可转置；融合激活仅支持无融合激活或ReLU，bias元素数量必须等于输出通道数 |
 
 ### Softmax<a name="ZH-CN_TOPIC_0000002360191597" id="ZH-CN_TOPIC_0000002360191597"></a>
@@ -7210,8 +7273,8 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | Activation训练反向仅支持ReLU，输入和输出均为INT8且必须携带量化参数 |
-| FP32 | 支持 | Activation训练反向仅支持ReLU |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | - |
 
 ### Tan<a name="ZH-CN_TOPIC_0000003100115802" id="ZH-CN_TOPIC_0000003100115802"></a>
 
@@ -7449,8 +7512,8 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 输入和输出元素数量必须一致，且输入和输出为INT8或INT32 |
-| FP32 | 支持 | 输入和输出元素数量必须一致，且为FP32静态非空张量 |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | shape属性为int64离线常量；输出最多为4维，且元素数与输入相等 |
 
 ### Mul<a name="ZH-CN_TOPIC_0000002455226053" id="ZH-CN_TOPIC_0000002455226053"></a>
 
@@ -7729,6 +7792,13 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | data各维必须为正数；indices为int32离线常量，int64类型由parser自动转换为int32，允许重复索引和负索引，索引越界在训练运行时报错；axis取值范围为[-rank, rank-1]，负值在转换时归一化；输出维数等于data维数减1再加indices维数，gather轴使用indices的Shape |
+
 ### Split<a name="ZH-CN_TOPIC_0000002421393470" id="ZH-CN_TOPIC_0000002421393470"></a>
 
 **功能描述<a name="section129901354195417"></a>**
@@ -7874,7 +7944,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
 | QAS INT8 | 不支持 | - |
-| FP32 | 支持 | 仅支持2个输入和1个输出；输入和输出rank必须相同且非空，非axis维度一致，axis维度等于两个输入对应维度之和 |
+| FP32 | 支持 | 仅支持2个输入和1个输出，输入和输出数据类型均为FP32；输入和输出rank必须相同且为1~4，所有维度为正数；axis支持负值归一化，归一化后必须在有效范围内；非axis维度一致，输出axis维度等于两个输入axis维度之和；不支持动态Shape |
 
 ### AveragePool<a name="ZH-CN_TOPIC_0000002455402925" id="ZH-CN_TOPIC_0000002455402925"></a>
 
@@ -8085,6 +8155,13 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | input、scale、B和output均为FP32；input和output必须为静态正维的3D或4D张量且形状一致，scale和B的元素数必须等于通道数；epsilon必须大于0。反向必须计算输入梯度；scale和B为可训练参数时分别计算其梯度。 |
 
 ### LSTM<a name="ZH-CN_TOPIC_0000002486111849" id="ZH-CN_TOPIC_0000002486111849"></a>
 
@@ -8323,6 +8400,13 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 仅支持FP32静态、非空张量，以及单层、单向forward LSTM；输入X为三维张量[T, B, I]，T、B、I均大于0；权重采用IOFG门顺序，W为[1, 4H, I]、R为[1, 4H, H]、B为[1, 8H]，initial_h和initial_c的元素数均为B×H；Y、Y_h、Y_c的输出梯度可任意组合，但至少存在一个；不支持双向、reverse、projection、非零zoneout和动态Shape |
 
 ### Tile<a name="ZH-CN_TOPIC_0000002513105051" id="ZH-CN_TOPIC_0000002513105051"></a>
 
@@ -8667,6 +8751,13 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持本实现锁定的linear或nearest分支 |
+
 ### Squeeze<a name="ZH-CN_TOPIC_0000002482800962" id="ZH-CN_TOPIC_0000002482800962"></a>
 
 **功能描述<a name="section144144283412"></a>**
@@ -8730,8 +8821,8 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 输入和输出元素数量必须一致，且输入和输出为INT8或INT32 |
-| FP32 | 支持 | 输入和输出元素数量必须一致，且为FP32静态非空张量 |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 仅支持1个数据输入和1个输出，输入和输出均为FP32静态非空张量，且元素总数相等；支持axis为空、正axis和负axis，指定axis对应的输入维度必须为1；不支持动态Shape |
 
 ### Unsqueeze<a name="ZH-CN_TOPIC_0000002482804754" id="ZH-CN_TOPIC_0000002482804754"></a>
 
@@ -8796,8 +8887,8 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 输入和输出元素数量必须一致，且输入和输出为INT8或INT32 |
-| FP32 | 支持 | 输入和输出元素数量必须一致，且为FP32静态非空张量 |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 仅支持1个数据输入和1个输出，输入和输出均为FP32静态非空张量，且元素总数相等；支持单个或多个axis及负axis，axis归一化后按升序插入维度；axis数量不超过4，输出rank不超过16；不支持动态Shape |
 
 ### Flatten<a name="ZH-CN_TOPIC_0000002515124725" id="ZH-CN_TOPIC_0000002515124725"></a>
 
@@ -8862,7 +8953,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | 输入和输出元素数量必须一致，且输入和输出为INT8或INT32 |
+| QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 输入和输出元素数量必须一致，且为FP32静态非空张量 |
 
 ### Abs<a name="ZH-CN_TOPIC_0000002485239888" id="ZH-CN_TOPIC_0000002485239888"></a>
@@ -9666,7 +9757,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
 | QAS INT8 | 不支持 | - |
-| FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；要求full-rank归一化参数，不支持slice mask，step必须为正，不支持空切片 |
+| FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；要求full-rank归一化参数，不支持slice mask，step非零（正、负步长均支持），不支持空切片 |
 
 ### GlobalMaxPool<a name="ZH-CN_TOPIC_0000002497018654" id="ZH-CN_TOPIC_0000002497018654"></a>
 
@@ -9827,8 +9918,8 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
-| QAS INT8 | 支持 | perm必须是合法的int32常量全排列；输入和输出为INT8或INT32，元素数量和rank必须一致 |
-| FP32 | 支持 | perm必须是合法的int32常量全排列；输入和输出为FP32静态非空张量，rank为1～19 |
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 输入和输出必须为FP32静态非空张量，元素数量及rank一致，rank为1～16；perm必须是长度等于rank的int32离线常量，且为[0, rank)的合法全排列。反向仅计算数据输入梯度，按perm的逆排列对输出梯度进行转置；perm不参与求导。 |
 
 ### ArgMax<a name="ZH-CN_TOPIC_0000002510106182" id="ZH-CN_TOPIC_0000002510106182"></a>
 
@@ -10062,7 +10153,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
 | QAS INT8 | 不支持 | - |
-| FP32 | 支持 | 支持广播兼容shape，rank不超过10；不支持融合激活 |
+| FP32 | 支持 | 前向输入为2个、输出为1个，输入和输出数据类型均为FP32；支持静态Shape和标准右对齐广播，输出rank不超过4，所有维度必须为正数；输入rank不得大于输出rank，且每一维满足输入维度为1或等于输出维度；反向需保留两个输入，支持同时生成两个输入梯度；仅支持无融合激活（NONE），不支持动态Shape |
 
 ### Mod<a name="ZH-CN_TOPIC_0000002600000004" id="ZH-CN_TOPIC_0000002600000004"></a>
 
@@ -10950,6 +11041,13 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 仅支持输入和输出均为FP32的恒等Cast；输入和输出必须为静态非空张量且形状一致。反向仅传递数据输入梯度，梯度张量按元素复制；不产生可训练参数梯度。 |
+
 ### PRelu<a name="ZH-CN_TOPIC_0000002568693026" id="ZH-CN_TOPIC_0000002568693026"></a>
 
 **功能描述<a name="section167661757173918"></a>**
@@ -11295,6 +11393,13 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | alpha为常量 |
+
 ### HardSwish<a name="ZH-CN_TOPIC_0000002574469146" id="ZH-CN_TOPIC_0000002574469146"></a>
 
 **功能描述<a name="section113841812134710"></a>**
@@ -11529,6 +11634,13 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 不可微；梯度不经Equal回传，其上游仅当存在其他可微路径时才参与训练 |
 
 ### GreaterOrEqual<a name="ZH-CN_TOPIC_0000002605377849" id="ZH-CN_TOPIC_0000002605377849"></a>
 
@@ -12333,6 +12445,13 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | Expand在训练图中转换为BroadcastTo；输入和输出必须为FP32静态非空张量，输入rank为0～16、输出rank为1～16，输出rank不小于输入rank，且形状满足右对齐广播规则。shape必须为int64一维编译期离线常量，来源为initializer或Constant节点，各目标维度大于0；不支持运行时shape。反向仅计算数据输入梯度，将输出梯度沿广播轴累加；shape不参与求导。 |
 
 ### Elu<a name="ZH-CN_TOPIC_0000002660394575" id="ZH-CN_TOPIC_0000002660394575"></a>
 
@@ -13597,6 +13716,13 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持1个或多个FP32静态非空输入，按trailing broadcast规则对齐，广播后的输出rank不超过4；反向分别计算各输入梯度，并沿对应广播轴累加 |
 
 ### Constant<a name="ZH-CN_TOPIC_0000003110115802" id="ZH-CN_TOPIC_0000003110115802"></a>
 
@@ -15023,6 +15149,13 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tr>
 </tbody>
 </table>
+
+**训练支持规格**
+
+| 训练模式 | 支持情况 | 规格约束 |
+|---|---|---|
+| QAS INT8 | 不支持 | - |
+| FP32 | 支持 | 支持静态、非空张量，广播对齐后的rank不超过4，并按trailing broadcast对齐 |
 
 # 专题<a name="ZH-CN_TOPIC_0000002562713759" id="ZH-CN_TOPIC_0000002562713759"></a>
 
