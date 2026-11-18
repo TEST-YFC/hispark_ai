@@ -30,7 +30,6 @@
 /* Task Param */
 #define TASKS_MCU_AI_STACK_SIZE 0x2000
 #define TASKS_MCU_AI_PRIO (osPriority_t)(17)
-#define TASKS_MCU_AI_TICKS_PER_SECOND 24000
 #define TASKS_MCU_AI_PRINT_FLOAT_MULTIPILER 100000
 
 #define AI_MCU_SAMPLE_LOG_TAG "[MNIST_TRAIN] "
@@ -165,9 +164,9 @@ static OH_AI_Status ai_mcu_sample_predict(struct ai_mcu_param *sample_param)
         .handle_num = 1,
         .handle_list = sample_param->outputs.handle_list,
     };
-    uint64_t start = uapi_tcxo_get_count();
+    uint64_t start = uapi_tcxo_get_us();
     ret = OH_AI_ModelPredict(sample_param->model, sample_param->inputs, &predict_outputs);
-    uint64_t end = uapi_tcxo_get_count();
+    uint64_t end = uapi_tcxo_get_us();
     if (ret != OH_AI_STATUS_SUCCESS) {
         osal_printk(AI_MCU_SAMPLE_LOG_TAG "OH_AI_ModelPredict failed (%d)\n", ret);
         return ret;
@@ -179,7 +178,7 @@ static OH_AI_Status ai_mcu_sample_predict(struct ai_mcu_param *sample_param)
     int32_t pred = ai_mcu_sample_argmax_logits(logits);
     osal_printk(AI_MCU_SAMPLE_LOG_TAG "Prediction\n");
     osal_printk(AI_MCU_SAMPLE_LOG_TAG "  pred: %d\n", pred);
-    osal_printk(AI_MCU_SAMPLE_LOG_TAG "  time: %dms\n", ((int)end - (int)start) / TASKS_MCU_AI_TICKS_PER_SECOND);
+    osal_printk(AI_MCU_SAMPLE_LOG_TAG "  time: %llu us\n", (unsigned long long)(end - start));
     osal_printk(AI_MCU_SAMPLE_LOG_TAG "  logits: ");
     osal_printk("[");
     for (int32_t i = 0; i < AI_MCU_SAMPLE_LOGITS_SIZE; ++i) {

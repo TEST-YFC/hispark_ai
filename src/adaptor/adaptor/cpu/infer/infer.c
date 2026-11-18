@@ -163,14 +163,14 @@ MS_AI_INFER_Status MS_AI_Infer(AI_File_Handle handle)
     }
 
     /* 2. AI Infer */
-    uint64_t start = uapi_tcxo_get_count();
+    uint64_t start = uapi_tcxo_get_us();
     OH_AI_Status ret = OH_AI_ModelPredict(g_ai_infer_param.model, g_ai_infer_param.inputs, &(g_ai_infer_param.outputs));
-    uint64_t end = uapi_tcxo_get_count();
+    uint64_t end = uapi_tcxo_get_us();
     if (ret != OH_AI_STATUS_SUCCESS) {
         osal_printk("[ERROR] OH_AI_ModelPredict failed (%d)\n", ret);
         return MS_AI_INFER_STATUS_FAILED;
     }
-    osal_printk("[TCXO] %llu ticks\n", end - start);
+    osal_printk("[TCXO] %llu us\n", (unsigned long long)(end - start));
 
     /* 3. Output */
     for (size_t i = 0; i < g_ai_infer_param.outputs.handle_num; i++) {
