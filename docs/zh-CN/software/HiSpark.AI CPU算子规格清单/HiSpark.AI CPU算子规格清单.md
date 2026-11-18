@@ -5190,7 +5190,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3030115702r1d"><a name="p3030115702r1d"></a><a name="p3030115702r1d"></a>输入张量，维度不限制。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115702r1e"><a name="p3030115702r1e"></a><a name="p3030115702r1e"></a>-</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115702r1e"><a name="p3030115702r1e"></a><a name="p3030115702r1e"></a>数据类型仅支持float16、float32、int8、uint8、int32、bool</p>
 </td>
 </tr>
 <tr id="row3030115702r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3030115702r2a"><a name="p3030115702r2a"></a><a name="p3030115702r2a"></a>output</p>
@@ -13007,7 +13007,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </td>
 <td class="cellrowborder" valign="top" width="31.39%" headers="mcps1.2.6.1.4 "><p id="p3030115802r1d"><a name="p3030115802r1d"></a><a name="p3030115802r1d"></a>输入张量，维度不限制。</p>
 </td>
-<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115802r1e"><a name="p3030115802r1e"></a><a name="p3030115802r1e"></a>-</p>
+<td class="cellrowborder" valign="top" width="26.11%" headers="mcps1.2.6.1.5 "><p id="p3030115802r1e"><a name="p3030115802r1e"></a><a name="p3030115802r1e"></a>数据类型仅支持float16、float32、int8、uint8、int32、bool</p>
 </td>
 </tr>
 <tr id="row3030115802r2"><td class="cellrowborder" valign="top" width="17.68%" headers="mcps1.2.6.1.1 "><p id="p3030115802r2a"><a name="p3030115802r2a"></a><a name="p3030115802r2a"></a>shape</p>
