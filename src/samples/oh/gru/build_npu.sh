@@ -196,11 +196,11 @@ function build_cfbb()
 
 function set_tiangong2_build_env()
 {
-    if [ -z "$SDK_PATH" ]; then
-        echo "ERROR: env SDK_PATH is empty, please set SDK_PATH"
+    if [ -z "$LIB_PATH" ]; then
+        echo "ERROR: env LIB_PATH is empty, please set LIB_PATH"
         exit 1
     else
-        echo "SDK_PATH=$SDK_PATH"
+        echo "LIB_PATH=$LIB_PATH"
     fi
     if [ -z "$ADAPTOR_PATH" ]; then
         echo "ERROR: env ADAPTOR_PATH is empty, please set ADAPTOR_PATH"
@@ -222,7 +222,6 @@ function set_tiangong2_build_env()
     fi
 
     export LANG="C"
-    LIB_PATH=$SDK_PATH/software/tiangong2_image_release/NPU/release/lib
     ADAPTOR_TARGET_PATH=$ADAPTOR_PATH/adaptor/npu
     ADAPTOR_BUILD_PATH=$ADAPTOR_PATH/adaptor/npu/build
     ADAPTOR_CMAKELIST_PATH=$ADAPTOR_PATH/adaptor/npu/CMakeLists.txt

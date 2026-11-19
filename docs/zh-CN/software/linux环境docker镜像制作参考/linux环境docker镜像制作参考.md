@@ -41,26 +41,15 @@ Dockerfile 包括 `Dockerfile_mslite`，为基础版环境准备配置文件。
 
 ```dockerfile
 ARG http_proxy https_proxy no_proxy
+ENV http_proxy=$http_proxy https_proxy=$https_proxy no_proxy=$no_proxy
 
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends wget curl  build-essential python3.11-dev libpython3.11 python3-pip python3-dev ssh vim git \
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake ssh \
     && rm -rf /var/lib/apt/lists/*
 
-# GCC 14 工具链（官方依赖要求 GCC 14.3.x）。用 ubuntu-toolchain-r PPA（为 22.04 编译，不污染 glibc/binutils）
-RUN apt-get update && apt-get install -y --no-install-recommends gpg wget \
-    && wget -qO - 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x60C317803A41BA51845E371A1E9377A2BA9EF27F' | gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg \
-    && echo "deb https://ppa.launchpadcontent.net/ubuntu-toolchain-r/test/ubuntu jammy main" > /etc/apt/sources.list.d/toolchain-r-test.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends gcc-14 g++-14 cmake \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 \
-    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100 \
-    && rm -rf /var/lib/apt/lists/*
-
-# 1. 软链接：RUN ln -S /usr/bin/python3.11 python
-RUN /usr/bin/python3.11 -m pip install wheel decorator sympy scipy==1.10.1 onnx==1.14.0 onnxruntime==1.15.0 numpy==1.24.3 tensorflow==2.13.0 torch==2.1.0 torchvision==0.16.0
-RUN mkdir -p /usr/src/mindspore
+RUN mkdir -p /usr/src/mindspore /usr/src/env
 COPY HiSpark.AI*-mindspore-*-x64.tar.gz /usr/src/env/mindspore-lite.tar.gz
 RUN /usr/bin/tar -zxvf /usr/src/env/mindspore-lite.tar.gz -C /usr/src/mindspore
 
@@ -71,7 +60,8 @@ RUN sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/s
     && sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/#*StrictModes yes/StrictModes yes/g' /etc/ssh/sshd_config
 
-RUN ln -sf /usr/bin/python3.11 /usr/bin/python
+# converter_lite 动态库链接路径（{version}替换为实际版本，如 106.1.0）
+ENV LD_LIBRARY_PATH=/usr/src/mindspore/mindspore-enterprise-lite-{version}-linux-x64/tools/converter/lib
 ```
 
 ### 环境准备步骤
