@@ -1,4 +1,6 @@
-# 学习向导<a name="ZH-CN_TOPIC_0000002473745758"></a>
+# ATC离线模型编译工具用户指南
+
+## 学习向导<a name="ZH-CN_TOPIC_0000002473745758"></a>
 
 本文档用于指导开发者如何使用ATC（Ascend Tensor Compiler，简称ATC）工具进行模型转换，得到适配NPU IP加速器的离线模型。通过本文档您可以达成以下目标：
 
@@ -49,12 +51,12 @@
 </tbody>
 </table>
 
-# ATC简介<a name="ZH-CN_TOPIC_0000002473745734"></a>
+## ATC简介<a name="ZH-CN_TOPIC_0000002473745734"></a>
 
 介绍ATC工具的功能架构以及使用ATC工具过程中遇到的一些术语或者缩略语。
 ATC工具运行前需要准备环境和模型，本节给出ATC工具的运行流程以及和各组件的交互流程。
 
-## ATC工具介绍<a name="ZH-CN_TOPIC_0000002505905747"></a>
+### ATC工具介绍<a name="ZH-CN_TOPIC_0000002505905747"></a>
 
 介绍ATC工具的功能架构以及使用ATC工具过程中遇到的一些术语或者缩略语。
 
@@ -156,7 +158,7 @@ ATC工具运行前需要准备环境和模型，本节给出ATC工具的运行�
 </tbody>
 </table>
 
-## 调用流程<a name="ZH-CN_TOPIC_0000002506025629"></a>
+### 调用流程<a name="ZH-CN_TOPIC_0000002506025629"></a>
 
 ATC工具运行前需要准备环境和模型，本节给出ATC工具的运行流程以及和各组件的交互流程。
 
@@ -195,7 +197,7 @@ ATC工具运行前需要准备环境和模型，本节给出ATC工具的运行�
 
     5.  图编译阶段：GE进行图编译，包含内存分配、流资源分配等，图编译完成之后生成适配NPU IP加速器的离线模型文件（\*.om/exeom\(IPV350\)）。
 
-# 准备环境<a name="ZH-CN_TOPIC_0000002505905727"></a>
+## 准备环境<a name="ZH-CN_TOPIC_0000002505905727"></a>
 
 **获取ATC工具<a name="section11940191920527"></a>**
 
@@ -300,7 +302,7 @@ ATC工具运行前需要准备环境和模型，本节给出ATC工具的运行�
 
     3.  **更多可选环境变量请参见**《[环境变量参考](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/maintenref/envvar/envref_07_0001.html)》。
 
-# 快速入门<a name="ZH-CN_TOPIC_0000002473905644"></a>
+## 快速入门<a name="ZH-CN_TOPIC_0000002473905644"></a>
 
 本章节以各框架下模型转换为例，演示如何快速转换一个离线模型。
 
@@ -397,14 +399,14 @@ ATC工具运行前需要准备环境和模型，本节给出ATC工具的运行�
 
     成功执行命令后，在--output参数指定的路径下，可查看离线模型（如：caffe\_resnet50.om）。
 
-# 初级功能<a name="ZH-CN_TOPIC_0000002473905698"></a>
+## 初级功能<a name="ZH-CN_TOPIC_0000002473905698"></a>
 
 
 
 
 
 
-## 原始模型文件或离线模型转成JSON文件<a name="ZH-CN_TOPIC_0000002506025665"></a>
+### 原始模型文件或离线模型转成JSON文件<a name="ZH-CN_TOPIC_0000002506025665"></a>
 
 **场景介绍<a name="section3988131415815"></a>**
 
@@ -484,7 +486,7 @@ ATC run success, welcome to the next use.
     },
 ```
 
-## 离线模型支持动态BatchSize/动态分辨率<a name="ZH-CN_TOPIC_0000002473745720"></a>
+### 离线模型支持动态BatchSize/动态分辨率<a name="ZH-CN_TOPIC_0000002473745720"></a>
 
 **该版本不支持动态BatchSize和动态分辨率特性。**
 
@@ -534,7 +536,7 @@ ATC run success, welcome to the next use.
     **图 1**  包含动态BatchSize功能的离线模型<a name="fig59591430133215"></a>  
     ![](figures/包含动态BatchSize功能的离线模型.png "包含动态BatchSize功能的离线模型")
 
-## 离线模型支持动态维度<a name="ZH-CN_TOPIC_0000002473905690"></a>
+### 离线模型支持动态维度<a name="ZH-CN_TOPIC_0000002473905690"></a>
 
 **该版本不支持动态维度特性。**
 
@@ -574,7 +576,7 @@ ATC run success, welcome to the next use.
     **图 1**  包含动态维度的离线模型<a name="fig1112521964513"></a>  
     ![](figures/包含动态维度的离线模型.png "包含动态维度的离线模型")
 
-## 自定义离线模型的输入输出数据类型<a name="ZH-CN_TOPIC_0000002473745782"></a>
+### 自定义离线模型的输入输出数据类型<a name="ZH-CN_TOPIC_0000002473745782"></a>
 
 **场景介绍<a name="section17274441344"></a>**
 
@@ -612,7 +614,7 @@ ATC run success, welcome to the next use.
     **图 1**  指定某个算子为离线模型输出<a name="fig964118341146"></a>  
     ![](figures/指定某个算子为离线模型输出.png "指定某个算子为离线模型输出")
 
-## 借助离线模型查看软件基础版本号（IPV350不支持）<a name="ZH-CN_TOPIC_0000002473905680"></a>
+### 借助离线模型查看软件基础版本号（IPV350不支持）<a name="ZH-CN_TOPIC_0000002473905680"></a>
 
 **场景介绍<a name="section11300747162914"></a>**
 
@@ -662,11 +664,11 @@ ATC run success, welcome to the next use.
          },
     ```
 
-# 高级功能<a name="ZH-CN_TOPIC_0000002473745760"></a>
+## 高级功能<a name="ZH-CN_TOPIC_0000002473745760"></a>
 
 
 
-## AIPP使能**\(该版本不支持AIPP特性\)**<a name="ZH-CN_TOPIC_0000002506025631"></a>
+### AIPP使能**\(该版本不支持AIPP特性\)**<a name="ZH-CN_TOPIC_0000002506025631"></a>
 
 本节介绍什么是AIPP，AIPP分类以及包括的特性。
 
@@ -677,7 +679,7 @@ AIPP提供了更为方便的图像格式转换方式：色域转换，用于将�
 如果有配置AIPP，无论静态AIPP还是动态AIPP，最终生成离线模型的输入大小（即input\_size）均会被Crop、Padding等操作影响。本节给出对模型输入大小的约束说明。
 AIPP配置文件通过本章节给出的模板进行配置，内容需要满足prototxt格式，用户根据场景决定配置哪些参数，修改为合适的取值另存后供模型转换使用；使用配置模板之前需要先查看相关约束。
 
-### 什么是AIPP<a name="ZH-CN_TOPIC_0000002473905686"></a>
+#### 什么是AIPP<a name="ZH-CN_TOPIC_0000002473905686"></a>
 
 本节介绍什么是AIPP，AIPP分类以及包括的特性。
 
@@ -713,12 +715,12 @@ AIPP功能中的改变图像尺寸操作由Crop（抠图）、Padding（补边�
 
 关于该功能的详细说明以及AIPP参数配置示例请参见[Crop/Padding配置说明](Crop-Padding配置说明.md)。
 
-### AIPP配置示例<a name="ZH-CN_TOPIC_0000002473905682"></a>
+#### AIPP配置示例<a name="ZH-CN_TOPIC_0000002473905682"></a>
 
 AIPP配置文件支持定义多组AIPP配置，对不同的模型输入进行不同的AIPP处理，配置多组AIPP参数时，将一组AIPP配置放到一个aipp\_op配置项里；如果模型只有一个输入，则只需要配置第一组aipp\_op即可。
 AIPP配置文件支持定义多组AIPP配置，对不同的模型输入进行不同的AIPP处理，配置多组AIPP参数时，将一组AIPP配置放到一个aipp\_op配置项里；如果模型只有一个输入，则只需要配置第一组aipp\_op即可。
 
-#### 静态AIPP配置示例<a name="ZH-CN_TOPIC_0000002505905699"></a>
+##### 静态AIPP配置示例<a name="ZH-CN_TOPIC_0000002505905699"></a>
 
 AIPP配置文件支持定义多组AIPP配置，对不同的模型输入进行不同的AIPP处理，配置多组AIPP参数时，将一组AIPP配置放到一个aipp\_op配置项里；如果模型只有一个输入，则只需要配置第一组aipp\_op即可。
 
@@ -784,7 +786,7 @@ AIPP配置文件支持定义多组AIPP配置，对不同的模型输入进行不
     }
     ```
 
-#### 动态AIPP配置示例<a name="ZH-CN_TOPIC_0000002473745730"></a>
+##### 动态AIPP配置示例<a name="ZH-CN_TOPIC_0000002473745730"></a>
 
 AIPP配置文件支持定义多组AIPP配置，对不同的模型输入进行不同的AIPP处理，配置多组AIPP参数时，将一组AIPP配置放到一个aipp\_op配置项里；如果模型只有一个输入，则只需要配置第一组aipp\_op即可。
 
@@ -893,7 +895,7 @@ typedef struct tagAippDynamicPara
 } kAippDynamicPara;
 ```
 
-### 如何使能AIPP<a name="ZH-CN_TOPIC_0000002473905660"></a>
+#### 如何使能AIPP<a name="ZH-CN_TOPIC_0000002473905660"></a>
 
 通过在模型转换过程中开启AIPP功能，可以在推理之前就完成所有的数据处理；由于用的是专门的加速模块实现并保证性能，从而可以不让图像处理成为推理阶段的瓶颈，图像处理方式比较灵活。本章节给出如何在模型转换阶段开启AIPP功能。
 
@@ -1356,7 +1358,7 @@ ResNet50网络模型要求的图片格式为RGB，图片尺寸为224\*224，另�
                 }
     ```
 
-### 色域转换配置说明<a name="ZH-CN_TOPIC_0000002505905751"></a>
+#### 色域转换配置说明<a name="ZH-CN_TOPIC_0000002505905751"></a>
 
 AIPP提供了更为方便的图像格式转换方式：色域转换，用于将输入的图片格式，转换为模型需要的图片格式，一旦确认了AIPP处理前与AIPP处理后的图片格式，即可确定色域转换相关的参数值（**matrix\_r\*c\*配置项的值是固定的，不需要调整**）。
 
@@ -2736,7 +2738,7 @@ aipp_op {
 }
 ```
 
-### 归一化配置说明<a name="ZH-CN_TOPIC_0000002506025661"></a>
+#### 归一化配置说明<a name="ZH-CN_TOPIC_0000002506025661"></a>
 
 归一化就是要把需要处理的数据经过处理后限制在一定范围内，方便后面数据的处理。AIPP支持的归一化设置，通过减均值和乘系数的操作完成，这样的能力不仅能用于常规的归一化，还能用于不同数据格式的转化。
 
@@ -2746,7 +2748,7 @@ aipp_op {
 pixel_out_chx(i)=[pixel_in_chx(i)-mean_chn_i-min_chn_i]*var_reci_chn_i
 ```
 
-### Crop/Padding配置说明<a name="ZH-CN_TOPIC_0000002505905717"></a>
+#### Crop/Padding配置说明<a name="ZH-CN_TOPIC_0000002505905717"></a>
 
 原图大小为srcImageSizeW、srcImageSizeH的图像经过图像预处理后变为模型预期的dstImageSizeW、dstImageSizeH图像尺寸。
 
@@ -2781,7 +2783,7 @@ aipp_op {
 }
 ```
 
-### AIPP对模型输入大小的校验说明<a name="ZH-CN_TOPIC_0000002473905664"></a>
+#### AIPP对模型输入大小的校验说明<a name="ZH-CN_TOPIC_0000002473905664"></a>
 
 如果有配置AIPP，无论静态AIPP还是动态AIPP，最终生成离线模型的输入大小（即input\_size）均会被Crop、Padding等操作影响。本节给出对模型输入大小的约束说明。
 
@@ -2803,7 +2805,7 @@ sizeof(kAippDynamicPara) - sizeof(kAippDynamicBatchPara) + batch_count * sizeof(
 
 kAippDynamicPara以及kAippDynamicBatchPara参数解释请参见[动态AIPP的参数输入结构](动态AIPP配置示例.md#section748641713327)。
 
-### 配置文件模板<a name="ZH-CN_TOPIC_0000002473745780"></a>
+#### 配置文件模板<a name="ZH-CN_TOPIC_0000002473745780"></a>
 
 AIPP配置文件通过本章节给出的模板进行配置，内容需要满足prototxt格式，用户根据场景决定配置哪些参数，修改为合适的取值另存后供模型转换使用；使用配置模板之前需要先查看相关约束。
 
@@ -3172,12 +3174,12 @@ var_reci_chn_3: 1.0
 }
 ```
 
-### 典型场景样例参考<a name="ZH-CN_TOPIC_0000002506025653"></a>
+#### 典型场景样例参考<a name="ZH-CN_TOPIC_0000002506025653"></a>
 
 
 
 
-#### YUV400\_U8转GRAY格式<a name="ZH-CN_TOPIC_0000002505905733"></a>
+##### YUV400\_U8转GRAY格式<a name="ZH-CN_TOPIC_0000002505905733"></a>
 
 -   **场景说明**：
 
@@ -3208,7 +3210,7 @@ var_reci_chn_3: 1.0
     }
     ```
 
-#### YUV420SP\_U8转BGR格式<a name="ZH-CN_TOPIC_0000002506025635"></a>
+##### YUV420SP\_U8转BGR格式<a name="ZH-CN_TOPIC_0000002506025635"></a>
 
 -   **场景说明：**
 
@@ -3257,7 +3259,7 @@ var_reci_chn_3: 1.0
     }
     ```
 
-#### RGB888\_U8转RGB（或BGR）格式<a name="ZH-CN_TOPIC_0000002473745772"></a>
+##### RGB888\_U8转RGB（或BGR）格式<a name="ZH-CN_TOPIC_0000002473745772"></a>
 
 -   **场景说明：**
 
@@ -3289,13 +3291,13 @@ var_reci_chn_3: 1.0
     }
     ```
 
-## 单算子模型转换**\(该版本不支持单算子特性\)**<a name="ZH-CN_TOPIC_0000002505905745"></a>
+### 单算子模型转换**\(该版本不支持单算子特性\)**<a name="ZH-CN_TOPIC_0000002505905745"></a>
 
 
 
 本节给出单算子描述文件转成离线模型的详细步骤。
 
-### 什么是单算子描述文件<a name="ZH-CN_TOPIC_0000002505905723"></a>
+#### 什么是单算子描述文件<a name="ZH-CN_TOPIC_0000002505905723"></a>
 
 单算子描述文件是基于Ascend IR定义的单个算子的定义文件，包括算子的输入、输出及属性等信息，借助该文件转换成适配昇腾AI处理器的离线模型适配NPU IP加速器的离线模型后，可以验证单算子的功能。
 
@@ -3525,13 +3527,13 @@ var_reci_chn_3: 1.0
 </tbody>
 </table>
 
-### 配置文件样例<a name="ZH-CN_TOPIC_0000002505905691"></a>
+#### 配置文件样例<a name="ZH-CN_TOPIC_0000002505905691"></a>
 
 不同输入或者不同Format场景，单算子描述文件配置不同，本章节给出各场景的配置示例。
 描述文件支持定义多组算子JSON文件配置，一组配置包括算子类型、算子输入和输出信息、视算子情况决定是否包括属性信息。
 动态Shape场景，单算子描述文件根据场景不同，内容也有差异，本章节就给出不同场景下的配置样例。
 
-#### 单算子描述文件配置<a name="ZH-CN_TOPIC_0000002506025651"></a>
+##### 单算子描述文件配置<a name="ZH-CN_TOPIC_0000002506025651"></a>
 
 不同输入或者不同Format场景，单算子描述文件配置不同，本章节给出各场景的配置示例。
 
@@ -3877,7 +3879,7 @@ var_reci_chn_3: 1.0
         ]
         ```
 
-#### 多组算子描述文件配置<a name="ZH-CN_TOPIC_0000002506025675"></a>
+##### 多组算子描述文件配置<a name="ZH-CN_TOPIC_0000002506025675"></a>
 
 描述文件支持定义多组算子JSON文件配置，一组配置包括算子类型、算子输入和输出信息、视算子情况决定是否包括属性信息。
 
@@ -3954,7 +3956,7 @@ var_reci_chn_3: 1.0
 ]
 ```
 
-#### 动态Shape单算子描述文件配置<a name="ZH-CN_TOPIC_0000002473905650"></a>
+##### 动态Shape单算子描述文件配置<a name="ZH-CN_TOPIC_0000002473905650"></a>
 
 动态Shape场景，单算子描述文件根据场景不同，内容也有差异，本章节就给出不同场景下的配置样例。
 
@@ -4064,7 +4066,7 @@ var_reci_chn_3: 1.0
     ]
     ```
 
-### 如何将算子描述文件转成离线模型<a name="ZH-CN_TOPIC_0000002473745728"></a>
+#### 如何将算子描述文件转成离线模型<a name="ZH-CN_TOPIC_0000002473745728"></a>
 
 本节给出单算子描述文件转成离线模型的详细步骤。
 
@@ -4090,13 +4092,13 @@ var_reci_chn_3: 1.0
 
     成功执行命令后，在output参数指定的路径下，可查看离线模型文件\*.om。
 
-# 参数说明<a name="ZH-CN_TOPIC_0000002473905670"></a>
+## 参数说明<a name="ZH-CN_TOPIC_0000002473905670"></a>
 
 使用ATC工具转换模型之前，首先查看使用工具过程中的一些限制，然后借助本章节提供的参数概览功能，可以快速预览相关参数。
 
 
 
-## 参数概览<a name="ZH-CN_TOPIC_0000002505905715"></a>
+### 参数概览<a name="ZH-CN_TOPIC_0000002505905715"></a>
 
 使用ATC工具转换模型之前，首先查看使用工具过程中的一些限制，然后借助本章节提供的参数概览功能，可以快速预览相关参数。
 
@@ -4691,17 +4693,17 @@ var_reci_chn_3: 1.0
 </tbody>
 </table>
 
-## 基础功能参数<a name="ZH-CN_TOPIC_0000002473744390"></a>
+### 基础功能参数<a name="ZH-CN_TOPIC_0000002473744390"></a>
 
 
 
 
 
-### 总体选项<a name="ZH-CN_TOPIC_0000002473904362"></a>
+#### 总体选项<a name="ZH-CN_TOPIC_0000002473904362"></a>
 
 
 
-#### --help或--h<a name="ZH-CN_TOPIC_0000002473904326"></a>
+##### --help或--h<a name="ZH-CN_TOPIC_0000002473904326"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -4762,7 +4764,7 @@ atc --singleop=./op_list.json --output=./op_model --soc_version=<soc_version>
 
 无。
 
-#### --mode<a name="ZH-CN_TOPIC_0000002506024333"></a>
+##### --mode<a name="ZH-CN_TOPIC_0000002506024333"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -4879,7 +4881,7 @@ atc --singleop=./op_list.json --output=./op_model --soc_version=<soc_version>
 
 无。
 
-### 输入选项<a name="ZH-CN_TOPIC_0000002506024321"></a>
+#### 输入选项<a name="ZH-CN_TOPIC_0000002506024321"></a>
 
 
 
@@ -4891,7 +4893,7 @@ atc --singleop=./op_list.json --output=./op_model --soc_version=<soc_version>
 
 
 
-#### --framework<a name="ZH-CN_TOPIC_0000002473904356"></a>
+##### --framework<a name="ZH-CN_TOPIC_0000002473904356"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -4975,7 +4977,7 @@ atc --singleop=./op_list.json --output=./op_model --soc_version=<soc_version>
 
 -   针对TensorFlow框架原始网络模型，如果存在控制流算子（比如Switch/Merge/LoopCond/Case/While等），该类网络模型不能直接使用ATC工具进行模型转换，需要先将控制流算子的网络模型转成函数类算子的网络模型，然后利用ATC工具转换成适配昇腾AI处理器的离线模型适配NPU IP加速器的离线模型，详细转换方式请参见[定制网络修改（TensorFlow）](定制网络修改（TensorFlow）.md)。
 
-#### --model<a name="ZH-CN_TOPIC_0000002473744434"></a>
+##### --model<a name="ZH-CN_TOPIC_0000002473744434"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -5022,7 +5024,7 @@ atc --singleop=./op_list.json --output=./op_model --soc_version=<soc_version>
 
 无。
 
-#### --weight<a name="ZH-CN_TOPIC_0000002505904373"></a>
+##### --weight<a name="ZH-CN_TOPIC_0000002505904373"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -5069,7 +5071,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
 无。
 
-#### --input\_format<a name="ZH-CN_TOPIC_0000002473904340"></a>
+##### --input\_format<a name="ZH-CN_TOPIC_0000002473904340"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -5129,7 +5131,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
 无。
 
-#### --input\_shape<a name="ZH-CN_TOPIC_0000002473744428"></a>
+##### --input\_shape<a name="ZH-CN_TOPIC_0000002473744428"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -5259,7 +5261,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
     关于**aclmdlSetDatasetTensorDesc**、**aclmdlGetDatasetTensorDesc**等接口的具体使用方法，请参见《AscendCL应用开发指南 \(C&C++\)》手册“acl API参考”章节。
 
-#### --dynamic\_batch\_size<a name="ZH-CN_TOPIC_0000002473744402"></a>
+##### --dynamic\_batch\_size<a name="ZH-CN_TOPIC_0000002473744402"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -5344,7 +5346,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
     接口详细说明请参见《AscendCL应用开发指南 \(C&C++\)》手册中的“acl API参考 \> 模型管理 \> 模型执行 \>  [aclmdlSetDynamicBatchSize](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/API/appdevgapi/aclcppdevg_03_0306.html)”。
 
-#### --dynamic\_image\_size<a name="ZH-CN_TOPIC_0000002473904322"></a>
+##### --dynamic\_image\_size<a name="ZH-CN_TOPIC_0000002473904322"></a>
 
 **产品支持情况<a name="section2085912413012"></a>**
 
@@ -5425,7 +5427,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
     接口详细说明请参见《AscendCL应用开发指南 \(C&C++\)》手册中的“acl API参考 \> 模型管理 \> 模型执行 \>  [aclmdlSetDynamicHWSize](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/API/appdevgapi/aclcppdevg_03_0307.html)”。
 
-#### --dynamic\_dims<a name="ZH-CN_TOPIC_0000002506024303"></a>
+##### --dynamic\_dims<a name="ZH-CN_TOPIC_0000002506024303"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -5521,7 +5523,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
     接口详细说明请参见《AscendCL应用开发指南 \(C&C++\)》手册中的“acl API参考 \> 模型管理 \> 模型执行 \>  [aclmdlSetInputDynamicDims](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/API/appdevgapi/aclcppdevg_03_0312.html)”章节。
 
-#### --om<a name="ZH-CN_TOPIC_0000002473744394"></a>
+##### --om<a name="ZH-CN_TOPIC_0000002473744394"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -5604,7 +5606,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
 无。
 
-#### --singleop<a name="ZH-CN_TOPIC_0000002505904403"></a>
+##### --singleop<a name="ZH-CN_TOPIC_0000002505904403"></a>
 
 **产品支持情况<a name="section1364472413412"></a>**
 
@@ -5673,7 +5675,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
     接口详细说明请参见《AscendCL应用开发指南 \(C&C++\)》手册中的“acl API参考 \> 单算子调用 \> 单算子模型执行”章节。
 
-### 输出选项<a name="ZH-CN_TOPIC_0000002473904332"></a>
+#### 输出选项<a name="ZH-CN_TOPIC_0000002473904332"></a>
 
 
 
@@ -5681,7 +5683,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
 
 
-#### --output<a name="ZH-CN_TOPIC_0000002506024347"></a>
+##### --output<a name="ZH-CN_TOPIC_0000002506024347"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -5751,7 +5753,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
 无。
 
-#### --output\_type<a name="ZH-CN_TOPIC_0000002505904375"></a>
+##### --output\_type<a name="ZH-CN_TOPIC_0000002505904375"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -5819,7 +5821,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
 无。
 
-#### --check\_report<a name="ZH-CN_TOPIC_0000002473744430"></a>
+##### --check\_report<a name="ZH-CN_TOPIC_0000002473744430"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -5872,7 +5874,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
 关于环境变量ASCEND\_WORK\_PATH的详细说明请参见《[环境变量参考](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/maintenref/envvar/envref_07_0001.html)》。
 
-#### --json<a name="ZH-CN_TOPIC_0000002473904354"></a>
+##### --json<a name="ZH-CN_TOPIC_0000002473904354"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -5949,7 +5951,7 @@ atc --mode=0 --model=$HOME/module/resnet50.prototxt --weight=$HOME/module/resnet
 
 无。
 
-#### --host\_env\_os<a name="ZH-CN_TOPIC_0000002473744420"></a>
+##### --host\_env\_os<a name="ZH-CN_TOPIC_0000002473744420"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6003,7 +6005,7 @@ $\{INSTALL\_DIR\}请替换为CANN软件安装后文件存储路径。以root安�
 
 无。
 
-#### --host\_env\_cpu<a name="ZH-CN_TOPIC_0000002473904338"></a>
+##### --host\_env\_cpu<a name="ZH-CN_TOPIC_0000002473904338"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6057,11 +6059,11 @@ $\{INSTALL\_DIR\}请替换为CANN软件安装后文件存储路径。以root安�
 
 无。
 
-### 目标芯片选项<a name="ZH-CN_TOPIC_0000002473744410"></a>
+#### 目标芯片选项<a name="ZH-CN_TOPIC_0000002473744410"></a>
 
 
 
-#### --soc\_version<a name="ZH-CN_TOPIC_0000002506024313"></a>
+##### --soc\_version<a name="ZH-CN_TOPIC_0000002506024313"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6116,7 +6118,7 @@ IPV350使用示例：
 
 无。
 
-#### --aicore\_num<a name="ZH-CN_TOPIC_0000002506024317"></a>
+##### --aicore\_num<a name="ZH-CN_TOPIC_0000002506024317"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -6184,13 +6186,13 @@ IPV350使用示例：
 
 无。
 
-## 高级功能参数<a name="ZH-CN_TOPIC_0000002473904352"></a>
+### 高级功能参数<a name="ZH-CN_TOPIC_0000002473904352"></a>
 
 
 
 
 
-### 功能配置选项<a name="ZH-CN_TOPIC_0000002505904393"></a>
+#### 功能配置选项<a name="ZH-CN_TOPIC_0000002505904393"></a>
 
 
 
@@ -6199,7 +6201,7 @@ IPV350使用示例：
 
 
 
-#### --out\_nodes<a name="ZH-CN_TOPIC_0000002505904383"></a>
+##### --out\_nodes<a name="ZH-CN_TOPIC_0000002505904383"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6267,7 +6269,7 @@ IPV350使用示例：
 
 无。
 
-#### --input\_fp16\_nodes<a name="ZH-CN_TOPIC_0000002473904316"></a>
+##### --input\_fp16\_nodes<a name="ZH-CN_TOPIC_0000002473904316"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6315,7 +6317,7 @@ IPV350使用示例：
 
 无。
 
-#### --insert\_op\_conf<a name="ZH-CN_TOPIC_0000002505904371"></a>
+##### --insert\_op\_conf<a name="ZH-CN_TOPIC_0000002505904371"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6396,7 +6398,7 @@ aipp_op {
 
     实际推理时，调用**aclmdlSetInputAIPP**接口，设置动态AIPP相关参数值时，不能开启Crop和Padding功能。该场景下，还需要确保通过aclmdlSetInputAIPP接口设置的宽和高与**aclmdlSetDynamicHWSize**接口设置的宽、高相等，都必须设置成动态分辨率最大档位的宽、高。接口详细说明请参见《AscendCL应用开发指南 \(C&C++\)》手册中的“acl API参考 \> 模型管理 \> 模型执行”。
 
-#### --external\_weight<a name="ZH-CN_TOPIC_0000002473904318"></a>
+##### --external\_weight<a name="ZH-CN_TOPIC_0000002473904318"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6451,7 +6453,7 @@ atc --framework=5 --model=$HOME/module/resnet50.onnx --output=$HOME/module/out/o
 
 接口详细说明请参见《AscendCL应用开发指南 \(C&C++\)》手册中的“acl API参考 \>模型管理 \> 模型加载和卸载”章节。
 
-#### --op\_name\_map<a name="ZH-CN_TOPIC_0000002505904369"></a>
+##### --op\_name\_map<a name="ZH-CN_TOPIC_0000002505904369"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -6506,7 +6508,7 @@ OpA:Network1OpA
 
 无。
 
-#### --is\_input\_adjust\_hw\_layout<a name="ZH-CN_TOPIC_0000002473744440"></a>
+##### --is\_input\_adjust\_hw\_layout<a name="ZH-CN_TOPIC_0000002473744440"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6564,7 +6566,7 @@ OpA:Network1OpA
 
 无。
 
-#### --is\_output\_adjust\_hw\_layout<a name="ZH-CN_TOPIC_0000002506024311"></a>
+##### --is\_output\_adjust\_hw\_layout<a name="ZH-CN_TOPIC_0000002506024311"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6622,7 +6624,7 @@ OpA:Network1OpA
 
 无。
 
-### 模型调优选项<a name="ZH-CN_TOPIC_0000002473904358"></a>
+#### 模型调优选项<a name="ZH-CN_TOPIC_0000002473904358"></a>
 
 
 
@@ -6636,7 +6638,7 @@ OpA:Network1OpA
 
 
 
-#### --buffer\_optimize<a name="ZH-CN_TOPIC_0000002473744422"></a>
+##### --buffer\_optimize<a name="ZH-CN_TOPIC_0000002473744422"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6687,7 +6689,7 @@ OpA:Network1OpA
 
 无。
 
-#### --disable\_reuse\_memory<a name="ZH-CN_TOPIC_0000002506024327"></a>
+##### --disable\_reuse\_memory<a name="ZH-CN_TOPIC_0000002506024327"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6755,7 +6757,7 @@ OpA:Network1OpA
     export OP_NO_REUSE_MEM=FusedMulAddN,resnet_v1_50/conv1_1/BatchNorm/AssignMovingAvg
     ```
 
-#### --enable\_scope\_fusion\_passes<a name="ZH-CN_TOPIC_0000002506024341"></a>
+##### --enable\_scope\_fusion\_passes<a name="ZH-CN_TOPIC_0000002506024341"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6809,7 +6811,7 @@ OpA:Network1OpA
 
 该参数只适用于TensorFlow网络模型。如果要查看模型转换过程中融合规则相关的日志信息，则[--log](--log.md)至少要设置为warning级别。
 
-#### --fusion\_switch\_file<a name="ZH-CN_TOPIC_0000002506024309"></a>
+##### --fusion\_switch\_file<a name="ZH-CN_TOPIC_0000002506024309"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -6975,7 +6977,7 @@ OpA:Network1OpA
 
         UB融合规则，支持StridedRead+Conv2D+dequant+elemwise+quant+StridedWrite算子的UB融合，除Conv2D外，其他节点都是可选节点；elemwise支持多输出场景下的融合。
 
-#### --enable\_small\_channel<a name="ZH-CN_TOPIC_0000002473744426"></a>
+##### --enable\_small\_channel<a name="ZH-CN_TOPIC_0000002473744426"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -7027,7 +7029,7 @@ OpA:Network1OpA
 
 该参数使能后，建议与AIPP功能[--insert\_op\_conf](--insert_op_conf.md)同时使用，否则可能没有收益。
 
-#### --quant\_dumpable<a name="ZH-CN_TOPIC_0000002473744416"></a>
+##### --quant\_dumpable<a name="ZH-CN_TOPIC_0000002473744416"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7073,7 +7075,7 @@ OpA:Network1OpA
 --quant_dumpable=1
 ```
 
-#### --compression\_optimize\_conf<a name="ZH-CN_TOPIC_0000002506024305"></a>
+##### --compression\_optimize\_conf<a name="ZH-CN_TOPIC_0000002506024305"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7191,7 +7193,7 @@ calibration:
     **图 1**  训练后量化原理简图<a name="fig1025144313553"></a>  
     ![](figures/训练后量化原理简图.png "训练后量化原理简图")
 
-#### --mdl\_bank\_path<a name="ZH-CN_TOPIC_0000002505904365"></a>
+##### --mdl\_bank\_path<a name="ZH-CN_TOPIC_0000002505904365"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7246,7 +7248,7 @@ calibration:
 2.  [--mdl\_bank\_path](--mdl_bank_path.md)参数和环境变量指定路径都不生效或无可用自定义知识库，则使用默认自定义知识库路径。
 3.  如果上述路径下都无可用的自定义知识库，则atc工具会查找子图调优内置知识库，该路径为：$\{INSTALL\_DIR\}/compiler/data/fusion\_strategy/built-in
 
-#### --oo\_level<a name="ZH-CN_TOPIC_0000002473904350"></a>
+##### --oo\_level<a name="ZH-CN_TOPIC_0000002473904350"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -7300,7 +7302,7 @@ calibration:
 
 其中$\{INSTALL\_DIR\}请替换为CANN软件安装后文件存储路径。以root安装举例，安装后文件默认存储路径为：/usr/local/Ascend/latest。
 
-#### --oo\_constant\_folding<a name="ZH-CN_TOPIC_0000002506024331"></a>
+##### --oo\_constant\_folding<a name="ZH-CN_TOPIC_0000002506024331"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -7352,7 +7354,7 @@ calibration:
 
 无
 
-#### --oo\_dead\_code\_elimination<a name="ZH-CN_TOPIC_0000002505904385"></a>
+##### --oo\_dead\_code\_elimination<a name="ZH-CN_TOPIC_0000002505904385"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -7402,7 +7404,7 @@ calibration:
 
 无。
 
-#### --topo\_sorting\_mode<a name="ZH-CN_TOPIC_0000002473904324"></a>
+##### --topo\_sorting\_mode<a name="ZH-CN_TOPIC_0000002473904324"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -7450,7 +7452,7 @@ calibration:
 
 模型转换过程中如果加载了自定义知识库路径，上述图遍历模式的改变可能会影响调优结果，建议重新进行调优，详情请参见《AOE调优工具用户指南》。
 
-### 算子调优选项<a name="ZH-CN_TOPIC_0000002473744438"></a>
+#### 算子调优选项<a name="ZH-CN_TOPIC_0000002473744438"></a>
 
 
 
@@ -7461,7 +7463,7 @@ calibration:
 
 
 
-#### --precision\_mode<a name="ZH-CN_TOPIC_0000002505904407"></a>
+##### --precision\_mode<a name="ZH-CN_TOPIC_0000002505904407"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7557,7 +7559,7 @@ calibration:
 --precision_mode=force_fp16
 ```
 
-#### --precision\_mode\_v2<a name="ZH-CN_TOPIC_0000002473744424"></a>
+##### --precision\_mode\_v2<a name="ZH-CN_TOPIC_0000002473744424"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7653,7 +7655,7 @@ calibration:
 --precision_mode_v2=fp16
 ```
 
-#### --op\_precision\_mode<a name="ZH-CN_TOPIC_0000002473904346"></a>
+##### --op\_precision\_mode<a name="ZH-CN_TOPIC_0000002473904346"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7744,7 +7746,7 @@ nodename4=support_out_of_bound_index
 
 无。
 
-#### --modify\_mixlist<a name="ZH-CN_TOPIC_0000002506024329"></a>
+##### --modify\_mixlist<a name="ZH-CN_TOPIC_0000002506024329"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7884,7 +7886,7 @@ nodename4=support_out_of_bound_index
 
 无。
 
-#### --optypelist\_for\_implmode<a name="ZH-CN_TOPIC_0000002473744406"></a>
+##### --optypelist\_for\_implmode<a name="ZH-CN_TOPIC_0000002473744406"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7938,7 +7940,7 @@ nodename4=support_out_of_bound_index
 
 无。
 
-#### --keep\_dtype<a name="ZH-CN_TOPIC_0000002473744436"></a>
+##### --keep\_dtype<a name="ZH-CN_TOPIC_0000002473744436"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -8023,7 +8025,7 @@ OpType::Relu
 
 无。
 
-#### --customize\_dtypes<a name="ZH-CN_TOPIC_0000002505904389"></a>
+##### --customize\_dtypes<a name="ZH-CN_TOPIC_0000002505904389"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -8117,7 +8119,7 @@ OpType::Relu
 1.  使用该参数指定算子的计算精度，由于其优先级高于[--precision\_mode](--precision_mode.md)或[--precision\_mode\_v2](--precision_mode_v2.md)、[--keep\_dtype](--keep_dtype.md)参数，可能会导致后续推理精度或者性能的下降。
 2.  使用该参数指定算子的计算精度，如果指定的精度算子本身不支持，则会导致模型编译失败。
 
-#### --op\_bank\_path<a name="ZH-CN_TOPIC_0000002473744414"></a>
+##### --op\_bank\_path<a name="ZH-CN_TOPIC_0000002473744414"></a>
 
 **产品支持情况<a name="section19559524104414"></a>**
 
@@ -8172,7 +8174,7 @@ OpType::Relu
 2.  [--op\_bank\_path](--op_bank_path.md)参数和环境变量指定路径都不生效前提下，使用默认自定义知识库路径。
 3.  如果上述路径下都无可用的自定义知识库，则ATC工具会查找算子调优内置知识库。
 
-#### --is\_weight\_clip<a name="ZH-CN_TOPIC_0000002473904364"></a>
+##### --is\_weight\_clip<a name="ZH-CN_TOPIC_0000002473904364"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8220,7 +8222,7 @@ OpType::Relu
 
 无。
 
-### 调试选项<a name="ZH-CN_TOPIC_0000002473744396"></a>
+#### 调试选项<a name="ZH-CN_TOPIC_0000002473744396"></a>
 
 
 
@@ -8233,7 +8235,7 @@ OpType::Relu
 
 
 
-#### --dump\_mode<a name="ZH-CN_TOPIC_0000002506024349"></a>
+##### --dump\_mode<a name="ZH-CN_TOPIC_0000002506024349"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8279,7 +8281,7 @@ atc --mode=1 --om=$HOME/module/resnet50_tensorflow*.pb  --json=$HOME/module/out/
 
 无。
 
-#### --log<a name="ZH-CN_TOPIC_0000002473744392"></a>
+##### --log<a name="ZH-CN_TOPIC_0000002473744392"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8448,7 +8450,7 @@ atc --mode=1 --om=$HOME/module/resnet50_tensorflow*.pb  --json=$HOME/module/out/
     atc xxx --log=debug >log.txt
     ```
 
-#### --display\_model\_info<a name="ZH-CN_TOPIC_0000002473904360"></a>
+##### --display\_model\_info<a name="ZH-CN_TOPIC_0000002473904360"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8515,7 +8517,7 @@ om       info: modeldef_size[xxx B], weight_data_size[xxx B], tbe_kernels_size[x
 
 无。
 
-#### --op\_compiler\_cache\_mode<a name="ZH-CN_TOPIC_0000002505904381"></a>
+##### --op\_compiler\_cache\_mode<a name="ZH-CN_TOPIC_0000002505904381"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8612,7 +8614,7 @@ om       info: modeldef_size[xxx B], weight_data_size[xxx B], tbe_kernels_size[x
 
 **若同时配置了op\_cache.ini文件和环境变量，则优先读取op\_cache.ini文件中的配置项，若op\_cache.ini文件和环境变量都未设置，则读取系统默认值：默认磁盘空间大小500MB，默认保留缓存的空间50%。**
 
-#### --op\_compiler\_cache\_dir<a name="ZH-CN_TOPIC_0000002505904391"></a>
+##### --op\_compiler\_cache\_dir<a name="ZH-CN_TOPIC_0000002505904391"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8671,7 +8673,7 @@ om       info: modeldef_size[xxx B], weight_data_size[xxx B], tbe_kernels_size[x
 
 关于环境变量ASCEND\_CACHE\_PATH的详细说明请参见《[环境变量参考](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/maintenref/envvar/envref_07_0001.html)》。
 
-#### --op\_debug\_level<a name="ZH-CN_TOPIC_0000002506024315"></a>
+##### --op\_debug\_level<a name="ZH-CN_TOPIC_0000002506024315"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8753,7 +8755,7 @@ om       info: modeldef_size[xxx B], weight_data_size[xxx B], tbe_kernels_size[x
 
 -   该参数优先级高于算子编译接口（TBE DSL的build接口或者TBE TIK的BuildCCE接口）中的**tbe\_debug\_level**的值。
 
-#### --op\_debug\_config<a name="ZH-CN_TOPIC_0000002506024351"></a>
+##### --op\_debug\_config<a name="ZH-CN_TOPIC_0000002506024351"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8902,7 +8904,7 @@ op_debug_list=GatherV2,OpType::ReduceSum
 
 实际模型转换时，_GatherV2,ReduceSum_算子按照ccec\_g,oom选项进行编译。
 
-#### --debug\_dir<a name="ZH-CN_TOPIC_0000002473744408"></a>
+##### --debug\_dir<a name="ZH-CN_TOPIC_0000002473744408"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -8959,7 +8961,7 @@ op_debug_list=GatherV2,OpType::ReduceSum
 
 关于环境变量ASCEND\_WORK\_PATH的详细说明请参见《[环境变量参考](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/maintenref/envvar/envref_07_0001.html)》。
 
-#### --atomic\_clean\_policy<a name="ZH-CN_TOPIC_0000002505904379"></a>
+##### --atomic\_clean\_policy<a name="ZH-CN_TOPIC_0000002505904379"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -9007,7 +9009,7 @@ op_debug_list=GatherV2,OpType::ReduceSum
 
 无。
 
-#### --status\_check<a name="ZH-CN_TOPIC_0000002473744400"></a>
+##### --status\_check<a name="ZH-CN_TOPIC_0000002473744400"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -9057,7 +9059,7 @@ op_debug_list=GatherV2,OpType::ReduceSum
 
 使用[--status\_check](--status_check.md)参数只是在模型编译后生成的算子\*.cce文件中加入了溢出检测逻辑，如果想查看具体哪些算子有溢出，则需要配合模型推理过程中提供的**aclInit**接口，在该接口入参的JSON配置文件中打开“dump\_debug”开关，接口详细说明请参见《AscendCL应用开发指南 \(C&C++\)》中的“acl API参考 \> 系统配置 \>  [aclInit](https://www.hiascend.com/document/detail/zh/canncommercial/82RC1/API/appdevgapi/aclcppdevg_03_0022.html)”章节。
 
-#### --export\_compile\_stat<a name="ZH-CN_TOPIC_0000002506024345"></a>
+##### --export\_compile\_stat<a name="ZH-CN_TOPIC_0000002506024345"></a>
 
 **产品支持情况<a name="section139815552554"></a>**
 
@@ -9111,11 +9113,11 @@ op_debug_list=GatherV2,OpType::ReduceSum
 
 无。
 
-## 后续版本废弃参数<a name="ZH-CN_TOPIC_0000002505904413"></a>
+### 后续版本废弃参数<a name="ZH-CN_TOPIC_0000002505904413"></a>
 
 
 
-### --op\_select\_implmode<a name="ZH-CN_TOPIC_0000002506024301"></a>
+#### --op\_select\_implmode<a name="ZH-CN_TOPIC_0000002506024301"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -9198,7 +9200,7 @@ high\_\*.ini文件中算子的实现模式以all\_ops\_impl\_mode.ini文件（�
 
     某个算子当前只支持高精度，而[--op\_select\_implmode](--op_select_implmode.md)设置为高性能，则[--op\_select\_implmode](--op_select_implmode.md)参数对于该算子不生效，使用该算子当前实现的高精度方式运行。
 
-### --shape\_generalized\_build\_mode<a name="ZH-CN_TOPIC_0000002505904367"></a>
+#### --shape\_generalized\_build\_mode<a name="ZH-CN_TOPIC_0000002505904367"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -9243,10 +9245,10 @@ high\_\*.ini文件中算子的实现模式以all\_ops\_impl\_mode.ini文件（�
 
 接口详细说明请参见《AscendCL应用开发指南 \(C&C++\)》手册“AscendCL API参考”章节。
 
-# 专题<a name="ZH-CN_TOPIC_0000002506025671"></a>
+## 专题<a name="ZH-CN_TOPIC_0000002506025671"></a>
 
 
-## 定制网络修改（TensorFlow）<a name="ZH-CN_TOPIC_0000002473905654"></a>
+### 定制网络修改（TensorFlow）<a name="ZH-CN_TOPIC_0000002473905654"></a>
 
 **该版本不支持TensorFlow**
 
@@ -9254,7 +9256,7 @@ high\_\*.ini文件中算子的实现模式以all\_ops\_impl\_mode.ini文件（�
 
 
 
-### 概述<a name="ZH-CN_TOPIC_0000002473745776"></a>
+#### 概述<a name="ZH-CN_TOPIC_0000002473745776"></a>
 
 **简介<a name="section113624541541"></a>**
 
@@ -9291,7 +9293,7 @@ high\_\*.ini文件中算子的实现模式以all\_ops\_impl\_mode.ini文件（�
 
     如果执行上述命令时无法连接网络，且提示“Could not find a version that satisfies the requirement xxx”，请参见[使用pip3.7.5 install软件时提示" Could not find a version that satisfies the requirement xxx"](使用pip3-7-5-install软件时提示-Could-not-find-a-version-that-satisfies-the-requirement-xxx.md)解决。
 
-### 编译可执行文件<a name="ZH-CN_TOPIC_0000002505905711"></a>
+#### 编译可执行文件<a name="ZH-CN_TOPIC_0000002505905711"></a>
 
 请以ATC软件包安装用户进行如下操作：
 
@@ -9350,7 +9352,7 @@ high\_\*.ini文件中算子的实现模式以all\_ops\_impl\_mode.ini文件（�
 
     **summarize\_graph**可执行文件用来查看有控制流算子网络模型的输入输出节点，方便用户构造config.pbtxt输入输出配置文件。
 
-### 转换模型<a name="ZH-CN_TOPIC_0000002506025643"></a>
+#### 转换模型<a name="ZH-CN_TOPIC_0000002506025643"></a>
 
 下面以Switch\_v1.pb网络模型为例进行说明，演示如何将有控制流算子网络模型转换成函数类算子网络模型，然后通过ATC工具转换成适配昇腾AI处理器的离线模型适配NPU IP加速器的离线模型。请先参见[获取Switch\_v1.pb网络模型](获取Switch_v1-pb网络模型.md)获取Switch\_v1.pb网络模型。
 
@@ -9441,13 +9443,13 @@ high\_\*.ini文件中算子的实现模式以all\_ops\_impl\_mode.ini文件（�
 
     成功执行命令后，在**--output**参数指定的路径下，可查看模型文件。
 
-### FAQ<a name="ZH-CN_TOPIC_0000002473745732"></a>
+#### FAQ<a name="ZH-CN_TOPIC_0000002473745732"></a>
 
 
 
 
 
-#### 使用bazel编译工具编译时提示“An error occurred during the fetch of repository 'io\_bazel\_rules\_docker'”，编译失败<a name="ZH-CN_TOPIC_0000002473745762"></a>
+##### 使用bazel编译工具编译时提示“An error occurred during the fetch of repository 'io\_bazel\_rules\_docker'”，编译失败<a name="ZH-CN_TOPIC_0000002473745762"></a>
 
 **问题描述<a name="section631655183620"></a>**
 
@@ -9558,7 +9560,7 @@ FAILED: Build did NOT complete successfully (0 packages loaded)
 
         保存文件并退出。
 
-#### 使用pip3.7.5 install软件时提示" Could not find a version that satisfies the requirement xxx"<a name="ZH-CN_TOPIC_0000002473905658"></a>
+##### 使用pip3.7.5 install软件时提示" Could not find a version that satisfies the requirement xxx"<a name="ZH-CN_TOPIC_0000002473905658"></a>
 
 **问题描述<a name="zh-cn_topic_0257336021_zh-cn_topic_0249939452_zh-cn_topic_0231558534_section9469135018572"></a>**
 
@@ -9607,7 +9609,7 @@ FAILED: Build did NOT complete successfully (0 packages loaded)
     trusted-host=xxx
     ```
 
-#### 获取Switch\_v1.pb网络模型<a name="ZH-CN_TOPIC_0000002505905701"></a>
+##### 获取Switch\_v1.pb网络模型<a name="ZH-CN_TOPIC_0000002505905701"></a>
 
 1.  将如下文件中的脚本复制到.py文件中，例如复制到_Switch\_v1.py_文件中。
 
@@ -9654,7 +9656,7 @@ FAILED: Build did NOT complete successfully (0 packages loaded)
 
     命令执行完毕，在当前目录会生成Switch\_v1.pb网络模型。
 
-#### 获取xlacompile.patch补丁文件<a name="ZH-CN_TOPIC_0000002473905668"></a>
+##### 获取xlacompile.patch补丁文件<a name="ZH-CN_TOPIC_0000002473905668"></a>
 
 用户安装完xlacompile.patch补丁，编译成xlacompile工具后，该工具可以将有控制流的V1网络模型转成函数类的V2网络模型。
 
@@ -9949,13 +9951,13 @@ index 432a12a..969500c 100644
 
 ```
 
-# 参考<a name="ZH-CN_TOPIC_0000002473745736"></a>
+## 参考<a name="ZH-CN_TOPIC_0000002473745736"></a>
 
 
 本章节给出不同框架可量化的层以及相关约束。
 如果要自动控制量化过程，比如控制哪些层是否量化、控制使用什么量化算法，则可以通过本章节构造的cfg配置文件实现。
 
-## dump图详细信息<a name="ZH-CN_TOPIC_0000002506025647"></a>
+### dump图详细信息<a name="ZH-CN_TOPIC_0000002506025647"></a>
 
 模型转换前，通过设置如下环境变量，dump出编译过程中的模型图，用户可以通过查看dump图观察模型的变化：
 
@@ -10515,7 +10517,7 @@ export DUMP_GRAPH_LEVEL=1   #控制dump图的个数
 </tbody>
 </table>
 
-## 支持量化的层及约束<a name="ZH-CN_TOPIC_0000002473905678"></a>
+### 支持量化的层及约束<a name="ZH-CN_TOPIC_0000002473905678"></a>
 
 本章节给出不同框架可量化的层以及相关约束。
 
@@ -10702,7 +10704,7 @@ export DUMP_GRAPH_LEVEL=1   #控制dump图的个数
     -   false：表示权重量化使用对称量化。
     -   true和false表示权重量化支持对称量化和非对称量化。
 
-## 量化简易配置文件<a name="ZH-CN_TOPIC_0000002505905713"></a>
+### 量化简易配置文件<a name="ZH-CN_TOPIC_0000002505905713"></a>
 
 如果要自动控制量化过程，比如控制哪些层是否量化、控制使用什么量化算法，则可以通过本章节构造的cfg配置文件实现。
 
@@ -11346,7 +11348,7 @@ export DUMP_GRAPH_LEVEL=1   #控制dump图的个数
     }
     ```
 
-# FAQ<a name="ZH-CN_TOPIC_0000002506025659"></a>
+## FAQ<a name="ZH-CN_TOPIC_0000002506025659"></a>
 
 
 
@@ -11354,7 +11356,7 @@ export DUMP_GRAPH_LEVEL=1   #控制dump图的个数
 
 
 
-## 如何确定原始框架网络模型中的算子与NPU IP加速器支持的算子的对应关系<a name="ZH-CN_TOPIC_0000002473745722"></a>
+### 如何确定原始框架网络模型中的算子与NPU IP加速器支持的算子的对应关系<a name="ZH-CN_TOPIC_0000002473745722"></a>
 
 **问题现象描述<a name="section1631256186"></a>**
 
@@ -11382,7 +11384,7 @@ export DUMP_GRAPH_LEVEL=1   #控制dump图的个数
 
         ![](figures/zh-cn_image_0000002473905712.png)
 
-## 模型中存在不支持量化的层，量化模型失败<a name="ZH-CN_TOPIC_0000002473905648"></a>
+### 模型中存在不支持量化的层，量化模型失败<a name="ZH-CN_TOPIC_0000002473905648"></a>
 
 **问题现象描述<a name="section129228525713"></a>**
 
@@ -11435,7 +11437,7 @@ ATC start working now, please wait for a moment.
 
     如果跳过不支持量化的层影响模型推理的结果数据，则需要用户自行调整模型，再重新量化模型。
 
-## 量化模型时模型输入大小过大，AI Core执行任务失败，量化模型失败<a name="ZH-CN_TOPIC_0000002505905729"></a>
+### 量化模型时模型输入大小过大，AI Core执行任务失败，量化模型失败<a name="ZH-CN_TOPIC_0000002505905729"></a>
 
 **问题现象描述<a name="section10365114634012"></a>**
 
@@ -11473,7 +11475,7 @@ AI Core执行任务失败，猜测可能是因为input\_shape参数处的Batch s
 
 可将input\_shape参数处的Batch size值调小，例如：--input\_shape="**input:8,224,224,3**"，调整参数值之后，再重新转换模型。
 
-## 量化模型时校准集数据大小与模型输入大小不匹配，量化模型失败<a name="ZH-CN_TOPIC_0000002473905696"></a>
+### 量化模型时校准集数据大小与模型输入大小不匹配，量化模型失败<a name="ZH-CN_TOPIC_0000002473905696"></a>
 
 **问题现象描述<a name="section114806818146"></a>**
 
@@ -11501,7 +11503,7 @@ ATC run failed, Please check the detail log, Try 'atc --help' for more informati
 
 量化时，模型输入shape通过量化配置文件中的input\_shape参数配置，模型输入数据类型需由用户从获取模型的网站获取或通过第三方软件打开模型文件查看。
 
-## 开启量化功能，模型转换时提示“build\_main build graph\[infer\_graph\_info\] failed”<a name="ZH-CN_TOPIC_0000002506025633"></a>
+### 开启量化功能，模型转换时提示“build\_main build graph\[infer\_graph\_info\] failed”<a name="ZH-CN_TOPIC_0000002506025633"></a>
 
 **问题现象描述<a name="section1047881312330"></a>**
 
@@ -11517,7 +11519,7 @@ ATC run failed, Please check the detail log, Try 'atc --help' for more informati
 
 可以尝试将量化功能关闭，重新进行模型转换，检查出错原因；待原始模型不开启量化功能模型转换成功后，再尝试启用量化功能。
 
-## 算子库包版本问题导致加载单算子失败<a name="ZH-CN_TOPIC_0000002473745742"></a>
+### 算子库包版本问题导致加载单算子失败<a name="ZH-CN_TOPIC_0000002473745742"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000002506023115_section128794133612"></a>**
 
@@ -11535,4 +11537,3 @@ E19999 The opp version of the model does not match the current opp run package, 
 **解决措施<a name="zh-cn_topic_0000002506023115_section9345112013295"></a>**
 
 动态Shape算子场景下，单算子模型数据加载环境中的算子库包安装版本需与om模型文件编译环境的**算子库包安装版本保持一致**，出现该报错后，需排查安装版本，选择更换算子加载环境的opp包版本或更换编译算子om文件环境的opp包版本，若选择更换后者，则需要重新转换模型。
-

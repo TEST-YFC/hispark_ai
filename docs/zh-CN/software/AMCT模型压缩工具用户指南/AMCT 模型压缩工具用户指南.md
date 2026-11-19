@@ -1,4 +1,6 @@
-# 学习向导<a name="ZH-CN_TOPIC_0000002473744568"></a>
+# AMCT模型压缩工具用户指南
+
+## 学习向导<a name="ZH-CN_TOPIC_0000002473744568"></a>
 
 本节给出AMCT（Ascend Model Compression Toolkit，简称AMCT）的概念以及优势、文档的使用对象，并给出不同框架下AMCT的差异，用户根据场景选择不同框架进行模型压缩。
 
@@ -194,12 +196,12 @@ AMCT当前使用的压缩方法主要包括量化和张量分解，量化过程�
 
 熟悉Linux基本命令、具备Python语言程序开发能力，对机器学习、深度学习有一定了解的人员，可以更好地理解本文档。
 
-# 概述<a name="ZH-CN_TOPIC_0000002473744668"></a>
+## 概述<a name="ZH-CN_TOPIC_0000002473744668"></a>
 
 本节给出模型压缩过程中用到的概念，并介绍了不同压缩方法的原理。
 本节介绍使用AMCT工具的具体流程，不同框架运行环境以及流程会有稍许差异。
 
-## 基本概念<a name="ZH-CN_TOPIC_0000002505904613"></a>
+### 基本概念<a name="ZH-CN_TOPIC_0000002505904613"></a>
 
 本节给出模型压缩过程中用到的概念，并介绍了不同压缩方法的原理。
 
@@ -294,7 +296,7 @@ AMCT将量化和模型转换分开，实现对模型中可量化算子的独立�
 **图 8**  逐层蒸馏示意图<a name="fig42331315559"></a>  
 ![](figures/逐层蒸馏示意图.png "逐层蒸馏示意图")
 
-## 工具运行流程<a name="ZH-CN_TOPIC_0000002473904532"></a>
+### 工具运行流程<a name="ZH-CN_TOPIC_0000002473904532"></a>
 
 本节介绍使用AMCT工具的具体流程，不同框架运行环境以及流程会有稍许差异。
 
@@ -366,14 +368,14 @@ IPV350
 </tbody>
 </table>
 
-# 准备环境<a name="ZH-CN_TOPIC_0000002505904569"></a>
+## 准备环境<a name="ZH-CN_TOPIC_0000002505904569"></a>
 
 
 介绍安装前的准备动作，包括准备用户、检查环境、安装依赖、上传软件包等。
 本节介绍AMCT工具具体的安装命令。
 
 
-## 获取软件包<a name="ZH-CN_TOPIC_0000002473744638"></a>
+### 获取软件包<a name="ZH-CN_TOPIC_0000002473744638"></a>
 
 AMCT仅支持在Ubuntu 20.04 x86\_64架构服务器安装；安装前，请先获取AMCT软件包：**CANN-amct-_\{software version\}_-linux.x86\_64.tar.gz**
 
@@ -389,7 +391,7 @@ AMCT仅支持在Ubuntu 20.04 x86\_64架构服务器安装；安装前，请先�
 
 运营商客户请单击[Link](http://support.huawei.com/carrier/digitalSignatureAction)，企业客户请单击[Link](https://support.huawei.com/enterprise/zh/tool/pgp-verify-TL1000000054)。
 
-## 安装前准备<a name="ZH-CN_TOPIC_0000002473744650"></a>
+### 安装前准备<a name="ZH-CN_TOPIC_0000002473744650"></a>
 
 介绍安装前的准备动作，包括准备用户、检查环境、安装依赖、上传软件包等。
 
@@ -397,7 +399,7 @@ AMCT仅支持在Ubuntu 20.04 x86\_64架构服务器安装；安装前，请先�
 
 
 
-### 用户准备<a name="ZH-CN_TOPIC_0000002505904525"></a>
+#### 用户准备<a name="ZH-CN_TOPIC_0000002505904525"></a>
 
 **PyTorch/ONNX场景<a name="section1698018865016"></a>**
 
@@ -423,13 +425,13 @@ AMCT仅支持在Ubuntu 20.04 x86\_64架构服务器安装；安装前，请先�
         >-   若要查看umask的值，则执行命令**：umask**
         >-   若要修改umask的值，则执行命令：**umask  _新的取值_**
 
-### 系统要求和环境检查<a name="ZH-CN_TOPIC_0000002506024493"></a>
+#### 系统要求和环境检查<a name="ZH-CN_TOPIC_0000002506024493"></a>
 
 
 
 
 
-#### AMCT（PyTorch）<a name="ZH-CN_TOPIC_0000002473904566"></a>
+##### AMCT（PyTorch）<a name="ZH-CN_TOPIC_0000002473904566"></a>
 
 AMCT目前支持在Ubuntu 22.04 x86\_64架构操作系统安装，版本配套信息如下：
 
@@ -504,7 +506,7 @@ AMCT目前支持在Ubuntu 22.04 x86\_64架构操作系统安装，版本配套�
 </tbody>
 </table>
 
-#### AMCT（ONNX）<a name="ZH-CN_TOPIC_0000002473904516"></a>
+##### AMCT（ONNX）<a name="ZH-CN_TOPIC_0000002473904516"></a>
 
 AMCT目前支持在Ubuntu 22.04 x86\_64架构操作系统安装，版本配套信息如下：
 
@@ -585,7 +587,7 @@ AMCT目前支持在Ubuntu 22.04 x86\_64架构操作系统安装，版本配套�
 </tbody>
 </table>
 
-#### AMCT（TensorFlow）<a name="ZH-CN_TOPIC_0000002506024583"></a>
+##### AMCT（TensorFlow）<a name="ZH-CN_TOPIC_0000002506024583"></a>
 
 IPV350不支持
 
@@ -654,7 +656,7 @@ IPV350不支持
 </tbody>
 </table>
 
-#### AMCT（Caffe）<a name="ZH-CN_TOPIC_0000002473904564"></a>
+##### AMCT（Caffe）<a name="ZH-CN_TOPIC_0000002473904564"></a>
 
 IPV350不支持
 
@@ -719,13 +721,13 @@ IPV350不支持
 </tbody>
 </table>
 
-### 安装依赖<a name="ZH-CN_TOPIC_0000002473904462"></a>
+#### 安装依赖<a name="ZH-CN_TOPIC_0000002473904462"></a>
 
 
 
 
 
-#### AMCT（PyTorch）<a name="ZH-CN_TOPIC_0000002473904530"></a>
+##### AMCT（PyTorch）<a name="ZH-CN_TOPIC_0000002473904530"></a>
 
 请使用AMCT的安装用户安装依赖的软件，**如果安装用户为非root，请确保该用户拥有sudo权限**，请使用**su -  _username_**命令切换到非root用户执行如下命令（如果安装用户为root，请将安装依赖命令中的--user删除）。
 
@@ -793,7 +795,7 @@ IPV350不支持
 </tbody>
 </table>
 
-#### AMCT（ONNX）<a name="ZH-CN_TOPIC_0000002505904531"></a>
+##### AMCT（ONNX）<a name="ZH-CN_TOPIC_0000002505904531"></a>
 
 请使用AMCT的安装用户安装依赖的软件，**如果安装用户为非root，请确保该用户拥有sudo权限**，请使用**su -  _username_**命令切换到非root用户执行如下命令（如果安装用户为root，请将安装依赖命令中的--user删除）。
 
@@ -853,7 +855,7 @@ IPV350不支持
 </tbody>
 </table>
 
-#### AMCT（TensorFlow）<a name="ZH-CN_TOPIC_0000002505904547"></a>
+##### AMCT（TensorFlow）<a name="ZH-CN_TOPIC_0000002505904547"></a>
 
 IPV350不支持
 
@@ -909,7 +911,7 @@ IPV350不支持
 </tbody>
 </table>
 
-#### AMCT（Caffe）<a name="ZH-CN_TOPIC_0000002505904659"></a>
+##### AMCT（Caffe）<a name="ZH-CN_TOPIC_0000002505904659"></a>
 
 IPV350不支持
 
@@ -950,7 +952,7 @@ IPV350不支持
 </tbody>
 </table>
 
-### 上传软件包<a name="ZH-CN_TOPIC_0000002506024505"></a>
+#### 上传软件包<a name="ZH-CN_TOPIC_0000002506024505"></a>
 
 以AMCT的安装用户将**CANN-amct-_\{software version\}_-linux._\{arch\}_.tar.gz**软件包上传到Linux服务器任意目录下，本示例为上传到$HOME/_amct_/目录。
 
@@ -1072,7 +1074,7 @@ tar -zxvf CANN-amct-{software version}-linux.{arch}.tar.gz
 
 其中：_\{version\}_表示AMCT具体版本号，_\{software version\}_为软件版本号，_\{arch\}_表示具体操作系统架构。
 
-## 安装工具<a name="ZH-CN_TOPIC_0000002505904607"></a>
+### 安装工具<a name="ZH-CN_TOPIC_0000002505904607"></a>
 
 本节介绍AMCT工具具体的安装命令。
 
@@ -1196,12 +1198,12 @@ IPV350不支持
 
     其中amct\_caffe即为AMCT所在安装目录。
 
-## 安装后处理<a name="ZH-CN_TOPIC_0000002473904598"></a>
+### 安装后处理<a name="ZH-CN_TOPIC_0000002473904598"></a>
 
 AMCT量化过程中的日志信息以及日志级别，可以通过环境变量设置，本章节给出详细设置方法。
 
 
-### AMCT（PyTorch）<a name="ZH-CN_TOPIC_0000002506024477"></a>
+#### AMCT（PyTorch）<a name="ZH-CN_TOPIC_0000002506024477"></a>
 
 AMCT量化过程中的日志信息以及日志级别，可以通过环境变量设置，本章节给出详细设置方法。
 
@@ -1280,12 +1282,12 @@ AMCT量化过程中的日志信息以及日志级别，可以通过环境变量�
         export AMCT_LOG_LEVEL=INFO
         ```
 
-### AMCT（ONNX）<a name="ZH-CN_TOPIC_0000002473744708"></a>
+#### AMCT（ONNX）<a name="ZH-CN_TOPIC_0000002473744708"></a>
 
 由于AMCT存在基于ONNX Runtime的自定义算子包，而自定义算子包编译时依赖ONNX Runtime提供的头文件，该头文件需要用户自行下载后，然后编译并安装自定义算子包。
 AMCT量化过程中的日志信息以及日志级别，可以通过环境变量设置，本章节给出详细设置方法。
 
-#### 编译并安装自定义算子包<a name="ZH-CN_TOPIC_0000002473904618"></a>
+##### 编译并安装自定义算子包<a name="ZH-CN_TOPIC_0000002473904618"></a>
 
 由于AMCT存在基于ONNX Runtime的自定义算子包，而自定义算子包编译时依赖ONNX Runtime提供的头文件，该头文件需要用户自行下载后，然后编译并安装自定义算子包。
 
@@ -1328,7 +1330,7 @@ AMCT量化过程中的日志信息以及日志级别，可以通过环境变量�
     [INFO] Install amct_onnx_op success!
     ```
 
-#### 设置环境变量<a name="ZH-CN_TOPIC_0000002505904623"></a>
+##### 设置环境变量<a name="ZH-CN_TOPIC_0000002505904623"></a>
 
 AMCT量化过程中的日志信息以及日志级别，可以通过环境变量设置，本章节给出详细设置方法。
 
@@ -1403,14 +1405,14 @@ AMCT量化过程中的日志信息以及日志级别，可以通过环境变量�
         export AMCT_LOG_LEVEL=INFO
         ```
 
-### AMCT（Caffe）<a name="ZH-CN_TOPIC_0000002505904565"></a>
+#### AMCT（Caffe）<a name="ZH-CN_TOPIC_0000002505904565"></a>
 
 IPV350不支持
 
 安装完AMCT后，量化模型前，用户需要获取并安装Caffe源代码增强包**caffe\_patch.tar.gz**。
 设置日志打印级别，其中日志包括打印在屏幕上的日志以及保存到amct\_log/amct\_caffe.log文件中的日志。该部分环境变量为可选配置，如果不设置，则按照默认日志级别，默认级别为INFO。
 
-#### Caffe patch安装<a name="ZH-CN_TOPIC_0000002505904615"></a>
+##### Caffe patch安装<a name="ZH-CN_TOPIC_0000002505904615"></a>
 
 安装完AMCT后，量化模型前，用户需要获取并安装Caffe源代码增强包**caffe\_patch.tar.gz**。
 
@@ -1637,7 +1639,7 @@ custom.proto主要分为两部分：
     >export PYTHONPATH=$PYTHONPATH:${path}
     >```
 
-#### 环境变量设置<a name="ZH-CN_TOPIC_0000002505904583"></a>
+##### 环境变量设置<a name="ZH-CN_TOPIC_0000002505904583"></a>
 
 设置日志打印级别，其中日志包括打印在屏幕上的日志以及保存到amct\_log/amct\_caffe.log文件中的日志。该部分环境变量为可选配置，如果不设置，则按照默认日志级别，默认级别为INFO。
 
@@ -1710,18 +1712,18 @@ custom.proto主要分为两部分：
         export AMCT_LOG_LEVEL=INFO
         ```
 
-## 常用操作<a name="ZH-CN_TOPIC_0000002473904580"></a>
+### 常用操作<a name="ZH-CN_TOPIC_0000002473904580"></a>
 
 建议使用最新版本的AMCT，以便获得最新功能。
 若用户不再使用AMCT时，可以参见该章节将其卸载。
 
-### 工具更新<a name="ZH-CN_TOPIC_0000002473904528"></a>
+#### 工具更新<a name="ZH-CN_TOPIC_0000002473904528"></a>
 
 建议使用最新版本的AMCT，以便获得最新功能。
 
 使用新版本之前请先参见[工具卸载](工具卸载.md)章节卸载之前版本的AMCT，然后参见[安装工具](安装工具.md)章节安装最新版本。针对AMCT\(Caffe\)，安装新版本的AMCT后，Caffe环境需要重新编译，详细方法请参见[5](Caffe-patch安装.md#zh-cn_topic_0240188730_li1482126104014)。
 
-### 工具卸载<a name="ZH-CN_TOPIC_0000002473744698"></a>
+#### 工具卸载<a name="ZH-CN_TOPIC_0000002473744698"></a>
 
 若用户不再使用AMCT时，可以参见该章节将其卸载。
 
@@ -1749,7 +1751,7 @@ custom.proto主要分为两部分：
 
     卸载过程中不会卸载已经安装的框架，比如PyTorch，TensorFlow等，上述_xxx_请替换为具体的框架名称，比如pytorch，tensorflow等。
 
-# 快速入门<a name="ZH-CN_TOPIC_0000002473744612"></a>
+## 快速入门<a name="ZH-CN_TOPIC_0000002473744612"></a>
 
 本章节以压缩特性中的量化功能为例，并借助sample中的网络模型，为您介绍如何使用命令行方式压缩一个模型。
 
@@ -2106,7 +2108,7 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
             -   modified\_model.prototxt、modified\_model.caffemodel：量化过程中生成的中间模型文件。
             -   record.txt：记录量化因子的文件。关于该文件的原型定义请参见[record记录文件](record记录文件-126.md)。
 
-# AMCT（PyTorch）<a name="ZH-CN_TOPIC_0000002473744532"></a>
+## AMCT（PyTorch）<a name="ZH-CN_TOPIC_0000002473744532"></a>
 
 
 
@@ -2115,12 +2117,12 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
 
 
 
-## 量化<a name="ZH-CN_TOPIC_0000002505904605"></a>
+### 量化<a name="ZH-CN_TOPIC_0000002505904605"></a>
 
 本章节详细介绍AMCT量化场景，以及每个场景下的功能。
 
 
-### 简介<a name="ZH-CN_TOPIC_0000002473904472"></a>
+#### 简介<a name="ZH-CN_TOPIC_0000002473904472"></a>
 
 本章节详细介绍AMCT量化场景，以及每个场景下的功能。
 
@@ -2226,11 +2228,11 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
 </tbody>
 </table>
 
-### 训练后量化<a name="ZH-CN_TOPIC_0000002505904567"></a>
+#### 训练后量化<a name="ZH-CN_TOPIC_0000002505904567"></a>
 
 基于精度的自动量化是为了方便用户在对量化精度有一定要求时所使用的功能。该方法能够在保证用户所需的模型精度前提下，自动搜索模型的量化配置并执行训练后量化的流程，最终生成满足精度要求的量化模型。
 
-#### 基于精度的自动量化<a name="ZH-CN_TOPIC_0000002505904541"></a>
+##### 基于精度的自动量化<a name="ZH-CN_TOPIC_0000002505904541"></a>
 
 基于精度的自动量化是为了方便用户在对量化精度有一定要求时所使用的功能。该方法能够在保证用户所需的模型精度前提下，自动搜索模型的量化配置并执行训练后量化的流程，最终生成满足精度要求的量化模型。
 
@@ -2362,13 +2364,13 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
             )
         ```
 
-#### 手工量化<a name="ZH-CN_TOPIC_0000002473904506"></a>
+##### 手工量化<a name="ZH-CN_TOPIC_0000002473904506"></a>
 
 均匀量化是指量化后的数据比较均匀地分布在某个数值空间中，例如INT8量化就是用只有8比特的INT8数据来表示32比特的float32数据或16比特的float16数据，将float32/float16的卷积运算过程（乘加运算）转换为INT8的卷积运算，加速运算和实现模型压缩；均匀的INT8量化则是量化后数据比较均匀地分布在INT8的数值空间\[-128, 127\]中。
 非均匀量化是指量化后的数据在某个数值空间中的分布是不均匀的。非均匀量化过程中，会根据待量化数据的概率分布来对均匀量化后的数据分布进一步进行根据目标压缩率（保留数值量/原始量化数值量）的聚类操作。相较于均匀量化，非均匀量化在进一步压缩数据信息量的基础上尽可能的保留高概率分布的数据信息，从而减小压缩后的数据信息丢失。
 执行训练后量化特性的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
-##### 均匀量化<a name="ZH-CN_TOPIC_0000002506024473"></a>
+###### 均匀量化<a name="ZH-CN_TOPIC_0000002506024473"></a>
 
 均匀量化是指量化后的数据比较均匀地分布在某个数值空间中，例如INT8量化就是用只有8比特的INT8数据来表示32比特的float32数据或16比特的float16数据，将float32/float16的卷积运算过程（乘加运算）转换为INT8的卷积运算，加速运算和实现模型压缩；均匀的INT8量化则是量化后数据比较均匀地分布在INT8的数值空间\[-128, 127\]中。
 
@@ -2533,7 +2535,7 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
     user_do_inference_onnx(quant_model, test_data, test_iterations)
     ```
 
-##### 非均匀量化\(不支持\)<a name="ZH-CN_TOPIC_0000002473744536"></a>
+###### 非均匀量化\(不支持\)<a name="ZH-CN_TOPIC_0000002473744536"></a>
 
 非均匀量化是指量化后的数据在某个数值空间中的分布是不均匀的。非均匀量化过程中，会根据待量化数据的概率分布来对均匀量化后的数据分布进一步进行根据目标压缩率（保留数值量/原始量化数值量）的聚类操作。相较于均匀量化，非均匀量化在进一步压缩数据信息量的基础上尽可能的保留高概率分布的数据信息，从而减小压缩后的数据信息丢失。
 
@@ -2583,7 +2585,7 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
 
 4.  查看非均匀量化后，精度仿真模型在原始ONNX Runtime环境中推理精度是否满足要求，如果不满足要求，则需要调整非均匀量化配置文件config.json中的参数，然后重新进行非均匀量化，直至满足精度要求。调整方法请参见[手工调优](手工调优.md)。
 
-##### 手工调优<a name="ZH-CN_TOPIC_0000002505904521"></a>
+###### 手工调优<a name="ZH-CN_TOPIC_0000002505904521"></a>
 
 执行训练后量化特性的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
@@ -3365,12 +3367,12 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
 </tbody>
 </table>
 
-### 量化感知训练<a name="ZH-CN_TOPIC_0000002505904653"></a>
+#### 量化感知训练<a name="ZH-CN_TOPIC_0000002505904653"></a>
 
 本节详细介绍量化感知训练支持的量化层，接口调用流程和示例。
 执行量化感知训练特性后的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
-#### 量化流程<a name="ZH-CN_TOPIC_0000002473904610"></a>
+##### 量化流程<a name="ZH-CN_TOPIC_0000002473904610"></a>
 
 本节详细介绍量化感知训练支持的量化层，接口调用流程和示例。
 
@@ -3611,7 +3613,7 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
     user_do_inference_onnx(quant_model, test_data, test_iterations)
     ```
 
-#### 手工调优<a name="ZH-CN_TOPIC_0000002473744674"></a>
+##### 手工调优<a name="ZH-CN_TOPIC_0000002473744674"></a>
 
 执行量化感知训练特性后的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
@@ -4065,20 +4067,20 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
 </tbody>
 </table>
 
-## 稀疏\(不支持\)<a name="ZH-CN_TOPIC_0000002473744696"></a>
+### 稀疏\(不支持\)<a name="ZH-CN_TOPIC_0000002473744696"></a>
 
 
 
-### 通道稀疏<a name="ZH-CN_TOPIC_0000002505904563"></a>
+#### 通道稀疏<a name="ZH-CN_TOPIC_0000002505904563"></a>
 
 
 
-#### 自动通道稀疏搜索<a name="ZH-CN_TOPIC_0000002505904593"></a>
+##### 自动通道稀疏搜索<a name="ZH-CN_TOPIC_0000002505904593"></a>
 
 当前通道稀疏支持对不同的层做不同稀疏率的稀疏处理，但逐层设置稀疏率对用户的使用门槛较高，对于某一层，如何选择稀疏率（即配置中的prune\_ratio）是比较困难的，手工尝试的配置需要进行重训练，耗费时间多。针对上述问题，引入自动通道稀疏搜索特性，根据用户模型来计算各通道的稀疏敏感度（影响精度）以及稀疏收益（影响性能），然后搜索策略依据稀疏敏感度和稀疏收益来搜索最优的逐层通道稀疏率，以平衡精度和性能。
 介绍自动通道稀疏搜索特性的接口调用流程和调用示例。
 
-##### 简介<a name="ZH-CN_TOPIC_0000002505904517"></a>
+###### 简介<a name="ZH-CN_TOPIC_0000002505904517"></a>
 
 当前通道稀疏支持对不同的层做不同稀疏率的稀疏处理，但逐层设置稀疏率对用户的使用门槛较高，对于某一层，如何选择稀疏率（即配置中的prune\_ratio）是比较困难的，手工尝试的配置需要进行重训练，耗费时间多。针对上述问题，引入自动通道稀疏搜索特性，根据用户模型来计算各通道的稀疏敏感度（影响精度）以及稀疏收益（影响性能），然后搜索策略依据稀疏敏感度和稀疏收益来搜索最优的逐层通道稀疏率，以平衡精度和性能。
 
@@ -4115,7 +4117,7 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
     >![](public_sys-resources/icon-note.gif) **说明：** 
     >自动通道稀疏搜索特性只是生成通道稀疏的简易配置文件，若想得到最终稀疏后模型，还需要进行[手工稀疏](手工稀疏.md)，将上述生成的简易配置文件作为入参传入通道稀疏。
 
-##### 搜索流程<a name="ZH-CN_TOPIC_0000002506024535"></a>
+###### 搜索流程<a name="ZH-CN_TOPIC_0000002506024535"></a>
 
 介绍自动通道稀疏搜索特性的接口调用流程和调用示例。
 
@@ -4215,12 +4217,12 @@ AMCT支持命令行方式和Python API接口方式量化原始网络模型，命
         search_alg='GreedySearch')
     ```
 
-#### 手工稀疏<a name="ZH-CN_TOPIC_0000002506024515"></a>
+##### 手工稀疏<a name="ZH-CN_TOPIC_0000002506024515"></a>
 
 本节介绍手工稀疏特性支持的稀疏层，接口调用流程和调用示例。
 稀疏后，如果精度不满足要求，可以参见本节提供的方法进行调优。
 
-##### 稀疏流程<a name="ZH-CN_TOPIC_0000002506024549"></a>
+###### 稀疏流程<a name="ZH-CN_TOPIC_0000002506024549"></a>
 
 本节介绍手工稀疏特性支持的稀疏层，接口调用流程和调用示例。
 
@@ -4428,7 +4430,7 @@ prune_retrain_model = amct.10.6.3-save_prune_retrain_model(
      input_data=input_data)
 ```
 
-##### 手工调优<a name="ZH-CN_TOPIC_0000002506024575"></a>
+###### 手工调优<a name="ZH-CN_TOPIC_0000002506024575"></a>
 
 稀疏后，如果精度不满足要求，可以参见本节提供的方法进行调优。
 
@@ -4437,12 +4439,12 @@ prune_retrain_model = amct.10.6.3-save_prune_retrain_model(
 -   调整稀疏率，由简易配置文件中的**prune\_ratio**参数控制，用户可尝试减小稀疏率并重新进行稀疏来进行调试。
 -   某些层不做稀疏，由简易配置文件中的**regular\_prune\_skip\_layers**参数控制，通过该参数配置不需要稀疏的层。
 
-### 4选2结构化稀疏<a name="ZH-CN_TOPIC_0000002506024495"></a>
+#### 4选2结构化稀疏<a name="ZH-CN_TOPIC_0000002506024495"></a>
 
 本节介绍4选2结构化稀疏支持的层，接口调用流程和调用示例。
 稀疏后，如果精度不满足要求，可以参见本节提供的方法进行调优。
 
-#### 稀疏流程<a name="ZH-CN_TOPIC_0000002506024511"></a>
+##### 稀疏流程<a name="ZH-CN_TOPIC_0000002506024511"></a>
 
 本节介绍4选2结构化稀疏支持的层，接口调用流程和调用示例。
 
@@ -4629,7 +4631,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性。该特性支持的层�
     user_do_inference_onnx(prune_retrain_model, test_data, test_iterations)
     ```
 
-#### 手工调优<a name="ZH-CN_TOPIC_0000002473904600"></a>
+##### 手工调优<a name="ZH-CN_TOPIC_0000002473904600"></a>
 
 稀疏后，如果精度不满足要求，可以参见本节提供的方法进行调优。
 
@@ -4638,12 +4640,12 @@ AMCT支持基于重训练的4选2结构化稀疏特性。该特性支持的层�
 -   调整更新间隔（计算哪些元素被保留的间隔），由简易配置文件中的**update\_freq**参数控制，用户可尝试将更新间隔改为正整数并重新进行稀疏来进行调试，一般来说更新间隔越小精度收益越大。
 -   某些层不做稀疏，由简易配置文件中的**regular\_prune\_skip\_layers**参数控制，通过该参数配置不需要稀疏的层。
 
-## 组合压缩\(不支持\)<a name="ZH-CN_TOPIC_0000002506024595"></a>
+### 组合压缩\(不支持\)<a name="ZH-CN_TOPIC_0000002506024595"></a>
 
 组合压缩是针对同一个网络模型，既进行量化又进行稀疏的操作，具体支持什么样的组合压缩方式，本章节给出详细介绍。
 
 
-### 简介<a name="ZH-CN_TOPIC_0000002473744646"></a>
+#### 简介<a name="ZH-CN_TOPIC_0000002473744646"></a>
 
 组合压缩是针对同一个网络模型，既进行量化又进行稀疏的操作，具体支持什么样的组合压缩方式，本章节给出详细介绍。
 
@@ -4754,7 +4756,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性。该特性支持的层�
 </tbody>
 </table>
 
-### 压缩流程<a name="ZH-CN_TOPIC_0000002506024589"></a>
+#### 压缩流程<a name="ZH-CN_TOPIC_0000002506024589"></a>
 
 本节介绍组合压缩特性的接口调用流程和调用示例。
 
@@ -4922,16 +4924,16 @@ AMCT支持基于重训练的4选2结构化稀疏特性。该特性支持的层�
     user_do_inference_onnx(compressed_model, test_data, test_iterations)
     ```
 
-### 手工调优<a name="ZH-CN_TOPIC_0000002506024599"></a>
+#### 手工调优<a name="ZH-CN_TOPIC_0000002506024599"></a>
 
 组合压缩后，模型精度不满足要求，则需要参见[稀疏\(不支持\)](稀疏(不支持).md)下的手动调优章节和[量化感知训练](量化感知训练.md)下的[手工调优](手工调优-8.md)章节分别进行调优。
 
-## 张量分解\(不支持\)<a name="ZH-CN_TOPIC_0000002473904474"></a>
+### 张量分解\(不支持\)<a name="ZH-CN_TOPIC_0000002473904474"></a>
 
 张量分解通过分解卷积核的张量，将一个卷积转化成两个小卷积的堆叠来降低推理开销，如用户模型中存在大量卷积，且卷积核shape普遍大于\(64, 64, 3, 3\)时推荐使用张量分解。
 本节给出张量分解的接口调用流程和调用示例。
 
-### 简介<a name="ZH-CN_TOPIC_0000002505904553"></a>
+#### 简介<a name="ZH-CN_TOPIC_0000002505904553"></a>
 
 张量分解通过分解卷积核的张量，将一个卷积转化成两个小卷积的堆叠来降低推理开销，如用户模型中存在大量卷积，且卷积核shape普遍大于\(64, 64, 3, 3\)时推荐使用张量分解。
 
@@ -4983,7 +4985,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性。该特性支持的层�
 
     该流程先将分解信息和分解后的权重保存下来，然后在fine-tune时快速加载使用，其优点是可以一次分解，多次使用，使用时加载几乎不耗费时间；而缺点是需要两步操作，且需保存分解后的权重并在使用时加载
 
-### 分解流程<a name="ZH-CN_TOPIC_0000002473904466"></a>
+#### 分解流程<a name="ZH-CN_TOPIC_0000002473904466"></a>
 
 本节给出张量分解的接口调用流程和调用示例。
 
@@ -5058,13 +5060,13 @@ AMCT支持基于重训练的4选2结构化稀疏特性。该特性支持的层�
         train(net, optimizer, ...)                                                  # (*) fine-tune
         ```
 
-## 扩展更多特性<a name="ZH-CN_TOPIC_0000002505904499"></a>
+### 扩展更多特性<a name="ZH-CN_TOPIC_0000002505904499"></a>
 
 
 在一些数据分布不均匀的场景，由于离群值的影响，对数据进行per-tensor量化得到的结果误差较大，而per-channel量化可以获得更低的误差。但由于当前硬件不支持数据per-channel量化，仅支持权重per-channel量化；在该背景下AMCT设计出一套方法，本节将给出详细介绍。
 本节详细介绍逐层蒸馏支持的层，接口调用流程和示例。
 
-### 单算子模式的量化感知训练<a name="ZH-CN_TOPIC_0000002505904633"></a>
+#### 单算子模式的量化感知训练<a name="ZH-CN_TOPIC_0000002505904633"></a>
 
 **功能介绍<a name="section14456169203617"></a>**
 
@@ -5276,7 +5278,7 @@ convert_qat_model('inter_model.onnx', './outputs/resnet101')
 validate_onnx('./outputs/resnet101_fake_quant_model.onnx', val_data)
 ```
 
-### 量化数据均衡预处理<a name="ZH-CN_TOPIC_0000002473904608"></a>
+#### 量化数据均衡预处理<a name="ZH-CN_TOPIC_0000002473904608"></a>
 
 在一些数据分布不均匀的场景，由于离群值的影响，对数据进行per-tensor量化得到的结果误差较大，而per-channel量化可以获得更低的误差。但由于当前硬件不支持数据per-channel量化，仅支持权重per-channel量化；在该背景下AMCT设计出一套方法，本节将给出详细介绍。
 
@@ -5439,7 +5441,7 @@ validate_onnx('./outputs/resnet101_fake_quant_model.onnx', val_data)
     user_do_inference_onnx(quant_model, test_data, test_iterations)
     ```
 
-### 逐层蒸馏\(不支持\)<a name="ZH-CN_TOPIC_0000002506024439"></a>
+#### 逐层蒸馏\(不支持\)<a name="ZH-CN_TOPIC_0000002506024439"></a>
 
 本节详细介绍逐层蒸馏支持的层，接口调用流程和示例。
 
@@ -5565,7 +5567,7 @@ IPV350
     user_do_inference_onnx(quant_model, test_data, test_iterations)
     ```
 
-## 接口说明<a name="ZH-CN_TOPIC_0000002505904497"></a>
+### 接口说明<a name="ZH-CN_TOPIC_0000002505904497"></a>
 
 
 
@@ -5576,7 +5578,7 @@ IPV350
 
 
 
-### 整体约束和接口列表<a name="ZH-CN_TOPIC_0000002506024591"></a>
+#### 整体约束和接口列表<a name="ZH-CN_TOPIC_0000002506024591"></a>
 
 **整体约束<a name="section11281144514445"></a>**
 
@@ -5767,10 +5769,10 @@ IPV350
 </tbody>
 </table>
 
-### 公共接口<a name="ZH-CN_TOPIC_0000002473744600"></a>
+#### 公共接口<a name="ZH-CN_TOPIC_0000002473744600"></a>
 
 
-#### ModelEvaluator<a name="ZH-CN_TOPIC_0000002505904555"></a>
+##### ModelEvaluator<a name="ZH-CN_TOPIC_0000002505904555"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -5860,14 +5862,14 @@ evaluator = amct.ModelEvaluator(
     data_types="float32")
 ```
 
-### 训练后量化接口<a name="ZH-CN_TOPIC_0000002473744574"></a>
+#### 训练后量化接口<a name="ZH-CN_TOPIC_0000002473744574"></a>
 
 
 
 
 
 
-#### create\_quant\_config<a name="ZH-CN_TOPIC_0000002473744626"></a>
+##### create\_quant\_config<a name="ZH-CN_TOPIC_0000002473744626"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -6099,7 +6101,7 @@ amct.create_quant_config(config_file="./configs/config.json",
         }
     ```
 
-#### quantize\_model<a name="ZH-CN_TOPIC_0000002473904620"></a>
+##### quantize\_model<a name="ZH-CN_TOPIC_0000002473904620"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -6236,7 +6238,7 @@ calibration_model = amct.quantize_model(config_json_file,
                                                       'output':{0: 'batch_size'}})
 ```
 
-#### save\_model<a name="ZH-CN_TOPIC_0000002505904577"></a>
+##### save\_model<a name="ZH-CN_TOPIC_0000002505904577"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -6339,7 +6341,7 @@ amct.save_model(modfied_onnx_file="./tmp/modfied_model.onnx",
 
 重新执行量化时，该接口输出的上述文件将会被覆盖。
 
-#### accuracy\_based\_auto\_calibration<a name="ZH-CN_TOPIC_0000002506024517"></a>
+##### accuracy\_based\_auto\_calibration<a name="ZH-CN_TOPIC_0000002506024517"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -6569,7 +6571,7 @@ class AutoCalibrationEvaluator(AutoCalibrationEvaluatorBase):
 -   敏感度信息文件：该文件记录了待量化层对于量化的敏感度信息，根据该信息进行量化回退层的选择。
 -   自动量化回退历史记录文件：记录的回退层的信息。
 
-#### quantize\_preprocess<a name="ZH-CN_TOPIC_0000002505904635"></a>
+##### quantize\_preprocess<a name="ZH-CN_TOPIC_0000002505904635"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -6667,14 +6669,14 @@ calibration_model = amct.quantize_preprocess(config_json_file,
 
 ```
 
-### 量化感知训练接口<a name="ZH-CN_TOPIC_0000002473744652"></a>
+#### 量化感知训练接口<a name="ZH-CN_TOPIC_0000002473744652"></a>
 
 
 
 
 
 
-#### create\_quant\_retrain\_config<a name="ZH-CN_TOPIC_0000002505904637"></a>
+##### create\_quant\_retrain\_config<a name="ZH-CN_TOPIC_0000002505904637"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -6815,7 +6817,7 @@ amct.create_quant_retrain_config(config_file="./configs/config.json",
 }
 ```
 
-#### create\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002473744686"></a>
+##### create\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002473744686"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -6912,7 +6914,7 @@ quant_retrain_model = amct.create_quant_retrain_model(
                input_data)
 ```
 
-#### restore\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904641"></a>
+##### restore\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904641"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -7027,7 +7029,7 @@ quant_retrain_model = amct.restore_quant_retrain_model(
                pth_file)
 ```
 
-#### save\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024533"></a>
+##### save\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024533"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -7181,7 +7183,7 @@ amct.save_quant_retrain_model(
 
 重新执行量化感知训练时，该接口输出的上述文件将会被覆盖。
 
-#### 单算子模式<a name="ZH-CN_TOPIC_0000002505904493"></a>
+##### 单算子模式<a name="ZH-CN_TOPIC_0000002505904493"></a>
 
 
 
@@ -7191,7 +7193,7 @@ amct.save_quant_retrain_model(
 
 
 
-##### Conv1dQAT<a name="ZH-CN_TOPIC_0000002473744634"></a>
+###### Conv1dQAT<a name="ZH-CN_TOPIC_0000002473744634"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -7434,7 +7436,7 @@ amct.save_quant_retrain_model(
     Conv1dQAT.from_float(mod=conv1d_op, config=None)
     ```
 
-##### Conv2dQAT<a name="ZH-CN_TOPIC_0000002506024479"></a>
+###### Conv2dQAT<a name="ZH-CN_TOPIC_0000002506024479"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -7680,7 +7682,7 @@ amct.save_quant_retrain_model(
     Conv2dQAT.from_float(mod=conv2d_op, config=None)
     ```
 
-##### ConvTranspose1dQAT<a name="ZH-CN_TOPIC_0000002473744586"></a>
+###### ConvTranspose1dQAT<a name="ZH-CN_TOPIC_0000002473744586"></a>
 
 **产品支持情况<a name="section3673191194911"></a>**
 
@@ -7920,7 +7922,7 @@ amct.save_quant_retrain_model(
     ConvTranspose1dQAT.from_float(mod=conv_transpose2d_op, config=None)
     ```
 
-##### ConvTranspose2dQAT<a name="ZH-CN_TOPIC_0000002473744594"></a>
+###### ConvTranspose2dQAT<a name="ZH-CN_TOPIC_0000002473744594"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -8164,7 +8166,7 @@ amct.save_quant_retrain_model(
     ConvTranspose2dQAT.from_float(mod=conv_transpose2d_op, config=None)
     ```
 
-##### GRUQAT<a name="ZH-CN_TOPIC_0000002505904643"></a>
+###### GRUQAT<a name="ZH-CN_TOPIC_0000002505904643"></a>
 
 **产品支持情况<a name="section3673191194911"></a>**
 
@@ -8395,7 +8397,7 @@ amct.save_quant_retrain_model(
     GRUQAT.from_float(mod=lstm_op, config=None)
     ```
 
-##### LinearQAT<a name="ZH-CN_TOPIC_0000002505904661"></a>
+###### LinearQAT<a name="ZH-CN_TOPIC_0000002505904661"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -8586,7 +8588,7 @@ amct.save_quant_retrain_model(
     LinearQAT.from_float(mod=linear_op, config=None)
     ```
 
-##### LSTMQAT<a name="ZH-CN_TOPIC_0000002473744544"></a>
+###### LSTMQAT<a name="ZH-CN_TOPIC_0000002473744544"></a>
 
 **产品支持情况<a name="section3673191194911"></a>**
 
@@ -8826,7 +8828,7 @@ amct.save_quant_retrain_model(
     LSTMQAT.from_float(mod=lstm_op, config=None)
     ```
 
-##### 量化配置参数说明<a name="ZH-CN_TOPIC_0000002473904614"></a>
+###### 量化配置参数说明<a name="ZH-CN_TOPIC_0000002473904614"></a>
 
 **表 1**  retrain\_enable参数说明
 
@@ -9195,12 +9197,12 @@ amct.save_quant_retrain_model(
 </tbody>
 </table>
 
-### 稀疏接口<a name="ZH-CN_TOPIC_0000002473904540"></a>
+#### 稀疏接口<a name="ZH-CN_TOPIC_0000002473904540"></a>
 
 
 
 
-#### create\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002473744624"></a>
+##### create\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002473744624"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -9301,7 +9303,7 @@ prune_retrain_model = amct.create_prune_retrain_model(
                record_file)
 ```
 
-#### restore\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024467"></a>
+##### restore\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024467"></a>
 
 **产品支持情况<a name="section18210163319189"></a>**
 
@@ -9421,7 +9423,7 @@ prune_retrain_model = amct.restore_prune_retrain_model(
               'state_dict')
 ```
 
-#### save\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024519"></a>
+##### save\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024519"></a>
 
 **产品支持情况<a name="section18210163319189"></a>**
 
@@ -9564,10 +9566,10 @@ amct.save_prune_retrain_model(
 
 重新执行稀疏特性时，该接口输出的上述文件将会被覆盖。
 
-### 自动通道稀疏搜索接口<a name="ZH-CN_TOPIC_0000002473904464"></a>
+#### 自动通道稀疏搜索接口<a name="ZH-CN_TOPIC_0000002473904464"></a>
 
 
-#### auto\_channel\_prune\_search<a name="ZH-CN_TOPIC_0000002473904452"></a>
+##### auto\_channel\_prune\_search<a name="ZH-CN_TOPIC_0000002473904452"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -9688,12 +9690,12 @@ amct.auto_channel_prune_search(
 
 保存的自动通道稀疏配置文件，需要传给通道稀疏接口完成后续的业务。
 
-### 组合压缩接口<a name="ZH-CN_TOPIC_0000002473744680"></a>
+#### 组合压缩接口<a name="ZH-CN_TOPIC_0000002473744680"></a>
 
 
 
 
-#### create\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904523"></a>
+##### create\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904523"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -9804,7 +9806,7 @@ compressed_retrain_model = amct.create_compressed_retrain_model(
 
 保存的静态组合压缩记录文件record\_file，如果简易配置文件中含有稀疏配置，则在该函数完成后，record\_file中含有稀疏记录信息。
 
-#### restore\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904485"></a>
+##### restore\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904485"></a>
 
 **产品支持情况<a name="section329012164010"></a>**
 
@@ -9931,7 +9933,7 @@ compressed_retrain_model = amct.restore_compressed_retrain_model(
                                 'state_dict')
 ```
 
-#### save\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904645"></a>
+##### save\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904645"></a>
 
 **产品支持情况<a name="section329012164010"></a>**
 
@@ -10086,11 +10088,11 @@ amct.save_compressed_retrain_model(
 
 重新执行静态组合压缩时，该接口输出的上述文件将会被覆盖。
 
-### 张量分解接口<a name="ZH-CN_TOPIC_0000002506024597"></a>
+#### 张量分解接口<a name="ZH-CN_TOPIC_0000002506024597"></a>
 
 
 
-#### auto\_decomposition<a name="ZH-CN_TOPIC_0000002506024563"></a>
+##### auto\_decomposition<a name="ZH-CN_TOPIC_0000002506024563"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -10177,7 +10179,7 @@ net, changes = auto_decomposition(                             # 执行张量分
 >1.  当涉及模型训练时，本接口的调用需在将模型参数传递给优化器之前；如使用了torch.nn.parallel.DistributedDataParallel \(DDP\)，则本接口的调用也需在将模型传递给DDP之前。
 >2.  本接口将原地修改传入的模型对象，即分解后会改变用户传入的模型对象本身（例外：传入的模型是一个torch.nn.Conv2d对象，该情况下本接口不会对其进行修改，如发生分解，则返回的模型是新构建的torch.nn.Module对象）。
 
-#### decompose\_network<a name="ZH-CN_TOPIC_0000002473904500"></a>
+##### decompose\_network<a name="ZH-CN_TOPIC_0000002473904500"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -10263,13 +10265,13 @@ net, changes = decompose_network(                                # 加载分解�
 >2.  本接口将原地修改传入的模型对象，即分解后会改变用户传入的模型对象本身（例外：传入的模型是一个torch.nn.Conv2d对象，该情况下本接口不会对其进行修改，返回的分解后模型是新构建的torch.nn.Module对象）。
 >3.  本接口仅对模型结构进行修改，不会更新分解后的卷积权重，权重的值为torch.nn.Conv2d\(\)构建的默认值。如需fine-tune，请在调用auto\_decomposition后将分解后的模型权重保存下来，在调用本接口之后加载该权重，再进行fine-tune。
 
-### 蒸馏接口<a name="ZH-CN_TOPIC_0000002473744556"></a>
+#### 蒸馏接口<a name="ZH-CN_TOPIC_0000002473744556"></a>
 
 
 
 
 
-#### create\_distill\_config<a name="ZH-CN_TOPIC_0000002506024601"></a>
+##### create\_distill\_config<a name="ZH-CN_TOPIC_0000002506024601"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -10414,7 +10416,7 @@ amct.create_distill_config(config_file="./configs/config.json",
 }
 ```
 
-#### create\_distill\_model<a name="ZH-CN_TOPIC_0000002473904612"></a>
+##### create\_distill\_model<a name="ZH-CN_TOPIC_0000002473904612"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -10502,7 +10504,7 @@ compress_model = amct.create_distill_model(
                  input_data)
 ```
 
-#### distill<a name="ZH-CN_TOPIC_0000002473904518"></a>
+##### distill<a name="ZH-CN_TOPIC_0000002473904518"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -10656,7 +10658,7 @@ distill_model = amct.distill(
                 optimizer=optimizer)
 ```
 
-#### save\_distill\_model<a name="ZH-CN_TOPIC_0000002506024585"></a>
+##### save\_distill\_model<a name="ZH-CN_TOPIC_0000002506024585"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -10793,7 +10795,7 @@ amct.save_distill_model(
 
 重新执行蒸馏时，该接口输出的上述文件将会被覆盖。
 
-## 参考信息<a name="ZH-CN_TOPIC_0000002505904559"></a>
+### 参考信息<a name="ZH-CN_TOPIC_0000002505904559"></a>
 
 
 
@@ -10801,11 +10803,11 @@ amct.save_distill_model(
 
 
 
-### 工具实现的融合功能<a name="ZH-CN_TOPIC_0000002506024555"></a>
+#### 工具实现的融合功能<a name="ZH-CN_TOPIC_0000002506024555"></a>
 
 当前该工具主要实现的为Conv+BN融合：AMCT在量化前会对模型中的"torch.nn.Conv2d+torch.nn.BatchNorm2d"结构做Conv+BN融合，融合后的torch.nn.BatchNorm2d层会被删除。
 
-### 训练后量化简易配置文件<a name="ZH-CN_TOPIC_0000002505904501"></a>
+#### 训练后量化简易配置文件<a name="ZH-CN_TOPIC_0000002505904501"></a>
 
 calibration\_config\_pytorch.proto文件参数说明如[表1](#zh-cn_topic_0240188735_table1225503375617)所示，该文件所在目录为：_AMCT安装目录_/amct\_pytorch/proto/calibration\_config\_pytorch.proto。
 
@@ -11551,7 +11553,7 @@ calibration\_config\_pytorch.proto文件参数说明如[表1](#zh-cn_topic_02401
     }
     ```
 
-### 量化感知训练简易配置文件<a name="ZH-CN_TOPIC_0000002473904568"></a>
+#### 量化感知训练简易配置文件<a name="ZH-CN_TOPIC_0000002473904568"></a>
 
 retrain\_config\_pytorch.proto文件参数说明如[表1](#zh-cn_topic_0240188735_table1225503375617)所示，该文件所在目录为：_AMCT安装目录_/amct\_pytorch/proto/retrain\_config\_pytorch.proto。
 
@@ -12330,7 +12332,7 @@ retrain\_config\_pytorch.proto文件参数说明如[表1](#zh-cn_topic_024018873
     }
     ```
 
-### 自动通道稀疏搜索简易配置文件<a name="ZH-CN_TOPIC_0000002506024531"></a>
+#### 自动通道稀疏搜索简易配置文件<a name="ZH-CN_TOPIC_0000002506024531"></a>
 
 自动通道稀疏搜索的相关配置说明存在于basic\_info.proto文件中，该文件所在目录为：_AMCT_安装目录/amct\_pytorch/proto/basic\_info.proto。
 
@@ -12541,7 +12543,7 @@ test_iteration: 1
 override_prune_cfg: 'your/path/to/override_channel_prune.cfg'
 ```
 
-### record记录文件<a name="ZH-CN_TOPIC_0000002505904599"></a>
+#### record记录文件<a name="ZH-CN_TOPIC_0000002505904599"></a>
 
 record文件，为基于protobuf协议的序列化数据结构文件，记录量化场景量化因子scale/offset，稀疏场景各稀疏层间的级联关系等，通过该文件、压缩配置文件以及原始网络模型文件，生成压缩后的模型文件。
 
@@ -13003,7 +13005,7 @@ message PruneNode {
     }
     ```
 
-### 蒸馏简易配置文件<a name="ZH-CN_TOPIC_0000002473904588"></a>
+#### 蒸馏简易配置文件<a name="ZH-CN_TOPIC_0000002473904588"></a>
 
 distill\_config\_pytorch.proto文件参数说明如[表1](#zh-cn_topic_0240188735_table1225503375617)所示，该文件所在目录为：_AMCT安装目录_/amct\_pytorch/proto/distill\_config\_pytorch.proto。
 
@@ -13485,18 +13487,18 @@ distill_override_layer_types : {
 }
 ```
 
-# AMCT（ONNX）<a name="ZH-CN_TOPIC_0000002473904538"></a>
+## AMCT（ONNX）<a name="ZH-CN_TOPIC_0000002473904538"></a>
 
 
 
 
 
-## 量化<a name="ZH-CN_TOPIC_0000002473904548"></a>
+### 量化<a name="ZH-CN_TOPIC_0000002473904548"></a>
 
 本章节详细介绍AMCT量化场景，以及每个场景下的功能。
 
 
-### 简介<a name="ZH-CN_TOPIC_0000002505904549"></a>
+#### 简介<a name="ZH-CN_TOPIC_0000002505904549"></a>
 
 本章节详细介绍AMCT量化场景，以及每个场景下的功能。
 
@@ -13572,11 +13574,11 @@ distill_override_layer_types : {
 </tbody>
 </table>
 
-### 自动量化<a name="ZH-CN_TOPIC_0000002473744566"></a>
+#### 自动量化<a name="ZH-CN_TOPIC_0000002473744566"></a>
 
 基于精度的自动量化是为了方便用户在对量化精度有一定要求时所使用的功能。该方法能够在保证用户所需的模型精度前提下，自动搜索模型的量化配置并执行训练后量化的流程，最终生成满足精度要求的量化模型。
 
-#### 基于精度的自动量化<a name="ZH-CN_TOPIC_0000002505904631"></a>
+##### 基于精度的自动量化<a name="ZH-CN_TOPIC_0000002505904631"></a>
 
 基于精度的自动量化是为了方便用户在对量化精度有一定要求时所使用的功能。该方法能够在保证用户所需的模型精度前提下，自动搜索模型的量化配置并执行训练后量化的流程，最终生成满足精度要求的量化模型。
 
@@ -13702,13 +13704,13 @@ distill_override_layer_types : {
         )
         ```
 
-### 手工量化<a name="ZH-CN_TOPIC_0000002505904537"></a>
+#### 手工量化<a name="ZH-CN_TOPIC_0000002505904537"></a>
 
 均匀量化是指量化后的数据比较均匀地分布在某个数值空间中，例如INT8量化就是用只有8比特的INT8数据来表示32比特的float32数据或16比特的float16数据，将float32/float16的卷积运算过程（乘加运算）转换为INT8的卷积运算，加速运算和实现模型压缩；均匀的INT8量化则是量化后数据比较均匀地分布在INT8的数值空间\[-128, 127\]中。
 非均匀量化是指量化后的数据在某个数值空间中的分布是不均匀的。非均匀量化过程中，会根据待量化数据的概率分布来对均匀量化后的数据分布进一步进行根据目标压缩率（保留数值量/原始量化数值量）的聚类操作。相较于均匀量化，非均匀量化在进一步压缩数据信息量的基础上尽可能的保留高概率分布的数据信息，从而减小压缩后的数据信息丢失。
 执行训练后量化特性的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
-#### 均匀量化<a name="ZH-CN_TOPIC_0000002505904495"></a>
+##### 均匀量化<a name="ZH-CN_TOPIC_0000002505904495"></a>
 
 均匀量化是指量化后的数据比较均匀地分布在某个数值空间中，例如INT8量化就是用只有8比特的INT8数据来表示32比特的float32数据或16比特的float16数据，将float32/float16的卷积运算过程（乘加运算）转换为INT8的卷积运算，加速运算和实现模型压缩；均匀的INT8量化则是量化后数据比较均匀地分布在INT8的数值空间\[-128, 127\]中。
 
@@ -14078,7 +14080,7 @@ distill_override_layer_types : {
 
     环境变量的取值，跟模型数据量大小，运行环境的CPU数量相关，比如Resnet101模型，数据量大小为10W量级，线程数可以设置为8。
 
-#### 非均匀量化**\(不支持该特性\)**<a name="ZH-CN_TOPIC_0000002473744618"></a>
+##### 非均匀量化**\(不支持该特性\)**<a name="ZH-CN_TOPIC_0000002473744618"></a>
 
 非均匀量化是指量化后的数据在某个数值空间中的分布是不均匀的。非均匀量化过程中，会根据待量化数据的概率分布来对均匀量化后的数据分布进一步进行根据目标压缩率（保留数值量/原始量化数值量）的聚类操作。相较于均匀量化，非均匀量化在进一步压缩数据信息量的基础上尽可能的保留高概率分布的数据信息，从而减小压缩后的数据信息丢失。
 
@@ -14128,7 +14130,7 @@ distill_override_layer_types : {
 
 4.  查看非均匀量化后，精度仿真模型在ONNX Runtime环境中推理精度是否满足要求，如果不满足要求，则需要调整非均匀量化配置文件config.json中的参数，然后重新进行非均匀量化，直至满足精度要求。调整方法请参见[手工调优](手工调优-22.md)。
 
-#### 手工调优<a name="ZH-CN_TOPIC_0000002473904536"></a>
+##### 手工调优<a name="ZH-CN_TOPIC_0000002473904536"></a>
 
 执行训练后量化特性的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
@@ -15044,12 +15046,12 @@ distill_override_layer_types : {
 </tbody>
 </table>
 
-## 扩展更多特性<a name="ZH-CN_TOPIC_0000002473744610"></a>
+### 扩展更多特性<a name="ZH-CN_TOPIC_0000002473744610"></a>
 
 如果用户已经使用ONNX原生的QuanitzeLinear、DequantizeLinear算子实现量化功能（以下简称QAT模型），但是该模型无法使用ATC工具转成适配NPU IP加速器的离线模型，则需要借助本节提供的功能，将该QAT模型适配成CANN量化模型格式。然后才能使用ATC工具，将CANN量化模型转成适配NPU IP加速器的离线模型。
 在一些数据分布不均匀的场景，由于离群值的影响，对数据进行per-tensor量化得到的结果误差较大，而per-channel量化可以获得更低的误差。但由于当前硬件不支持数据per-channel量化，仅支持权重per-channel量化；在该背景下AMCT设计出一套方法，本节将给出详细介绍。
 
-### QAT模型适配CANN模型<a name="ZH-CN_TOPIC_0000002473904554"></a>
+#### QAT模型适配CANN模型<a name="ZH-CN_TOPIC_0000002473904554"></a>
 
 如果用户已经使用ONNX原生的QuanitzeLinear、DequantizeLinear算子实现量化功能（以下简称QAT模型），但是该模型无法使用ATC工具转成适配NPU IP加速器的离线模型，则需要借助本节提供的功能，将该QAT模型适配成CANN量化模型格式。然后才能使用ATC工具，将CANN量化模型转成适配NPU IP加速器的离线模型。
 
@@ -15157,7 +15159,7 @@ distill_override_layer_types : {
 
     round\(bias/\(scale\_d\*scale\_w\)\)\*\(scale\_d\*scale\_w\)
 
-### 量化数据均衡预处理<a name="ZH-CN_TOPIC_0000002473744570"></a>
+#### 量化数据均衡预处理<a name="ZH-CN_TOPIC_0000002473744570"></a>
 
 在一些数据分布不均匀的场景，由于离群值的影响，对数据进行per-tensor量化得到的结果误差较大，而per-channel量化可以获得更低的误差。但由于当前硬件不支持数据per-channel量化，仅支持权重per-channel量化；在该背景下AMCT设计出一套方法，本节将给出详细介绍。
 
@@ -15323,12 +15325,12 @@ distill_override_layer_types : {
     user_do_inference(quant_model, test_data, test_iterations)
     ```
 
-## 接口说明<a name="ZH-CN_TOPIC_0000002505904591"></a>
+### 接口说明<a name="ZH-CN_TOPIC_0000002505904591"></a>
 
 
 
 
-### 整体约束和接口列表<a name="ZH-CN_TOPIC_0000002506024587"></a>
+#### 整体约束和接口列表<a name="ZH-CN_TOPIC_0000002506024587"></a>
 
 **整体约束<a name="section9843123082213"></a>**
 
@@ -15383,14 +15385,14 @@ distill_override_layer_types : {
 </tbody>
 </table>
 
-### 训练后量化接口<a name="ZH-CN_TOPIC_0000002506024565"></a>
+#### 训练后量化接口<a name="ZH-CN_TOPIC_0000002506024565"></a>
 
 
 
 
 
 
-#### create\_quant\_config<a name="ZH-CN_TOPIC_0000002506024457"></a>
+##### create\_quant\_config<a name="ZH-CN_TOPIC_0000002506024457"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -15638,7 +15640,7 @@ amct.create_quant_config(config_file="./configs/config.json",
     }
     ```
 
-#### quantize\_model<a name="ZH-CN_TOPIC_0000002473744554"></a>
+##### quantize\_model<a name="ZH-CN_TOPIC_0000002473744554"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -15733,7 +15735,7 @@ amct.quantize_model(config_file,
                     scale_offset_record_file)
 ```
 
-#### save\_model<a name="ZH-CN_TOPIC_0000002506024507"></a>
+##### save\_model<a name="ZH-CN_TOPIC_0000002506024507"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -15838,7 +15840,7 @@ amct.save_model(modified_onnx_file="./tmp/modified_model.onnx",
 
 重新执行量化时，该接口输出的上述文件将会被覆盖。
 
-#### accuracy\_based\_auto\_calibration<a name="ZH-CN_TOPIC_0000002473744688"></a>
+##### accuracy\_based\_auto\_calibration<a name="ZH-CN_TOPIC_0000002473744688"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -16027,7 +16029,7 @@ class AutoCalibrationEvaluator(AutoCalibrationEvaluatorBase):
 -   敏感度信息文件：该文件记录了待量化层对于量化的敏感度信息，根据该信息进行量化回退层的选择。
 -   自动量化回退历史记录文件：记录的回退层的信息。
 
-#### quantize\_preprocess<a name="ZH-CN_TOPIC_0000002506024445"></a>
+##### quantize\_preprocess<a name="ZH-CN_TOPIC_0000002506024445"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -16122,10 +16124,10 @@ amct.quantize_preprocess(config_file,
                          modified_model)
 ```
 
-### 模型适配接口<a name="ZH-CN_TOPIC_0000002473744546"></a>
+#### 模型适配接口<a name="ZH-CN_TOPIC_0000002473744546"></a>
 
 
-#### convert\_qat\_model<a name="ZH-CN_TOPIC_0000002473904490"></a>
+##### convert\_qat\_model<a name="ZH-CN_TOPIC_0000002473904490"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -16219,12 +16221,12 @@ amct.convert_qat_model(model_file, save_path)
 -   可用于CPU/GPU测试的fakequant模型以及用于ATC转换的deploy模型。
 -   （可选）生成一个量化参数的txt格式记录文件，内部记录了完整量化层的量化参数。
 
-## 参考信息<a name="ZH-CN_TOPIC_0000002505904571"></a>
+### 参考信息<a name="ZH-CN_TOPIC_0000002505904571"></a>
 
 
 
 
-### 工具实现的融合功能<a name="ZH-CN_TOPIC_0000002473744560"></a>
+#### 工具实现的融合功能<a name="ZH-CN_TOPIC_0000002473744560"></a>
 
 当前该工具主要实现的融合功能如下：
 
@@ -16232,7 +16234,7 @@ amct.convert_qat_model(model_file, save_path)
 -   BatchNormalization+Mul：AMCT在量化前会对模型中的"BatchNormalization+Mul"结构做"BN+Mul"融合，融合后的"Mul"层会被删除。
 -   BatchNormalization+Add：AMCT在量化前会对模型中的"BatchNormalization+Add"结构做"BN+Add"融合，融合后的"Add"层会被删除。
 
-### 训练后量化简易配置文件<a name="ZH-CN_TOPIC_0000002473904542"></a>
+#### 训练后量化简易配置文件<a name="ZH-CN_TOPIC_0000002473904542"></a>
 
 calibration\_config\_onnx.proto文件参数说明如[表1](#zh-cn_topic_0240188735_table1225503375617)所示，该文件所在目录为：_AMCT安装目录_/amct\_onnx/proto/calibration\_config\_onnx.proto。
 
@@ -17047,7 +17049,7 @@ calibration\_config\_onnx.proto文件参数说明如[表1](#zh-cn_topic_02401887
     }
     ```
 
-### record记录文件<a name="ZH-CN_TOPIC_0000002506024579"></a>
+#### record记录文件<a name="ZH-CN_TOPIC_0000002506024579"></a>
 
 record文件，为基于protobuf协议的序列化数据结构文件，记录量化因子scale/offset等，通过该文件、压缩配置文件以及原始网络模型文件，生成压缩后的模型文件。
 
@@ -17326,7 +17328,7 @@ message ScaleOffsetRecord {
     }
     ```
 
-# AMCT（TensorFlow）\(不支持\)<a name="ZH-CN_TOPIC_0000002506024491"></a>
+## AMCT（TensorFlow）\(不支持\)<a name="ZH-CN_TOPIC_0000002506024491"></a>
 
 
 
@@ -17335,12 +17337,12 @@ message ScaleOffsetRecord {
 
 
 
-## 量化<a name="ZH-CN_TOPIC_0000002506024541"></a>
+### 量化<a name="ZH-CN_TOPIC_0000002506024541"></a>
 
 本章节详细介绍AMCT量化场景，以及每个场景下的功能。
 
 
-### 简介<a name="ZH-CN_TOPIC_0000002473744578"></a>
+#### 简介<a name="ZH-CN_TOPIC_0000002473744578"></a>
 
 本章节详细介绍AMCT量化场景，以及每个场景下的功能。
 
@@ -17446,15 +17448,15 @@ message ScaleOffsetRecord {
 </tbody>
 </table>
 
-### 训练后量化<a name="ZH-CN_TOPIC_0000002505904489"></a>
+#### 训练后量化<a name="ZH-CN_TOPIC_0000002505904489"></a>
 
 
 
-#### 自动量化<a name="ZH-CN_TOPIC_0000002473744642"></a>
+##### 自动量化<a name="ZH-CN_TOPIC_0000002473744642"></a>
 
 基于精度的自动量化是为了方便用户在对量化精度有一定要求时所采用的方法。该功能能够在保证用户所需的模型精度前提下，自动搜索模型的量化配置并执行训练后量化的流程，最终生成满足精度要求的量化模型。
 
-##### 基于精度的自动量化<a name="ZH-CN_TOPIC_0000002506024545"></a>
+###### 基于精度的自动量化<a name="ZH-CN_TOPIC_0000002506024545"></a>
 
 基于精度的自动量化是为了方便用户在对量化精度有一定要求时所采用的方法。该功能能够在保证用户所需的模型精度前提下，自动搜索模型的量化配置并执行训练后量化的流程，最终生成满足精度要求的量化模型。
 
@@ -17571,13 +17573,13 @@ message ScaleOffsetRecord {
         amct.accuracy_based_auto_calibration(ori_pb_model, outputs, record_file, config_file, save_dir, evaluator)
         ```
 
-#### 手工量化<a name="ZH-CN_TOPIC_0000002473744630"></a>
+##### 手工量化<a name="ZH-CN_TOPIC_0000002473744630"></a>
 
 均匀量化是指量化后的数据比较均匀地分布在某个数值空间中，例如INT8量化就是用只有8比特的INT8数据来表示32比特的float32数据或16比特的float16数据，将float32/float16的卷积运算过程（乘加运算）转换为INT8的卷积运算，加速运算和实现模型压缩；均匀的INT8量化则是量化后数据比较均匀地分布在INT8的数值空间\[-128, 127\]中。
 非均匀量化是指量化后的数据在某个数值空间中的分布是不均匀的。非均匀量化过程中，会根据待量化数据的概率分布来对均匀量化后的数据分布进一步进行根据目标压缩率（保留数值量/原始量化数值量）的聚类操作。相较于均匀量化，非均匀量化在进一步压缩数据信息量的基础上尽可能的保留高概率分布的数据信息，从而减小压缩后的数据信息丢失。
 执行训练后量化特性的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
-##### 均匀量化<a name="ZH-CN_TOPIC_0000002506024569"></a>
+###### 均匀量化<a name="ZH-CN_TOPIC_0000002506024569"></a>
 
 均匀量化是指量化后的数据比较均匀地分布在某个数值空间中，例如INT8量化就是用只有8比特的INT8数据来表示32比特的float32数据或16比特的float16数据，将float32/float16的卷积运算过程（乘加运算）转换为INT8的卷积运算，加速运算和实现模型压缩；均匀的INT8量化则是量化后数据比较均匀地分布在INT8的数值空间\[-128, 127\]中。
 
@@ -17740,7 +17742,7 @@ message ScaleOffsetRecord {
     user_do_inference(quant_model, test_data, test_iterations)
     ```
 
-##### 非均匀量化<a name="ZH-CN_TOPIC_0000002473904604"></a>
+###### 非均匀量化<a name="ZH-CN_TOPIC_0000002473904604"></a>
 
 非均匀量化是指量化后的数据在某个数值空间中的分布是不均匀的。非均匀量化过程中，会根据待量化数据的概率分布来对均匀量化后的数据分布进一步进行根据目标压缩率（保留数值量/原始量化数值量）的聚类操作。相较于均匀量化，非均匀量化在进一步压缩数据信息量的基础上尽可能的保留高概率分布的数据信息，从而减小压缩后的数据信息丢失。
 
@@ -17796,7 +17798,7 @@ message ScaleOffsetRecord {
 
 4.  查看非均匀量化后，精度仿真模型在原始TensorFlow环境中推理精度是否满足要求，如果不满足要求，则需要手动调整非均匀量化配置文件config.json中的参数，然后重新进行非均匀量化，直至满足精度要求。调整方法请参见[手工调优](手工调优-44.md)。
 
-##### 手工调优<a name="ZH-CN_TOPIC_0000002473744702"></a>
+###### 手工调优<a name="ZH-CN_TOPIC_0000002473744702"></a>
 
 执行训练后量化特性的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
@@ -18614,12 +18616,12 @@ message ScaleOffsetRecord {
 </tbody>
 </table>
 
-### 量化感知训练<a name="ZH-CN_TOPIC_0000002506024581"></a>
+#### 量化感知训练<a name="ZH-CN_TOPIC_0000002506024581"></a>
 
 本节详细介绍量化感知训练支持的量化层，接口调用流程和示例。
 执行量化感知训练特性后的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
-#### 量化流程<a name="ZH-CN_TOPIC_0000002506024429"></a>
+##### 量化流程<a name="ZH-CN_TOPIC_0000002506024429"></a>
 
 本节详细介绍量化感知训练支持的量化层，接口调用流程和示例。
 
@@ -18816,7 +18818,7 @@ message ScaleOffsetRecord {
     user_do_inference(quant_model, test_data)
     ```
 
-#### 手工调优<a name="ZH-CN_TOPIC_0000002473744682"></a>
+##### 手工调优<a name="ZH-CN_TOPIC_0000002473744682"></a>
 
 执行量化感知训练特性后的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
@@ -19270,20 +19272,20 @@ message ScaleOffsetRecord {
 </tbody>
 </table>
 
-## 稀疏<a name="ZH-CN_TOPIC_0000002506024529"></a>
+### 稀疏<a name="ZH-CN_TOPIC_0000002506024529"></a>
 
 
 
-### 通道稀疏<a name="ZH-CN_TOPIC_0000002506024577"></a>
+#### 通道稀疏<a name="ZH-CN_TOPIC_0000002506024577"></a>
 
 
 
-#### 自动通道稀疏搜索<a name="ZH-CN_TOPIC_0000002506024559"></a>
+##### 自动通道稀疏搜索<a name="ZH-CN_TOPIC_0000002506024559"></a>
 
 当前通道稀疏支持对不同的层做不同稀疏率的稀疏处理，但逐层设置稀疏率对用户的使用门槛较高，对于某一层，如何选择稀疏率（即配置中的prune\_ratio）是比较困难的，手工尝试的配置需要进行重训练，耗费时间多。针对上述问题，引入自动通道稀疏搜索特性，根据用户模型来计算各通道的稀疏敏感度（影响精度）以及稀疏收益（影响性能），然后搜索策略依据稀疏敏感度和稀疏收益来搜索最优的逐层通道稀疏率，以平衡精度和性能。
 介绍自动通道稀疏搜索特性的接口调用流程和调用示例。
 
-##### 简介<a name="ZH-CN_TOPIC_0000002473744530"></a>
+###### 简介<a name="ZH-CN_TOPIC_0000002473744530"></a>
 
 当前通道稀疏支持对不同的层做不同稀疏率的稀疏处理，但逐层设置稀疏率对用户的使用门槛较高，对于某一层，如何选择稀疏率（即配置中的prune\_ratio）是比较困难的，手工尝试的配置需要进行重训练，耗费时间多。针对上述问题，引入自动通道稀疏搜索特性，根据用户模型来计算各通道的稀疏敏感度（影响精度）以及稀疏收益（影响性能），然后搜索策略依据稀疏敏感度和稀疏收益来搜索最优的逐层通道稀疏率，以平衡精度和性能。
 
@@ -19320,7 +19322,7 @@ message ScaleOffsetRecord {
     >![](public_sys-resources/icon-note.gif) **说明：** 
     >自动通道稀疏搜索特性只是生成通道稀疏的简易配置文件，若想得到最终稀疏后模型，还需要进行[手工稀疏](手工稀疏-52.md)，将上述生成的简易配置文件作为入参传入通道稀疏。
 
-##### 搜索流程<a name="ZH-CN_TOPIC_0000002505904513"></a>
+###### 搜索流程<a name="ZH-CN_TOPIC_0000002505904513"></a>
 
 介绍自动通道稀疏搜索特性的接口调用流程和调用示例。
 
@@ -19423,12 +19425,12 @@ message ScaleOffsetRecord {
         search_alg='GreedySearch')
     ```
 
-#### 手工稀疏<a name="ZH-CN_TOPIC_0000002473744678"></a>
+##### 手工稀疏<a name="ZH-CN_TOPIC_0000002473744678"></a>
 
 本节介绍手工稀疏特性支持的稀疏层，接口调用流程和调用示例。
 稀疏后，如果精度不满足要求，可以参见本节提供的方法进行调优。
 
-##### 稀疏流程<a name="ZH-CN_TOPIC_0000002505904629"></a>
+###### 稀疏流程<a name="ZH-CN_TOPIC_0000002505904629"></a>
 
 本节介绍手工稀疏特性支持的稀疏层，接口调用流程和调用示例。
 
@@ -19600,7 +19602,7 @@ AMCT目前主要支持基于重训练的通道稀疏模型压缩特性，稀疏�
     user_do_inference(pruned_model, test_data)
     ```
 
-##### 手工调优<a name="ZH-CN_TOPIC_0000002473904478"></a>
+###### 手工调优<a name="ZH-CN_TOPIC_0000002473904478"></a>
 
 稀疏后，如果精度不满足要求，可以参见本节提供的方法进行调优。
 
@@ -19609,12 +19611,12 @@ AMCT目前主要支持基于重训练的通道稀疏模型压缩特性，稀疏�
 -   调整稀疏率，由简易配置文件中的**prune\_ratio**参数控制，用户可尝试减小稀疏率并重新进行稀疏来进行调试。
 -   某些层不做稀疏，由简易配置文件中的**regular\_prune\_skip\_layers**参数控制，通过该参数配置不需要稀疏的层。
 
-### 4选2结构化稀疏<a name="ZH-CN_TOPIC_0000002473744540"></a>
+#### 4选2结构化稀疏<a name="ZH-CN_TOPIC_0000002473744540"></a>
 
 本节介绍4选2结构化稀疏支持的层，接口调用流程和调用示例。
 稀疏后，如果精度不满足要求，可以参见本节提供的方法进行调优。
 
-#### 稀疏流程<a name="ZH-CN_TOPIC_0000002506024481"></a>
+##### 稀疏流程<a name="ZH-CN_TOPIC_0000002506024481"></a>
 
 本节介绍4选2结构化稀疏支持的层，接口调用流程和调用示例。
 
@@ -19796,7 +19798,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
     user_do_inference(pruned_model, test_data)
     ```
 
-#### 手工调优<a name="ZH-CN_TOPIC_0000002505904655"></a>
+##### 手工调优<a name="ZH-CN_TOPIC_0000002505904655"></a>
 
 稀疏后，如果精度不满足要求，可以参见本节提供的方法进行调优。
 
@@ -19805,12 +19807,12 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
 -   调整更新间隔（计算哪些元素被保留的间隔），由简易配置文件中的**update\_freq**参数控制，用户可尝试将更新间隔改为正整数并重新进行稀疏来进行调试，一般来说更新间隔越小精度收益越大。
 -   某些层不做稀疏，由简易配置文件中的**regular\_prune\_skip\_layers**参数控制，通过该参数配置不需要稀疏的层。
 
-## 组合压缩<a name="ZH-CN_TOPIC_0000002505904639"></a>
+### 组合压缩<a name="ZH-CN_TOPIC_0000002505904639"></a>
 
 组合压缩是针对同一个网络模型，既进行量化又进行稀疏的操作，具体支持什么样的组合压缩方式，本章节给出详细介绍。
 本节介绍组合压缩特性的接口调用流程和调用示例。
 
-### 简介<a name="ZH-CN_TOPIC_0000002506024443"></a>
+#### 简介<a name="ZH-CN_TOPIC_0000002506024443"></a>
 
 组合压缩是针对同一个网络模型，既进行量化又进行稀疏的操作，具体支持什么样的组合压缩方式，本章节给出详细介绍。
 
@@ -19921,7 +19923,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
 </tbody>
 </table>
 
-### 压缩流程<a name="ZH-CN_TOPIC_0000002506024459"></a>
+#### 压缩流程<a name="ZH-CN_TOPIC_0000002506024459"></a>
 
 本节介绍组合压缩特性的接口调用流程和调用示例。
 
@@ -20057,11 +20059,11 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
     user_do_inference(compressed_model, test_data)
     ```
 
-### 手工调优<a name="ZH-CN_TOPIC_0000002505904663"></a>
+#### 手工调优<a name="ZH-CN_TOPIC_0000002505904663"></a>
 
 组合压缩后，如果模型精度不满足要求，需要参见[稀疏](稀疏.md)下的手工调优章节和[量化感知训练](量化感知训练-45.md)下的[手工调优](手工调优-47.md)章节分别进行调优。
 
-## 张量分解<a name="ZH-CN_TOPIC_0000002506024557"></a>
+### 张量分解<a name="ZH-CN_TOPIC_0000002506024557"></a>
 
 张量分解通过分解卷积核的张量，将一个卷积转化成两个小卷积的堆叠来降低推理开销，如用户模型中存在大量卷积，且卷积核shape普遍大于\(64, 64, 3, 3\)时推荐使用张量分解。
 
@@ -20173,17 +20175,17 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
         # ...
         ```
 
-## 扩展更多特性<a name="ZH-CN_TOPIC_0000002473904526"></a>
+### 扩展更多特性<a name="ZH-CN_TOPIC_0000002473904526"></a>
 
 
 在一些数据分布不均匀的场景，由于离群值的影响，对数据进行per-tensor量化得到的结果误差较大，而per-channel量化可以获得更低的误差。但由于当前硬件不支持数据per-channel量化，仅支持权重per-channel量化；在该背景下AMCT设计出一套方法，本节将给出详细介绍。
 
-### 模型适配<a name="ZH-CN_TOPIC_0000002473744576"></a>
+#### 模型适配<a name="ZH-CN_TOPIC_0000002473744576"></a>
 
 如果用户有自己计算得到的量化因子以及TensorFlow原始模型，该模型无法直接使用ATC工具转成适配NPU IP加速器的离线模型，需要借助该章节提供的功能，将其转成CANN量化模型格式，然后才能使用ATC工具，将CANN量化模型转成适配NPU IP加速器的离线模型。
 如果用户使用TensorFlow框架的原始模型已经做了量化功能（以下简称QAT模型），但是该模型无法使用ATC工具转成适配NPU IP加速器的离线模型，需要借助本节提供的功能，将该QAT模型适配成CANN量化模型格式。然后才能使用ATC工具，将CANN量化模型转成适配NPU IP加速器的离线模型。
 
-#### convert\_model接口模型适配<a name="ZH-CN_TOPIC_0000002506024447"></a>
+##### convert\_model接口模型适配<a name="ZH-CN_TOPIC_0000002506024447"></a>
 
 如果用户有自己计算得到的量化因子以及TensorFlow原始模型，该模型无法直接使用ATC工具转成适配NPU IP加速器的离线模型，需要借助该章节提供的功能，将其转成CANN量化模型格式，然后才能使用ATC工具，将CANN量化模型转成适配NPU IP加速器的离线模型。
 
@@ -20239,7 +20241,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
     user_do_inference(quant_model, test_data)
     ```
 
-#### QAT模型适配CANN模型<a name="ZH-CN_TOPIC_0000002505904575"></a>
+##### QAT模型适配CANN模型<a name="ZH-CN_TOPIC_0000002505904575"></a>
 
 如果用户使用TensorFlow框架的原始模型已经做了量化功能（以下简称QAT模型），但是该模型无法使用ATC工具转成适配NPU IP加速器的离线模型，需要借助本节提供的功能，将该QAT模型适配成CANN量化模型格式。然后才能使用ATC工具，将CANN量化模型转成适配NPU IP加速器的离线模型。
 
@@ -20300,7 +20302,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
     user_do_inference(quant_model, test_data)
     ```
 
-### 量化数据均衡预处理<a name="ZH-CN_TOPIC_0000002506024453"></a>
+#### 量化数据均衡预处理<a name="ZH-CN_TOPIC_0000002506024453"></a>
 
 在一些数据分布不均匀的场景，由于离群值的影响，对数据进行per-tensor量化得到的结果误差较大，而per-channel量化可以获得更低的误差。但由于当前硬件不支持数据per-channel量化，仅支持权重per-channel量化；在该背景下AMCT设计出一套方法，本节将给出详细介绍。
 
@@ -20485,7 +20487,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
     user_do_inference(quant_model, test_data, test_iterations)
     ```
 
-## 接口说明<a name="ZH-CN_TOPIC_0000002473904602"></a>
+### 接口说明<a name="ZH-CN_TOPIC_0000002473904602"></a>
 
 
 
@@ -20496,7 +20498,7 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
 
 
 
-### 整体约束和接口列表<a name="ZH-CN_TOPIC_0000002505904581"></a>
+#### 整体约束和接口列表<a name="ZH-CN_TOPIC_0000002505904581"></a>
 
 **整体约束<a name="section168901920144111"></a>**
 
@@ -20629,11 +20631,11 @@ AMCT支持基于重训练的4选2结构化稀疏特性，稀疏示例请参见[�
 </tbody>
 </table>
 
-### 公共接口<a name="ZH-CN_TOPIC_0000002473744616"></a>
+#### 公共接口<a name="ZH-CN_TOPIC_0000002473744616"></a>
 
 
 
-#### set\_logging\_level<a name="ZH-CN_TOPIC_0000002506024521"></a>
+##### set\_logging\_level<a name="ZH-CN_TOPIC_0000002506024521"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -20748,7 +20750,7 @@ amct.save_model(pb_model="./user_model.pb",
                 save_path="./inference/model")
 ```
 
-#### GraphEvaluator<a name="ZH-CN_TOPIC_0000002505904487"></a>
+##### GraphEvaluator<a name="ZH-CN_TOPIC_0000002505904487"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -20838,14 +20840,14 @@ evaluator = amct.GraphEvaluator(
     data_types="float32")
 ```
 
-### 训练后量化接口<a name="ZH-CN_TOPIC_0000002505904529"></a>
+#### 训练后量化接口<a name="ZH-CN_TOPIC_0000002505904529"></a>
 
 
 
 
 
 
-#### create\_quant\_config<a name="ZH-CN_TOPIC_0000002473744606"></a>
+##### create\_quant\_config<a name="ZH-CN_TOPIC_0000002473744606"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -21063,7 +21065,7 @@ amct.create_quant_config(config_file="./configs/config.json",
     }
     ```
 
-#### quantize\_model<a name="ZH-CN_TOPIC_0000002473744676"></a>
+##### quantize\_model<a name="ZH-CN_TOPIC_0000002473744676"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -21171,7 +21173,7 @@ amct.quantize_model(
       record_file="./record_scale_offset.txt")
 ```
 
-#### save\_model<a name="ZH-CN_TOPIC_0000002473904574"></a>
+##### save\_model<a name="ZH-CN_TOPIC_0000002473904574"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -21273,7 +21275,7 @@ amct.save_model(pb_model="./user_model.pb",
 
 落盘的量化后的模型：既可以在TensorFlow环境进行精度仿真又可以在NPU IP加速器做离线推理的pb模型文件。重新执行量化时，该接口输出的上述文件将会被覆盖。
 
-#### accuracy\_based\_auto\_calibration<a name="ZH-CN_TOPIC_0000002505904511"></a>
+##### accuracy\_based\_auto\_calibration<a name="ZH-CN_TOPIC_0000002505904511"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -21414,7 +21416,7 @@ def main():
 -   既可以在TensorFlow环境进行精度仿真又可以在NPU IP加速器做推理的pb模型文件。
 -   量化因子记录文件、量化配置文件、层相似度文件以及自动量化回退历史记录文件。
 
-#### quantize\_preprocess<a name="ZH-CN_TOPIC_0000002473904460"></a>
+##### quantize\_preprocess<a name="ZH-CN_TOPIC_0000002473904460"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -21505,12 +21507,12 @@ amct.quantized_preprocess(
       record_file="./record_scale_offset.txt")
 ```
 
-### 量化感知训练接口<a name="ZH-CN_TOPIC_0000002473904560"></a>
+#### 量化感知训练接口<a name="ZH-CN_TOPIC_0000002473904560"></a>
 
 
 
 
-#### create\_quant\_retrain\_config<a name="ZH-CN_TOPIC_0000002473744602"></a>
+##### create\_quant\_retrain\_config<a name="ZH-CN_TOPIC_0000002473744602"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -21627,7 +21629,7 @@ amct.create_quant_retrain_config(config_path, graph, simple_config)
 }
 ```
 
-#### create\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024567"></a>
+##### create\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024567"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -21704,7 +21706,7 @@ retrain_ops = create_quant_retrain_model(graph, config_file, record_file)
 retrain_ops = amct.create_quant_retrain_model(graph, config_file, record_file)
 ```
 
-#### save\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024455"></a>
+##### save\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024455"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -21794,11 +21796,11 @@ amct.save_quant_retrain_model(FLAGS.checkpoint_path+'/output_graph.pb',output_no
 
 重新执行量化感知训练功能时，该接口输出的上述文件将会被覆盖。
 
-### 稀疏接口<a name="ZH-CN_TOPIC_0000002473744596"></a>
+#### 稀疏接口<a name="ZH-CN_TOPIC_0000002473744596"></a>
 
 
 
-#### create\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024489"></a>
+##### create\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024489"></a>
 
 **产品支持情况<a name="section18210163319189"></a>**
 
@@ -21890,7 +21892,7 @@ create_prune_retrain_model(graph, outputs, record_file, config_defination)
 amct.create_prune_retrain_model(graph, [operation_name_1, operation_name_2], './tmp/record.txt', './tmp/sample_prune.cfg')
 ```
 
-#### save\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002473904480"></a>
+##### save\_prune\_retrain\_model<a name="ZH-CN_TOPIC_0000002473904480"></a>
 
 **产品支持情况<a name="section18210163319189"></a>**
 
@@ -21983,10 +21985,10 @@ amct.save_prune_retrain_model(masked_pb_path, [operation_name_1, operation_name_
 
 落盘文件为：实现稀疏的pb模型。
 
-### 自动通道稀疏搜索接口<a name="ZH-CN_TOPIC_0000002506024497"></a>
+#### 自动通道稀疏搜索接口<a name="ZH-CN_TOPIC_0000002506024497"></a>
 
 
-#### auto\_channel\_prune\_search<a name="ZH-CN_TOPIC_0000002506024475"></a>
+##### auto\_channel\_prune\_search<a name="ZH-CN_TOPIC_0000002506024475"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -22113,11 +22115,11 @@ amct.auto_channel_prune_search(
 
 落盘文件：自动通道稀疏配置文件，该文件需要传给通道稀疏接口完成后续的业务。
 
-### 组合压缩接口<a name="ZH-CN_TOPIC_0000002473904534"></a>
+#### 组合压缩接口<a name="ZH-CN_TOPIC_0000002473904534"></a>
 
 
 
-#### create\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024441"></a>
+##### create\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024441"></a>
 
 **产品支持情况<a name="section329012164010"></a>**
 
@@ -22219,7 +22221,7 @@ amct.create_compressed_retrain_model(graph, './tmp/sample.cfg', [operation_name_
 -   插入稀疏和量化算子的图。
 -   记录稀疏信息和量化因子的record文件
 
-#### save\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002473904596"></a>
+##### save\_compressed\_retrain\_model<a name="ZH-CN_TOPIC_0000002473904596"></a>
 
 **产品支持情况<a name="section329012164010"></a>**
 
@@ -22312,11 +22314,11 @@ amct.save_compressed_retrain_model(masked_pb_path, [operation_name_1, operation_
 
 落盘文件：压缩后的模型，该模型既可以在TensorFlow环境进行精度仿真又可以在NPU IP加速器做推理。
 
-### 张量分解接口<a name="ZH-CN_TOPIC_0000002473744550"></a>
+#### 张量分解接口<a name="ZH-CN_TOPIC_0000002473744550"></a>
 
 
 
-#### auto\_decomposition<a name="ZH-CN_TOPIC_0000002473904494"></a>
+##### auto\_decomposition<a name="ZH-CN_TOPIC_0000002473904494"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -22417,7 +22419,7 @@ auto_decomposition(meta_path='src_path/model.meta',
 -   .index：张量分解后的权重文件索引。
 -   .pkl：分解时图结构的改动信息文件，用于[decompose\_graph](decompose_graph.md)接口修改原训练代码中的图。
 
-#### decompose\_graph<a name="ZH-CN_TOPIC_0000002473744628"></a>
+##### decompose\_graph<a name="ZH-CN_TOPIC_0000002473744628"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -22508,11 +22510,11 @@ decompose_graph(save_path='decomposed_path/model')
 # 在训练前加载分解后模型权重的代码（由用户补充处理）...
 ```
 
-### 模型适配接口<a name="ZH-CN_TOPIC_0000002506024553"></a>
+#### 模型适配接口<a name="ZH-CN_TOPIC_0000002506024553"></a>
 
 
 
-#### convert\_model<a name="ZH-CN_TOPIC_0000002473904496"></a>
+##### convert\_model<a name="ZH-CN_TOPIC_0000002473904496"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -22613,7 +22615,7 @@ convert_model(pb_model='./user_model.pb',
 
 重新执行适配时，该接口输出的上述文件将会被覆盖。
 
-#### convert\_qat\_model<a name="ZH-CN_TOPIC_0000002473904558"></a>
+##### convert\_qat\_model<a name="ZH-CN_TOPIC_0000002473904558"></a>
 
 **产品支持情况<a name="section185612964420"></a>**
 
@@ -22708,7 +22710,7 @@ convert_qat_model(pb_model, outputs, save_path)
 
 重新执行适配时，该接口输出的上述文件将会被覆盖。
 
-## 参考信息<a name="ZH-CN_TOPIC_0000002473904492"></a>
+### 参考信息<a name="ZH-CN_TOPIC_0000002473904492"></a>
 
 
 
@@ -22717,7 +22719,7 @@ convert_qat_model(pb_model, outputs, save_path)
 
 
 
-### 工具实现的融合功能<a name="ZH-CN_TOPIC_0000002473744588"></a>
+#### 工具实现的融合功能<a name="ZH-CN_TOPIC_0000002473744588"></a>
 
 当前该工具主要实现的融合功能，分为如下几类（如下融合场景中涉及的单个算子，需要先满足各个压缩场景比如[量化](量化-37.md)、[组合压缩](组合压缩.md)等的约束条件）：
 
@@ -22779,7 +22781,7 @@ convert_qat_model(pb_model, outputs, save_path)
 
         ![](figures/zh-cn_image_0000002506024663.png)
 
-### 训练后量化简易配置文件<a name="ZH-CN_TOPIC_0000002473904552"></a>
+#### 训练后量化简易配置文件<a name="ZH-CN_TOPIC_0000002473904552"></a>
 
 calibration\_config\_tf.proto文件参数说明如[表1](#zh-cn_topic_0240188735_table1225503375617)所示，该文件所在目录为：_AMCT安装目录_/amct\_tensorflow/proto/calibration\_config\_tf.proto。
 
@@ -23547,7 +23549,7 @@ calibration\_config\_tf.proto文件参数说明如[表1](#zh-cn_topic_0240188735
     }
     ```
 
-### 量化感知训练简易配置文件<a name="ZH-CN_TOPIC_0000002473744644"></a>
+#### 量化感知训练简易配置文件<a name="ZH-CN_TOPIC_0000002473744644"></a>
 
 retrain\_config\_tf.proto文件参数说明如[表1](#zh-cn_topic_0240188735_table1225503375617)所示，该文件所在目录为：_AMCT安装目录_/amct\_tensorflow/proto/retrain\_config\_tf.proto。
 
@@ -24322,7 +24324,7 @@ retrain\_config\_tf.proto文件参数说明如[表1](#zh-cn_topic_0240188735_tab
     }
     ```
 
-### 自动通道稀疏搜索简易配置文件说明<a name="ZH-CN_TOPIC_0000002473744538"></a>
+#### 自动通道稀疏搜索简易配置文件说明<a name="ZH-CN_TOPIC_0000002473744538"></a>
 
 自动通道稀疏搜索的相关配置说明存在于basic\_info.proto文件中，该文件所在目录为：_AMCT__安装目录_/amct\_tensorflow/proto/basic\_info.proto。文件内容如下所示：
 
@@ -24533,7 +24535,7 @@ test_iteration: 1
 override_prune_cfg: 'your/path/to/override_channel_prune.cfg'
 ```
 
-### record记录文件<a name="ZH-CN_TOPIC_0000002473904476"></a>
+#### record记录文件<a name="ZH-CN_TOPIC_0000002473904476"></a>
 
 record文件，为基于protobuf协议的序列化数据结构文件，记录量化场景量化因子scale/offset，稀疏场景各稀疏层间的级联关系等，通过该文件、压缩配置文件以及原始网络模型文件，生成压缩后的模型文件。
 
@@ -25183,7 +25185,7 @@ message PruneNode {
     }
     ```
 
-### 开源网络模型分解数据参考<a name="ZH-CN_TOPIC_0000002473744700"></a>
+#### 开源网络模型分解数据参考<a name="ZH-CN_TOPIC_0000002473744700"></a>
 
 精度指标：分类：top1 ACC\(%\)，检测: mAP\(%\)，分割: DSC\(%\)。fine-tune学习率从原始学习率的0.1倍开始降低。
 
@@ -25322,7 +25324,7 @@ message PruneNode {
 </tbody>
 </table>
 
-### 源码包编译为whl包，以whl包形式安装AMCT<a name="ZH-CN_TOPIC_0000002473744534"></a>
+#### 源码包编译为whl包，以whl包形式安装AMCT<a name="ZH-CN_TOPIC_0000002473744534"></a>
 
 如果用户AMCT安装服务器缺少源码编译安装时的某些依赖，则用户可以将源码包编译为whl包，然后进行安装，方法如下：
 
@@ -25362,19 +25364,19 @@ message PruneNode {
     Successfully installed amct-tensorflow-{version}
     ```
 
-# AMCT（Caffe）\(不支持\)<a name="ZH-CN_TOPIC_0000002473744592"></a>
+## AMCT（Caffe）\(不支持\)<a name="ZH-CN_TOPIC_0000002473744592"></a>
 
 
 张量分解通过分解卷积核的张量，将一个卷积转化成两个小卷积的堆叠来降低推理开销，如用户模型中存在大量卷积，且卷积核shape普遍大于\(64, 64, 3, 3\)时推荐使用张量分解。
 如果用户有自己计算得到的量化因子以及Caffe原始模型，该模型无法直接使用ATC工具转成适配NPU IP加速器的离线模型，需要借助该章节提供的功能，将其转成CANN量化模型格式，然后才能使用ATC工具，将CANN量化模型转成适配NPU IP加速器的离线模型。
 
 
-## 量化<a name="ZH-CN_TOPIC_0000002505904545"></a>
+### 量化<a name="ZH-CN_TOPIC_0000002505904545"></a>
 
 本章节详细介绍AMCT量化场景，以及每个场景下的功能。
 
 
-### 简介<a name="ZH-CN_TOPIC_0000002473904570"></a>
+#### 简介<a name="ZH-CN_TOPIC_0000002473904570"></a>
 
 本章节详细介绍AMCT量化场景，以及每个场景下的功能。
 
@@ -25459,11 +25461,11 @@ message PruneNode {
 </tbody>
 </table>
 
-### 训练后量化<a name="ZH-CN_TOPIC_0000002473744584"></a>
+#### 训练后量化<a name="ZH-CN_TOPIC_0000002473744584"></a>
 
 基于精度的自动量化是为了方便用户在对量化精度有一定要求时所使用的功能。该方法能够在保证用户所需的模型精度前提下，自动搜索模型的量化配置并执行训练后量化的流程，最终生成满足精度要求的量化模型。
 
-#### 基于精度的自动量化<a name="ZH-CN_TOPIC_0000002473904446"></a>
+##### 基于精度的自动量化<a name="ZH-CN_TOPIC_0000002473904446"></a>
 
 基于精度的自动量化是为了方便用户在对量化精度有一定要求时所使用的功能。该方法能够在保证用户所需的模型精度前提下，自动搜索模型的量化配置并执行训练后量化的流程，最终生成满足精度要求的量化模型。
 
@@ -25588,13 +25590,13 @@ message PruneNode {
             result_path)
         ```
 
-#### 手工量化<a name="ZH-CN_TOPIC_0000002473744648"></a>
+##### 手工量化<a name="ZH-CN_TOPIC_0000002473744648"></a>
 
 均匀量化是指量化后的数据比较均匀地分布在某个数值空间中，例如INT8量化就是用只有8比特的INT8数据来表示32比特的float32数据，将float32的卷积运算过程（乘加运算）转换为INT8的卷积运算，加速运算和实现模型压缩；均匀的INT8量化则是量化后数据比较均匀地分布在INT8的数值空间\[-128, 127\]中。
 非均匀量化是指量化后的数据在某个数值空间中的分布是不均匀的。非均匀量化过程中，会根据待量化数据的概率分布来对均匀量化后的数据分布进一步进行根据目标压缩率（保留数值量/原始量化数值量）的聚类操作。相较于均匀量化，非均匀量化在进一步压缩数据信息量的基础上尽可能的保留高概率分布的数据信息，从而减小压缩后的数据信息丢失。
 执行训练后量化特性的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
-##### 均匀量化<a name="ZH-CN_TOPIC_0000002505904515"></a>
+###### 均匀量化<a name="ZH-CN_TOPIC_0000002505904515"></a>
 
 均匀量化是指量化后的数据比较均匀地分布在某个数值空间中，例如INT8量化就是用只有8比特的INT8数据来表示32比特的float32数据，将float32的卷积运算过程（乘加运算）转换为INT8的卷积运算，加速运算和实现模型压缩；均匀的INT8量化则是量化后数据比较均匀地分布在INT8的数值空间\[-128, 127\]中。
 
@@ -25884,7 +25886,7 @@ message PruneNode {
             post_process(blobs_out)
         ```
 
-##### 非均匀量化<a name="ZH-CN_TOPIC_0000002473904550"></a>
+###### 非均匀量化<a name="ZH-CN_TOPIC_0000002473904550"></a>
 
 非均匀量化是指量化后的数据在某个数值空间中的分布是不均匀的。非均匀量化过程中，会根据待量化数据的概率分布来对均匀量化后的数据分布进一步进行根据目标压缩率（保留数值量/原始量化数值量）的聚类操作。相较于均匀量化，非均匀量化在进一步压缩数据信息量的基础上尽可能的保留高概率分布的数据信息，从而减小压缩后的数据信息丢失。
 
@@ -26021,7 +26023,7 @@ message PruneNode {
             result_path)
     ```
 
-##### 手工调优<a name="ZH-CN_TOPIC_0000002473904546"></a>
+###### 手工调优<a name="ZH-CN_TOPIC_0000002473904546"></a>
 
 执行训练后量化特性的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
@@ -26766,12 +26768,12 @@ message PruneNode {
 </tbody>
 </table>
 
-### 量化感知训练<a name="ZH-CN_TOPIC_0000002473904488"></a>
+#### 量化感知训练<a name="ZH-CN_TOPIC_0000002473904488"></a>
 
 本节详细介绍量化感知训练支持的量化层，接口调用流程和示例。
 执行量化感知训练特性后的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
-#### 量化流程<a name="ZH-CN_TOPIC_0000002473744670"></a>
+##### 量化流程<a name="ZH-CN_TOPIC_0000002473744670"></a>
 
 本节详细介绍量化感知训练支持的量化层，接口调用流程和示例。
 
@@ -26948,7 +26950,7 @@ message PruneNode {
     user_test_model(fake_quant_model, fake_quant_weights, test_data, test_iterations)
     ```
 
-#### 手工调优<a name="ZH-CN_TOPIC_0000002473904486"></a>
+##### 手工调优<a name="ZH-CN_TOPIC_0000002473904486"></a>
 
 执行量化感知训练特性后的精度如果不满足要求，可以尝试手动调整config.json文件中的参数，本节给出调整的原则，以及参数解释。
 
@@ -27329,7 +27331,7 @@ message PruneNode {
 </tbody>
 </table>
 
-## 张量分解<a name="ZH-CN_TOPIC_0000002506024513"></a>
+### 张量分解<a name="ZH-CN_TOPIC_0000002506024513"></a>
 
 张量分解通过分解卷积核的张量，将一个卷积转化成两个小卷积的堆叠来降低推理开销，如用户模型中存在大量卷积，且卷积核shape普遍大于\(64, 64, 3, 3\)时推荐使用张量分解。
 
@@ -27400,7 +27402,7 @@ auto_decomposition(model_file=model_file, weights_file=weights_file,
                    new_model_file=new_model_file, new_weights_file=new_weights_file)
 ```
 
-## 扩展更多特性（模型适配）<a name="ZH-CN_TOPIC_0000002473904512"></a>
+### 扩展更多特性（模型适配）<a name="ZH-CN_TOPIC_0000002473904512"></a>
 
 如果用户有自己计算得到的量化因子以及Caffe原始模型，该模型无法直接使用ATC工具转成适配NPU IP加速器的离线模型，需要借助该章节提供的功能，将其转成CANN量化模型格式，然后才能使用ATC工具，将CANN量化模型转成适配NPU IP加速器的离线模型。
 
@@ -27467,7 +27469,7 @@ auto_decomposition(model_file=model_file, weights_file=weights_file,
     user_test_model(fake_quant_model, fake_quant_weights, test_data, test_iterations)
     ```
 
-## 接口说明<a name="ZH-CN_TOPIC_0000002473904504"></a>
+### 接口说明<a name="ZH-CN_TOPIC_0000002473904504"></a>
 
 
 
@@ -27475,7 +27477,7 @@ auto_decomposition(model_file=model_file, weights_file=weights_file,
 
 
 
-### 整体约束和接口列表<a name="ZH-CN_TOPIC_0000002473904586"></a>
+#### 整体约束和接口列表<a name="ZH-CN_TOPIC_0000002473904586"></a>
 
 **整体约束<a name="section51305271119"></a>**
 
@@ -27571,11 +27573,11 @@ auto_decomposition(model_file=model_file, weights_file=weights_file,
 </tbody>
 </table>
 
-### 公共接口<a name="ZH-CN_TOPIC_0000002506024433"></a>
+#### 公共接口<a name="ZH-CN_TOPIC_0000002506024433"></a>
 
 
 
-#### set\_gpu\_mode<a name="ZH-CN_TOPIC_0000002505904507"></a>
+##### set\_gpu\_mode<a name="ZH-CN_TOPIC_0000002505904507"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -27624,7 +27626,7 @@ import amct_caffe as amct
 amct.set_gpu_mode()
 ```
 
-#### set\_cpu\_mode<a name="ZH-CN_TOPIC_0000002473744710"></a>
+##### set\_cpu\_mode<a name="ZH-CN_TOPIC_0000002473744710"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -27672,7 +27674,7 @@ import amct_caffe as amct
 amct.set_cpu_mode()
 ```
 
-### 训练后量化接口<a name="ZH-CN_TOPIC_0000002505904657"></a>
+#### 训练后量化接口<a name="ZH-CN_TOPIC_0000002505904657"></a>
 
 
 
@@ -27680,7 +27682,7 @@ amct.set_cpu_mode()
 
 
 
-#### create\_quant\_config<a name="ZH-CN_TOPIC_0000002473904498"></a>
+##### create\_quant\_config<a name="ZH-CN_TOPIC_0000002473904498"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -27893,7 +27895,7 @@ create_quant_config(config_file="./configs/config.json",
     }
     ```
 
-#### init<a name="ZH-CN_TOPIC_0000002473904590"></a>
+##### init<a name="ZH-CN_TOPIC_0000002473904590"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -27986,7 +27988,7 @@ graph = init(config_file="./configs/config.json",
 
 落盘文件说明：量化因子文件，重新执行量化时，该接口输出的存储量化因子文件将会被覆盖。
 
-#### quantize\_model<a name="ZH-CN_TOPIC_0000002505904625"></a>
+##### quantize\_model<a name="ZH-CN_TOPIC_0000002505904625"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -28076,7 +28078,7 @@ quantize_model(graph=graph,
 
 重新执行量化时，该接口输出的文件将会被覆盖。
 
-#### save\_model<a name="ZH-CN_TOPIC_0000002473904576"></a>
+##### save\_model<a name="ZH-CN_TOPIC_0000002473904576"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -28177,7 +28179,7 @@ save_model(graph=graph,
 
 重新执行量化时，该接口输出的上述文件将会被覆盖。
 
-#### auto\_nuq<a name="ZH-CN_TOPIC_0000002506024571"></a>
+##### auto\_nuq<a name="ZH-CN_TOPIC_0000002506024571"></a>
 
 **产品支持情况<a name="section197451857688"></a>**
 
@@ -28311,7 +28313,7 @@ amct.auto_nuq(
 
 重新执行量化时，该接口输出的上述文件将会被覆盖。
 
-#### accuracy\_based\_auto\_calibration<a name="ZH-CN_TOPIC_0000002473744692"></a>
+##### accuracy\_based\_auto\_calibration<a name="ZH-CN_TOPIC_0000002473744692"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -28513,12 +28515,12 @@ class AutoCalibrationEvaluator(AutoCalibrationEvaluatorBase):
 -   敏感度信息文件：该文件记录了待量化层对于量化的敏感度信息，根据该信息进行量化回退层的选择。
 -   自动量化回退历史记录文件：记录的回退层的信息。
 
-### 量化感知训练接口<a name="ZH-CN_TOPIC_0000002505904539"></a>
+#### 量化感知训练接口<a name="ZH-CN_TOPIC_0000002505904539"></a>
 
 
 
 
-#### create\_quant\_retrain\_config<a name="ZH-CN_TOPIC_0000002506024485"></a>
+##### create\_quant\_retrain\_config<a name="ZH-CN_TOPIC_0000002506024485"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -28655,7 +28657,7 @@ amct.create_quant_retrain_config(config_json_file, model_file, weights_file, ret
 }
 ```
 
-#### create\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024561"></a>
+##### create\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002506024561"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -28768,7 +28770,7 @@ amct.create_quant_retrain_model( model_file, weights_file, config_json_file,  mo
 -   modified\_model\_file：修改后模型的定义文件，在原始模型上插入了量化感知训练层。
 -   modified\_weights\_file：修改后模型的权重文件，在原始模型上插入了量化感知训练层。
 
-#### save\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904647"></a>
+##### save\_quant\_retrain\_model<a name="ZH-CN_TOPIC_0000002505904647"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -28886,10 +28888,10 @@ amct.save_quant_retrain_model(retrained_model_file, retrained_weights_file, 'Bot
 -   精度仿真模型文件：一个模型定义文件，一个模型权重文件，文件名中包含fake\_quant；模型可在Caffe环境下做推理实现量化精度仿真。
 -   部署模型文件：一个模型定义文件，一个模型权重文件，文件名中包含deploy；模型经过ATC工具转换后可部署到NPU IP加速器上。
 
-### 模型适配接口<a name="ZH-CN_TOPIC_0000002505904619"></a>
+#### 模型适配接口<a name="ZH-CN_TOPIC_0000002505904619"></a>
 
 
-#### convert\_model<a name="ZH-CN_TOPIC_0000002473744660"></a>
+##### convert\_model<a name="ZH-CN_TOPIC_0000002473744660"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -28995,10 +28997,10 @@ convert_model(model_file='ResNet-50-deploy.prototxt',
 
 重新执行适配时，该接口输出的上述文件将会被覆盖。
 
-### 张量分解接口<a name="ZH-CN_TOPIC_0000002506024573"></a>
+#### 张量分解接口<a name="ZH-CN_TOPIC_0000002506024573"></a>
 
 
-#### auto\_decomposition<a name="ZH-CN_TOPIC_0000002506024537"></a>
+##### auto\_decomposition<a name="ZH-CN_TOPIC_0000002506024537"></a>
 
 **产品支持情况<a name="section79169493184"></a>**
 
@@ -29097,14 +29099,14 @@ auto_decomposition(model_file='ResNet-50-deploy.prototxt',
 -   张量分解后的模型定义文件，格式为.prototxt。
 -   张量分解后的模型权重文件，格式为.caffemodel。
 
-## 参考信息<a name="ZH-CN_TOPIC_0000002505904597"></a>
+### 参考信息<a name="ZH-CN_TOPIC_0000002505904597"></a>
 
 
 
 
 
 
-### proto合并原理<a name="ZH-CN_TOPIC_0000002473744658"></a>
+#### proto合并原理<a name="ZH-CN_TOPIC_0000002473744658"></a>
 
 合并原理如[图1](#fig1679315923010)所示，其中：
 
@@ -29137,7 +29139,7 @@ auto_decomposition(model_file='ResNet-50-deploy.prototxt',
 >-   caffe.proto中ATC自定义层的编号区间段为：\[5000,200000\)。
 >-   custom.proto中用户自定义层编号建议区间段小于5000，并且不与ATC提供的caffe.proto中的内置编号冲突。
 
-### 工具实现的融合功能<a name="ZH-CN_TOPIC_0000002473744690"></a>
+#### 工具实现的融合功能<a name="ZH-CN_TOPIC_0000002473744690"></a>
 
 当前该工具主要实现的是BN融合功能，分为如下几类（如下融合场景中涉及的单个算子，需要先满足[量化](量化-94.md)场景下的约束条件）：
 
@@ -29146,7 +29148,7 @@ auto_decomposition(model_file='ResNet-50-deploy.prototxt',
 -   BN+Scale+Conv融合：仅训练后量化支持，AMCT在量化前会对模型中的"BatchNorm+Scale+Convolution"结构做BN+Scale+Conv融合，融合后的"BatchNorm"、"Scale"层会被删除。
 -   FC+BN+Scale融合：仅训练后量化支持，AMCT在量化前会对模型中的"InnerProduct+BatchNorm+Scale"结构做FC+BN+Scale融合，融合后的"BatchNorm"、"Scale"层会被删除。
 
-### 训练后量化简易配置文件<a name="ZH-CN_TOPIC_0000002473744542"></a>
+#### 训练后量化简易配置文件<a name="ZH-CN_TOPIC_0000002473744542"></a>
 
 calibration\_config\_caffe.proto文件参数说明如[表1](#zh-cn_topic_0240188735_table1225503375617)所示，该文件所在目录为：_AMCT安装目录_/amct\_caffe/proto/calibration\_config\_caffe.proto。
 
@@ -29671,7 +29673,7 @@ calibration\_config\_caffe.proto文件参数说明如[表1](#zh-cn_topic_0240188
     }
     ```
 
-### 量化感知训练简易配置文件<a name="ZH-CN_TOPIC_0000002506024593"></a>
+#### 量化感知训练简易配置文件<a name="ZH-CN_TOPIC_0000002506024593"></a>
 
 retrain\_config\_caffe.proto文件参数说明如[表1](#zh-cn_topic_0240188735_table1225503375617)所示，该文件所在目录为：_AMCT安装目录_/amct\_caffe/proto/retrain\_config\_caffe.proto。
 
@@ -30031,7 +30033,7 @@ retrain\_config\_caffe.proto文件参数说明如[表1](#zh-cn_topic_0240188735_
 }
 ```
 
-### record记录文件<a name="ZH-CN_TOPIC_0000002473744562"></a>
+#### record记录文件<a name="ZH-CN_TOPIC_0000002473744562"></a>
 
 record文件，为基于protobuf协议的序列化数据结构文件，记录量化因子scale/offset等，通过该文件、压缩配置文件以及原始网络模型文件，生成压缩后的模型文件。
 
@@ -30243,7 +30245,7 @@ record {
 }
 ```
 
-# 命令行参数说明<a name="ZH-CN_TOPIC_0000002505904649"></a>
+## 命令行参数说明<a name="ZH-CN_TOPIC_0000002505904649"></a>
 
 以下涉及TensorFlow、Caffe的参数IPV350不支持
 
@@ -30251,7 +30253,7 @@ record {
 
 
 
-## 概览<a name="ZH-CN_TOPIC_0000002505904617"></a>
+### 概览<a name="ZH-CN_TOPIC_0000002505904617"></a>
 
 本节给出命令行场景所使用的参数概览。
 
@@ -30391,10 +30393,10 @@ record {
 </tbody>
 </table>
 
-## 总体选项<a name="ZH-CN_TOPIC_0000002505904603"></a>
+### 总体选项<a name="ZH-CN_TOPIC_0000002505904603"></a>
 
 
-### --help或--h<a name="ZH-CN_TOPIC_0000002473904524"></a>
+#### --help或--h<a name="ZH-CN_TOPIC_0000002473904524"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30450,13 +30452,13 @@ record {
 
 无。
 
-## 必选参数<a name="ZH-CN_TOPIC_0000002473744620"></a>
+### 必选参数<a name="ZH-CN_TOPIC_0000002473744620"></a>
 
 
 
 
 
-### --model<a name="ZH-CN_TOPIC_0000002473744672"></a>
+#### --model<a name="ZH-CN_TOPIC_0000002473744672"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30500,7 +30502,7 @@ record {
 
 该参数训练后量化场景和QAT模型适配CANN模型场景都必填。
 
-### --weights<a name="ZH-CN_TOPIC_0000002473904510"></a>
+#### --weights<a name="ZH-CN_TOPIC_0000002473904510"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30530,7 +30532,7 @@ record {
 
 无。
 
-### --outputs<a name="ZH-CN_TOPIC_0000002473904470"></a>
+#### --outputs<a name="ZH-CN_TOPIC_0000002473904470"></a>
 
 **功能说明<a name="zh-cn_topic_0000001120938081_zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30562,7 +30564,7 @@ record {
 
 该参数训练后量化场景和QAT模型适配CANN模型场景都必填。
 
-### --save\_path<a name="ZH-CN_TOPIC_0000002506024463"></a>
+#### --save\_path<a name="ZH-CN_TOPIC_0000002506024463"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30595,7 +30597,7 @@ record {
 
 该参数训练后量化场景和QAT模型适配CANN模型场景都必填。
 
-## 可选参数<a name="ZH-CN_TOPIC_0000002473904482"></a>
+### 可选参数<a name="ZH-CN_TOPIC_0000002473904482"></a>
 
 
 
@@ -30604,7 +30606,7 @@ record {
 
 
 
-### --input\_shape<a name="ZH-CN_TOPIC_0000002473744662"></a>
+#### --input\_shape<a name="ZH-CN_TOPIC_0000002473744662"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30637,7 +30639,7 @@ record {
 -   如果模型的shape不固定，例如"input\_name1:?,h,w,c"，其中“?“为每个batch使用的图片数量，该场景下图片数量要等于处理成bin格式数据集的图片数量。
 -   该参数只在训练后量化场景使用。
 
-### --batch\_num<a name="ZH-CN_TOPIC_0000002473744608"></a>
+#### --batch\_num<a name="ZH-CN_TOPIC_0000002473744608"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30669,7 +30671,7 @@ record {
 
 该参数只在训练后量化场景使用。
 
-### --calibration\_config<a name="ZH-CN_TOPIC_0000002505904585"></a>
+#### --calibration\_config<a name="ZH-CN_TOPIC_0000002505904585"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30744,7 +30746,7 @@ override_layer_types : {
 
 该参数只在训练后量化场景使用。
 
-### --data\_dir<a name="ZH-CN_TOPIC_0000002505904627"></a>
+#### --data\_dir<a name="ZH-CN_TOPIC_0000002505904627"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30779,7 +30781,7 @@ input1和input2目录中，数据文件名举例为input1batch1.bin、input1batc
 
 该参数只在训练后量化场景使用。
 
-### --data\_types<a name="ZH-CN_TOPIC_0000002473904508"></a>
+#### --data\_types<a name="ZH-CN_TOPIC_0000002473904508"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30811,7 +30813,7 @@ input1和input2目录中，数据文件名举例为input1batch1.bin、input1batc
 
 该参数只在训练后量化场景使用。
 
-### --evaluator<a name="ZH-CN_TOPIC_0000002473744706"></a>
+#### --evaluator<a name="ZH-CN_TOPIC_0000002473744706"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30853,7 +30855,7 @@ class ModelEvaluator(AutoCalibrationEvaluatorBase):
 
 该参数只在训练后量化场景使用。
 
-### --gpu\_id<a name="ZH-CN_TOPIC_0000002473744704"></a>
+#### --gpu\_id<a name="ZH-CN_TOPIC_0000002473744704"></a>
 
 **功能说明<a name="zh-cn_topic_0243420057_section1380101816519"></a>**
 
@@ -30887,7 +30889,7 @@ class ModelEvaluator(AutoCalibrationEvaluatorBase):
 
 无。
 
-# 样例列表<a name="ZH-CN_TOPIC_0000002473904606"></a>
+## 样例列表<a name="ZH-CN_TOPIC_0000002473904606"></a>
 
 **表 1**  Sample列表
 
@@ -31093,7 +31095,7 @@ class ModelEvaluator(AutoCalibrationEvaluatorBase):
 </tbody>
 </table>
 
-# FAQ<a name="ZH-CN_TOPIC_0000002473904450"></a>
+## FAQ<a name="ZH-CN_TOPIC_0000002473904450"></a>
 
 
 
@@ -31114,7 +31116,7 @@ class ModelEvaluator(AutoCalibrationEvaluatorBase):
 
 
 
-## 安装python3-tk时提示错误信息<a name="ZH-CN_TOPIC_0000002505904505"></a>
+### 安装python3-tk时提示错误信息<a name="ZH-CN_TOPIC_0000002505904505"></a>
 
 **问题现象描述<a name="zh-cn_topic_0000001312642573_zh-cn_topic_0243443001_section227513289417"></a>**
 
@@ -31136,7 +31138,7 @@ cp /usr/local/python3.7.5/lib/python3.7/py_compile.py  /usr/lib/python3.7
 
 /usr/local/python3.7.5/lib/python3.7/py\_compile.py请以该文件所在实际路径进行替换。
 
-## 校准执行过程中提示“\[IFMR\]: Do layer xxx data calibration failed!”<a name="ZH-CN_TOPIC_0000002473744712"></a>
+### 校准执行过程中提示“\[IFMR\]: Do layer xxx data calibration failed!”<a name="ZH-CN_TOPIC_0000002473744712"></a>
 
 **问题现象描述<a name="zh-cn_topic_0242998989_section128039317589"></a>**
 
@@ -31154,7 +31156,7 @@ AMCT量化支持计算得到的最大![](figures/zh-cn_formulaimage_000000250590
 
 根据提示信息，跳过日志中的量化层，例如上述提示信息中的conv\_1层。
 
-## 编译并安装自定义算子包时提示"AttributeError: module ‘onnxruntime’ has no attribute ‘SessionOption’"信息<a name="ZH-CN_TOPIC_0000002473904594"></a>
+### 编译并安装自定义算子包时提示"AttributeError: module ‘onnxruntime’ has no attribute ‘SessionOption’"信息<a name="ZH-CN_TOPIC_0000002473904594"></a>
 
 **问题现象描述<a name="section4859954192413"></a>**
 
@@ -31175,7 +31177,7 @@ Python环境中的ONNX Runtime库异常或者版本不满足要求，没有Sessi
 
     造成ONNX Runtime未正确安装的原因可能是用户同时安装了onnxruntime和onnxruntime\_gpu，卸载其中一个版本，导致另一个也无法正常使用。
 
-## 校准过程中提示"IFMR node. Name:'layer\_ifmr\_op' Status Message: std::bad\_alloc"信息<a name="ZH-CN_TOPIC_0000002473904578"></a>
+### 校准过程中提示"IFMR node. Name:'layer\_ifmr\_op' Status Message: std::bad\_alloc"信息<a name="ZH-CN_TOPIC_0000002473904578"></a>
 
 **问题现象描述<a name="section1246245032512"></a>**
 
@@ -31190,7 +31192,7 @@ Python环境中的ONNX Runtime库异常或者版本不满足要求，没有Sessi
 1.  减少校准所用的数据量，即降低batch\_size或者batch\_num，可直接使用batch\_size \* batch\_num的最小值尝试量化。
 2.  如果网络中仅个别层的feature map很大，出现内存错误，则可以跳过该层，不对其进行量化。
 
-## 校准过程中出现"killed"信息<a name="ZH-CN_TOPIC_0000002506024527"></a>
+### 校准过程中出现"killed"信息<a name="ZH-CN_TOPIC_0000002506024527"></a>
 
 **问题现象描述<a name="section10942112616269"></a>**
 
@@ -31205,7 +31207,7 @@ Python环境中的ONNX Runtime库异常或者版本不满足要求，没有Sessi
 1.  减少校准所用的数据量，即降低batch\_size或者batch\_num，可直接使用batch\_size \* batch\_num的最小值尝试量化。
 2.  如果网络中仅个别层的featuremap很大，出现内存错误，则可以跳过该层，不对其进行量化。
 
-## QDQ格式模型推理过程中出现ONNXRuntimeError报错<a name="ZH-CN_TOPIC_0000002473744604"></a>
+### QDQ格式模型推理过程中出现ONNXRuntimeError报错<a name="ZH-CN_TOPIC_0000002473744604"></a>
 
 **问题现象描述<a name="section156391359132417"></a>**
 
@@ -31230,7 +31232,7 @@ ort_session = ort.InferenceSession('model.onnx', amct.AMCT_SO)
 ...
 ```
 
-## 校准执行过程中提示“\[IfmrQuantWithoutOffset\]scale is illegal”<a name="ZH-CN_TOPIC_0000002506024499"></a>
+### 校准执行过程中提示“\[IfmrQuantWithoutOffset\]scale is illegal”<a name="ZH-CN_TOPIC_0000002506024499"></a>
 
 **问题现象描述<a name="section1660510486419"></a>**
 
@@ -31270,7 +31272,7 @@ RuntimeError: batchmatmul_7 is quantizable in config but has no record in record
 
 根据提示信息，跳过日志中的量化层，例如上述提示信息中的**batchmatmul\_7**层。
 
-## 量化校准过程中因数据量过大导致报错<a name="ZH-CN_TOPIC_0000002505904527"></a>
+### 量化校准过程中因数据量过大导致报错<a name="ZH-CN_TOPIC_0000002505904527"></a>
 
 **问题现象描述<a name="zh-cn_topic_0240187995_section16296124062319"></a>**
 
@@ -31328,7 +31330,7 @@ RuntimeError: batchmatmul_7 is quantizable in config but has no record in record
 
 如果上述方案仍旧无法解决问题，则可以尝试使用HFMG算法解决，即参见[训练后量化简易配置文件](训练后量化简易配置文件-91.md)构造包含HFMG算法的简易配置文件，重新进行量化。
 
-## IFMR数据量化时，存在"inf或NaN值"或"xxx calculate scale failed"，量化过程报错<a name="ZH-CN_TOPIC_0000002473904448"></a>
+### IFMR数据量化时，存在"inf或NaN值"或"xxx calculate scale failed"，量化过程报错<a name="ZH-CN_TOPIC_0000002473904448"></a>
 
 **问题现象描述<a name="section87011615315"></a>**
 
@@ -31365,7 +31367,7 @@ AMCT量化支持计算得到的最大![](figures/zh-cn_formulaimage_000000247374
 
 根据提示信息，跳过日志中的量化层，例如上述提示信息中的Conv\_2层。
 
-## 量化过程中提示某层bias量化超出int32范围<a name="ZH-CN_TOPIC_0000002506024603"></a>
+### 量化过程中提示某层bias量化超出int32范围<a name="ZH-CN_TOPIC_0000002506024603"></a>
 
 **问题现象描述<a name="section131719552229"></a>**
 
@@ -31390,7 +31392,7 @@ scale\_w、scale\_d取值都较小、bias过大，导致bias量化超出int32的
 
 根据提示信息，跳过日志中的量化层，例如上述提示信息中的conv2d\_transpose层。
 
-## 校准时提示“Invalid argument: You must feed a value for placeholder tensor \*\*”<a name="ZH-CN_TOPIC_0000002506024605"></a>
+### 校准时提示“Invalid argument: You must feed a value for placeholder tensor \*\*”<a name="ZH-CN_TOPIC_0000002506024605"></a>
 
 **问题现象描述<a name="section1551736486"></a>**
 
@@ -31420,7 +31422,7 @@ tensorflow.python.framework.errors_impl.InvalidArgumentError: 2 root error(s) fo
 
 该场景下调用[quantize\_model](quantize_model-69.md)时，会有warning信息提示输出节点发生变化，在执行校准的过程中，根据提示信息，修改输出节点即可。
 
-## 保存模型时提示“RuntimeError: record\_file is empty, no layers to be quantized”<a name="ZH-CN_TOPIC_0000002473744632"></a>
+### 保存模型时提示“RuntimeError: record\_file is empty, no layers to be quantized”<a name="ZH-CN_TOPIC_0000002473744632"></a>
 
 **问题现象描述<a name="section10839148174914"></a>**
 
@@ -31453,7 +31455,7 @@ RuntimeError: record_file is empty, no layers to be quantized. please ensure cal
 
 该场景下调用[quantize\_model](quantize_model-69.md)时，会有warning信息提示输出节点发生变化，在执行校准的过程中，根据提示信息，修改输出节点即可。
 
-## 使用训练后量化进行量化时，量化过程存在空tensor输入报错信息<a name="ZH-CN_TOPIC_0000002473744654"></a>
+### 使用训练后量化进行量化时，量化过程存在空tensor输入报错信息<a name="ZH-CN_TOPIC_0000002473744654"></a>
 
 **问题现象描述<a name="section6821240835"></a>**
 
@@ -31477,7 +31479,7 @@ RuntimeError: record_file is empty, no layers to be quantized. please ensure cal
 
 请使用真实数据集进行训练后量化。
 
-## 导入amct\_tensorflow时，提示“ModuleNotFoundError: No module named npu\_bridge”<a name="ZH-CN_TOPIC_0000002506024465"></a>
+### 导入amct\_tensorflow时，提示“ModuleNotFoundError: No module named npu\_bridge”<a name="ZH-CN_TOPIC_0000002506024465"></a>
 
 **问题现象描述<a name="section1533701113439"></a>**
 
@@ -31491,7 +31493,7 @@ amct\_tensorflow依赖在线推理环境中的软件包，出现该问题是因�
 
 参见《安装指南》重新安装CANN软件包。
 
-## 使用命令行方式安装Caffe环境失败<a name="ZH-CN_TOPIC_0000002505904665"></a>
+### 使用命令行方式安装Caffe环境失败<a name="ZH-CN_TOPIC_0000002505904665"></a>
 
 **问题现象描述<a name="zh-cn_topic_0242989513_zh-cn_topic_0242987768_section570617467161"></a>**
 
@@ -31517,7 +31519,7 @@ sudo ln -s /usr/local/python3.7.5/lib/python3.7 /usr/lib/python3.7
 sudo rm -rf  /usr/lib/python3.7
 ```
 
-## 执行proto合并时提示ERROR信息<a name="ZH-CN_TOPIC_0000002473744558"></a>
+### 执行proto合并时提示ERROR信息<a name="ZH-CN_TOPIC_0000002473744558"></a>
 
 **问题现象描述1：用户message定义和AMCT自定义层冲突<a name="section196952772416"></a>**
 
@@ -31670,7 +31672,7 @@ message NormalizeParameter {
 
 无。
 
-## 校准执行过程中提示"IfmrQuantCalibration with offset scale is illegal"或"IfmrQuantCalibration without offset scale is illegal"<a name="ZH-CN_TOPIC_0000002473904562"></a>
+### 校准执行过程中提示"IfmrQuantCalibration with offset scale is illegal"或"IfmrQuantCalibration without offset scale is illegal"<a name="ZH-CN_TOPIC_0000002473904562"></a>
 
 **问题现象描述<a name="zh-cn_topic_0242998989_section128039317589"></a>**
 
@@ -31733,7 +31735,7 @@ message NormalizeParameter {
 
 根据提示信息，跳过日志中的量化层，例如上述提示信息中的Convolution1层。
 
-## 量化执行过程中提示“Check scale and offset record file  _record.txt _failed”<a name="ZH-CN_TOPIC_0000002473744590"></a>
+### 量化执行过程中提示“Check scale and offset record file  _record.txt _failed”<a name="ZH-CN_TOPIC_0000002473744590"></a>
 
 **问题现象描述<a name="zh-cn_topic_0240188715_section164285367415"></a>**
 
@@ -31783,7 +31785,7 @@ RuntimeError: Check file xx/data/AMCT15_CAFFE_GPU_GPU_FAQ/AMCT15_CAFFE_GPU_GPU_F
 1.  根据Caffe框架抛出的具体错误来相应进行修复。
 2.  适当增加校准集数据量或者降低量化算法batch\_num配置（但降低batch\_num可能会导致量化后模型精度下降，需要慎重考虑）直至满足校准集数据量大于等于_\`_batch\_num设置。
 
-## 使用Ubuntu 20.04安装Caffe环境时，出现CUDA和GCC版本不匹配的编译报错<a name="ZH-CN_TOPIC_0000002473744636"></a>
+### 使用Ubuntu 20.04安装Caffe环境时，出现CUDA和GCC版本不匹配的编译报错<a name="ZH-CN_TOPIC_0000002473744636"></a>
 
 **问题现象描述<a name="section1138681034313"></a>**
 
@@ -31805,14 +31807,14 @@ sudo ln -s /usr/bin/gcc-7 /usr/local/cuda-10.0/bin/gcc
 sudo ln -s /usr/bin/g++-7 /usr/local/cuda-10.0/bin/g++
 ```
 
-# 附录<a name="ZH-CN_TOPIC_0000002505904543"></a>
+## 附录<a name="ZH-CN_TOPIC_0000002505904543"></a>
 
 
 
 
 
 
-## 安装Python3.9.2（Ubuntu）<a name="ZH-CN_TOPIC_0000002473904514"></a>
+### 安装Python3.9.2（Ubuntu）<a name="ZH-CN_TOPIC_0000002473904514"></a>
 
 1.  检查系统是否安装满足版本要求的Python开发环境（具体要求请参见[系统要求和环境检查](系统要求和环境检查.md)，该章节以环境上需要使用Python 3.9.2为例进行说明）。
 
@@ -31887,14 +31889,14 @@ sudo ln -s /usr/bin/g++-7 /usr/local/cuda-10.0/bin/g++
     pip3  --version
     ```
 
-## 压缩算法<a name="ZH-CN_TOPIC_0000002505904491"></a>
+### 压缩算法<a name="ZH-CN_TOPIC_0000002505904491"></a>
 
 
 
 
 
 
-### 量化算法原理<a name="ZH-CN_TOPIC_0000002506024501"></a>
+#### 量化算法原理<a name="ZH-CN_TOPIC_0000002506024501"></a>
 
 量化常用的算法有二值化、线性量化、对数量化，线性量化又可根据是否有offset细分为对称\(Symmetric\)，非对称\(Asymmetric\)两种。AMCT与昇腾芯片配套的是采用线性量化方式，并将对称和非对称量化方式进行了归一，以INT8量化为例，其应用表达式为：
 
@@ -31951,7 +31953,7 @@ AMCT采用的是归一的量化数据格式，即**量化数据格式归一：**
 
 ![](figures/zh-cn_formulaimage_0000002473744816.png)
 
-### 训练后量化算法<a name="ZH-CN_TOPIC_0000002473744552"></a>
+#### 训练后量化算法<a name="ZH-CN_TOPIC_0000002473744552"></a>
 
 
 
@@ -31959,7 +31961,7 @@ AMCT采用的是归一的量化数据格式，即**量化数据格式归一：**
 
 
 
-#### ARQ权重量化算法<a name="ZH-CN_TOPIC_0000002505904611"></a>
+##### ARQ权重量化算法<a name="ZH-CN_TOPIC_0000002505904611"></a>
 
 ARQ （Adaptive Range Quantization）算法是对权重直接量化的算法。该算法提供了两种方式，channel\_wise（是否对每个channel采用不同的量化因子，以PyTorch框架为例，参数解释请参见[表20](手工调优.md#zh-cn_topic_0240188002_table20119449114211)）量化和非channel\_wise量化，量化原理图如下所示：
 
@@ -31978,7 +31980,7 @@ ARQ （Adaptive Range Quantization）算法是对权重直接量化的算法。�
 
 注意：全连接层、平均下采样层Pooling（下采样方式为AVE，且非global pooling）没有channel，设置channel\_wise为True时，会提示错误信息。
 
-#### ADA权重量化算法<a name="ZH-CN_TOPIC_0000002473744598"></a>
+##### ADA权重量化算法<a name="ZH-CN_TOPIC_0000002473744598"></a>
 
 在对神经网络进行量化时，主要方法是将每个浮点权重分配给其最接近的定点值。但这不是最佳的量化策略。本文引入的AdaRound\(Adaptive Rounding\)，**一种用于训练后量化的更好的权重舍入机制，它可以适应数据和任务损失，**并且仅需要少量未标记的数据。
 
@@ -32005,7 +32007,7 @@ ADA权重量化算法用于PTQ流程，由于量化后的权重舍入模式会�
 
 正则项（Loss函数的后半部分），用以约束h\(alpha\)向0和1两个值收敛，在迭代初期![](figures/zh-cn_formulaimage_0000002506024685.png)较大值可以使得正则项对整体损失的影响比重变大，就会促使优化过程快速调整h\(alpha\)，接近最优解的区域。迭代后期，此时h\(alpha\)已经处于最优解区域，使用较小![](figures/zh-cn_formulaimage_0000002505904733.png)，不会因为微小的参数变动导致正则项剧烈变化，从而让模型在微调参数时更加稳健，避免因过度调整而错过最优解，使h\(alpha\)逼近最优解。
 
-#### NUQ权重量化算法<a name="ZH-CN_TOPIC_0000002473904572"></a>
+##### NUQ权重量化算法<a name="ZH-CN_TOPIC_0000002473904572"></a>
 
 该算法用于训练后量化下的非均匀量化场景。
 
@@ -32014,7 +32016,7 @@ NUQ（Non Uniform Quantization）是对权重非等间距量化的一种方法�
 -   num\_steps用于指定压缩目标，值越小，压缩率越高，但精度损失会更大，反之则相反。
 -   num\_of\_iteration代表搜索过程迭代次数，一般来说值越大，精度越高，但计算时间会指数级上升，建议使用默认值。
 
-#### IFMR数据量化算法<a name="ZH-CN_TOPIC_0000002506024539"></a>
+##### IFMR数据量化算法<a name="ZH-CN_TOPIC_0000002506024539"></a>
 
 IFMR（Input Feature Map Reconstruction）算法在某个数据分布下，通过搜索的方式确定最佳量化方式。该算法用于训练后量化场景，量化原理图如下所示：
 
@@ -32042,7 +32044,7 @@ IFMR（Input Feature Map Reconstruction）算法在某个数据分布下，通�
 
 通常情况下，搜索范围\[clip\_min\_start, clip\_min\_end\]越大、搜索步长search\_step越小，可能获得更高的量化精度，但量化耗时更多。
 
-#### HFMG数据量化算法<a name="ZH-CN_TOPIC_0000002473904622"></a>
+##### HFMG数据量化算法<a name="ZH-CN_TOPIC_0000002473904622"></a>
 
 该算法用于训练后量化场景。
 
@@ -32064,7 +32066,7 @@ create\_quant\_config接口量化默认使用的为IFMR数据量化算法，如�
 
 如果未获得最优的量化效果，则可以改变直方图的bin个数（直方图中的一个最小单位直方图形），选择量化误差更小的一组参数作为最终的量化结果。HFMG算法中，num\_of\_bins配置参数用来调整直方图的bin的数目，参数说明请参见**训练后量化简易配置文件\>HFMGQuantize**的配置参数。通常情况下，num\_of\_bins数值越大，直方图拟合原始数据分布的能力越强，可能获得更佳的量化效果，但训练后量化过程的耗时也会更长。
 
-#### DMQ均衡算法<a name="ZH-CN_TOPIC_0000002505904609"></a>
+##### DMQ均衡算法<a name="ZH-CN_TOPIC_0000002505904609"></a>
 
 该算法用于训练后量化场景。
 
@@ -32077,15 +32079,15 @@ DMQ（Diagonal Matrix Quantization Balancer）在计算量化因子之前对数�
 1.  针对待量化算子的输入数据的每个通道，计算出均衡因子。
 2.  将数据除以均衡因子，同时权重乘以均衡因子，使得待量化算子的计算结果在均衡前后是数学等价的。
 
-### 量化感知训练算法<a name="ZH-CN_TOPIC_0000002473904484"></a>
+#### 量化感知训练算法<a name="ZH-CN_TOPIC_0000002473904484"></a>
 
 
 
-#### ARQ权重量化算法<a name="ZH-CN_TOPIC_0000002506024551"></a>
+##### ARQ权重量化算法<a name="ZH-CN_TOPIC_0000002506024551"></a>
 
 该场景下的原理同训练后量化算法中的[ARQ权重量化算法](ARQ权重量化算法.md)，量化配置中ARQRetrain参数解释请参见[表1](量化感知训练简易配置文件.md#zh-cn_topic_0240188735_table1225503375617)（以PyTorch框架为例）。
 
-#### ULQ数据量化算法<a name="ZH-CN_TOPIC_0000002506024525"></a>
+##### ULQ数据量化算法<a name="ZH-CN_TOPIC_0000002506024525"></a>
 
 该算法用于量化感知训练场景。
 
@@ -32094,12 +32096,12 @@ ULQ（Universal Linear Quantization）算法在训练过程中不断训练量化
 -   clip\_max\_min为初始化的截断范围，clip\_min为截断下限，clip\_max为截断上限，可根据数据的范围来设置，不设置则使用AMCT自带的默认方式初始化。
 -   fixed\_min表示在训练过程中，是否将截断下限设置为0。例如，当量化层的前一层是ReLU层，则数据范围为\[0, +inf\]，此场景下数据量化可以设置fixed\_min为true，表示截断下限始终为0。
 
-### 稀疏算法<a name="ZH-CN_TOPIC_0000002505904483"></a>
+#### 稀疏算法<a name="ZH-CN_TOPIC_0000002505904483"></a>
 
 
 
 
-#### 自动通道稀疏搜索算法<a name="ZH-CN_TOPIC_0000002473904544"></a>
+##### 自动通道稀疏搜索算法<a name="ZH-CN_TOPIC_0000002473904544"></a>
 
 自动通道稀疏搜索默认采用的搜索算法为贪婪搜索算法，在给定模型计算量约束下，自动选择每一层可删除的、较为合适的通道（价值排序靠后的通道），降低通道稀疏对模型经过Fine-tune精度损失的影响。
 
@@ -32119,7 +32121,7 @@ ULQ（Universal Linear Quantization）算法在训练过程中不断训练量化
 
 根据用户给定的目标稀疏率，计算每一层每一通道的价值密度（稀疏敏感度/比特复杂度），全局排序后挑选出价值密度最低的一批通道进行裁剪，通过上述的组合优化方法完成求解，达成搜索任务。
 
-#### 手工通道稀疏算法<a name="ZH-CN_TOPIC_0000002506024469"></a>
+##### 手工通道稀疏算法<a name="ZH-CN_TOPIC_0000002506024469"></a>
 
 AMCT使用的通道稀疏算法为BalancedL2Norm，该算法通过计算权重各个filter（输出维度通道）的L2范数（各元素的平方和然后求平方根），对输出通道进行重要性排序并裁剪重要性较低的通道，即重要性低的通道优先被稀疏，原理下图所示：
 
@@ -32131,7 +32133,7 @@ AMCT使用的通道稀疏算法为BalancedL2Norm，该算法通过计算权重�
 -   prune\_ratio：稀疏率，是被稀疏的filter数量与filter总数量的比值，稀疏化的程度由稀疏率控制，例如0.3的稀疏率表示30%的输出通道将被裁剪。
 -   ascend\_optimized：昇腾亲和优化，当前使用的为16对齐的优化方案，开启16对齐后，稀疏后保留的通道数将向16的倍数对齐。例如原始通道有20个，配置稀疏率为0.25并不开启16对齐时，稀疏后保留通道数为15；若相同稀疏率但开启16对齐，则稀疏后保留通道数为16；该配置可以提高稀疏后的模型在NPU IP加速器上的推理性能。
 
-#### 4选2结构化稀疏算法<a name="ZH-CN_TOPIC_0000002505904503"></a>
+##### 4选2结构化稀疏算法<a name="ZH-CN_TOPIC_0000002505904503"></a>
 
 AMCT使用的4选2结构化稀疏算法为L1SelectivePrune，通过比较权重的l1值即绝对值来决定保留哪些权重，每4个连续的权重中保留l1值最大的2个权重。
 
@@ -32143,7 +32145,7 @@ AMCT使用的4选2结构化稀疏算法为L1SelectivePrune，通过比较权重�
 
 -   n\_out\_of\_m\_type：目前仅支持M4N2，即每4个连续权重中保留2个权重。
 
-### 蒸馏算法<a name="ZH-CN_TOPIC_0000002506024523"></a>
+#### 蒸馏算法<a name="ZH-CN_TOPIC_0000002506024523"></a>
 
 蒸馏量化的思想是将量化模型作为学生模型，原始模型作为教师模型，通过引导量化模型“模仿”浮点模型从而获得更好的精度结果。蒸馏量化，仅需要少量无标签数据集，即可以在较短的量化时间内达到较好的精度结果。
 
@@ -32157,7 +32159,7 @@ AMCT使用的4选2结构化稀疏算法为L1SelectivePrune，通过比较权重�
     **图 1**  蒸馏示意图<a name="fig275521214542"></a>  
     ![](figures/蒸馏示意图.png "蒸馏示意图")
 
-## 源码包编译为whl包，以whl包形式安装AMCT<a name="ZH-CN_TOPIC_0000002473904584"></a>
+### 源码包编译为whl包，以whl包形式安装AMCT<a name="ZH-CN_TOPIC_0000002473904584"></a>
 
 如果用户AMCT安装服务器缺少源码编译安装时的某些依赖，则用户可以将源码包编译为whl包，然后进行安装，方法如下，如下步骤以编译并安装AMCT（TensorFlow）为例进行说明。
 
@@ -32197,7 +32199,7 @@ AMCT使用的4选2结构化稀疏算法为L1SelectivePrune，通过比较权重�
     Successfully installed amct-tensorflow-{version}
     ```
 
-## TensorFlow网络模型由于AMCT导致输出节点改变，如何通过修改量化脚本进行后续的量化动作<a name="ZH-CN_TOPIC_0000002505904519"></a>
+### TensorFlow网络模型由于AMCT导致输出节点改变，如何通过修改量化脚本进行后续的量化动作<a name="ZH-CN_TOPIC_0000002505904519"></a>
 
 **背景信息<a name="section19540121916469"></a>**
 
@@ -32411,7 +32413,7 @@ if __name__ == '__main__':
     main()
 ```
 
-## 插入量化算子后，如何恢复模型训练参数<a name="ZH-CN_TOPIC_0000002473744640"></a>
+### 插入量化算子后，如何恢复模型训练参数<a name="ZH-CN_TOPIC_0000002473744640"></a>
 
 用户调用[quantize\_model](quantize_model-69.md)接口在传入的图中插入量化相关的变量op列表（quant\_add\_ops），该列表中的变量值无法在模型训练参数文件中找到，故模型训练参数直接恢复会出现变量无法找到的错误，因此需要在模型参数恢复之前，将quant\_add\_ops列表中的变量值从恢复列表中剔除，具体的剔除方法如下：
 
@@ -32456,4 +32458,3 @@ if __name__ == '__main__':
     loader = tf.train.Saver(params_need_load)
     loader.restore(sess, FLAGS.checkpoint)
     ```
-

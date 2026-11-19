@@ -1,4 +1,6 @@
-# 前言<a name="ZH-CN_TOPIC_0000004000115901" id="ZH-CN_TOPIC_0000004000115901"></a>
+# HiSpark.AI CPU算子规格清单
+
+## 前言<a name="ZH-CN_TOPIC_0000004000115901" id="ZH-CN_TOPIC_0000004000115901"></a>
 
 **概述<a name="section4000115901" id="section4000115901"></a>**
 
@@ -38,7 +40,7 @@
 | :--- | :--- | :--- |
 | 01 | 2026-09-03 | 第一次正式版本发布。 |
 
-# 算子规格参考<a name="ZH-CN_TOPIC_0000002354161329" id="ZH-CN_TOPIC_0000002354161329"></a>
+## 算子规格参考<a name="ZH-CN_TOPIC_0000002354161329" id="ZH-CN_TOPIC_0000002354161329"></a>
 
 本章主要介绍（MindSpore Lite）所支持的算子规格限制，目前主要支持ONNX格式以及TFLite格式的模型，并且支持算子的数据类型主要为int8以及fp32。
 
@@ -53,7 +55,7 @@
 
 -   **[ONNX算子规格参考](#ZH-CN_TOPIC_0000002320738138)**  
 
-## TFLite算子规格参考<a name="ZH-CN_TOPIC_0000002320146508" id="ZH-CN_TOPIC_0000002320146508"></a>
+### TFLite算子规格参考<a name="ZH-CN_TOPIC_0000002320146508" id="ZH-CN_TOPIC_0000002320146508"></a>
 
 -   **[Conv2D](#ZH-CN_TOPIC_0000002326184638)**  
 
@@ -225,7 +227,7 @@
 
 -   **[TransposeConv](#ZH-CN_TOPIC_0000002026082901)**  
 
-### Conv2D<a name="ZH-CN_TOPIC_0000002326184638" id="ZH-CN_TOPIC_0000002326184638"></a>
+#### Conv2D<a name="ZH-CN_TOPIC_0000002326184638" id="ZH-CN_TOPIC_0000002326184638"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -368,7 +370,7 @@
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为4、batch为1、无bias、无融合激活、stride和dilation均为1的depthwise等价卷积；要求group=input_channel=output_channel，权重为OHWI格式且I=1 |
 
-### Conv3D<a name="ZH-CN_TOPIC_0000003190115702" id="ZH-CN_TOPIC_0000003190115702"></a>
+#### Conv3D<a name="ZH-CN_TOPIC_0000003190115702" id="ZH-CN_TOPIC_0000003190115702"></a>
 
 **功能描述<a name="section3190115702a"></a>**
 
@@ -414,7 +416,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 输入x为[N, D, H, W, C]，权重w为[KD, KH, KW, IC, OC]；padding支持SAME或VALID；stride_d、stride_h和stride_w均大于或等于1；dilation_d_factor、dilation_h_factor和dilation_w_factor仅支持1；bias可选；fused_activation_function仅支持NONE |
 
-### MaxPool2D<a name="ZH-CN_TOPIC_0000002360102989" id="ZH-CN_TOPIC_0000002360102989"></a>
+#### MaxPool2D<a name="ZH-CN_TOPIC_0000002360102989" id="ZH-CN_TOPIC_0000002360102989"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -535,7 +537,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持单输入、单输出的二维MaxPool，输入、输出及梯度均为FP32四维张量，且所有维度均为正数；池化仅改变空间维度，输出的batch和channel与输入保持一致；输入必须为非常量张量；非global模式下kernel和stride的H、W必须为正数；不支持动态Shape、MaxPool1D和MaxPool3D |
 
-### FullyConnected<a name="ZH-CN_TOPIC_0000002326344486" id="ZH-CN_TOPIC_0000002326344486"></a>
+#### FullyConnected<a name="ZH-CN_TOPIC_0000002326344486" id="ZH-CN_TOPIC_0000002326344486"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -656,7 +658,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为2、2个或3个输入、A不转置、B可转置；融合激活仅支持无融合激活或ReLU，bias元素数量必须等于输出通道数 |
 
-### BatchMatmul<a name="ZH-CN_TOPIC_0000002421627894" id="ZH-CN_TOPIC_0000002421627894"></a>
+#### BatchMatmul<a name="ZH-CN_TOPIC_0000002421627894" id="ZH-CN_TOPIC_0000002421627894"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -751,7 +753,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 </tbody>
 </table>
 
-### Softmax<a name="ZH-CN_TOPIC_0000002360223141" id="ZH-CN_TOPIC_0000002360223141"></a>
+#### Softmax<a name="ZH-CN_TOPIC_0000002360223141" id="ZH-CN_TOPIC_0000002360223141"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -813,7 +815,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 </tbody>
 </table>
 
-### Relu<a name="ZH-CN_TOPIC_0000002326184642" id="ZH-CN_TOPIC_0000002326184642"></a>
+#### Relu<a name="ZH-CN_TOPIC_0000002326184642" id="ZH-CN_TOPIC_0000002326184642"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -868,7 +870,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | - |
 
-### Tanh<a name="ZH-CN_TOPIC_0000002474804265" id="ZH-CN_TOPIC_0000002474804265"></a>
+#### Tanh<a name="ZH-CN_TOPIC_0000002474804265" id="ZH-CN_TOPIC_0000002474804265"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -916,7 +918,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 </tbody>
 </table>
 
-### Logistic \(Sigmoid\)<a name="ZH-CN_TOPIC_0000002441404462" id="ZH-CN_TOPIC_0000002441404462"></a>
+#### Logistic \(Sigmoid\)<a name="ZH-CN_TOPIC_0000002441404462" id="ZH-CN_TOPIC_0000002441404462"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -964,7 +966,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 </tbody>
 </table>
 
-### Reshape<a name="ZH-CN_TOPIC_0000002360102993" id="ZH-CN_TOPIC_0000002360102993"></a>
+#### Reshape<a name="ZH-CN_TOPIC_0000002360102993" id="ZH-CN_TOPIC_0000002360102993"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -1030,7 +1032,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | shape属性为int32离线常量；Squeeze、ExpandDims和Flatten统一降级为RESHAPE；输出最多为4维，且元素数与输入相等 |
 
-### Mul<a name="ZH-CN_TOPIC_0000002421789214" id="ZH-CN_TOPIC_0000002421789214"></a>
+#### Mul<a name="ZH-CN_TOPIC_0000002421789214" id="ZH-CN_TOPIC_0000002421789214"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -1110,7 +1112,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 不支持广播，两个输入和输出的shape必须完全一致；融合激活仅支持无融合激活或ReLU |
 
-### Add<a name="ZH-CN_TOPIC_0000002454832349" id="ZH-CN_TOPIC_0000002454832349"></a>
+#### Add<a name="ZH-CN_TOPIC_0000002454832349" id="ZH-CN_TOPIC_0000002454832349"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -1190,7 +1192,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 不支持广播，两个输入和输出的shape必须完全一致；融合激活仅支持无融合激活或ReLU |
 
-### Sub<a name="ZH-CN_TOPIC_0000002454792461" id="ZH-CN_TOPIC_0000002454792461"></a>
+#### Sub<a name="ZH-CN_TOPIC_0000002454792461" id="ZH-CN_TOPIC_0000002454792461"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -1270,7 +1272,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 不支持广播，两个输入和输出的shape必须完全一致；融合激活仅支持无融合激活或ReLU |
 
-### Gather<a name="ZH-CN_TOPIC_0000002421683676" id="ZH-CN_TOPIC_0000002421683676"></a>
+#### Gather<a name="ZH-CN_TOPIC_0000002421683676" id="ZH-CN_TOPIC_0000002421683676"></a>
 
 **功能描述<a name="section129901354195417"></a>**
 
@@ -1358,7 +1360,7 @@ float32模型可通过全量化生成int8数据通路，量化后权重为int8�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | axis支持负值；data为1～4维且各维为正数；indices支持int32离线常量，允许重复索引和负索引，索引越界在训练运行时报错，不支持int64；输出维数等于data维数减1再加indices维数 |
 
-### Split<a name="ZH-CN_TOPIC_0000002455529089" id="ZH-CN_TOPIC_0000002455529089"></a>
+#### Split<a name="ZH-CN_TOPIC_0000002455529089" id="ZH-CN_TOPIC_0000002455529089"></a>
 
 Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Split表示均匀划分，tfl.SplitV自定义非均匀划分。
 
@@ -1366,7 +1368,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 
 -   **[SplitV](#ZH-CN_TOPIC_0000002515004717)**  
 
-#### Split<a name="ZH-CN_TOPIC_0000002482924716" id="ZH-CN_TOPIC_0000002482924716"></a>
+##### Split<a name="ZH-CN_TOPIC_0000002482924716" id="ZH-CN_TOPIC_0000002482924716"></a>
 
 **功能描述<a name="section129901354195417"></a>**
 
@@ -1436,7 +1438,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 </tbody>
 </table>
 
-#### SplitV<a name="ZH-CN_TOPIC_0000002515004717" id="ZH-CN_TOPIC_0000002515004717"></a>
+##### SplitV<a name="ZH-CN_TOPIC_0000002515004717" id="ZH-CN_TOPIC_0000002515004717"></a>
 
 **功能描述<a name="section171987343553"></a>**
 
@@ -1517,7 +1519,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 </tbody>
 </table>
 
-### Concatenation<a name="ZH-CN_TOPIC_0000002421843540" id="ZH-CN_TOPIC_0000002421843540"></a>
+#### Concatenation<a name="ZH-CN_TOPIC_0000002421843540" id="ZH-CN_TOPIC_0000002421843540"></a>
 
 **功能描述<a name="section171987343553"></a>**
 
@@ -1594,7 +1596,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持2个输入和1个输出，输入和输出数据类型均为FP32；输入和输出rank必须相同且为1~4，所有维度为正数；axis支持负值归一化，归一化后必须在有效范围内；非axis维度一致，输出axis维度等于两个输入axis维度之和；不支持动态Shape |
 
-### AveragePool2D<a name="ZH-CN_TOPIC_0000002455282373" id="ZH-CN_TOPIC_0000002455282373"></a>
+#### AveragePool2D<a name="ZH-CN_TOPIC_0000002455282373" id="ZH-CN_TOPIC_0000002455282373"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -1708,7 +1710,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 </tbody>
 </table>
 
-### Tile<a name="ZH-CN_TOPIC_0000002480985174" id="ZH-CN_TOPIC_0000002480985174"></a>
+#### Tile<a name="ZH-CN_TOPIC_0000002480985174" id="ZH-CN_TOPIC_0000002480985174"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -1767,7 +1769,7 @@ Split算子在TFLITE框架中包含tfl.Split、tfl.SplitV等api，其中tfl.Spli
 </tbody>
 </table>
 
-### Pad<a name="ZH-CN_TOPIC_0000002480985538" id="ZH-CN_TOPIC_0000002480985538"></a>
+#### Pad<a name="ZH-CN_TOPIC_0000002480985538" id="ZH-CN_TOPIC_0000002480985538"></a>
 
 Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，其中tfl.Pad表示零填充，tfl.Padv2表示自定义常量填充，tfl.Mirror\_Pad表示镜像反射填充。
 
@@ -1777,7 +1779,7 @@ Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，�
 
 -   **[Mirror\_Pad](#ZH-CN_TOPIC_0000002480886588)**  
 
-#### Pad<a name="ZH-CN_TOPIC_0000002513166431" id="ZH-CN_TOPIC_0000002513166431"></a>
+##### Pad<a name="ZH-CN_TOPIC_0000002513166431" id="ZH-CN_TOPIC_0000002513166431"></a>
 
 **功能描述<a name="section69069544112"></a>**
 
@@ -1836,7 +1838,7 @@ Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，�
 </tbody>
 </table>
 
-#### PadV2<a name="ZH-CN_TOPIC_0000002513006453" id="ZH-CN_TOPIC_0000002513006453"></a>
+##### PadV2<a name="ZH-CN_TOPIC_0000002513006453" id="ZH-CN_TOPIC_0000002513006453"></a>
 
 **功能描述<a name="section69069544112"></a>**
 
@@ -1906,7 +1908,7 @@ Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，�
 </tbody>
 </table>
 
-#### Mirror\_Pad<a name="ZH-CN_TOPIC_0000002480886588" id="ZH-CN_TOPIC_0000002480886588"></a>
+##### Mirror\_Pad<a name="ZH-CN_TOPIC_0000002480886588" id="ZH-CN_TOPIC_0000002480886588"></a>
 
 **功能描述<a name="section69069544112"></a>**
 
@@ -1983,7 +1985,7 @@ Pad算子在TFLITE框架中包含tfl.Pad、tfl.PadV2、tfl.Mirror\_Pad等api，�
 | QAS INT8 | 不支持 | - |
 | FP32 | 不支持 | - |
 
-### Resize<a name="ZH-CN_TOPIC_0000002513105415" id="ZH-CN_TOPIC_0000002513105415"></a>
+#### Resize<a name="ZH-CN_TOPIC_0000002513105415" id="ZH-CN_TOPIC_0000002513105415"></a>
 
 Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_Neighbor等api，其中tfl.Pad表示零填充，tfl.Resize\_Bilinear表示双线性插值缩放，tfl.Resize\_Nearest\_Neighbor表示最近邻插值缩放。
 
@@ -1991,7 +1993,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 
 -   **[Resize\_Nearest\_Neighbor](#ZH-CN_TOPIC_0000002513166433)**  
 
-#### Resize\_Bilinear<a name="ZH-CN_TOPIC_0000002481046548" id="ZH-CN_TOPIC_0000002481046548"></a>
+##### Resize\_Bilinear<a name="ZH-CN_TOPIC_0000002481046548" id="ZH-CN_TOPIC_0000002481046548"></a>
 
 **功能描述<a name="section69069544112"></a>**
 
@@ -2072,7 +2074,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-#### Resize\_Nearest\_Neighbor<a name="ZH-CN_TOPIC_0000002513166433" id="ZH-CN_TOPIC_0000002513166433"></a>
+##### Resize\_Nearest\_Neighbor<a name="ZH-CN_TOPIC_0000002513166433" id="ZH-CN_TOPIC_0000002513166433"></a>
 
 **功能描述<a name="section69069544112"></a>**
 
@@ -2160,7 +2162,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持静态rank-4 NHWC；TFLite asymmetric坐标配置由两个坐标属性均为false的组合表达 |
 
-### Squeeze<a name="ZH-CN_TOPIC_0000002515130287" id="ZH-CN_TOPIC_0000002515130287"></a>
+#### Squeeze<a name="ZH-CN_TOPIC_0000002515130287" id="ZH-CN_TOPIC_0000002515130287"></a>
 
 **功能描述<a name="section69069544112"></a>**
 
@@ -2226,7 +2228,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持1个数据输入和1个输出，输入和输出均为FP32静态非空张量，且元素总数相等；支持axis为空、正axis和负axis，指定axis对应的输入维度必须为1；不支持动态Shape |
 
-### ExpandDims<a name="ZH-CN_TOPIC_0000002482930280" id="ZH-CN_TOPIC_0000002482930280"></a>
+#### ExpandDims<a name="ZH-CN_TOPIC_0000002482930280" id="ZH-CN_TOPIC_0000002482930280"></a>
 
 **功能描述<a name="section69069544112"></a>**
 
@@ -2285,7 +2287,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Abs<a name="ZH-CN_TOPIC_0000002485399132" id="ZH-CN_TOPIC_0000002485399132"></a>
+#### Abs<a name="ZH-CN_TOPIC_0000002485399132" id="ZH-CN_TOPIC_0000002485399132"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2340,7 +2342,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 要求使用FP32静态非空张量 |
 
-### Ceil<a name="ZH-CN_TOPIC_0000002517479769" id="ZH-CN_TOPIC_0000002517479769"></a>
+#### Ceil<a name="ZH-CN_TOPIC_0000002517479769" id="ZH-CN_TOPIC_0000002517479769"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2388,7 +2390,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Cos<a name="ZH-CN_TOPIC_0000002485399848" id="ZH-CN_TOPIC_0000002485399848"></a>
+#### Cos<a name="ZH-CN_TOPIC_0000002485399848" id="ZH-CN_TOPIC_0000002485399848"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2436,7 +2438,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Exp<a name="ZH-CN_TOPIC_0000002485239884" id="ZH-CN_TOPIC_0000002485239884"></a>
+#### Exp<a name="ZH-CN_TOPIC_0000002485239884" id="ZH-CN_TOPIC_0000002485239884"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2484,7 +2486,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Floor<a name="ZH-CN_TOPIC_0000002517399793" id="ZH-CN_TOPIC_0000002517399793"></a>
+#### Floor<a name="ZH-CN_TOPIC_0000002517399793" id="ZH-CN_TOPIC_0000002517399793"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2532,7 +2534,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Log<a name="ZH-CN_TOPIC_0000002517479771" id="ZH-CN_TOPIC_0000002517479771"></a>
+#### Log<a name="ZH-CN_TOPIC_0000002517479771" id="ZH-CN_TOPIC_0000002517479771"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2580,7 +2582,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Round<a name="ZH-CN_TOPIC_0000002485399850" id="ZH-CN_TOPIC_0000002485399850"></a>
+#### Round<a name="ZH-CN_TOPIC_0000002485399850" id="ZH-CN_TOPIC_0000002485399850"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2628,7 +2630,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Rsqrt<a name="ZH-CN_TOPIC_0000002485239886" id="ZH-CN_TOPIC_0000002485239886"></a>
+#### Rsqrt<a name="ZH-CN_TOPIC_0000002485239886" id="ZH-CN_TOPIC_0000002485239886"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2676,7 +2678,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Sin<a name="ZH-CN_TOPIC_0000002517399795" id="ZH-CN_TOPIC_0000002517399795"></a>
+#### Sin<a name="ZH-CN_TOPIC_0000002517399795" id="ZH-CN_TOPIC_0000002517399795"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2724,7 +2726,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Sqrt<a name="ZH-CN_TOPIC_0000002517479773" id="ZH-CN_TOPIC_0000002517479773"></a>
+#### Sqrt<a name="ZH-CN_TOPIC_0000002517479773" id="ZH-CN_TOPIC_0000002517479773"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2772,7 +2774,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Square<a name="ZH-CN_TOPIC_0000002485399852" id="ZH-CN_TOPIC_0000002485399852"></a>
+#### Square<a name="ZH-CN_TOPIC_0000002485399852" id="ZH-CN_TOPIC_0000002485399852"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2820,7 +2822,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### L2Normalization<a name="ZH-CN_TOPIC_0000002487557124" id="ZH-CN_TOPIC_0000002487557124"></a>
+#### L2Normalization<a name="ZH-CN_TOPIC_0000002487557124" id="ZH-CN_TOPIC_0000002487557124"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2879,7 +2881,7 @@ Resize算子在TFLITE框架中包含tfl.Resize\_Bilinear、tfl.Resize\_Nearest\_
 </tbody>
 </table>
 
-### Slice<a name="ZH-CN_TOPIC_0000002528693597" id="ZH-CN_TOPIC_0000002528693597"></a>
+#### Slice<a name="ZH-CN_TOPIC_0000002528693597" id="ZH-CN_TOPIC_0000002528693597"></a>
 
 Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中tfl.slice为连续提取子张量，tfl.strided\_slice可以通过指定步长、掩码等方式更灵活地进行提取。
 
@@ -2887,7 +2889,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 
 -   **[StridedSlice](#ZH-CN_TOPIC_0000002496933624)**  
 
-#### Slice<a name="ZH-CN_TOPIC_0000002528458741" id="ZH-CN_TOPIC_0000002528458741"></a>
+##### Slice<a name="ZH-CN_TOPIC_0000002528458741" id="ZH-CN_TOPIC_0000002528458741"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -2964,7 +2966,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | begin和size必须为int32或int64类型的离线常量，且每轴对应一个值；begin必须大于或等于0；size小于0时按“取到末尾”折叠；切片必须非空且不越界，size必须与输出Shape逐轴一致 |
 
-#### StridedSlice<a name="ZH-CN_TOPIC_0000002496933624" id="ZH-CN_TOPIC_0000002496933624"></a>
+##### StridedSlice<a name="ZH-CN_TOPIC_0000002496933624" id="ZH-CN_TOPIC_0000002496933624"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3119,7 +3121,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；要求full-rank归一化参数，不支持slice mask，step非零（正、负步长均支持），不支持空切片 |
 
-### DepthwiseConv2D<a name="ZH-CN_TOPIC_0000002529736261" id="ZH-CN_TOPIC_0000002529736261"></a>
+#### DepthwiseConv2D<a name="ZH-CN_TOPIC_0000002529736261" id="ZH-CN_TOPIC_0000002529736261"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3266,7 +3268,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Transpose<a name="ZH-CN_TOPIC_0000002498475622" id="ZH-CN_TOPIC_0000002498475622"></a>
+#### Transpose<a name="ZH-CN_TOPIC_0000002498475622" id="ZH-CN_TOPIC_0000002498475622"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3332,7 +3334,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 输入和输出必须为FP32静态非空张量，元素数量及rank一致，rank为1～16；perm必须是长度等于rank的int32离线常量，且为[0, rank)的合法全排列。反向仅计算数据输入梯度，按perm的逆排列对输出梯度进行转置；perm不参与求导。 |
 
-### ArgMax<a name="ZH-CN_TOPIC_0000002509946184" id="ZH-CN_TOPIC_0000002509946184"></a>
+#### ArgMax<a name="ZH-CN_TOPIC_0000002509946184" id="ZH-CN_TOPIC_0000002509946184"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3405,7 +3407,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### ArgMin<a name="ZH-CN_TOPIC_0000002541666173" id="ZH-CN_TOPIC_0000002541666173"></a>
+#### ArgMin<a name="ZH-CN_TOPIC_0000002541666173" id="ZH-CN_TOPIC_0000002541666173"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3478,7 +3480,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Div<a name="ZH-CN_TOPIC_0000002516421386" id="ZH-CN_TOPIC_0000002516421386"></a>
+#### Div<a name="ZH-CN_TOPIC_0000002516421386" id="ZH-CN_TOPIC_0000002516421386"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3555,7 +3557,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 前向输入为2个、输出为1个，输入和输出数据类型均为FP32；支持静态Shape和标准右对齐广播，输出rank不超过4，所有维度必须为正数；输入rank不得大于输出rank，且每一维满足输入维度为1或等于输出维度；反向需保留两个输入，支持同时生成两个输入梯度；仅支持无融合激活（NONE），不支持动态Shape |
 
-### ReduceMax<a name="ZH-CN_TOPIC_0000002526421590" id="ZH-CN_TOPIC_0000002526421590"></a>
+#### ReduceMax<a name="ZH-CN_TOPIC_0000002526421590" id="ZH-CN_TOPIC_0000002526421590"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3625,7 +3627,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### ReduceMin<a name="ZH-CN_TOPIC_0000002526437776" id="ZH-CN_TOPIC_0000002526437776"></a>
+#### ReduceMin<a name="ZH-CN_TOPIC_0000002526437776" id="ZH-CN_TOPIC_0000002526437776"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3695,7 +3697,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Sum<a name="ZH-CN_TOPIC_0000002557400507" id="ZH-CN_TOPIC_0000002557400507"></a>
+#### Sum<a name="ZH-CN_TOPIC_0000002557400507" id="ZH-CN_TOPIC_0000002557400507"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3765,7 +3767,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Mean<a name="ZH-CN_TOPIC_0000002557400907" id="ZH-CN_TOPIC_0000002557400907"></a>
+#### Mean<a name="ZH-CN_TOPIC_0000002557400907" id="ZH-CN_TOPIC_0000002557400907"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3835,7 +3837,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Cast<a name="ZH-CN_TOPIC_0000002557544885" id="ZH-CN_TOPIC_0000002557544885"></a>
+#### Cast<a name="ZH-CN_TOPIC_0000002557544885" id="ZH-CN_TOPIC_0000002557544885"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3893,7 +3895,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持输入和输出均为FP32的恒等Cast；输入和输出必须为静态非空张量且形状一致。反向仅传递数据输入梯度，梯度张量按元素复制；不产生可训练参数梯度。 |
 
-### Quantize<a name="ZH-CN_TOPIC_0000002557589767" id="ZH-CN_TOPIC_0000002557589767"></a>
+#### Quantize<a name="ZH-CN_TOPIC_0000002557589767" id="ZH-CN_TOPIC_0000002557589767"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3944,7 +3946,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Dequantize<a name="ZH-CN_TOPIC_0000002526509914" id="ZH-CN_TOPIC_0000002526509914"></a>
+#### Dequantize<a name="ZH-CN_TOPIC_0000002526509914" id="ZH-CN_TOPIC_0000002526509914"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -3995,7 +3997,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### PRelu<a name="ZH-CN_TOPIC_0000002599172631" id="ZH-CN_TOPIC_0000002599172631"></a>
+#### PRelu<a name="ZH-CN_TOPIC_0000002599172631" id="ZH-CN_TOPIC_0000002599172631"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -4057,7 +4059,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >在量化过程中，PReLU算子的第二输入保留FP32格式，以保证负半轴计算精度。
 
-### CumSum<a name="ZH-CN_TOPIC_0000002599292569" id="ZH-CN_TOPIC_0000002599292569"></a>
+#### CumSum<a name="ZH-CN_TOPIC_0000002599292569" id="ZH-CN_TOPIC_0000002599292569"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -4138,7 +4140,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### ReverseSequence<a name="ZH-CN_TOPIC_0000002599187919" id="ZH-CN_TOPIC_0000002599187919"></a>
+#### ReverseSequence<a name="ZH-CN_TOPIC_0000002599187919" id="ZH-CN_TOPIC_0000002599187919"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -4217,7 +4219,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Relu6<a name="ZH-CN_TOPIC_0000002574010852" id="ZH-CN_TOPIC_0000002574010852"></a>
+#### Relu6<a name="ZH-CN_TOPIC_0000002574010852" id="ZH-CN_TOPIC_0000002574010852"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4265,7 +4267,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### LeakyRelu<a name="ZH-CN_TOPIC_0000002604689955" id="ZH-CN_TOPIC_0000002604689955"></a>
+#### LeakyRelu<a name="ZH-CN_TOPIC_0000002604689955" id="ZH-CN_TOPIC_0000002604689955"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4331,7 +4333,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | alpha为常量 |
 
-### HardSwish<a name="ZH-CN_TOPIC_0000002574309498" id="ZH-CN_TOPIC_0000002574309498"></a>
+#### HardSwish<a name="ZH-CN_TOPIC_0000002574309498" id="ZH-CN_TOPIC_0000002574309498"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -4379,7 +4381,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### LogicalAnd<a name="ZH-CN_TOPIC_0000002574976868" id="ZH-CN_TOPIC_0000002574976868"></a>
+#### LogicalAnd<a name="ZH-CN_TOPIC_0000002574976868" id="ZH-CN_TOPIC_0000002574976868"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4442,7 +4444,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Equal<a name="ZH-CN_TOPIC_0000002605336325" id="ZH-CN_TOPIC_0000002605336325"></a>
+#### Equal<a name="ZH-CN_TOPIC_0000002605336325" id="ZH-CN_TOPIC_0000002605336325"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4511,7 +4513,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 不可微；梯度不经Equal回传，其上游仅当存在其他可微路径时才参与训练 |
 
-### GreaterEqual<a name="ZH-CN_TOPIC_0000002574817236" id="ZH-CN_TOPIC_0000002574817236"></a>
+#### GreaterEqual<a name="ZH-CN_TOPIC_0000002574817236" id="ZH-CN_TOPIC_0000002574817236"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4573,7 +4575,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Greater<a name="ZH-CN_TOPIC_0000002605456261" id="ZH-CN_TOPIC_0000002605456261"></a>
+#### Greater<a name="ZH-CN_TOPIC_0000002605456261" id="ZH-CN_TOPIC_0000002605456261"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4635,7 +4637,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### LessEqual<a name="ZH-CN_TOPIC_0000002574976872" id="ZH-CN_TOPIC_0000002574976872"></a>
+#### LessEqual<a name="ZH-CN_TOPIC_0000002574976872" id="ZH-CN_TOPIC_0000002574976872"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4697,7 +4699,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Less<a name="ZH-CN_TOPIC_0000002605336331" id="ZH-CN_TOPIC_0000002605336331"></a>
+#### Less<a name="ZH-CN_TOPIC_0000002605336331" id="ZH-CN_TOPIC_0000002605336331"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4759,7 +4761,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### NotEqual<a name="ZH-CN_TOPIC_0000002574817240" id="ZH-CN_TOPIC_0000002574817240"></a>
+#### NotEqual<a name="ZH-CN_TOPIC_0000002574817240" id="ZH-CN_TOPIC_0000002574817240"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4821,7 +4823,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### LogicalNot<a name="ZH-CN_TOPIC_0000002605456267" id="ZH-CN_TOPIC_0000002605456267"></a>
+#### LogicalNot<a name="ZH-CN_TOPIC_0000002605456267" id="ZH-CN_TOPIC_0000002605456267"></a>
 
 **功能描述<a name="section270785104414"></a>**
 
@@ -4872,7 +4874,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### LogicalOr<a name="ZH-CN_TOPIC_0000002574976878" id="ZH-CN_TOPIC_0000002574976878"></a>
+#### LogicalOr<a name="ZH-CN_TOPIC_0000002574976878" id="ZH-CN_TOPIC_0000002574976878"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4935,7 +4937,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Elu<a name="ZH-CN_TOPIC_0000002660274969" id="ZH-CN_TOPIC_0000002660274969"></a>
+#### Elu<a name="ZH-CN_TOPIC_0000002660274969" id="ZH-CN_TOPIC_0000002660274969"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -4983,7 +4985,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### DepthToSpace<a name="ZH-CN_TOPIC_0000002660395017" id="ZH-CN_TOPIC_0000002660395017"></a>
+#### DepthToSpace<a name="ZH-CN_TOPIC_0000002660395017" id="ZH-CN_TOPIC_0000002660395017"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -5042,7 +5044,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### SpaceToDepth<a name="ZH-CN_TOPIC_0000002630115702" id="ZH-CN_TOPIC_0000002630115702"></a>
+#### SpaceToDepth<a name="ZH-CN_TOPIC_0000002630115702" id="ZH-CN_TOPIC_0000002630115702"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -5101,7 +5103,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Fill<a name="ZH-CN_TOPIC_0000002800000001" id="ZH-CN_TOPIC_0000002800000001"></a>
+#### Fill<a name="ZH-CN_TOPIC_0000002800000001" id="ZH-CN_TOPIC_0000002800000001"></a>
 
 **功能描述<a name="section_fill_func_desc"></a>**
 
@@ -5159,7 +5161,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Shape<a name="ZH-CN_TOPIC_0000003030115702" id="ZH-CN_TOPIC_0000003030115702"></a>
+#### Shape<a name="ZH-CN_TOPIC_0000003030115702" id="ZH-CN_TOPIC_0000003030115702"></a>
 
 **功能描述<a name="section3030115702a"></a>**
 
@@ -5207,7 +5209,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Neg<a name="ZH-CN_TOPIC_0000002900000001" id="ZH-CN_TOPIC_0000002900000001"></a>
+#### Neg<a name="ZH-CN_TOPIC_0000002900000001" id="ZH-CN_TOPIC_0000002900000001"></a>
 
 **功能描述<a name="section_neg_tflite_desc"></a>**
 
@@ -5255,7 +5257,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Pow<a name="ZH-CN_TOPIC_0000002476598365" id="ZH-CN_TOPIC_0000002476598365"></a>
+#### Pow<a name="ZH-CN_TOPIC_0000002476598365" id="ZH-CN_TOPIC_0000002476598365"></a>
 
 **功能描述<a name="section_pow_func"></a>**
 
@@ -5325,7 +5327,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持静态、非空张量，广播对齐后的rank不超过4，并按trailing broadcast对齐 |
 
-### TopK<a name="ZH-CN_TOPIC_0000003050115702" id="ZH-CN_TOPIC_0000003050115702"></a>
+#### TopK<a name="ZH-CN_TOPIC_0000003050115702" id="ZH-CN_TOPIC_0000003050115702"></a>
 
 **功能描述<a name="section3050115702a"></a>**
 
@@ -5395,7 +5397,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Gelu<a name="ZH-CN_TOPIC_0000002661401191" id="ZH-CN_TOPIC_0000002661401191"></a>
+#### Gelu<a name="ZH-CN_TOPIC_0000002661401191" id="ZH-CN_TOPIC_0000002661401191"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -5454,7 +5456,7 @@ Slice算子在TFLITE框架中包含tfl.slice、tfl.strided\_slice等api，其中
 </tbody>
 </table>
 
-### Pack<a name="ZH-CN_TOPIC_0000002661401192" id="ZH-CN_TOPIC_0000002661401192"></a>
+#### Pack<a name="ZH-CN_TOPIC_0000002661401192" id="ZH-CN_TOPIC_0000002661401192"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -5524,7 +5526,7 @@ Pack算子用于沿着指定的新轴（axis）将一组形状相同的输入张
 </tbody>
 </table>
 
-### Unpack<a name="ZH-CN_TOPIC_0000002661401193" id="ZH-CN_TOPIC_0000002661401193"></a>
+#### Unpack<a name="ZH-CN_TOPIC_0000002661401193" id="ZH-CN_TOPIC_0000002661401193"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -5594,7 +5596,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### Select<a name="ZH-CN_TOPIC_0000002600000001" id="ZH-CN_TOPIC_0000002600000001"></a>
+#### Select<a name="ZH-CN_TOPIC_0000002600000001" id="ZH-CN_TOPIC_0000002600000001"></a>
 
 **功能描述<a name="section270785104415"></a>**
 
@@ -5664,7 +5666,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### SelectV2<a name="ZH-CN_TOPIC_0000002600000002" id="ZH-CN_TOPIC_0000002600000002"></a>
+#### SelectV2<a name="ZH-CN_TOPIC_0000002600000002" id="ZH-CN_TOPIC_0000002600000002"></a>
 
 **功能描述<a name="section270785104416"></a>**
 
@@ -5734,7 +5736,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### ReverseV2<a name="ZH-CN_TOPIC_0000002600000003" id="ZH-CN_TOPIC_0000002600000003"></a>
+#### ReverseV2<a name="ZH-CN_TOPIC_0000002600000003" id="ZH-CN_TOPIC_0000002600000003"></a>
 
 **功能描述<a name="section270785104417"></a>**
 
@@ -5793,7 +5795,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### Maximum<a name="ZH-CN_TOPIC_0000003060115702" id="ZH-CN_TOPIC_0000003060115702"></a>
+#### Maximum<a name="ZH-CN_TOPIC_0000003060115702" id="ZH-CN_TOPIC_0000003060115702"></a>
 
 **功能描述<a name="section3100000011"></a>**
 
@@ -5852,7 +5854,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### Minimum<a name="ZH-CN_TOPIC_0000003070115702" id="ZH-CN_TOPIC_0000003070115702"></a>
+#### Minimum<a name="ZH-CN_TOPIC_0000003070115702" id="ZH-CN_TOPIC_0000003070115702"></a>
 
 **功能描述<a name="section3100000021"></a>**
 
@@ -5911,7 +5913,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### ReduceProd<a name="ZH-CN_TOPIC_0000003090115702" id="ZH-CN_TOPIC_0000003090115702"></a>
+#### ReduceProd<a name="ZH-CN_TOPIC_0000003090115702" id="ZH-CN_TOPIC_0000003090115702"></a>
 
 **功能描述<a name="section3100000031"></a>**
 
@@ -5981,7 +5983,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### OneHot<a name="ZH-CN_TOPIC_0000002026082104" id="ZH-CN_TOPIC_0000002026082104"></a>
+#### OneHot<a name="ZH-CN_TOPIC_0000002026082104" id="ZH-CN_TOPIC_0000002026082104"></a>
 
 **功能描述<a name="section2026082104a"></a>**
 
@@ -6073,7 +6075,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### Unique<a name="ZH-CN_TOPIC_0000002026082107" id="ZH-CN_TOPIC_0000002026082107"></a>
+#### Unique<a name="ZH-CN_TOPIC_0000002026082107" id="ZH-CN_TOPIC_0000002026082107"></a>
 
 **功能描述<a name="section2026082107a"></a>**
 
@@ -6146,7 +6148,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### GatherNd<a name="ZH-CN_TOPIC_0000002026082401" id="ZH-CN_TOPIC_0000002026082401"></a>
+#### GatherNd<a name="ZH-CN_TOPIC_0000002026082401" id="ZH-CN_TOPIC_0000002026082401"></a>
 
 **功能描述<a name="section2026082401a"></a>**
 
@@ -6220,7 +6222,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 | 全量化int8通路 | float32模型 + FULL_QUANT | params/output使用INT8通路，indices保持INT32或INT64，不参与量化。 |
 | 不支持规格命中 | indices为负数、越界、D大于rank(params)、shape非静态或中间计算溢出INT32 | 转换期或运行期报错，不生成有效结果。 |
 
-### ScatterND<a name="ZH-CN_TOPIC_0000003150115702" id="ZH-CN_TOPIC_0000003150115702"></a>
+#### ScatterND<a name="ZH-CN_TOPIC_0000003150115702" id="ZH-CN_TOPIC_0000003150115702"></a>
 
 **功能描述<a name="section3150115702a"></a>**
 
@@ -6242,7 +6244,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 >![](public_sys-resources/icon-note.gif) **说明：**
 >TFLite ScatterND没有data输入，输出以0初始化；重复索引按TFLite语义累加。索引小于0或超出对应输出维度范围时运行失败。INT8通路使用per-tensor量化参数。
 
-### LogSoftmax<a name="ZH-CN_TOPIC_0000002026082404" id="ZH-CN_TOPIC_0000002026082404"></a>
+#### LogSoftmax<a name="ZH-CN_TOPIC_0000002026082404" id="ZH-CN_TOPIC_0000002026082404"></a>
 
 **功能描述<a name="section2026082404a"></a>**
 
@@ -6293,7 +6295,7 @@ Unpack算子用于沿指定的轴（axis）将一个高维张量拆分（解包�
 </tbody>
 </table>
 
-### TransposeConv<a name="ZH-CN_TOPIC_0000002026082901" id="ZH-CN_TOPIC_0000002026082901"></a>
+#### TransposeConv<a name="ZH-CN_TOPIC_0000002026082901" id="ZH-CN_TOPIC_0000002026082901"></a>
 
 **功能描述<a name="section2026082901a"></a>**
 
@@ -6410,7 +6412,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 </tbody>
 </table>
 
-## ONNX算子规格参考<a name="ZH-CN_TOPIC_0000002320738138" id="ZH-CN_TOPIC_0000002320738138"></a>
+### ONNX算子规格参考<a name="ZH-CN_TOPIC_0000002320738138" id="ZH-CN_TOPIC_0000002320738138"></a>
 
 -   **[Conv](#ZH-CN_TOPIC_0000002326152940)**  
 
@@ -6643,7 +6645,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 
 -   **[RNN](#ZH-CN_TOPIC_0000002026082903)**  
 
-### Conv<a name="ZH-CN_TOPIC_0000002326152940" id="ZH-CN_TOPIC_0000002326152940"></a>
+#### Conv<a name="ZH-CN_TOPIC_0000002326152940" id="ZH-CN_TOPIC_0000002326152940"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -6786,7 +6788,7 @@ TFLite的转置卷积（反卷积）算子，用于上采样，数据布局为NH
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为4、batch为1、无bias、无融合激活、stride和dilation均为1的depthwise等价卷积；要求group=input_channel=output_channel，权重为OHWI格式且I=1 |
 
-### Conv3D<a name="ZH-CN_TOPIC_0000003190115802" id="ZH-CN_TOPIC_0000003190115802"></a>
+#### Conv3D<a name="ZH-CN_TOPIC_0000003190115802" id="ZH-CN_TOPIC_0000003190115802"></a>
 
 **功能描述<a name="section3190115802a"></a>**
 
@@ -6834,7 +6836,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 输入x为[N, C, D, H, W]，权重w为[OC, C, KD, KH, KW]；D、H、W方向的stride均大于或等于1；pads按[d1, h1, w1, d2, h2, w2]配置且均大于或等于0；auto_pad仅支持NOTSET，group仅支持1，dilation仅支持1；bias可选；不支持融合激活 |
 
-### MaxPool<a name="ZH-CN_TOPIC_0000002325993104" id="ZH-CN_TOPIC_0000002325993104"></a>
+#### MaxPool<a name="ZH-CN_TOPIC_0000002325993104" id="ZH-CN_TOPIC_0000002325993104"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -6969,7 +6971,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持单输入、单输出的二维MaxPool，输入、输出及梯度均为FP32四维张量，且所有维度均为正数；池化仅改变空间维度，输出的batch和channel与输入保持一致；输入必须为非常量张量；非global模式下kernel和stride的H、W必须为正数；不支持动态Shape、MaxPool1D和MaxPool3D |
 
-### Gemm<a name="ZH-CN_TOPIC_0000002360071441" id="ZH-CN_TOPIC_0000002360071441"></a>
+#### Gemm<a name="ZH-CN_TOPIC_0000002360071441" id="ZH-CN_TOPIC_0000002360071441"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -7090,7 +7092,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为2、2个或3个输入、A不转置、B可转置；融合激活仅支持无融合激活或ReLU，bias元素数量必须等于输出通道数 |
 
-### Matmul<a name="ZH-CN_TOPIC_0000002455345333" id="ZH-CN_TOPIC_0000002455345333"></a>
+#### Matmul<a name="ZH-CN_TOPIC_0000002455345333" id="ZH-CN_TOPIC_0000002455345333"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -7159,7 +7161,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为2、2个或3个输入、A不转置、B可转置；融合激活仅支持无融合激活或ReLU，bias元素数量必须等于输出通道数 |
 
-### Softmax<a name="ZH-CN_TOPIC_0000002360191597" id="ZH-CN_TOPIC_0000002360191597"></a>
+#### Softmax<a name="ZH-CN_TOPIC_0000002360191597" id="ZH-CN_TOPIC_0000002360191597"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -7221,7 +7223,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Relu<a name="ZH-CN_TOPIC_0000002326152944" id="ZH-CN_TOPIC_0000002326152944"></a>
+#### Relu<a name="ZH-CN_TOPIC_0000002326152944" id="ZH-CN_TOPIC_0000002326152944"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -7276,7 +7278,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | - |
 
-### Tan<a name="ZH-CN_TOPIC_0000003100115802" id="ZH-CN_TOPIC_0000003100115802"></a>
+#### Tan<a name="ZH-CN_TOPIC_0000003100115802" id="ZH-CN_TOPIC_0000003100115802"></a>
 
 **功能描述<a name="section3100115801"></a>**
 
@@ -7342,7 +7344,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 - 极点位置为 π/2 + kπ 。由于 tan'(x) = 1 / cos²(x) ，输入越接近极点，微小的输入误差越可能造成很大的输出误差。
 - 在全量化INT8路径中，输入量化误差可能将值推向或跨过极点，输出重新量化还可能发生饱和。因此，要求极点附近精度或输入范围未知时，建议使用FP32；INT8仅适合明确远离极点的受控输入范围。
 
-### Tanh<a name="ZH-CN_TOPIC_0000002474764481" id="ZH-CN_TOPIC_0000002474764481"></a>
+#### Tanh<a name="ZH-CN_TOPIC_0000002474764481" id="ZH-CN_TOPIC_0000002474764481"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -7390,7 +7392,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Sigmoid<a name="ZH-CN_TOPIC_0000002441564330" id="ZH-CN_TOPIC_0000002441564330"></a>
+#### Sigmoid<a name="ZH-CN_TOPIC_0000002441564330" id="ZH-CN_TOPIC_0000002441564330"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -7438,7 +7440,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Reshape<a name="ZH-CN_TOPIC_0000002325993108" id="ZH-CN_TOPIC_0000002325993108"></a>
+#### Reshape<a name="ZH-CN_TOPIC_0000002325993108" id="ZH-CN_TOPIC_0000002325993108"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -7515,7 +7517,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | shape属性为int64离线常量；输出最多为4维，且元素数与输入相等 |
 
-### Mul<a name="ZH-CN_TOPIC_0000002455226053" id="ZH-CN_TOPIC_0000002455226053"></a>
+#### Mul<a name="ZH-CN_TOPIC_0000002455226053" id="ZH-CN_TOPIC_0000002455226053"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -7584,7 +7586,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 不支持广播，两个输入和输出的shape必须完全一致；融合激活仅支持无融合激活或ReLU |
 
-### Add<a name="ZH-CN_TOPIC_0000002454832353" id="ZH-CN_TOPIC_0000002454832353"></a>
+#### Add<a name="ZH-CN_TOPIC_0000002454832353" id="ZH-CN_TOPIC_0000002454832353"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -7653,7 +7655,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 不支持广播，两个输入和输出的shape必须完全一致；融合激活仅支持无融合激活或ReLU |
 
-### Sub<a name="ZH-CN_TOPIC_0000002454792465" id="ZH-CN_TOPIC_0000002454792465"></a>
+#### Sub<a name="ZH-CN_TOPIC_0000002454792465" id="ZH-CN_TOPIC_0000002454792465"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -7722,7 +7724,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 不支持广播，两个输入和输出的shape必须完全一致；融合激活仅支持无融合激活或ReLU |
 
-### Gather<a name="ZH-CN_TOPIC_0000002421843980" id="ZH-CN_TOPIC_0000002421843980"></a>
+#### Gather<a name="ZH-CN_TOPIC_0000002421843980" id="ZH-CN_TOPIC_0000002421843980"></a>
 
 **功能描述<a name="section129901354195417"></a>**
 
@@ -7799,7 +7801,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | data各维必须为正数；indices为int32离线常量，int64类型由parser自动转换为int32，允许重复索引和负索引，索引越界在训练运行时报错；axis取值范围为[-rank, rank-1]，负值在转换时归一化；输出维数等于data维数减1再加indices维数，gather轴使用indices的Shape |
 
-### Split<a name="ZH-CN_TOPIC_0000002421393470" id="ZH-CN_TOPIC_0000002421393470"></a>
+#### Split<a name="ZH-CN_TOPIC_0000002421393470" id="ZH-CN_TOPIC_0000002421393470"></a>
 
 **功能描述<a name="section129901354195417"></a>**
 
@@ -7880,7 +7882,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Concat<a name="ZH-CN_TOPIC_0000002421233606" id="ZH-CN_TOPIC_0000002421233606"></a>
+#### Concat<a name="ZH-CN_TOPIC_0000002421233606" id="ZH-CN_TOPIC_0000002421233606"></a>
 
 **功能描述<a name="section171987343553"></a>**
 
@@ -7946,7 +7948,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持2个输入和1个输出，输入和输出数据类型均为FP32；输入和输出rank必须相同且为1~4，所有维度为正数；axis支持负值归一化，归一化后必须在有效范围内；非axis维度一致，输出axis维度等于两个输入axis维度之和；不支持动态Shape |
 
-### AveragePool<a name="ZH-CN_TOPIC_0000002455402925" id="ZH-CN_TOPIC_0000002455402925"></a>
+#### AveragePool<a name="ZH-CN_TOPIC_0000002455402925" id="ZH-CN_TOPIC_0000002455402925"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -8072,7 +8074,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### InstanceNormalization<a name="ZH-CN_TOPIC_0000002453072106" id="ZH-CN_TOPIC_0000002453072106"></a>
+#### InstanceNormalization<a name="ZH-CN_TOPIC_0000002453072106" id="ZH-CN_TOPIC_0000002453072106"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -8163,7 +8165,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | input、scale、B和output均为FP32；input和output必须为静态正维的3D或4D张量且形状一致，scale和B的元素数必须等于通道数；epsilon必须大于0。反向必须计算输入梯度；scale和B为可训练参数时分别计算其梯度。 |
 
-### LSTM<a name="ZH-CN_TOPIC_0000002486111849" id="ZH-CN_TOPIC_0000002486111849"></a>
+#### LSTM<a name="ZH-CN_TOPIC_0000002486111849" id="ZH-CN_TOPIC_0000002486111849"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -8408,7 +8410,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持FP32静态、非空张量，以及单层、单向forward LSTM；输入X为三维张量[T, B, I]，T、B、I均大于0；权重采用IOFG门顺序，W为[1, 4H, I]、R为[1, 4H, H]、B为[1, 8H]，initial_h和initial_c的元素数均为B×H；Y、Y_h、Y_c的输出梯度可任意组合，但至少存在一个；不支持双向、reverse、projection、非零zoneout和动态Shape |
 
-### Tile<a name="ZH-CN_TOPIC_0000002513105051" id="ZH-CN_TOPIC_0000002513105051"></a>
+#### Tile<a name="ZH-CN_TOPIC_0000002513105051" id="ZH-CN_TOPIC_0000002513105051"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -8467,7 +8469,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Pad<a name="ZH-CN_TOPIC_0000002480825566" id="ZH-CN_TOPIC_0000002480825566"></a>
+#### Pad<a name="ZH-CN_TOPIC_0000002480825566" id="ZH-CN_TOPIC_0000002480825566"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -8567,7 +8569,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持CONSTANT模式；rank为1～6，要求normalized paddings、非负padding和正静态shape，输出shape必须等于输入shape加padding |
 
-### Resize<a name="ZH-CN_TOPIC_0000002512945433" id="ZH-CN_TOPIC_0000002512945433"></a>
+#### Resize<a name="ZH-CN_TOPIC_0000002512945433" id="ZH-CN_TOPIC_0000002512945433"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -8758,7 +8760,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持本实现锁定的linear或nearest分支 |
 
-### Squeeze<a name="ZH-CN_TOPIC_0000002482800962" id="ZH-CN_TOPIC_0000002482800962"></a>
+#### Squeeze<a name="ZH-CN_TOPIC_0000002482800962" id="ZH-CN_TOPIC_0000002482800962"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -8824,7 +8826,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持1个数据输入和1个输出，输入和输出均为FP32静态非空张量，且元素总数相等；支持axis为空、正axis和负axis，指定axis对应的输入维度必须为1；不支持动态Shape |
 
-### Unsqueeze<a name="ZH-CN_TOPIC_0000002482804754" id="ZH-CN_TOPIC_0000002482804754"></a>
+#### Unsqueeze<a name="ZH-CN_TOPIC_0000002482804754" id="ZH-CN_TOPIC_0000002482804754"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -8890,7 +8892,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持1个数据输入和1个输出，输入和输出均为FP32静态非空张量，且元素总数相等；支持单个或多个axis及负axis，axis归一化后按升序插入维度；axis数量不超过4，输出rank不超过16；不支持动态Shape |
 
-### Flatten<a name="ZH-CN_TOPIC_0000002515124725" id="ZH-CN_TOPIC_0000002515124725"></a>
+#### Flatten<a name="ZH-CN_TOPIC_0000002515124725" id="ZH-CN_TOPIC_0000002515124725"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -8956,7 +8958,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 输入和输出元素数量必须一致，且为FP32静态非空张量 |
 
-### Abs<a name="ZH-CN_TOPIC_0000002485239888" id="ZH-CN_TOPIC_0000002485239888"></a>
+#### Abs<a name="ZH-CN_TOPIC_0000002485239888" id="ZH-CN_TOPIC_0000002485239888"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9011,7 +9013,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 要求使用FP32静态非空张量 |
 
-### Ceil<a name="ZH-CN_TOPIC_0000002517399797" id="ZH-CN_TOPIC_0000002517399797"></a>
+#### Ceil<a name="ZH-CN_TOPIC_0000002517399797" id="ZH-CN_TOPIC_0000002517399797"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9059,7 +9061,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Cos<a name="ZH-CN_TOPIC_0000002517479775" id="ZH-CN_TOPIC_0000002517479775"></a>
+#### Cos<a name="ZH-CN_TOPIC_0000002517479775" id="ZH-CN_TOPIC_0000002517479775"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9107,7 +9109,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Exp<a name="ZH-CN_TOPIC_0000002485399854" id="ZH-CN_TOPIC_0000002485399854"></a>
+#### Exp<a name="ZH-CN_TOPIC_0000002485399854" id="ZH-CN_TOPIC_0000002485399854"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9155,7 +9157,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Floor<a name="ZH-CN_TOPIC_0000002485239890" id="ZH-CN_TOPIC_0000002485239890"></a>
+#### Floor<a name="ZH-CN_TOPIC_0000002485239890" id="ZH-CN_TOPIC_0000002485239890"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9203,7 +9205,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Log<a name="ZH-CN_TOPIC_0000002517399799" id="ZH-CN_TOPIC_0000002517399799"></a>
+#### Log<a name="ZH-CN_TOPIC_0000002517399799" id="ZH-CN_TOPIC_0000002517399799"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9251,7 +9253,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Round<a name="ZH-CN_TOPIC_0000002517479777" id="ZH-CN_TOPIC_0000002517479777"></a>
+#### Round<a name="ZH-CN_TOPIC_0000002517479777" id="ZH-CN_TOPIC_0000002517479777"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9299,7 +9301,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Sin<a name="ZH-CN_TOPIC_0000002485399856" id="ZH-CN_TOPIC_0000002485399856"></a>
+#### Sin<a name="ZH-CN_TOPIC_0000002485399856" id="ZH-CN_TOPIC_0000002485399856"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9347,7 +9349,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Sqrt<a name="ZH-CN_TOPIC_0000002485239892" id="ZH-CN_TOPIC_0000002485239892"></a>
+#### Sqrt<a name="ZH-CN_TOPIC_0000002485239892" id="ZH-CN_TOPIC_0000002485239892"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9395,7 +9397,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### BatchNormalization<a name="ZH-CN_TOPIC_0000002487717084" id="ZH-CN_TOPIC_0000002487717084"></a>
+#### BatchNormalization<a name="ZH-CN_TOPIC_0000002487717084" id="ZH-CN_TOPIC_0000002487717084"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9498,7 +9500,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### LayerNormalization<a name="ZH-CN_TOPIC_0000002519876961" id="ZH-CN_TOPIC_0000002519876961"></a>
+#### LayerNormalization<a name="ZH-CN_TOPIC_0000002519876961" id="ZH-CN_TOPIC_0000002519876961"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9590,7 +9592,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### LpNormalization<a name="ZH-CN_TOPIC_0000002519796953" id="ZH-CN_TOPIC_0000002519796953"></a>
+#### LpNormalization<a name="ZH-CN_TOPIC_0000002519796953" id="ZH-CN_TOPIC_0000002519796953"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9660,7 +9662,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Slice<a name="ZH-CN_TOPIC_0000002528453623" id="ZH-CN_TOPIC_0000002528453623"></a>
+#### Slice<a name="ZH-CN_TOPIC_0000002528453623" id="ZH-CN_TOPIC_0000002528453623"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9759,7 +9761,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；要求full-rank归一化参数，不支持slice mask，step非零（正、负步长均支持），不支持空切片 |
 
-### GlobalMaxPool<a name="ZH-CN_TOPIC_0000002497018654" id="ZH-CN_TOPIC_0000002497018654"></a>
+#### GlobalMaxPool<a name="ZH-CN_TOPIC_0000002497018654" id="ZH-CN_TOPIC_0000002497018654"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9807,7 +9809,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### GlobalAveragePool<a name="ZH-CN_TOPIC_0000002496698634" id="ZH-CN_TOPIC_0000002496698634"></a>
+#### GlobalAveragePool<a name="ZH-CN_TOPIC_0000002496698634" id="ZH-CN_TOPIC_0000002496698634"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9855,7 +9857,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Transpose<a name="ZH-CN_TOPIC_0000002498635600" id="ZH-CN_TOPIC_0000002498635600"></a>
+#### Transpose<a name="ZH-CN_TOPIC_0000002498635600" id="ZH-CN_TOPIC_0000002498635600"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -9921,7 +9923,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 输入和输出必须为FP32静态非空张量，元素数量及rank一致，rank为1～16；perm必须是长度等于rank的int32离线常量，且为[0, rank)的合法全排列。反向仅计算数据输入梯度，按perm的逆排列对输出梯度进行转置；perm不参与求导。 |
 
-### ArgMax<a name="ZH-CN_TOPIC_0000002510106182" id="ZH-CN_TOPIC_0000002510106182"></a>
+#### ArgMax<a name="ZH-CN_TOPIC_0000002510106182" id="ZH-CN_TOPIC_0000002510106182"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -10005,7 +10007,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### ArgMin<a name="ZH-CN_TOPIC_0000002541586163" id="ZH-CN_TOPIC_0000002541586163"></a>
+#### ArgMin<a name="ZH-CN_TOPIC_0000002541586163" id="ZH-CN_TOPIC_0000002541586163"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -10089,7 +10091,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### Div<a name="ZH-CN_TOPIC_0000002516261490" id="ZH-CN_TOPIC_0000002516261490"></a>
+#### Div<a name="ZH-CN_TOPIC_0000002516261490" id="ZH-CN_TOPIC_0000002516261490"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -10155,7 +10157,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 前向输入为2个、输出为1个，输入和输出数据类型均为FP32；支持静态Shape和标准右对齐广播，输出rank不超过4，所有维度必须为正数；输入rank不得大于输出rank，且每一维满足输入维度为1或等于输出维度；反向需保留两个输入，支持同时生成两个输入梯度；仅支持无融合激活（NONE），不支持动态Shape |
 
-### Mod<a name="ZH-CN_TOPIC_0000002600000004" id="ZH-CN_TOPIC_0000002600000004"></a>
+#### Mod<a name="ZH-CN_TOPIC_0000002600000004" id="ZH-CN_TOPIC_0000002600000004"></a>
 
 **功能描述<a name="section167661757173919"></a>**
 
@@ -10228,7 +10230,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </tbody>
 </table>
 
-### BitShift<a name="ZH-CN_TOPIC_0000003090100001" id="ZH-CN_TOPIC_0000003090100001"></a>
+#### BitShift<a name="ZH-CN_TOPIC_0000003090100001" id="ZH-CN_TOPIC_0000003090100001"></a>
 
 **功能描述<a name="section3090100001a"></a>**
 
@@ -10302,7 +10304,7 @@ BitShift以X作为被移位数据、Y作为移位位数，逐元素执行无符�
 </table>
 
 
-### Clip<a name="ZH-CN_TOPIC_0000002552815891" id="ZH-CN_TOPIC_0000002552815891"></a>
+#### Clip<a name="ZH-CN_TOPIC_0000002552815891" id="ZH-CN_TOPIC_0000002552815891"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -10372,7 +10374,7 @@ BitShift以X作为被移位数据、Y作为移位位数，逐元素执行无符�
 </tbody>
 </table>
 
-### ReduceMax<a name="ZH-CN_TOPIC_0000002557401349" id="ZH-CN_TOPIC_0000002557401349"></a>
+#### ReduceMax<a name="ZH-CN_TOPIC_0000002557401349" id="ZH-CN_TOPIC_0000002557401349"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -10453,7 +10455,7 @@ BitShift以X作为被移位数据、Y作为移位位数，逐元素执行无符�
 </tbody>
 </table>
 
-### ReduceMin<a name="ZH-CN_TOPIC_0000002526441430" id="ZH-CN_TOPIC_0000002526441430"></a>
+#### ReduceMin<a name="ZH-CN_TOPIC_0000002526441430" id="ZH-CN_TOPIC_0000002526441430"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -10534,7 +10536,7 @@ BitShift以X作为被移位数据、Y作为移位位数，逐元素执行无符�
 </tbody>
 </table>
 
-### ReduceSum<a name="ZH-CN_TOPIC_0000002557481311" id="ZH-CN_TOPIC_0000002557481311"></a>
+#### ReduceSum<a name="ZH-CN_TOPIC_0000002557481311" id="ZH-CN_TOPIC_0000002557481311"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -10622,7 +10624,7 @@ BitShift以X作为被移位数据、Y作为移位位数，逐元素执行无符�
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；axes必须为int32常量，允许为空表示全维归约，axes必须合法且唯一，输出shape必须匹配keep_dims |
 
-### ReduceSumSquare<a name="ZH-CN_TOPIC_0000003090100002" id="ZH-CN_TOPIC_0000003090100002"></a>
+#### ReduceSumSquare<a name="ZH-CN_TOPIC_0000003090100002" id="ZH-CN_TOPIC_0000003090100002"></a>
 
 **功能描述<a name="section3090100002a"></a>**
 
@@ -10706,7 +10708,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### ReduceMean<a name="ZH-CN_TOPIC_0000002526281478" id="ZH-CN_TOPIC_0000002526281478"></a>
+#### ReduceMean<a name="ZH-CN_TOPIC_0000002526281478" id="ZH-CN_TOPIC_0000002526281478"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -10794,7 +10796,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持rank为1～8的FP32静态非空张量；axes必须为int32常量，允许为空表示全维归约，axes必须合法且唯一，输出shape必须匹配keep_dims |
 
-### ReduceL1<a name="ZH-CN_TOPIC_0000002600000005" id="ZH-CN_TOPIC_0000002600000005"></a>
+#### ReduceL1<a name="ZH-CN_TOPIC_0000002600000005" id="ZH-CN_TOPIC_0000002600000005"></a>
 
 **功能描述<a name="section167661757173920"></a>**
 
@@ -10875,7 +10877,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### ReduceL2<a name="ZH-CN_TOPIC_0000002600000006" id="ZH-CN_TOPIC_0000002600000006"></a>
+#### ReduceL2<a name="ZH-CN_TOPIC_0000002600000006" id="ZH-CN_TOPIC_0000002600000006"></a>
 
 **功能描述<a name="section167661757173921"></a>**
 
@@ -10957,7 +10959,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </table>
 
 
-### Cast<a name="ZH-CN_TOPIC_0000002526464964" id="ZH-CN_TOPIC_0000002526464964"></a>
+#### Cast<a name="ZH-CN_TOPIC_0000002526464964" id="ZH-CN_TOPIC_0000002526464964"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -11048,7 +11050,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 仅支持输入和输出均为FP32的恒等Cast；输入和输出必须为静态非空张量且形状一致。反向仅传递数据输入梯度，梯度张量按元素复制；不产生可训练参数梯度。 |
 
-### PRelu<a name="ZH-CN_TOPIC_0000002568693026" id="ZH-CN_TOPIC_0000002568693026"></a>
+#### PRelu<a name="ZH-CN_TOPIC_0000002568693026" id="ZH-CN_TOPIC_0000002568693026"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -11110,7 +11112,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >在量化过程中，PReLU 算子的第二输入保留 FP32 格式，以保证负半轴计算精度。
 
-### CumSum<a name="ZH-CN_TOPIC_0000002568533372" id="ZH-CN_TOPIC_0000002568533372"></a>
+#### CumSum<a name="ZH-CN_TOPIC_0000002568533372" id="ZH-CN_TOPIC_0000002568533372"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -11191,7 +11193,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### ReverseSequence<a name="ZH-CN_TOPIC_0000002599187805" id="ZH-CN_TOPIC_0000002599187805"></a>
+#### ReverseSequence<a name="ZH-CN_TOPIC_0000002599187805" id="ZH-CN_TOPIC_0000002599187805"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -11272,7 +11274,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Einsum<a name="ZH-CN_TOPIC_0000002599307751" id="ZH-CN_TOPIC_0000002599307751"></a>
+#### Einsum<a name="ZH-CN_TOPIC_0000002599307751" id="ZH-CN_TOPIC_0000002599307751"></a>
 
 **功能描述<a name="section167661757173918"></a>**
 
@@ -11334,7 +11336,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### LeakyRelu<a name="ZH-CN_TOPIC_0000002574170496" id="ZH-CN_TOPIC_0000002574170496"></a>
+#### LeakyRelu<a name="ZH-CN_TOPIC_0000002574170496" id="ZH-CN_TOPIC_0000002574170496"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -11400,7 +11402,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | alpha为常量 |
 
-### HardSwish<a name="ZH-CN_TOPIC_0000002574469146" id="ZH-CN_TOPIC_0000002574469146"></a>
+#### HardSwish<a name="ZH-CN_TOPIC_0000002574469146" id="ZH-CN_TOPIC_0000002574469146"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -11448,7 +11450,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Swish<a name="ZH-CN_TOPIC_0000002605108551" id="ZH-CN_TOPIC_0000002605108551"></a>
+#### Swish<a name="ZH-CN_TOPIC_0000002605108551" id="ZH-CN_TOPIC_0000002605108551"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -11510,7 +11512,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >在ONNX Opset24以上才支持构造Swish算子，对应ONNX版本为1.19.0以上。
 
-### And<a name="ZH-CN_TOPIC_0000002574578826" id="ZH-CN_TOPIC_0000002574578826"></a>
+#### And<a name="ZH-CN_TOPIC_0000002574578826" id="ZH-CN_TOPIC_0000002574578826"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -11573,7 +11575,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Equal<a name="ZH-CN_TOPIC_0000002605257907" id="ZH-CN_TOPIC_0000002605257907"></a>
+#### Equal<a name="ZH-CN_TOPIC_0000002605257907" id="ZH-CN_TOPIC_0000002605257907"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -11642,7 +11644,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 不可微；梯度不经Equal回传，其上游仅当存在其他可微路径时才参与训练 |
 
-### GreaterOrEqual<a name="ZH-CN_TOPIC_0000002605377849" id="ZH-CN_TOPIC_0000002605377849"></a>
+#### GreaterOrEqual<a name="ZH-CN_TOPIC_0000002605377849" id="ZH-CN_TOPIC_0000002605377849"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -11704,7 +11706,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Greater<a name="ZH-CN_TOPIC_0000002574738452" id="ZH-CN_TOPIC_0000002574738452"></a>
+#### Greater<a name="ZH-CN_TOPIC_0000002574738452" id="ZH-CN_TOPIC_0000002574738452"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -11766,7 +11768,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### LessOrEqual<a name="ZH-CN_TOPIC_0000002574578828" id="ZH-CN_TOPIC_0000002574578828"></a>
+#### LessOrEqual<a name="ZH-CN_TOPIC_0000002574578828" id="ZH-CN_TOPIC_0000002574578828"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -11828,7 +11830,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Less<a name="ZH-CN_TOPIC_0000002605257909" id="ZH-CN_TOPIC_0000002605257909"></a>
+#### Less<a name="ZH-CN_TOPIC_0000002605257909" id="ZH-CN_TOPIC_0000002605257909"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -11890,7 +11892,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Not<a name="ZH-CN_TOPIC_0000002605377851" id="ZH-CN_TOPIC_0000002605377851"></a>
+#### Not<a name="ZH-CN_TOPIC_0000002605377851" id="ZH-CN_TOPIC_0000002605377851"></a>
 
 **功能描述<a name="section144144283412"></a>**
 
@@ -11941,7 +11943,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Or<a name="ZH-CN_TOPIC_0000002574738488" id="ZH-CN_TOPIC_0000002574738488"></a>
+#### Or<a name="ZH-CN_TOPIC_0000002574738488" id="ZH-CN_TOPIC_0000002574738488"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12004,7 +12006,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Xor<a name="ZH-CN_TOPIC_0000002574578874" id="ZH-CN_TOPIC_0000002574578874"></a>
+#### Xor<a name="ZH-CN_TOPIC_0000002574578874" id="ZH-CN_TOPIC_0000002574578874"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12067,7 +12069,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Dropout<a name="ZH-CN_TOPIC_0000002659215655" id="ZH-CN_TOPIC_0000002659215655"></a>
+#### Dropout<a name="ZH-CN_TOPIC_0000002659215655" id="ZH-CN_TOPIC_0000002659215655"></a>
 
 **功能描述<a name="section787325354211"></a>**
 
@@ -12151,7 +12153,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 >![](public_sys-resources/icon-note.gif) **说明：** 
 >暂不支持training\_mode为true，暂不支持ratio或training\_mode为运行时输入。
 
-### Identity<a name="ZH-CN_TOPIC_0000002628696446" id="ZH-CN_TOPIC_0000002628696446"></a>
+#### Identity<a name="ZH-CN_TOPIC_0000002628696446" id="ZH-CN_TOPIC_0000002628696446"></a>
 
 **功能描述<a name="section650819295436"></a>**
 
@@ -12199,7 +12201,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### GatherElements<a name="ZH-CN_TOPIC_0000002659095703" id="ZH-CN_TOPIC_0000002659095703"></a>
+#### GatherElements<a name="ZH-CN_TOPIC_0000002659095703" id="ZH-CN_TOPIC_0000002659095703"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12269,7 +12271,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### ReduceLogSum<a name="ZH-CN_TOPIC_0000002628856352" id="ZH-CN_TOPIC_0000002628856352"></a>
+#### ReduceLogSum<a name="ZH-CN_TOPIC_0000002628856352" id="ZH-CN_TOPIC_0000002628856352"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12328,7 +12330,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### ReduceLogSumExp<a name="ZH-CN_TOPIC_0000002659215657" id="ZH-CN_TOPIC_0000002659215657"></a>
+#### ReduceLogSumExp<a name="ZH-CN_TOPIC_0000002659215657" id="ZH-CN_TOPIC_0000002659215657"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12387,7 +12389,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Expand<a name="ZH-CN_TOPIC_0000002628696448" id="ZH-CN_TOPIC_0000002628696448"></a>
+#### Expand<a name="ZH-CN_TOPIC_0000002628696448" id="ZH-CN_TOPIC_0000002628696448"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12453,7 +12455,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | Expand在训练图中转换为BroadcastTo；输入和输出必须为FP32静态非空张量，输入rank为0～16、输出rank为1～16，输出rank不小于输入rank，且形状满足右对齐广播规则。shape必须为int64一维编译期离线常量，来源为initializer或Constant节点，各目标维度大于0；不支持运行时shape。反向仅计算数据输入梯度，将输出梯度沿广播轴累加；shape不参与求导。 |
 
-### Elu<a name="ZH-CN_TOPIC_0000002660394575" id="ZH-CN_TOPIC_0000002660394575"></a>
+#### Elu<a name="ZH-CN_TOPIC_0000002660394575" id="ZH-CN_TOPIC_0000002660394575"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12512,7 +12514,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### DepthToSpace<a name="ZH-CN_TOPIC_0000002629955352" id="ZH-CN_TOPIC_0000002629955352"></a>
+#### DepthToSpace<a name="ZH-CN_TOPIC_0000002629955352" id="ZH-CN_TOPIC_0000002629955352"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12582,7 +12584,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### SpaceToDepth<a name="ZH-CN_TOPIC_0000002660274511" id="ZH-CN_TOPIC_0000002660274511"></a>
+#### SpaceToDepth<a name="ZH-CN_TOPIC_0000002660274511" id="ZH-CN_TOPIC_0000002660274511"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -12641,7 +12643,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### GRU<a name="ZH-CN_TOPIC_0000002631448488" id="ZH-CN_TOPIC_0000002631448488"></a>
+#### GRU<a name="ZH-CN_TOPIC_0000002631448488" id="ZH-CN_TOPIC_0000002631448488"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -12847,7 +12849,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Gelu<a name="ZH-CN_TOPIC_0000002661401194" id="ZH-CN_TOPIC_0000002661401194"></a>
+#### Gelu<a name="ZH-CN_TOPIC_0000002661401194" id="ZH-CN_TOPIC_0000002661401194"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -12906,7 +12908,7 @@ ReduceSumSquare先对data中的元素逐元素平方，再沿axes指定的维度
 </tbody>
 </table>
 
-### Trilu<a name="ZH-CN_TOPIC_0000002661401195" id="ZH-CN_TOPIC_0000002661401195"></a>
+#### Trilu<a name="ZH-CN_TOPIC_0000002661401195" id="ZH-CN_TOPIC_0000002661401195"></a>
 
 **功能描述<a name="section113841812134710"></a>**
 
@@ -12976,7 +12978,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Shape<a name="ZH-CN_TOPIC_0000003030115802" id="ZH-CN_TOPIC_0000003030115802"></a>
+#### Shape<a name="ZH-CN_TOPIC_0000003030115802" id="ZH-CN_TOPIC_0000003030115802"></a>
 
 **功能描述<a name="section3030115802a"></a>**
 
@@ -13046,7 +13048,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### MatMulInteger<a name="ZH-CN_TOPIC_0000003040115702" id="ZH-CN_TOPIC_0000003040115702"></a>
+#### MatMulInteger<a name="ZH-CN_TOPIC_0000003040115702" id="ZH-CN_TOPIC_0000003040115702"></a>
 
 **功能描述<a name="section3040115702a"></a>**
 
@@ -13127,7 +13129,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### QLinearMatMul<a name="ZH-CN_TOPIC_0000003130115802" id="ZH-CN_TOPIC_0000003130115802"></a>
+#### QLinearMatMul<a name="ZH-CN_TOPIC_0000003130115802" id="ZH-CN_TOPIC_0000003130115802"></a>
 
 **功能描述<a name="section3130115802a"></a>**
 
@@ -13162,7 +13164,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 >
 >QLinearMatMul源图已经包含量化参数，转换时不能再次启用全量化，否则转换器会按重复量化处理并终止转换。
 
-### GatherND<a name="ZH-CN_TOPIC_0000003200115802" id="ZH-CN_TOPIC_0000003200115802"></a>
+#### GatherND<a name="ZH-CN_TOPIC_0000003200115802" id="ZH-CN_TOPIC_0000003200115802"></a>
 
 **功能描述<a name="section3200115802a"></a>**
 
@@ -13193,7 +13195,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 | 全量化int8通路 | float32模型 + FULL_QUANT | data/output使用INT8通路，indices保持INT32或INT64，不参与量化。 |
 | 不支持规格命中 | indices为负数、越界、D大于rank(data)、shape非静态或中间计算溢出INT32 | 转换期或运行期报错，不生成有效结果。 |
 
-### Scatter<a name="ZH-CN_TOPIC_0000003150115802" id="ZH-CN_TOPIC_0000003150115802"></a>
+#### Scatter<a name="ZH-CN_TOPIC_0000003150115802" id="ZH-CN_TOPIC_0000003150115802"></a>
 
 **功能描述<a name="section3150115802a"></a>**
 
@@ -13216,7 +13218,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 >![](public_sys-resources/icon-note.gif) **说明：**
 >Scatter仅支持覆盖语义。负索引按对应维度从尾部计数；索引越界时运行失败。相同输出位置不应出现重复索引，否则最终覆盖值依赖更新顺序。
 
-### ScatterElements<a name="ZH-CN_TOPIC_0000003160115802" id="ZH-CN_TOPIC_0000003160115802"></a>
+#### ScatterElements<a name="ZH-CN_TOPIC_0000003160115802" id="ZH-CN_TOPIC_0000003160115802"></a>
 
 **功能描述<a name="section3160115802a"></a>**
 
@@ -13240,7 +13242,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 >![](public_sys-resources/icon-note.gif) **说明：**
 >ScatterElements仅支持reduction=none。负索引按对应维度从尾部计数；索引越界时运行失败。reduction=none时相同输出位置不应出现重复索引。
 
-### ScatterND<a name="ZH-CN_TOPIC_0000003170115802" id="ZH-CN_TOPIC_0000003170115802"></a>
+#### ScatterND<a name="ZH-CN_TOPIC_0000003170115802" id="ZH-CN_TOPIC_0000003170115802"></a>
 
 **功能描述<a name="section3170115802a"></a>**
 
@@ -13263,7 +13265,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 >![](public_sys-resources/icon-note.gif) **说明：**
 >ONNX ScatterND包含data、indices和updates三个输入，与TFLite ScatterND的indices、updates、shape输入形式不同。负索引按对应维度从尾部计数；索引越界时运行失败。reduction=none时不应使用重复索引。INT8通路仅支持per-tensor量化。
 
-### TopK<a name="ZH-CN_TOPIC_0000003050115802" id="ZH-CN_TOPIC_0000003050115802"></a>
+#### TopK<a name="ZH-CN_TOPIC_0000003050115802" id="ZH-CN_TOPIC_0000003050115802"></a>
 
 **功能描述<a name="section3050115802a"></a>**
 
@@ -13366,7 +13368,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Erf<a name="ZH-CN_TOPIC_0000002026072801" id="ZH-CN_TOPIC_0000002026072801"></a>
+#### Erf<a name="ZH-CN_TOPIC_0000002026072801" id="ZH-CN_TOPIC_0000002026072801"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -13414,7 +13416,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### HardSigmoid<a name="ZH-CN_TOPIC_0000002026072802" id="ZH-CN_TOPIC_0000002026072802"></a>
+#### HardSigmoid<a name="ZH-CN_TOPIC_0000002026072802" id="ZH-CN_TOPIC_0000002026072802"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -13486,7 +13488,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 
 
 
-### Celu<a name="ZH-CN_TOPIC_0000002026072803" id="ZH-CN_TOPIC_0000002026072803"></a>
+#### Celu<a name="ZH-CN_TOPIC_0000002026072803" id="ZH-CN_TOPIC_0000002026072803"></a>
 
 **功能描述<a name="section37550136507"></a>**
 
@@ -13545,7 +13547,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Selu<a name="ZH-CN_TOPIC_0000003180115802" id="ZH-CN_TOPIC_0000003180115802"></a>
+#### Selu<a name="ZH-CN_TOPIC_0000003180115802" id="ZH-CN_TOPIC_0000003180115802"></a>
 
 **功能描述<a name="section3180115802a"></a>**
 
@@ -13573,7 +13575,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 
 
 
-### Max<a name="ZH-CN_TOPIC_0000003060115802" id="ZH-CN_TOPIC_0000003060115802"></a>
+#### Max<a name="ZH-CN_TOPIC_0000003060115802" id="ZH-CN_TOPIC_0000003060115802"></a>
 
 **功能描述<a name="section3100000041"></a>**
 
@@ -13621,7 +13623,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Min<a name="ZH-CN_TOPIC_0000003070115802" id="ZH-CN_TOPIC_0000003070115802"></a>
+#### Min<a name="ZH-CN_TOPIC_0000003070115802" id="ZH-CN_TOPIC_0000003070115802"></a>
 
 **功能描述<a name="section3100000051"></a>**
 
@@ -13669,7 +13671,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Sum<a name="ZH-CN_TOPIC_0000003080115802" id="ZH-CN_TOPIC_0000003080115802"></a>
+#### Sum<a name="ZH-CN_TOPIC_0000003080115802" id="ZH-CN_TOPIC_0000003080115802"></a>
 
 **功能描述<a name="section3100000061"></a>**
 
@@ -13724,7 +13726,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持1个或多个FP32静态非空输入，按trailing broadcast规则对齐，广播后的输出rank不超过4；反向分别计算各输入梯度，并沿对应广播轴累加 |
 
-### Constant<a name="ZH-CN_TOPIC_0000003110115802" id="ZH-CN_TOPIC_0000003110115802"></a>
+#### Constant<a name="ZH-CN_TOPIC_0000003110115802" id="ZH-CN_TOPIC_0000003110115802"></a>
 
 **功能描述<a name="section3100000081"></a>**
 
@@ -13819,7 +13821,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 >![](public_sys-resources/icon-note.gif) **说明：**
 >必须且只能指定以上属性（value/value_float/value_floats/value_int/value_ints）中的一个来定义常量值。
 
-### ConstantOfShape<a name="ZH-CN_TOPIC_0000003120115802" id="ZH-CN_TOPIC_0000003120115802"></a>
+#### ConstantOfShape<a name="ZH-CN_TOPIC_0000003120115802" id="ZH-CN_TOPIC_0000003120115802"></a>
 
 **功能描述<a name="section3100000091"></a>**
 
@@ -13878,7 +13880,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### ReduceProd<a name="ZH-CN_TOPIC_0000003090115802" id="ZH-CN_TOPIC_0000003090115802"></a>
+#### ReduceProd<a name="ZH-CN_TOPIC_0000003090115802" id="ZH-CN_TOPIC_0000003090115802"></a>
 
 **功能描述<a name="section3100000071"></a>**
 
@@ -13959,7 +13961,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Hardmax<a name="ZH-CN_TOPIC_0000002026082101" id="ZH-CN_TOPIC_0000002026082101"></a>
+#### Hardmax<a name="ZH-CN_TOPIC_0000002026082101" id="ZH-CN_TOPIC_0000002026082101"></a>
 
 **功能描述<a name="section2026082101a"></a>**
 
@@ -14021,7 +14023,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Where<a name="ZH-CN_TOPIC_0000002026082102" id="ZH-CN_TOPIC_0000002026082102"></a>
+#### Where<a name="ZH-CN_TOPIC_0000002026082102" id="ZH-CN_TOPIC_0000002026082102"></a>
 
 **功能描述<a name="section2026082102a"></a>**
 
@@ -14091,7 +14093,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### ConvInteger<a name="ZH-CN_TOPIC_0000002026082103" id="ZH-CN_TOPIC_0000002026082103"></a>
+#### ConvInteger<a name="ZH-CN_TOPIC_0000002026082103" id="ZH-CN_TOPIC_0000002026082103"></a>
 
 **功能描述<a name="section2026082103a"></a>**
 
@@ -14238,7 +14240,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### QLinearConv<a name="ZH-CN_TOPIC_0000003140115802" id="ZH-CN_TOPIC_0000003140115802"></a>
+#### QLinearConv<a name="ZH-CN_TOPIC_0000003140115802" id="ZH-CN_TOPIC_0000003140115802"></a>
 
 **功能描述<a name="section3140115802a"></a>**
 
@@ -14280,7 +14282,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 >
 >QLinearConv源图已经包含量化参数，转换时不能再次启用全量化，否则转换器会按重复量化处理并终止转换。
 
-### OneHot<a name="ZH-CN_TOPIC_0000002026082105" id="ZH-CN_TOPIC_0000002026082105"></a>
+#### OneHot<a name="ZH-CN_TOPIC_0000002026082105" id="ZH-CN_TOPIC_0000002026082105"></a>
 
 **功能描述<a name="section2026082105a"></a>**
 
@@ -14361,7 +14363,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### ThresholdedRelu<a name="ZH-CN_TOPIC_0000002026082106" id="ZH-CN_TOPIC_0000002026082106"></a>
+#### ThresholdedRelu<a name="ZH-CN_TOPIC_0000002026082106" id="ZH-CN_TOPIC_0000002026082106"></a>
 
 **功能描述<a name="section2026082106a"></a>**
 
@@ -14420,7 +14422,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Unique<a name="ZH-CN_TOPIC_0000002026082108" id="ZH-CN_TOPIC_0000002026082108"></a>
+#### Unique<a name="ZH-CN_TOPIC_0000002026082108" id="ZH-CN_TOPIC_0000002026082108"></a>
 
 **功能描述<a name="section2026082108a"></a>**
 
@@ -14526,7 +14528,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Softsign<a name="ZH-CN_TOPIC_0000002026082402" id="ZH-CN_TOPIC_0000002026082402"></a>
+#### Softsign<a name="ZH-CN_TOPIC_0000002026082402" id="ZH-CN_TOPIC_0000002026082402"></a>
 
 **功能描述<a name="section2026082402a"></a>**
 
@@ -14574,7 +14576,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Softplus<a name="ZH-CN_TOPIC_0000002026082403" id="ZH-CN_TOPIC_0000002026082403"></a>
+#### Softplus<a name="ZH-CN_TOPIC_0000002026082403" id="ZH-CN_TOPIC_0000002026082403"></a>
 
 **功能描述<a name="section2026082403a"></a>**
 
@@ -14622,7 +14624,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### LogSoftmax<a name="ZH-CN_TOPIC_0000002026082405" id="ZH-CN_TOPIC_0000002026082405"></a>
+#### LogSoftmax<a name="ZH-CN_TOPIC_0000002026082405" id="ZH-CN_TOPIC_0000002026082405"></a>
 
 **功能描述<a name="section2026082405a"></a>**
 
@@ -14681,7 +14683,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### ConvTranspose<a name="ZH-CN_TOPIC_0000002026082902" id="ZH-CN_TOPIC_0000002026082902"></a>
+#### ConvTranspose<a name="ZH-CN_TOPIC_0000002026082902" id="ZH-CN_TOPIC_0000002026082902"></a>
 
 **功能描述<a name="section2026082902a"></a>**
 
@@ -14842,7 +14844,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### RNN<a name="ZH-CN_TOPIC_0000002026082903" id="ZH-CN_TOPIC_0000002026082903"></a>
+#### RNN<a name="ZH-CN_TOPIC_0000002026082903" id="ZH-CN_TOPIC_0000002026082903"></a>
 
 **功能描述<a name="section2026082903a"></a>**
 
@@ -15038,7 +15040,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 
 
 
-### Neg<a name="ZH-CN_TOPIC_0000002900000002" id="ZH-CN_TOPIC_0000002900000002"></a>
+#### Neg<a name="ZH-CN_TOPIC_0000002900000002" id="ZH-CN_TOPIC_0000002900000002"></a>
 
 **功能描述<a name="section_neg_onnx_desc"></a>**
 
@@ -15086,7 +15088,7 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 </tbody>
 </table>
 
-### Pow<a name="ZH-CN_TOPIC_0000002476598371" id="ZH-CN_TOPIC_0000002476598371"></a>
+#### Pow<a name="ZH-CN_TOPIC_0000002476598371" id="ZH-CN_TOPIC_0000002476598371"></a>
 
 **功能描述<a name="section_onnx_pow_func"></a>**
 
@@ -15157,11 +15159,11 @@ Trilu（Triangular Upper / Lower）算子用于提取输入张量的三角矩阵
 | QAS INT8 | 不支持 | - |
 | FP32 | 支持 | 支持静态、非空张量，广播对齐后的rank不超过4，并按trailing broadcast对齐 |
 
-# 专题<a name="ZH-CN_TOPIC_0000002562713759" id="ZH-CN_TOPIC_0000002562713759"></a>
+## 专题<a name="ZH-CN_TOPIC_0000002562713759" id="ZH-CN_TOPIC_0000002562713759"></a>
 
 -   **[高效算子支持](#ZH-CN_TOPIC_0000002531793838)**  
 
-## 高效算子支持<a name="ZH-CN_TOPIC_0000002531793838" id="ZH-CN_TOPIC_0000002531793838"></a>
+### 高效算子支持<a name="ZH-CN_TOPIC_0000002531793838" id="ZH-CN_TOPIC_0000002531793838"></a>
 
 HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专题的性能优化。在converter\_lite命令行中开启riscvOpt选项，即可启用高性能模式。对性能要求较高的嵌入式AI场景中，在AI模型设计时可以优先采用以下规格。
 
@@ -15171,7 +15173,7 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 
 -   **[MaxPooling/AveragePooling优化](#ZH-CN_TOPIC_0000002661401189)**  
 
-### Conv优化<a name="ZH-CN_TOPIC_0000002531633886" id="ZH-CN_TOPIC_0000002531633886"></a>
+#### Conv优化<a name="ZH-CN_TOPIC_0000002531633886" id="ZH-CN_TOPIC_0000002531633886"></a>
 
 以下规格的Onnx算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
 
@@ -15327,7 +15329,7 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 </tbody>
 </table>
 
-### Matmul优化<a name="ZH-CN_TOPIC_0000002628690692" id="ZH-CN_TOPIC_0000002628690692"></a>
+#### Matmul优化<a name="ZH-CN_TOPIC_0000002628690692" id="ZH-CN_TOPIC_0000002628690692"></a>
 
 以下规格的Onnx算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
 
@@ -15523,7 +15525,7 @@ HiSpark.AI工具链对部分常用嵌入式AI的算子规格进行了RISC-V专�
 </tbody>
 </table>
 
-### MaxPool/AveragePool优化<a name="ZH-CN_TOPIC_0000002661401189" id="ZH-CN_TOPIC_0000002661401189"></a>
+#### MaxPool/AveragePool优化<a name="ZH-CN_TOPIC_0000002661401189" id="ZH-CN_TOPIC_0000002661401189"></a>
 
 以下规格的Onnx算子在riscvOpt高性能模式下推理时间上有较大优化，算法工程师在AI模型设计时可以优先采用以下规格。
 

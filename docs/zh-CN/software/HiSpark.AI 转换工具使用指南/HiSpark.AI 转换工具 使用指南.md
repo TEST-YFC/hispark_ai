@@ -1,4 +1,6 @@
-# 前言<a name="ZH-CN_TOPIC_0000002451492226"></a>
+# HiSpark.AI 转换工具使用指南
+
+## 前言<a name="ZH-CN_TOPIC_0000002451492226"></a>
 
 **概述<a name="section4537382116410"></a>**
 
@@ -77,7 +79,7 @@
 | 02 | 2025-12-18 | 新增Onnx/TFLite算子规格：<br>更新“[Squeeze](#ZH-CN_TOPIC_0000002482800962)、[Unsqueeze](#ZH-CN_TOPIC_0000002482804754)、[Flatten](#ZH-CN_TOPIC_0000002515124725)、[Squeeze](#ZH-CN_TOPIC_0000002515130287)、[ExpandDims](#ZH-CN_TOPIC_0000002482930280)、[Slice](#ZH-CN_TOPIC_0000002528453623) [Slice](#ZH-CN_TOPIC_0000002528693597)”。<br>更新“[Abs](#ZH-CN_TOPIC_0000002485239888)、[Ceil](#ZH-CN_TOPIC_0000002517399797)、[Cos](#ZH-CN_TOPIC_0000002517479775)、[Exp](#ZH-CN_TOPIC_0000002485399854)、[Floor](#ZH-CN_TOPIC_0000002485239890)、[Log](#ZH-CN_TOPIC_0000002517399799)、[Round](#ZH-CN_TOPIC_0000002517479777)、[Sin](#ZH-CN_TOPIC_0000002485399856)、[Sqrt](#ZH-CN_TOPIC_0000002485239892)、[Abs](#ZH-CN_TOPIC_0000002485399132)、[Ceil](#ZH-CN_TOPIC_0000002517479769)、[Cos](#ZH-CN_TOPIC_0000002485399848)、[Exp](#ZH-CN_TOPIC_0000002485239884)、[Floor](#ZH-CN_TOPIC_0000002517399793)、[Log](#ZH-CN_TOPIC_0000002517479771)、[Round](#ZH-CN_TOPIC_0000002485399850)、[Rsqrt](#ZH-CN_TOPIC_0000002485239886)、[Sin](#ZH-CN_TOPIC_0000002517399795)、[Sqrt](#ZH-CN_TOPIC_0000002517479773)、[Square](#ZH-CN_TOPIC_0000002485399852)”。<br>更新“[BatchNormalization](#ZH-CN_TOPIC_0000002487717084)、[LayerNormalization](#ZH-CN_TOPIC_0000002519876961)、[LpNormalization](#ZH-CN_TOPIC_0000002519796953)、[L2Normalization](#ZH-CN_TOPIC_0000002487557124)”<br>更新“[GlobalMaxPool](#ZH-CN_TOPIC_0000002497018654)、[GlobalAveragePool](#ZH-CN_TOPIC_0000002496698634)”。<br>更新“[DepthwiseConv2D](#ZH-CN_TOPIC_0000002529736261)、[Transpose](#ZH-CN_TOPIC_0000002498475622)、[Transpose](#ZH-CN_TOPIC_0000002498635600)”。 |
 | 01 | 2025-10-30 | 第一次正式版本发布。 |
 
-# Converter\_lite工具使用环境搭建<a name="ZH-CN_TOPIC_0000002353769641" id="ZH-CN_TOPIC_0000002353769641"></a>
+## Converter\_lite工具使用环境搭建<a name="ZH-CN_TOPIC_0000002353769641" id="ZH-CN_TOPIC_0000002353769641"></a>
 
 -   **[获取converter\_lite转换工具](#ZH-CN_TOPIC_0000002353895485)**  
 
@@ -85,13 +87,13 @@
 
 -   **[限制与约束](#ZH-CN_TOPIC_0000002319976756)**  
 
-## 获取converter\_lite转换工具<a name="ZH-CN_TOPIC_0000002353895485" id="ZH-CN_TOPIC_0000002353895485"></a>
+### 获取converter\_lite转换工具<a name="ZH-CN_TOPIC_0000002353895485" id="ZH-CN_TOPIC_0000002353895485"></a>
 
 工具包获取：converter\_lite工具位于发布包的“mindspore-enterprise-lite-\{version\}-linux-x64/tools/converter/converter/converter\_lite”路径下，其中“version”为软件版本号。
 
 本文档以converter\_lite转换工具的使用为例进行说明。
 
-## 设置环境变量<a name="ZH-CN_TOPIC_0000002353775693" id="ZH-CN_TOPIC_0000002353775693"></a>
+### 设置环境变量<a name="ZH-CN_TOPIC_0000002353775693" id="ZH-CN_TOPIC_0000002353775693"></a>
 
 使用export方式设置环境变量后，环境变量仅在当前窗口有效。如果用户之前已在.bashrc文件中设置过环境变量，则需要在执行上述命令前，先手动删除原来设置的环境变量。
 
@@ -125,7 +127,7 @@ export HISPARK_RISCV_TOOLCHAIN_PATH=${sdk_install_path}/tools/bin/compiler/riscv
 export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musleabi/arm-v01c01-linux-musleabi-gcc/
 ```
 
-## 限制与约束<a name="ZH-CN_TOPIC_0000002319976756" id="ZH-CN_TOPIC_0000002319976756"></a>
+### 限制与约束<a name="ZH-CN_TOPIC_0000002319976756" id="ZH-CN_TOPIC_0000002319976756"></a>
 
 关于工具链版本的约束要求，如[表1](#table189802570121)所示。
 
@@ -176,13 +178,13 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
 </tbody>
 </table>
 
-# 快速入门<a name="ZH-CN_TOPIC_0000002319973524" id="ZH-CN_TOPIC_0000002319973524"></a>
+## 快速入门<a name="ZH-CN_TOPIC_0000002319973524" id="ZH-CN_TOPIC_0000002319973524"></a>
 
 本章节以TFLite与ONNX框架的MNIST模型转换为例，演示如何快速转换生成Micro工程推理代码。
 
 -   **[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)**  
 
-## 开源框架的TFLite/ONNX模型转换为Micro工程<a name="ZH-CN_TOPIC_0000002353945877" id="ZH-CN_TOPIC_0000002353945877"></a>
+### 开源框架的TFLite/ONNX模型转换为Micro工程<a name="ZH-CN_TOPIC_0000002353945877" id="ZH-CN_TOPIC_0000002353945877"></a>
 
 1.  获取开源框架MNIST网络模型。
     -   TFLite模型：从链接中获取MNIST网络的模型文件：[mnist网络模型](https://download.mindspore.cn/model_zoo/official/lite/quick_start/micro/mnist.tar.gz)，下载后解压得到mnist.tflite、mnist.tflite.ms.bin（MNIST输入数据）、mnist.tflite.ms.out（标杆输出数据，可用于精度对比）。该模型为已经训练完成的MNIST分类模型，为TFLite模型，将mnist.tflite模型拷贝到开发环境任意目录，例如上传到“$HOME/module/”目录下。
@@ -366,13 +368,13 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
 
 7.  若想快速体验转换后的Micro工程代码的编译与推理，请准备好环境、符合模型输入要求的\*.bin输入数据以及Micro工程代码，具体操作请参见“[初级功能](#ZH-CN_TOPIC_0000002319904560)”章节。
 
-# 基础知识<a name="ZH-CN_TOPIC_0000002319816916" id="ZH-CN_TOPIC_0000002319816916"></a>
+## 基础知识<a name="ZH-CN_TOPIC_0000002319816916" id="ZH-CN_TOPIC_0000002319816916"></a>
 
 -   **[工具功能架构](#ZH-CN_TOPIC_0000002320039182)**  
 
 -   **[工具运行流程](#ZH-CN_TOPIC_0000002353838137)**  
 
-## 工具功能架构<a name="ZH-CN_TOPIC_0000002320039182" id="ZH-CN_TOPIC_0000002320039182"></a>
+### 工具功能架构<a name="ZH-CN_TOPIC_0000002320039182" id="ZH-CN_TOPIC_0000002320039182"></a>
 
 converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 
@@ -386,7 +388,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 3.  生成模型权重数据、头文件与C源码等Micro工程代码。
 4.  通过gcc或者RISCV交叉编译工具链生成静态库文件，并将其上传到指定平台执行推理。
 
-## 工具运行流程<a name="ZH-CN_TOPIC_0000002353838137" id="ZH-CN_TOPIC_0000002353838137"></a>
+### 工具运行流程<a name="ZH-CN_TOPIC_0000002353838137" id="ZH-CN_TOPIC_0000002353838137"></a>
 
 使用converter\_lite工具将模型转成Micro工程代码的总体流程如[图1](#fig1738314214294)所示。
 
@@ -401,7 +403,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 4.  使用converter\_lite工具进行模型转换，生成Micro工程代码。
 5.  编译Micro工程。
 
-# 初级功能<a name="ZH-CN_TOPIC_0000002319904560" id="ZH-CN_TOPIC_0000002319904560"></a>
+## 初级功能<a name="ZH-CN_TOPIC_0000002319904560" id="ZH-CN_TOPIC_0000002319904560"></a>
 
 本章节介绍如何在“[基础知识](#ZH-CN_TOPIC_0000002319816916)”Micro工程代码的基础上进行编译部署推理。当前支持模型规格如下：
 
@@ -421,7 +423,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 
 -   **[基于x86\_64平台精度调试](#ZH-CN_TOPIC_0000002320125106)**  
 
-## RISCV平台编译部署<a name="ZH-CN_TOPIC_0000002354163653" id="ZH-CN_TOPIC_0000002354163653"></a>
+### RISCV平台编译部署<a name="ZH-CN_TOPIC_0000002354163653" id="ZH-CN_TOPIC_0000002354163653"></a>
 
 本节以FP32的mnist.onnx模型为例，介绍如何利用生成的Micro INT8量化推理代码，并在RISCV平台部署推理。
 
@@ -485,7 +487,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 
 6.  将编译产物libnet.a与libmicro\_runtime.a上传至海思工具包再次编译得到编译产物\*.fwpkg文件。然后，使用海思工具在Windows平台烧录推理，具体步骤请参考对应的application/samples/ai中的readme.md。
 
-## ARM平台编译部署<a name="ZH-CN_TOPIC_0000002590121500" id="ZH-CN_TOPIC_0000002590121500"></a>
+### ARM平台编译部署<a name="ZH-CN_TOPIC_0000002590121500" id="ZH-CN_TOPIC_0000002590121500"></a>
 
 本节以FP32的mnist.onnx模型为例，介绍如何利用生成的Micro INT8量化推理代码，并在ARM平台部署推理。
 
@@ -549,7 +551,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 
 6.  将编译产物libnet.a与libmicro\_runtime.a上传至海思工具包再次编译得到编译产物\*.fwpkg文件。然后，使用海思工具在Windows平台烧录推理，具体步骤请参考对应的application/samples/ai中的readme.md。
 
-## 基于x86\_64平台精度调试<a name="ZH-CN_TOPIC_0000002320125106" id="ZH-CN_TOPIC_0000002320125106"></a>
+### 基于x86\_64平台精度调试<a name="ZH-CN_TOPIC_0000002320125106" id="ZH-CN_TOPIC_0000002320125106"></a>
 
 本节以mnist.tflite模型为例，介绍在x86\_64平台上的编译和部署过程（x86部署可以为板端调试提供精度标杆）。
 
@@ -691,7 +693,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
         ========run success=======
         ```
 
-# 参数说明<a name="ZH-CN_TOPIC_0000002319906348" id="ZH-CN_TOPIC_0000002319906348"></a>
+## 参数说明<a name="ZH-CN_TOPIC_0000002319906348" id="ZH-CN_TOPIC_0000002319906348"></a>
 
 -   **[总体约束](#ZH-CN_TOPIC_0000002353985077)**  
 
@@ -699,7 +701,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 
 -   **[基础功能参数](#ZH-CN_TOPIC_0000002320066172)**  
 
-## 总体约束<a name="ZH-CN_TOPIC_0000002353985077" id="ZH-CN_TOPIC_0000002353985077"></a>
+### 总体约束<a name="ZH-CN_TOPIC_0000002353985077" id="ZH-CN_TOPIC_0000002353985077"></a>
 
 针对converter\_lite转换工具总体约束如下：
 
@@ -707,7 +709,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 -   开源框架模型类型应与--fmk配置参数名称必须保持一致（包括大小写）。
 -   在使用全量化转换时，必须构建校准输入数据集，且按照模型的输入名称设置Micro配置项。校准数据集和实际输入格式为BIN（即数据类型为.bin二进制文件），并且该路径下不允许存在其他格式文件。
 
-## 参数概览<a name="ZH-CN_TOPIC_0000002354104885" id="ZH-CN_TOPIC_0000002354104885"></a>
+### 参数概览<a name="ZH-CN_TOPIC_0000002354104885" id="ZH-CN_TOPIC_0000002354104885"></a>
 
 >![](public_sys-resources/icon-notice.gif) **须知：** 
 >-   如果通过./converter\_lite --help命令查询出的参数未在[表1](#table54678511574)中解释，则说明该参数预留或者适用于其他芯片版本，用户无需关注。
@@ -953,7 +955,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 </tbody>
 </table>
 
-## 基础功能参数<a name="ZH-CN_TOPIC_0000002320066172" id="ZH-CN_TOPIC_0000002320066172"></a>
+### 基础功能参数<a name="ZH-CN_TOPIC_0000002320066172" id="ZH-CN_TOPIC_0000002320066172"></a>
 
 -   **[总体选项](#ZH-CN_TOPIC_0000002319906352)**  
 
@@ -961,7 +963,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
 -   **[输出选项](#ZH-CN_TOPIC_0000002354104889)**  
 
-### 总体选项<a name="ZH-CN_TOPIC_0000002319906352" id="ZH-CN_TOPIC_0000002319906352"></a>
+#### 总体选项<a name="ZH-CN_TOPIC_0000002319906352" id="ZH-CN_TOPIC_0000002319906352"></a>
 
 **--help<a name="section12231581328"></a>**
 
@@ -992,7 +994,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
     无
 
-### 输入选项<a name="ZH-CN_TOPIC_0000002353985081" id="ZH-CN_TOPIC_0000002353985081"></a>
+#### 输入选项<a name="ZH-CN_TOPIC_0000002353985081" id="ZH-CN_TOPIC_0000002353985081"></a>
 
 **--fmk=<FMK\><a name="section1072137133513"></a>**
 
@@ -1404,7 +1406,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 
     无
 
-### 输出选项<a name="ZH-CN_TOPIC_0000002354104889" id="ZH-CN_TOPIC_0000002354104889"></a>
+#### 输出选项<a name="ZH-CN_TOPIC_0000002354104889" id="ZH-CN_TOPIC_0000002354104889"></a>
 
 **--outputFile=<OUTPUTFILE\><a name="section2155824122114"></a>**
 

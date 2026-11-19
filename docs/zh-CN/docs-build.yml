@@ -1,0 +1,26 @@
+# 项目名称
+project: HiSpark.AI 文档
+# 正文右上角「查看源码」入口（依赖下方 version_selector.repo_path 拼接仓库地址）
+view_source: true
+# 生成离线包（派生离线变体二次构建后 zip 到产物根，构建耗时约翻倍）
+offline_package: true
+
+# 顶级导航，二级开始由各级目录 index.md 承载其下全部文档
+root_toctree:
+  - 概览: index
+  - 软件资料: software/index
+
+# 屏蔽的文件
+exclude_patterns:
+  - '**/*.rst'
+
+html_context:
+  # 「下载HTML」按钮
+  download:
+    href: hispark_ai-master.zip
+    tooltip: 下载HTML
+  feedback_url: https://gitcode.com/HiSpark/hispark_ai/issues
+  # 项目/版本下拉框
+  version_selector:
+    repo_path: hispark_ai
+    version: master
