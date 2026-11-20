@@ -71,6 +71,7 @@
 
 | 文档版本 | 发布日期 | 修改说明 |
 | :--- | :--- | :--- |
+| 08 | 2026-11-20 | 新增“[逐层量化控制](#layer_quant_control)”章节：黑名单/白名单逐层量化配置方法、按原始模型算子名与算子类型配置的匹配规则、逐层量化决策报告（CONFIG_UNMATCHED/FUSED_INVALID状态行与严格模式）说明。在“[基础功能参数](#ZH-CN_TOPIC_0000002320066172)”的--configFile参数表中新增skip_quant_node、quant_node、quant_op_type、skip_quant_op_type、layer_decision_report、layer_decision_strict配置项。 |
 | 07 | 2026-08-30 | 新增Onnx/TFLite算子规格：<br>新增“[ConvTranspose](#ZH-CN_TOPIC_0000002026082902)、[TransposeConv](#ZH-CN_TOPIC_0000002026082901)”。<br>新增“[BitShift](#ZH-CN_TOPIC_0000003090100001)、[Tan](#ZH-CN_TOPIC_0000003100115802)、[ReduceSumSquare](#ZH-CN_TOPIC_0000003090100002)、[RNN](#ZH-CN_TOPIC_0000002026082903)”。<br>新增“[Conv3D](#ZH-CN_TOPIC_0000003190115802)、[Conv3D](#ZH-CN_TOPIC_0000003190115702)”。<br>新增“[GatherND](#ZH-CN_TOPIC_0000003200115802)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[Scatter](#ZH-CN_TOPIC_0000003150115802)、[ScatterElements](#ZH-CN_TOPIC_0000003160115802)、[ScatterND](#ZH-CN_TOPIC_0000003170115802)、[ScatterND](#ZH-CN_TOPIC_0000003150115702)”。<br>新增“[QLinearMatMul](#ZH-CN_TOPIC_0000003130115802)、[QLinearConv](#ZH-CN_TOPIC_0000003140115802)、[Selu](#ZH-CN_TOPIC_0000003180115802)”。<br>新增“[Constant](#ZH-CN_TOPIC_0000003110115802)、[ConstantOfShape](#ZH-CN_TOPIC_0000003120115802)”。<br>新增“[Max](#ZH-CN_TOPIC_0000003060115802)、[Maximum](#ZH-CN_TOPIC_0000003060115702)、[Min](#ZH-CN_TOPIC_0000003070115802)、[Minimum](#ZH-CN_TOPIC_0000003070115702)、[Sum](#ZH-CN_TOPIC_0000003080115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115702)”。<br>新增“[OneHot](#ZH-CN_TOPIC_0000002026082105)、[OneHot](#ZH-CN_TOPIC_0000002026082104)、[Unique](#ZH-CN_TOPIC_0000002026082108)、[Unique](#ZH-CN_TOPIC_0000002026082107)、[Where](#ZH-CN_TOPIC_0000002026082102)、[ConvInteger](#ZH-CN_TOPIC_0000002026082103)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)、[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)、[Hardmax](#ZH-CN_TOPIC_0000002026082101)、[Softsign](#ZH-CN_TOPIC_0000002026082402)、[Softplus](#ZH-CN_TOPIC_0000002026082403)、[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)”。 |
 | 06 | 2026-07-30 | 新增Onnx/TFLite算子规格：<br>新增“[Erf](#ZH-CN_TOPIC_0000002026072801)、[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)、[Celu](#ZH-CN_TOPIC_0000002026072803)”。<br>新增"[Shape](#ZH-CN_TOPIC_0000003030115802)、[Shape](#ZH-CN_TOPIC_0000003030115702)"。<br>新增"[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)"。<br>新增"[TopK](#ZH-CN_TOPIC_0000003050115802)、[TopK](#ZH-CN_TOPIC_0000003050115702)"。<br>新增"[Gelu](#ZH-CN_TOPIC_0000002661401191)、[Gelu](#ZH-CN_TOPIC_0000002661401194)、[Trilu](#ZH-CN_TOPIC_0000002661401195)、[Pack](#ZH-CN_TOPIC_0000002661401192)、[Unpack](#ZH-CN_TOPIC_0000002661401193)"。<br>新增"[Fill](#ZH-CN_TOPIC_0000002800000001)、[Neg](#ZH-CN_TOPIC_0000002900000001)、[Pow](#ZH-CN_TOPIC_0000002476598365)、[Neg](#ZH-CN_TOPIC_0000002900000002)、[Pow](#ZH-CN_TOPIC_0000002476598371)"。<br>新增"[Select](#ZH-CN_TOPIC_0000002600000001)、[SelectV2](#ZH-CN_TOPIC_0000002600000002)、[ReverseV2](#ZH-CN_TOPIC_0000002600000003)、[Mod](#ZH-CN_TOPIC_0000002600000004)、[ReduceL1](#ZH-CN_TOPIC_0000002600000005)、[ReduceL2](#ZH-CN_TOPIC_0000002600000006)"。<br>新增训练特性：<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新QAS INT8量化训练配置、FP32训练配置。<br>在“[参数说明](#ZH-CN_TOPIC_0000002319906348)”中更新训练参数，新增MSE loss和Adam优化器参数。<br>新增QAS INT8和FP32训练支持规格。 |
 | 05 | 2026-07-03 | 更新“[设置环境变量](#ZH-CN_TOPIC_0000002353775693)、[限制与约束](#ZH-CN_TOPIC_0000002319976756)”。<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新[5](#设置Micro配置项)。<br>新增“[ARM平台编译部署](#ZH-CN_TOPIC_0000002590121500)”小节。<br>在“[输入选项](#ZH-CN_TOPIC_0000002353985081)”中更新[表1](#table3808173922715)。<br>更新“[算子规格参考](#ZH-CN_TOPIC_0000002354161329)”。<br>新增“[专题](#ZH-CN_TOPIC_0000002562713759)”章节。 |
@@ -1151,7 +1152,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     </td>
     <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p781118399279"><a name="p781118399279"></a><a name="p781118399279"></a>否</p>
     </td>
-    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p10811143932712"><a name="p10811143932712"></a><a name="p10811143932712"></a>公共量化参数，仅全量化时选择。</p>
+    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p10811143932712"><a name="p10811143932712"></a><a name="p10811143932712"></a>公共量化参数，仅全量化时选择；其中layer_decision_report与layer_decision_strict也可在未配置量化参数的预览转换中使用。</p>
     </td>
     <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p78117399278"><a name="p78117399278"></a><a name="p78117399278"></a>-</p>
     </td>
@@ -1178,6 +1179,72 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p10359162515326"><a name="p10359162515326"></a><a name="p10359162515326"></a>8</p>
     </td>
     <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p28121139122713"><a name="p28121139122713"></a><a name="p28121139122713"></a>-</p>
+    </td>
+    </tr>
+    <tr id="row_lq_skip_quant_node"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p_lq_skip_quant_node"><a name="p_lq_skip_quant_node"></a><a name="p_lq_skip_quant_node"></a>skip_quant_node</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p_lq_skip1"><a name="p_lq_skip1"></a><a name="p_lq_skip1"></a>否</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p_lq_skip2"><a name="p_lq_skip2"></a><a name="p_lq_skip2"></a>设置无需量化的算子名称黑名单，多个算子之间用英文逗号分割，命中的层保持fp32推理。名称优先按原始模型算子名与被融合吸收的算子名匹配，并存量兼容转换后算子名（如AVERAGE_POOL_2D-37），仅全量化时选择，详见“[逐层量化控制](#layer_quant_control)”。</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p_lq_skip3"><a name="p_lq_skip3"></a><a name="p_lq_skip3"></a>-</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p_lq_skip4"><a name="p_lq_skip4"></a><a name="p_lq_skip4"></a>-</p>
+    </td>
+    </tr>
+    <tr id="row_lq_quant_node"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p_lq_quant_node"><a name="p_lq_quant_node"></a><a name="p_lq_quant_node"></a>quant_node</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p_lq_qn1"><a name="p_lq_qn1"></a><a name="p_lq_qn1"></a>否</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p_lq_qn2"><a name="p_lq_qn2"></a><a name="p_lq_qn2"></a>设置参与量化的算子名称白名单，多个算子之间用英文逗号分割，仅命中的层参与量化。与黑名单互斥，不可同时配置，仅全量化时选择。</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p_lq_qn3"><a name="p_lq_qn3"></a><a name="p_lq_qn3"></a>-</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p_lq_qn4"><a name="p_lq_qn4"></a><a name="p_lq_qn4"></a>-</p>
+    </td>
+    </tr>
+    <tr id="row_lq_quant_op_type"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p_lq_quant_op_type"><a name="p_lq_quant_op_type"></a><a name="p_lq_quant_op_type"></a>quant_op_type</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p_lq_qot1"><a name="p_lq_qot1"></a><a name="p_lq_qot1"></a>否</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p_lq_qot2"><a name="p_lq_qot2"></a><a name="p_lq_qot2"></a>设置参与量化的算子类型白名单，多个类型之间用英文逗号分割，仅命中的层参与量化。与黑名单互斥，不可同时配置，仅全量化时选择。</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p_lq_qot3"><a name="p_lq_qot3"></a><a name="p_lq_qot3"></a>-</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p_lq_qot4"><a name="p_lq_qot4"></a><a name="p_lq_qot4"></a>-</p>
+    </td>
+    </tr>
+    <tr id="row_lq_skip_quant_op_type"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p_lq_skip_quant_op_type"><a name="p_lq_skip_quant_op_type"></a><a name="p_lq_skip_quant_op_type"></a>skip_quant_op_type</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p_lq_sot1"><a name="p_lq_sot1"></a><a name="p_lq_sot1"></a>否</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p_lq_sot2"><a name="p_lq_sot2"></a><a name="p_lq_sot2"></a>设置无需量化的算子类型黑名单，多个类型之间用英文逗号分割，命中的层保持fp32推理，仅全量化时选择。</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p_lq_sot3"><a name="p_lq_sot3"></a><a name="p_lq_sot3"></a>-</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p_lq_sot4"><a name="p_lq_sot4"></a><a name="p_lq_sot4"></a>-</p>
+    </td>
+    </tr>
+    <tr id="row_lq_layer_decision_report"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p_lq_layer_decision_report"><a name="p_lq_layer_decision_report"></a><a name="p_lq_layer_decision_report"></a>layer_decision_report</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p_lq_rpt1"><a name="p_lq_rpt1"></a><a name="p_lq_rpt1"></a>否</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p_lq_rpt2"><a name="p_lq_rpt2"></a><a name="p_lq_rpt2"></a>设置逐层量化决策报告的输出文件路径。全量化转换完成后生成完整CSV报告；不配置量化参数时执行预览转换生成预览报告，详见“[逐层量化控制](#layer_quant_control)”。</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p_lq_rpt3"><a name="p_lq_rpt3"></a><a name="p_lq_rpt3"></a>-</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p_lq_rpt4"><a name="p_lq_rpt4"></a><a name="p_lq_rpt4"></a>-</p>
+    </td>
+    </tr>
+    <tr id="row_lq_layer_decision_strict"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p_lq_layer_decision_strict"><a name="p_lq_layer_decision_strict"></a><a name="p_lq_layer_decision_strict"></a>layer_decision_strict</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p_lq_str1"><a name="p_lq_str1"></a><a name="p_lq_str1"></a>否</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p_lq_str2"><a name="p_lq_str2"></a><a name="p_lq_str2"></a>设置为true时，存在状态为CONFIG_UNMATCHED的配置条目（名称或类型在模型中不存在）将使转换失败，适用于配置由脚本批量生成的场景。</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p_lq_str3"><a name="p_lq_str3"></a><a name="p_lq_str3"></a>true/false</p>
+    </td>
+    <td class="cellrowborder" valign="top" width="5.609999999999999%" headers="mcps1.2.6.1.5 "><p id="p_lq_str4"><a name="p_lq_str4"></a><a name="p_lq_str4"></a>false</p>
     </td>
     </tr>
     <tr id="row481293982716"><td class="cellrowborder" valign="top" width="19.55%" headers="mcps1.2.6.1.1 "><p id="p0812739152715"><a name="p0812739152715"></a><a name="p0812739152715"></a>[data_preprocess_param]</p>
@@ -1444,3 +1511,65 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 -   依赖约束
 
     无
+
+### 逐层量化控制<a name="layer_quant_control"></a>
+
+全量化默认对可支持的算子全部量化。当部分层对精度敏感，或希望个别层在Micro工程中保持fp32推理时，可通过逐层量化控制指定“哪些层参与量化、哪些层保持浮点”，并在转换完成后输出一份逐层量化决策报告，使每条配置的生效情况显式可见，避免配置拼写错误导致的静默失效。
+
+#### 配置方法<a name="layer_quant_config_method"></a>
+
+逐层量化控制通过配置文件中`[common_quant_param]`的名单参数配置，在原有全量化配置上追加即可：
+
+```
+[micro_param]
+enable_micro=true
+target=RISCV
+
+[common_quant_param]
+# 当前仅支持全量化方式
+quant_type=FULL_QUANT
+# 全量化仅支持8bit量化
+bit_num=8
+# 黑名单示例：命中的层保持fp32（白名单与黑名单互斥，不可同时配置）
+skip_quant_node=Conv_3,BN-8
+skip_quant_op_type=Gather,Softmax
+# 决策报告输出路径（可选）：转换完成后生成逐层量化决策CSV
+layer_decision_report=./layer_decision.csv
+
+[data_preprocess_param]
+# 校准数据配置与普通全量化一致
+calibrate_path=input:${HOME}/module/dataset/quant_data
+calibrate_size=1
+input_type=BIN
+```
+
+-   黑名单`skip_quant_node`/`skip_quant_op_type`：命中的层保持fp32，其余层照常量化；
+-   白名单`quant_node`/`quant_op_type`：仅命中的层参与量化，其余层保持fp32。白名单命中是候选条件，命中层仍需通过量化器的算子支持集检查；
+-   同一层可同时命中名称与类型条目，报告中会列出全部命中项；
+-   配置条目数量上限：名称类200条、类型类100条；
+-   名单类参数仅在全量化（FULL_QUANT）场景下生效；白名单与黑名单不可同时配置，同时配置时转换直接报错退出。
+
+#### 按原始模型配置算子名<a name="layer_quant_origin_name"></a>
+
+转换过程中会进行算子融合（如Conv+BN+ReLU融合为一个Conv2DFusion算子），融合后原始算子名将消失。逐层量化控制按**原始模型**（ONNX/TFLite）中的算子名与算子类型匹配，即用户在Netron等可视化工具中看到的名称与类型：
+
+-   ONNX模型：直接使用Netron中显示的节点名与类型，如`Conv_3`、`Conv`；
+-   TFLite模型：TFLite算子无名，原始名为“类型_下标”形式（如`CONV_2D_12`，下标对应Netron中该算子的identifier属性）；
+-   被融合吸收的算子同样生效：例如配置BN算子的名称，融合后的整个卷积层将保持fp32；
+-   新增名单键（`quant_node`/`quant_op_type`/`skip_quant_op_type`）不使用融合后生成的名称与类型（如`Conv2DFusion-3`、`Conv2DFusion`）作为配置写法；
+-   名称与类型均严格区分大小写。
+
+> **存量兼容**：`skip_quant_node`为存量键，名称域为存量行为的超集——既有配置使用转换后算子名（如`AVERAGE_POOL_2D-37`）的无需任何修改即可继续命中；新增键`quant_node`、`quant_op_type`、`skip_quant_op_type`仅按原始模型的算子名与算子类型匹配，融合后名称不作为配置写法。
+
+不确定名称取值时，可仅配置`layer_decision_report`（无需量化与校准数据）执行一次预览转换，报告中将列出每个层的可配置名称与类型。
+
+#### 量化决策报告<a name="layer_quant_report"></a>
+
+配置`layer_decision_report`后，转换完成时在指定路径生成一份CSV报告，转换后的每个层占一行，主要内容包括：融合前算子名/类型（配置取值来源）、量化决策、原因、命中的配置条目、Micro码生成可用性以及量化参数摘要。
+
+配置文件中未命中任何层的条目会在报告末尾以状态行标明，并输出告警日志：
+
+-   `CONFIG_UNMATCHED`：该名称或类型在模型中不存在，通常为拼写或大小写错误，同时给出编辑距离最近的候选取值；
+-   `FUSED_INVALID`：该名称对应的算子已被当前版本尚未覆盖的融合路径吸收。
+
+`layer_decision_strict`设置为`true`时，存在`CONFIG_UNMATCHED`条目将直接使转换失败，适用于配置由脚本批量生成的场景。
