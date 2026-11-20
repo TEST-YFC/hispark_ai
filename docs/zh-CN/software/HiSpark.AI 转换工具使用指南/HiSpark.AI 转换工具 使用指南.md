@@ -1185,7 +1185,7 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
     </td>
     <td class="cellrowborder" valign="top" width="7.41%" headers="mcps1.2.6.1.2 "><p id="p_lq_skip1"><a name="p_lq_skip1"></a><a name="p_lq_skip1"></a>否</p>
     </td>
-    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p_lq_skip2"><a name="p_lq_skip2"></a><a name="p_lq_skip2"></a>设置无需量化的算子名称黑名单，多个算子之间用英文逗号分割，命中的层保持fp32推理。名称支持转换后算子名、原始模型算子名以及被融合吸收的算子名，仅全量化时选择，详见“[逐层量化控制](#layer_quant_control)”。</p>
+    <td class="cellrowborder" valign="top" width="46.1%" headers="mcps1.2.6.1.3 "><p id="p_lq_skip2"><a name="p_lq_skip2"></a><a name="p_lq_skip2"></a>设置无需量化的算子名称黑名单，多个算子之间用英文逗号分割，命中的层保持fp32推理。名称优先按原始模型算子名与被融合吸收的算子名匹配，并存量兼容转换后算子名（如AVERAGE_POOL_2D-37），仅全量化时选择，详见“[逐层量化控制](#layer_quant_control)”。</p>
     </td>
     <td class="cellrowborder" valign="top" width="21.33%" headers="mcps1.2.6.1.4 "><p id="p_lq_skip3"><a name="p_lq_skip3"></a><a name="p_lq_skip3"></a>-</p>
     </td>
@@ -1556,7 +1556,7 @@ input_type=BIN
 -   ONNX模型：直接使用Netron中显示的节点名与类型，如`Conv_3`、`Conv`；
 -   TFLite模型：TFLite算子无名，原始名为“类型_下标”形式（如`CONV_2D_12`，下标对应Netron中该算子的identifier属性）；
 -   被融合吸收的算子同样生效：例如配置BN算子的名称，融合后的整个卷积层将保持fp32；
--   融合后生成的名称与类型（如`Conv2DFusion-3`、`Conv2DFusion`）不作为配置写法；
+-   新增名单键（`quant_node`/`quant_op_type`/`skip_quant_op_type`）不使用融合后生成的名称与类型（如`Conv2DFusion-3`、`Conv2DFusion`）作为配置写法；
 -   名称与类型均严格区分大小写。
 
 > **存量兼容**：`skip_quant_node`为存量键，名称域为存量行为的超集——既有配置使用转换后算子名（如`AVERAGE_POOL_2D-37`）的无需任何修改即可继续命中；新增键`quant_node`、`quant_op_type`、`skip_quant_op_type`仅按原始模型的算子名与算子类型匹配，融合后名称不作为配置写法。
