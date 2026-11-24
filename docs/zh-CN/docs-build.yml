@@ -19,7 +19,7 @@ html_context:
   download:
     href: hispark_ai-master.zip
     tooltip: 下载HTML
-  feedback_url: https://gitcode.com/HiSpark/hispark_ai/issues
+  feedback_url: https://atomgit.com/HiSpark/hispark_ai/issues
   # 项目/版本下拉框
   version_selector:
     repo_path: hispark_ai
