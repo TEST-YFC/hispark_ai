@@ -80,7 +80,7 @@ export LD_LIBRARY_PATH={PKG}/mindspore-enterprise-lite-{version}-linux-x64/tools
 ```
 接着开始进行模型的编译：
 ```
-./{PKG}/mindspore-enterprise-lite-{version}-linux-x64/tools/converter/converter/converter_lite --fmk=ONNX --modelFile={MODEL_PATH}/xxx.onnx --outputFile={OUTPUT_PATH} --configFile={MODEL_PATH}/micro_quant.cfg --encryption=false --inputDataFormat=NCHW --outputDataFormat=NCHW --inputDataType=FLOAT --outputDataType=FLOAT
+./{PKG}/mindspore-enterprise-lite-{version}-linux-x64/tools/converter/converter/converter_lite --fmk=ONNX --modelFile={MODEL_PATH}/xxx.onnx --outputFile={OUTPUT_PATH} --configFile={MODEL_PATH}/micro_quant.cfg --inputDataFormat=NCHW --outputDataFormat=NCHW --inputDataType=FLOAT --outputDataType=FLOAT
 ```
 以Onnx为例，{MODEL_PATH}模型用例路径，{PKG}表示整包路径，{OUTPUT_PATH}表示自动生成项目的输出路径。
 

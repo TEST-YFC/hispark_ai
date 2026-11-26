@@ -55,7 +55,6 @@ converter_lite \
     --outputFile="$OUTPUT_DIR" \
     --configFile="$CONFIG_FILE" \
     --inputDataFormat=NCHW \
-    --encryption=false \
     --outputDataFormat=NCHW > "$CONV_LOG" 2>&1
 CONV_RC=$?
 set -e
