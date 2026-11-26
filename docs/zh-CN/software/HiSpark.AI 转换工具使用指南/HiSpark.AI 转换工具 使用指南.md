@@ -4,7 +4,7 @@
 
 **概述<a name="section4537382116410"></a>**
 
-本文档介绍如何在HiSpark系列MCU上，基于MindSpore Lite Enterprise Micro v106版本，实现第三方开源框架（如TFLite、ONNX等）网络模型的轻量化部署与推理任务。Converter\_lite是MindSpore Lite Enterprise Micro的转换工具，基于一系列内存/算子优化技术，生成适配HiSpark MCU上可执行的Micro模块代码。基于Converter\_lite，在服务器端能够将模型转换为可在x86 / RISCV/ARM平台（x86部署可以为板端调试提供精度标杆）上部署的Micro工程代码，从而脱离在线解析模型和图编译，具有运行时内存小、代码轻量化等特点。
+本文档介绍如何在HiSpark系列MCU上，基于MindSpore Lite Enterprise Micro v107版本，实现第三方开源框架（如TFLite、ONNX等）网络模型的轻量化部署与推理任务。Converter\_lite是MindSpore Lite Enterprise Micro的转换工具，基于一系列内存/算子优化技术，生成适配HiSpark MCU上可执行的Micro模块代码。基于Converter\_lite，在服务器端能够将模型转换为可在x86 / RISCV/ARM平台（x86部署可以为板端调试提供精度标杆）上部署的Micro工程代码，从而脱离在线解析模型和图编译，具有运行时内存小、代码轻量化等特点。
 
 通过本文档，您将能够实现以下目标：
 
@@ -20,7 +20,7 @@
 
 **读者对象<a name="section4378592816410"></a>**
 
-本文档适用于使用MindSpore Lite Enterprise Micro v106工具进行AI模型端侧部署的人员，本文档适用于以下工程师：
+本文档适用于使用MindSpore Lite Enterprise Micro v107工具进行AI模型端侧部署的人员，本文档适用于以下工程师：
 
 -   技术支持工程师
 -   软件工程师
@@ -71,13 +71,9 @@
 
 | 文档版本 | 发布日期 | 修改说明 |
 | :--- | :--- | :--- |
-| 08 | 2026-11-20 | 新增“[逐层量化控制](#layer_quant_control)”章节：黑名单/白名单逐层量化配置方法、按原始模型算子名与算子类型配置的匹配规则、逐层量化决策报告（CONFIG_UNMATCHED/FUSED_INVALID状态行与严格模式）说明。在“[基础功能参数](#ZH-CN_TOPIC_0000002320066172)”的--configFile参数表中新增skip_quant_node、quant_node、quant_op_type、skip_quant_op_type、layer_decision_report、layer_decision_strict配置项。 |
-| 07 | 2026-08-30 | 新增Onnx/TFLite算子规格：<br>新增“[ConvTranspose](#ZH-CN_TOPIC_0000002026082902)、[TransposeConv](#ZH-CN_TOPIC_0000002026082901)”。<br>新增“[BitShift](#ZH-CN_TOPIC_0000003090100001)、[Tan](#ZH-CN_TOPIC_0000003100115802)、[ReduceSumSquare](#ZH-CN_TOPIC_0000003090100002)、[RNN](#ZH-CN_TOPIC_0000002026082903)”。<br>新增“[Conv3D](#ZH-CN_TOPIC_0000003190115802)、[Conv3D](#ZH-CN_TOPIC_0000003190115702)”。<br>新增“[GatherND](#ZH-CN_TOPIC_0000003200115802)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[Scatter](#ZH-CN_TOPIC_0000003150115802)、[ScatterElements](#ZH-CN_TOPIC_0000003160115802)、[ScatterND](#ZH-CN_TOPIC_0000003170115802)、[ScatterND](#ZH-CN_TOPIC_0000003150115702)”。<br>新增“[QLinearMatMul](#ZH-CN_TOPIC_0000003130115802)、[QLinearConv](#ZH-CN_TOPIC_0000003140115802)、[Selu](#ZH-CN_TOPIC_0000003180115802)”。<br>新增“[Constant](#ZH-CN_TOPIC_0000003110115802)、[ConstantOfShape](#ZH-CN_TOPIC_0000003120115802)”。<br>新增“[Max](#ZH-CN_TOPIC_0000003060115802)、[Maximum](#ZH-CN_TOPIC_0000003060115702)、[Min](#ZH-CN_TOPIC_0000003070115802)、[Minimum](#ZH-CN_TOPIC_0000003070115702)、[Sum](#ZH-CN_TOPIC_0000003080115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115802)、[ReduceProd](#ZH-CN_TOPIC_0000003090115702)”。<br>新增“[OneHot](#ZH-CN_TOPIC_0000002026082105)、[OneHot](#ZH-CN_TOPIC_0000002026082104)、[Unique](#ZH-CN_TOPIC_0000002026082108)、[Unique](#ZH-CN_TOPIC_0000002026082107)、[Where](#ZH-CN_TOPIC_0000002026082102)、[ConvInteger](#ZH-CN_TOPIC_0000002026082103)、[GatherNd](#ZH-CN_TOPIC_0000002026082401)”。<br>新增“[LogSoftmax](#ZH-CN_TOPIC_0000002026082405)、[LogSoftmax](#ZH-CN_TOPIC_0000002026082404)、[Hardmax](#ZH-CN_TOPIC_0000002026082101)、[Softsign](#ZH-CN_TOPIC_0000002026082402)、[Softplus](#ZH-CN_TOPIC_0000002026082403)、[ThresholdedRelu](#ZH-CN_TOPIC_0000002026082106)”。 |
-| 06 | 2026-07-30 | 新增Onnx/TFLite算子规格：<br>新增“[Erf](#ZH-CN_TOPIC_0000002026072801)、[HardSigmoid](#ZH-CN_TOPIC_0000002026072802)、[Celu](#ZH-CN_TOPIC_0000002026072803)”。<br>新增"[Shape](#ZH-CN_TOPIC_0000003030115802)、[Shape](#ZH-CN_TOPIC_0000003030115702)"。<br>新增"[MatMulInteger](#ZH-CN_TOPIC_0000003040115702)"。<br>新增"[TopK](#ZH-CN_TOPIC_0000003050115802)、[TopK](#ZH-CN_TOPIC_0000003050115702)"。<br>新增"[Gelu](#ZH-CN_TOPIC_0000002661401191)、[Gelu](#ZH-CN_TOPIC_0000002661401194)、[Trilu](#ZH-CN_TOPIC_0000002661401195)、[Pack](#ZH-CN_TOPIC_0000002661401192)、[Unpack](#ZH-CN_TOPIC_0000002661401193)"。<br>新增"[Fill](#ZH-CN_TOPIC_0000002800000001)、[Neg](#ZH-CN_TOPIC_0000002900000001)、[Pow](#ZH-CN_TOPIC_0000002476598365)、[Neg](#ZH-CN_TOPIC_0000002900000002)、[Pow](#ZH-CN_TOPIC_0000002476598371)"。<br>新增"[Select](#ZH-CN_TOPIC_0000002600000001)、[SelectV2](#ZH-CN_TOPIC_0000002600000002)、[ReverseV2](#ZH-CN_TOPIC_0000002600000003)、[Mod](#ZH-CN_TOPIC_0000002600000004)、[ReduceL1](#ZH-CN_TOPIC_0000002600000005)、[ReduceL2](#ZH-CN_TOPIC_0000002600000006)"。<br>新增训练特性：<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新QAS INT8量化训练配置、FP32训练配置。<br>在“[参数说明](#ZH-CN_TOPIC_0000002319906348)”中更新训练参数，新增MSE loss和Adam优化器参数。<br>新增QAS INT8和FP32训练支持规格。 |
-| 05 | 2026-07-03 | 更新“[设置环境变量](#ZH-CN_TOPIC_0000002353775693)、[限制与约束](#ZH-CN_TOPIC_0000002319976756)”。<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新[5](#设置Micro配置项)。<br>新增“[ARM平台编译部署](#ZH-CN_TOPIC_0000002590121500)”小节。<br>在“[输入选项](#ZH-CN_TOPIC_0000002353985081)”中更新[表1](#table3808173922715)。<br>更新“[算子规格参考](#ZH-CN_TOPIC_0000002354161329)”。<br>新增“[专题](#ZH-CN_TOPIC_0000002562713759)”章节。 |
-| 04 | 2026-06-01 | 新增Onnx/TFLite算子规格：<br>更新“[PRelu](#ZH-CN_TOPIC_0000002568693026)、[PRelu](#ZH-CN_TOPIC_0000002568693026)、[CumSum](#ZH-CN_TOPIC_0000002599292569)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187919)、[CumSum](#ZH-CN_TOPIC_0000002568533372)、[ReverseSequence](#ZH-CN_TOPIC_0000002599187805)、[Einsum](#ZH-CN_TOPIC_0000002599307751)”。<br>更新“[Relu6](#ZH-CN_TOPIC_0000002574010852)、[LeakyRelu](#ZH-CN_TOPIC_0000002604689955)、[HardSwish](#ZH-CN_TOPIC_0000002574309498)、[LeakyRelu](#ZH-CN_TOPIC_0000002574170496)、[HardSwish](#ZH-CN_TOPIC_0000002574469146)、[Swish](#ZH-CN_TOPIC_0000002605108551)”。<br>更新“[LogicalAnd](#ZH-CN_TOPIC_0000002574976868)、[Equal](#ZH-CN_TOPIC_0000002605336325)、[GreaterEqual](#ZH-CN_TOPIC_0000002574817236)、[Greater](#ZH-CN_TOPIC_0000002605456261)、[LessEqual](#ZH-CN_TOPIC_0000002574976872)、[Less](#ZH-CN_TOPIC_0000002605336331)、[NotEqual](#ZH-CN_TOPIC_0000002574817240)、[LogicalNot](#ZH-CN_TOPIC_0000002605456267)、[LogicalOr](#ZH-CN_TOPIC_0000002574976878)、[And](#ZH-CN_TOPIC_0000002574578826) 、[GreaterOrEqual](#ZH-CN_TOPIC_0000002605377849)、[Greater](#ZH-CN_TOPIC_0000002574738452)、[LessOrEqual](#ZH-CN_TOPIC_0000002574578828)、[Less](#ZH-CN_TOPIC_0000002605257909)、[Not](#ZH-CN_TOPIC_0000002605377851)、[Or](#ZH-CN_TOPIC_0000002574738488)、[Xor](#ZH-CN_TOPIC_0000002574578874)”。<br>更新“[Dropout](#ZH-CN_TOPIC_0000002659215655) [Identity](#ZH-CN_TOPIC_0000002628696446) [GatherElements](#ZH-CN_TOPIC_0000002659095703) [ReduceLogSum](#ZH-CN_TOPIC_0000002628856352) [ReduceLogSumExp](#ZH-CN_TOPIC_0000002659215657) [Expand](#ZH-CN_TOPIC_0000002628696448) [Elu](#ZH-CN_TOPIC_0000002660394575) [Elu](#ZH-CN_TOPIC_0000002660274969)”。<br>更新“[DepthToSpace](#ZH-CN_TOPIC_0000002629955352) [SpaceToDepth](#ZH-CN_TOPIC_0000002660274511) [GRU](#ZH-CN_TOPIC_0000002631448488) [DepthToSpace](#ZH-CN_TOPIC_0000002660395017) [SpaceToDepth](#ZH-CN_TOPIC_0000002630115702)”。 |
-| 03 | 2026-03-24 | 新增Onnx/TFLite算子规格：<br>更新“[ArgMax](#ZH-CN_TOPIC_0000002510106182)、[ArgMin](#ZH-CN_TOPIC_0000002541586163)、[ArgMax](#ZH-CN_TOPIC_0000002509946184)、[ArgMin](#ZH-CN_TOPIC_0000002541666173)”。<br>更新“[Div](#ZH-CN_TOPIC_0000002516261490)、[Clip](#ZH-CN_TOPIC_0000002552815891)、[Cast](#ZH-CN_TOPIC_0000002526464964)、[Div](#ZH-CN_TOPIC_0000002516421386)、[Cast](#ZH-CN_TOPIC_0000002557544885)”。<br>更新“[ReduceMax](#ZH-CN_TOPIC_0000002557401349)、[ReduceMin](#ZH-CN_TOPIC_0000002526441430)、[ReduceSum](#ZH-CN_TOPIC_0000002557481311)、[ReduceMean](#ZH-CN_TOPIC_0000002526281478)、[ReduceMax](#ZH-CN_TOPIC_0000002526421590)、[Sum](#ZH-CN_TOPIC_0000002557400507)、[Mean](#ZH-CN_TOPIC_0000002557400907)”。<br>更新“[Quantize](#ZH-CN_TOPIC_0000002557589767)、[Dequantize](#ZH-CN_TOPIC_0000002526509914)”。<br>更新“[Conv优化](#ZH-CN_TOPIC_0000002531633886)”。 |
-| 02 | 2025-12-18 | 新增Onnx/TFLite算子规格：<br>更新“[Squeeze](#ZH-CN_TOPIC_0000002482800962)、[Unsqueeze](#ZH-CN_TOPIC_0000002482804754)、[Flatten](#ZH-CN_TOPIC_0000002515124725)、[Squeeze](#ZH-CN_TOPIC_0000002515130287)、[ExpandDims](#ZH-CN_TOPIC_0000002482930280)、[Slice](#ZH-CN_TOPIC_0000002528453623) [Slice](#ZH-CN_TOPIC_0000002528693597)”。<br>更新“[Abs](#ZH-CN_TOPIC_0000002485239888)、[Ceil](#ZH-CN_TOPIC_0000002517399797)、[Cos](#ZH-CN_TOPIC_0000002517479775)、[Exp](#ZH-CN_TOPIC_0000002485399854)、[Floor](#ZH-CN_TOPIC_0000002485239890)、[Log](#ZH-CN_TOPIC_0000002517399799)、[Round](#ZH-CN_TOPIC_0000002517479777)、[Sin](#ZH-CN_TOPIC_0000002485399856)、[Sqrt](#ZH-CN_TOPIC_0000002485239892)、[Abs](#ZH-CN_TOPIC_0000002485399132)、[Ceil](#ZH-CN_TOPIC_0000002517479769)、[Cos](#ZH-CN_TOPIC_0000002485399848)、[Exp](#ZH-CN_TOPIC_0000002485239884)、[Floor](#ZH-CN_TOPIC_0000002517399793)、[Log](#ZH-CN_TOPIC_0000002517479771)、[Round](#ZH-CN_TOPIC_0000002485399850)、[Rsqrt](#ZH-CN_TOPIC_0000002485239886)、[Sin](#ZH-CN_TOPIC_0000002517399795)、[Sqrt](#ZH-CN_TOPIC_0000002517479773)、[Square](#ZH-CN_TOPIC_0000002485399852)”。<br>更新“[BatchNormalization](#ZH-CN_TOPIC_0000002487717084)、[LayerNormalization](#ZH-CN_TOPIC_0000002519876961)、[LpNormalization](#ZH-CN_TOPIC_0000002519796953)、[L2Normalization](#ZH-CN_TOPIC_0000002487557124)”<br>更新“[GlobalMaxPool](#ZH-CN_TOPIC_0000002497018654)、[GlobalAveragePool](#ZH-CN_TOPIC_0000002496698634)”。<br>更新“[DepthwiseConv2D](#ZH-CN_TOPIC_0000002529736261)、[Transpose](#ZH-CN_TOPIC_0000002498475622)、[Transpose](#ZH-CN_TOPIC_0000002498635600)”。 |
+| 04 | 2026-11-20 | 新增“[逐层量化控制](#layer_quant_control)”章节：黑名单/白名单逐层量化配置方法、按原始模型算子名与算子类型配置的匹配规则、逐层量化决策报告（CONFIG_UNMATCHED/FUSED_INVALID状态行与严格模式）说明。在“[基础功能参数](#ZH-CN_TOPIC_0000002320066172)”的--configFile参数表中新增skip_quant_node、quant_node、quant_op_type、skip_quant_op_type、layer_decision_report、layer_decision_strict配置项。 |
+| 03 | 2026-07-30 | 新增训练特性：<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新QAS INT8量化训练配置、FP32训练配置。<br>在“[参数说明](#ZH-CN_TOPIC_0000002319906348)”中更新训练参数，新增MSE loss和Adam优化器参数。 |
+| 02 | 2026-07-03 | 更新“[设置环境变量](#ZH-CN_TOPIC_0000002353775693)、[限制与约束](#ZH-CN_TOPIC_0000002319976756)”。<br>在“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”中更新[5](#设置Micro配置项)。<br>新增“[ARM平台编译部署](#ZH-CN_TOPIC_0000002590121500)”小节。<br>在“[输入选项](#ZH-CN_TOPIC_0000002353985081)”中更新[表1](#table3808173922715)。<br>新增“[专题](#ZH-CN_TOPIC_0000002562713759)”章节。 |
 | 01 | 2025-10-30 | 第一次正式版本发布。 |
 
 ## Converter\_lite工具使用环境搭建<a name="ZH-CN_TOPIC_0000002353769641" id="ZH-CN_TOPIC_0000002353769641"></a>
@@ -181,7 +177,7 @@ export HISPARK_ARM_TOOLCHAIN_PATH=${arm_compiler_path}/gcc-arm-v01c01-linux-musl
 
 ## 快速入门<a name="ZH-CN_TOPIC_0000002319973524" id="ZH-CN_TOPIC_0000002319973524"></a>
 
-本章节以TFLite与ONNX框架的MNIST模型转换为例，演示如何快速转换生成Micro工程推理代码。
+本章节以TFLite与ONNX框架的MNIST模型转换为例，演示如何快速转换生成Micro工程推理代码。转换工具算子支持情况，请参见[《HiSpark.AI CPU算子规格清单》](<../HiSpark.AI CPU算子规格清单/HiSpark.AI CPU算子规格清单.md>)。
 
 -   **[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)**  
 
@@ -559,7 +555,7 @@ converter\_lite工具功能架构设计如[图1](#fig19815386014)所示。
 1.  使用converter\_lite工具将开源框架模型转换为Micro工程，请参见“[快速入门](#ZH-CN_TOPIC_0000002319973524)”章节
 
     >![](public_sys-resources/icon-notice.gif) **须知：** 
-    >-   在使用converter\_lite转换命令时，--fmk选项必须与AI模型的开源框架对应，否则将导致转换失败，且需要配置--encryption=false参数。
+    >-   在使用converter\_lite转换命令时，--fmk选项必须与AI模型的开源框架对应，否则将导致转换失败。
     >-   micro.cfg的target必须选择x86，且需要按照“[开源框架的TFLite/ONNX模型转换为Micro工程](#ZH-CN_TOPIC_0000002353945877)”章节中的[5](#设置Micro配置项)场景一进行配置。
 
 1.  切换到Micro工程目录。
@@ -786,17 +782,6 @@ converter\_lite参数概览如[表1](#table54678511574)所示，详细说明请�
 <td class="cellrowborder" valign="top" width="20.73%" headers="mcps1.2.6.1.4 "><p id="p14470115119718"><a name="p14470115119718"></a><a name="p14470115119718"></a>-</p>
 </td>
 <td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p15470951875"><a name="p15470951875"></a><a name="p15470951875"></a>-</p>
-</td>
-</tr>
-<tr id="row44706511273"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p94709511173"><a name="p94709511173"></a><a name="p94709511173"></a>--encryption<ENCRYPTION></p>
-</td>
-<td class="cellrowborder" valign="top" width="9.35%" headers="mcps1.2.6.1.2 "><p id="p1470185115717"><a name="p1470185115717"></a><a name="p1470185115717"></a>是</p>
-</td>
-<td class="cellrowborder" valign="top" width="26.939999999999998%" headers="mcps1.2.6.1.3 "><p id="p44707511475"><a name="p44707511475"></a><a name="p44707511475"></a>不支持设置，取值范围暂不支持true，使用时必须配置为false。</p>
-</td>
-<td class="cellrowborder" valign="top" width="20.73%" headers="mcps1.2.6.1.4 "><p id="p0470105110715"><a name="p0470105110715"></a><a name="p0470105110715"></a>false</p>
-</td>
-<td class="cellrowborder" valign="top" width="12.33%" headers="mcps1.2.6.1.5 "><p id="p583795215246"><a name="p583795215246"></a><a name="p583795215246"></a>-</p>
 </td>
 </tr>
 <tr id="row125531536196"><td class="cellrowborder" valign="top" width="30.65%" headers="mcps1.2.6.1.1 "><p id="p1655313151916"><a name="p1655313151916"></a><a name="p1655313151916"></a>--inputDataFormat</p>
