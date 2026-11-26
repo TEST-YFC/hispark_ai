@@ -4,11 +4,11 @@
 
 **概述<a name="section4000115901" id="section4000115901"></a>**
 
-本文档介绍HiSpark系列MCU上，基于MindSpore Lite Enterprise Micro v106版本所支持的算子规格，按TFLite、ONNX两个框架分别列出各算子的功能描述、参数说明（含数据类型、配置范围及规格约束）以及训练支持规格，便于用户在模型转换和训练前快速查询算子的支持情况。
+本文档介绍HiSpark系列MCU上，基于MindSpore Lite Enterprise Micro v107版本所支持的算子规格，按TFLite、ONNX两个框架分别列出各算子的功能描述、参数说明（含数据类型、配置范围及规格约束）以及训练支持规格，便于用户在模型转换和训练前快速查询算子的支持情况。
 
 **读者对象<a name="section4000115902" id="section4000115902"></a>**
 
-本文档适用于使用MindSpore Lite Enterprise Micro v106工具进行AI模型端侧部署的人员，本文档适用于以下工程师：
+本文档适用于使用MindSpore Lite Enterprise Micro v107工具进行AI模型端侧部署的人员，本文档适用于以下工程师：
 
 -   技术支持工程师
 -   软件工程师

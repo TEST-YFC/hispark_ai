@@ -4,7 +4,7 @@
 
 **概述<a name="section4537382116410"></a>**
 
-本文档介绍如何在HiSpark系列MCU上，基于MindSpore Lite Enterprise Micro v106版本，实现第三方开源框架（如TFLite、ONNX等）网络模型的轻量化部署与推理任务。Converter\_lite是MindSpore Lite Enterprise Micro的转换工具，基于一系列内存/算子优化技术，生成适配HiSpark MCU上可执行的Micro模块代码。基于Converter\_lite，在服务器端能够将模型转换为可在x86 / RISCV/ARM平台（x86部署可以为板端调试提供精度标杆）上部署的Micro工程代码，从而脱离在线解析模型和图编译，具有运行时内存小、代码轻量化等特点。
+本文档介绍如何在HiSpark系列MCU上，基于MindSpore Lite Enterprise Micro v107版本，实现第三方开源框架（如TFLite、ONNX等）网络模型的轻量化部署与推理任务。Converter\_lite是MindSpore Lite Enterprise Micro的转换工具，基于一系列内存/算子优化技术，生成适配HiSpark MCU上可执行的Micro模块代码。基于Converter\_lite，在服务器端能够将模型转换为可在x86 / RISCV/ARM平台（x86部署可以为板端调试提供精度标杆）上部署的Micro工程代码，从而脱离在线解析模型和图编译，具有运行时内存小、代码轻量化等特点。
 
 通过本文档，您将能够实现以下目标：
 
@@ -20,7 +20,7 @@
 
 **读者对象<a name="section4378592816410"></a>**
 
-本文档适用于使用MindSpore Lite Enterprise Micro v106工具进行AI模型端侧部署的人员，本文档适用于以下工程师：
+本文档适用于使用MindSpore Lite Enterprise Micro v107工具进行AI模型端侧部署的人员，本文档适用于以下工程师：
 
 -   技术支持工程师
 -   软件工程师
