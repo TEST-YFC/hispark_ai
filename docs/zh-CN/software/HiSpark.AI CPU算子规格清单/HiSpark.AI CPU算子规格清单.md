@@ -8174,7 +8174,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 **参数说明<a name="section15195134816462"></a>**
 
 >![](public_sys-resources/icon-note.gif) **说明：** 
->仅支持float类型，暂不支持int8类型。
+>以下张量形状按ONNX LSTM的`layout=0`定义。`seq_length`表示序列长度，`batch_size`表示一个批次中的序列数量，`input_size`表示每个时间步的输入特征数，`hidden_size`表示隐藏状态特征数，`num_directions`表示方向数。单向时`num_directions=1`，双向时`num_directions=2`。
 
 **表 1**  LSTM参数概览
 
@@ -8197,9 +8197,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p17480935121"><a name="p17480935121"></a><a name="p17480935121"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p74809310127"><a name="p74809310127"></a><a name="p74809310127"></a>输入时序数据，维度为3D，格式为NCW。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p74809310127"><a name="p74809310127"></a><a name="p74809310127"></a>输入序列张量。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p64168815415"><a name="p64168815415"></a><a name="p64168815415"></a>规格约束：作为在线变量</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p64168815415"><a name="p64168815415"></a><a name="p64168815415"></a>形状为[seq_length, batch_size, input_size]；seq_length、batch_size和input_size均大于0；仅支持静态Shape和layout=0；规格约束：作为在线变量</p>
 </td>
 </tr>
 <tr id="row15423221105011"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p173274161212"><a name="p173274161212"></a><a name="p173274161212"></a>W</p>
@@ -8208,9 +8208,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p128033051319"><a name="p128033051319"></a><a name="p128033051319"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1932818111219"><a name="p1932818111219"></a><a name="p1932818111219"></a>门的权重张量，维度为3D，格式为NCW。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1932818111219"><a name="p1932818111219"></a><a name="p1932818111219"></a>输入权重张量。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p13647141201617"><a name="p13647141201617"></a><a name="p13647141201617"></a>规格约束：离线常量</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p13647141201617"><a name="p13647141201617"></a><a name="p13647141201617"></a>形状为[num_directions, 4×hidden_size, input_size]；当前仅支持num_directions=1；门维按I/O/F/C顺序排列，其中I表示输入门，O表示输出门，F表示遗忘门，C表示细胞候选门；规格约束：离线常量</p>
 </td>
 </tr>
 <tr id="row1742542125016"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p1512710595112"><a name="p1512710595112"></a><a name="p1512710595112"></a>R</p>
@@ -8219,9 +8219,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p7282153014134"><a name="p7282153014134"></a><a name="p7282153014134"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p161271459131112"><a name="p161271459131112"></a><a name="p161271459131112"></a>循环权重张量，维度为3D，格式为NCW。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p161271459131112"><a name="p161271459131112"></a><a name="p161271459131112"></a>循环权重张量。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p145531546141511"><a name="p145531546141511"></a><a name="p145531546141511"></a>规格约束：离线常量</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p145531546141511"><a name="p145531546141511"></a><a name="p145531546141511"></a>形状为[num_directions, 4×hidden_size, hidden_size]；当前仅支持num_directions=1；门维顺序与W一致；规格约束：离线常量</p>
 </td>
 </tr>
 <tr id="row3150335124713"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p1717255617118"><a name="p1717255617118"></a><a name="p1717255617118"></a>B</p>
@@ -8230,20 +8230,20 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p228403041310"><a name="p228403041310"></a><a name="p228403041310"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1217255681116"><a name="p1217255681116"></a><a name="p1217255681116"></a>输入门偏置张量，维度为2D，格式为ND。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1217255681116"><a name="p1217255681116"></a><a name="p1217255681116"></a>偏置张量，包括输入权重偏置和循环权重偏置。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1012716593152"><a name="p1012716593152"></a><a name="p1012716593152"></a>规格约束：离线常量</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1012716593152"><a name="p1012716593152"></a><a name="p1012716593152"></a>形状为[num_directions, 8×hidden_size]；前4×hidden_size个元素为输入侧偏置，后4×hidden_size个元素为循环侧偏置；门维顺序与W、R一致；规格约束：离线常量</p>
 </td>
 </tr>
 <tr id="row8258131210520"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p1174453181112"><a name="p1174453181112"></a><a name="p1174453181112"></a>sequence_lens</p>
 </td>
 <td class="cellrowborder" valign="top" width="16.75832416758324%" headers="mcps1.2.6.1.2 "><p id="p1856182719134"><a name="p1856182719134"></a><a name="p1856182719134"></a>input</p>
 </td>
-<td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p1728619308134"><a name="p1728619308134"></a><a name="p1728619308134"></a>tensor</p>
+<td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p1728619308134"><a name="p1728619308134"></a><a name="p1728619308134"></a>tensor (int32)</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p11741531119"><a name="p11741531119"></a><a name="p11741531119"></a>确定每个批数据中时序长度。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p11741531119"><a name="p11741531119"></a><a name="p11741531119"></a>每个batch样本的有效序列长度。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p14212322135813"><a name="p14212322135813"></a><a name="p14212322135813"></a>暂不支持配置</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p14212322135813"><a name="p14212322135813"></a><a name="p14212322135813"></a>标准形状为[batch_size]；当前不支持配置</p>
 </td>
 </tr>
 <tr id="row54041919451"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p1955815503116"><a name="p1955815503116"></a><a name="p1955815503116"></a>initial_h</p>
@@ -8252,9 +8252,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p1528816306136"><a name="p1528816306136"></a><a name="p1528816306136"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p115591850141116"><a name="p115591850141116"></a><a name="p115591850141116"></a>隐藏层初始值，维度为3D，格式为NCW。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p115591850141116"><a name="p115591850141116"></a><a name="p115591850141116"></a>初始隐藏状态。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p95910116584"><a name="p95910116584"></a><a name="p95910116584"></a>规格约束：作为在线变量</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p95910116584"><a name="p95910116584"></a><a name="p95910116584"></a>形状为[num_directions, batch_size, hidden_size]；当前单向场景下为[1, batch_size, hidden_size]；规格约束：作为在线变量</p>
 </td>
 </tr>
 <tr id="row74161017452"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p6603747181216"><a name="p6603747181216"></a><a name="p6603747181216"></a>initial_c</p>
@@ -8263,9 +8263,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p3290193010133"><a name="p3290193010133"></a><a name="p3290193010133"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p15604104711211"><a name="p15604104711211"></a><a name="p15604104711211"></a>细胞层初始值，维度为3D，格式为NCW。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p15604104711211"><a name="p15604104711211"></a><a name="p15604104711211"></a>初始细胞状态。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1458181116586"><a name="p1458181116586"></a><a name="p1458181116586"></a>规格约束：作为在线变量</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1458181116586"><a name="p1458181116586"></a><a name="p1458181116586"></a>形状为[num_directions, batch_size, hidden_size]；当前单向场景下为[1, batch_size, hidden_size]；规格约束：作为在线变量</p>
 </td>
 </tr>
 <tr id="row32806151753"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p948565041213"><a name="p948565041213"></a><a name="p948565041213"></a>P</p>
@@ -8274,9 +8274,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p18292143010131"><a name="p18292143010131"></a><a name="p18292143010131"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p348516504121"><a name="p348516504121"></a><a name="p348516504121"></a>窥视孔权重向量。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p348516504121"><a name="p348516504121"></a><a name="p348516504121"></a>窥视孔权重，分别用于输入门、输出门和遗忘门。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p65421353144519"><a name="p65421353144519"></a><a name="p65421353144519"></a>暂不支持配置</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p65421353144519"><a name="p65421353144519"></a><a name="p65421353144519"></a>标准形状为[num_directions, 3×hidden_size]；当前不支持配置</p>
 </td>
 </tr>
 <tr id="row1747910320121"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p39589539121"><a name="p39589539121"></a><a name="p39589539121"></a>Y</p>
@@ -8285,9 +8285,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p1929412304133"><a name="p1929412304133"></a><a name="p1929412304133"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1995935341212"><a name="p1995935341212"></a><a name="p1995935341212"></a>隐藏层所有中间输出值张量拼接后的向量，维度为4D，格式为NCHW。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1995935341212"><a name="p1995935341212"></a><a name="p1995935341212"></a>所有时间步的隐藏状态序列。</p>
 </td>
-<td class="cellrowborder" align="left" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p6883163513716"><a name="p6883163513716"></a><a name="p6883163513716"></a>规格约束：作为在线输出变量</p>
+<td class="cellrowborder" align="left" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p6883163513716"><a name="p6883163513716"></a><a name="p6883163513716"></a>形状为[seq_length, num_directions, batch_size, hidden_size]；当前单向场景下为[seq_length, 1, batch_size, hidden_size]；规格约束：作为在线输出变量</p>
 </td>
 </tr>
 <tr id="row133273120124"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p16121151191316"><a name="p16121151191316"></a><a name="p16121151191316"></a>Y_h</p>
@@ -8296,9 +8296,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p0296143011135"><a name="p0296143011135"></a><a name="p0296143011135"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p6121411161316"><a name="p6121411161316"></a><a name="p6121411161316"></a>隐藏层输出向量，维度为3D，格式为NCW。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p6121411161316"><a name="p6121411161316"></a><a name="p6121411161316"></a>最后一个时间步的隐藏状态。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1558163514172"><a name="p1558163514172"></a><a name="p1558163514172"></a>规格约束：作为在线输出变量</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1558163514172"><a name="p1558163514172"></a><a name="p1558163514172"></a>形状为[num_directions, batch_size, hidden_size]；当前单向场景下为[1, batch_size, hidden_size]；规格约束：作为在线输出变量</p>
 </td>
 </tr>
 <tr id="row121271459101119"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p18729439018"><a name="p18729439018"></a><a name="p18729439018"></a>Y_c</p>
@@ -8307,9 +8307,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p187213431103"><a name="p187213431103"></a><a name="p187213431103"></a>tensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1677592812"><a name="p1677592812"></a><a name="p1677592812"></a>细胞层输出向量，维度为3D，格式为NCW。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1677592812"><a name="p1677592812"></a><a name="p1677592812"></a>最后一个时间步的细胞状态。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1228211105468"><a name="p1228211105468"></a><a name="p1228211105468"></a>规格约束：作为在线输出变量</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1228211105468"><a name="p1228211105468"></a><a name="p1228211105468"></a>形状为[num_directions, batch_size, hidden_size]；当前单向场景下为[1, batch_size, hidden_size]；规格约束：作为在线输出变量</p>
 </td>
 </tr>
 <tr id="row18172056141112"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p12286124112430"><a name="p12286124112430"></a><a name="p12286124112430"></a>activation_alpha</p>
@@ -8318,9 +8318,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p1551719012441"><a name="p1551719012441"></a><a name="p1551719012441"></a>list(float)</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p18141820435"><a name="p18141820435"></a><a name="p18141820435"></a>对LSTM激活函数结果做放缩（默认0.01）。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p18141820435"><a name="p18141820435"></a><a name="p18141820435"></a>激活函数的缩放参数。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p19495356105713"><a name="p19495356105713"></a><a name="p19495356105713"></a>-</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p19495356105713"><a name="p19495356105713"></a><a name="p19495356105713"></a>当前不支持配置</p>
 </td>
 </tr>
 <tr id="row5174753191116"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p1833217289114"><a name="p1833217289114"></a><a name="p1833217289114"></a>activation_beta</p>
@@ -8329,9 +8329,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p733262818115"><a name="p733262818115"></a><a name="p733262818115"></a>list(float)</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1889316380591"><a name="p1889316380591"></a><a name="p1889316380591"></a>对LSTM激活函数结果做偏置（默认0.01）。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1889316380591"><a name="p1889316380591"></a><a name="p1889316380591"></a>激活函数的偏置参数。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1493456185711"><a name="p1493456185711"></a><a name="p1493456185711"></a>-</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p1493456185711"><a name="p1493456185711"></a><a name="p1493456185711"></a>当前不支持配置</p>
 </td>
 </tr>
 <tr id="row5558115019118"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p814484714519"><a name="p814484714519"></a><a name="p814484714519"></a>activations</p>
@@ -8340,7 +8340,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p17144134765111"><a name="p17144134765111"></a><a name="p17144134765111"></a>list(string)</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p11441547135118"><a name="p11441547135118"></a><a name="p11441547135118"></a>LSTM激活函数类型。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p11441547135118"><a name="p11441547135118"></a><a name="p11441547135118"></a>各门使用的激活函数。</p>
 </td>
 <td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p13184196144711"><a name="p13184196144711"></a><a name="p13184196144711"></a>暂不支持配置</p>
 </td>
@@ -8351,7 +8351,7 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p19151163511479"><a name="p19151163511479"></a><a name="p19151163511479"></a>float</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p4151635144712"><a name="p4151635144712"></a><a name="p4151635144712"></a>梯度裁剪阈值。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p4151635144712"><a name="p4151635144712"></a><a name="p4151635144712"></a>对门激活前的中间计算结果进行裁剪的阈值。</p>
 </td>
 <td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p58086713473"><a name="p58086713473"></a><a name="p58086713473"></a>暂不支持配置</p>
 </td>
@@ -8362,9 +8362,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p09887301258"><a name="p09887301258"></a><a name="p09887301258"></a>string</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1025881214516"><a name="p1025881214516"></a><a name="p1025881214516"></a>指定LSTM处理输入数据的方式（默认'forward'）。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p1025881214516"><a name="p1025881214516"></a><a name="p1025881214516"></a>LSTM的计算方向。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p21042917473"><a name="p21042917473"></a><a name="p21042917473"></a>暂不支持配置</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p21042917473"><a name="p21042917473"></a><a name="p21042917473"></a>仅支持forward；不支持reverse和bidirectional</p>
 </td>
 </tr>
 <tr id="row1295885371216"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p5405319458"><a name="p5405319458"></a><a name="p5405319458"></a>hidden_size</p>
@@ -8373,9 +8373,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p440551918512"><a name="p440551918512"></a><a name="p440551918512"></a>int</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p540511193519"><a name="p540511193519"></a><a name="p540511193519"></a>隐藏层大小。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p540511193519"><a name="p540511193519"></a><a name="p540511193519"></a>隐藏状态的特征数。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p5682102735713"><a name="p5682102735713"></a><a name="p5682102735713"></a>-</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p5682102735713"><a name="p5682102735713"></a><a name="p5682102735713"></a>必须大于0</p>
 </td>
 </tr>
 <tr id="row14121211111319"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p44171317051"><a name="p44171317051"></a><a name="p44171317051"></a>input_forget</p>
@@ -8384,9 +8384,9 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p1316111980"><a name="p1316111980"></a><a name="p1316111980"></a>int</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p84171017153"><a name="p84171017153"></a><a name="p84171017153"></a>是否对输入和遗忘门进行耦合（默认0）。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p84171017153"><a name="p84171017153"></a><a name="p84171017153"></a>是否耦合输入门和遗忘门。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p62042515101"><a name="p62042515101"></a><a name="p62042515101"></a>暂不支持配置</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p62042515101"><a name="p62042515101"></a><a name="p62042515101"></a>仅支持0，不支持输入门和遗忘门耦合</p>
 </td>
 </tr>
 <tr id="row168911912143417"><td class="cellrowborder" valign="top" width="15.90840915908409%" headers="mcps1.2.6.1.1 "><p id="p12281171514519"><a name="p12281171514519"></a><a name="p12281171514519"></a>layout</p>
@@ -8395,20 +8395,22 @@ float32模型可通过全量化生成int8数据通路。原生int8/int32模型�
 </td>
 <td class="cellrowborder" valign="top" width="14.948505149485051%" headers="mcps1.2.6.1.3 "><p id="p114594511107"><a name="p114594511107"></a><a name="p114594511107"></a>int</p>
 </td>
-<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p328171514518"><a name="p328171514518"></a><a name="p328171514518"></a>确定输入数据的排布格式，取值范围0或1（默认0）。</p>
+<td class="cellrowborder" valign="top" width="29.027097290270977%" headers="mcps1.2.6.1.4 "><p id="p328171514518"><a name="p328171514518"></a><a name="p328171514518"></a>输入序列的布局方式。</p>
 </td>
-<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p136612151473"><a name="p136612151473"></a><a name="p136612151473"></a>暂不支持配置</p>
+<td class="cellrowborder" valign="top" width="23.357664233576642%" headers="mcps1.2.6.1.5 "><p id="p136612151473"><a name="p136612151473"></a><a name="p136612151473"></a>仅支持0，即X的逻辑形状为[seq_length, batch_size, input_size]；不支持layout=1</p>
 </td>
 </tr>
 </tbody>
 </table>
+
+>![](public_sys-resources/icon-note.gif) **说明：** LSTM推理需要同时保留并输出`Y`、`Y_h`和`Y_c`，不支持仅选择其中部分输出。
 
 **训练支持规格**
 
 | 训练模式 | 支持情况 | 规格约束 |
 |---|---|---|
 | QAS INT8 | 不支持 | - |
-| FP32 | 支持 | 仅支持FP32静态、非空张量，以及单层、单向forward LSTM；输入X为三维张量[T, B, I]，T、B、I均大于0；权重采用IOFG门顺序，W为[1, 4H, I]、R为[1, 4H, H]、B为[1, 8H]，initial_h和initial_c的元素数均为B×H；Y、Y_h、Y_c的输出梯度可任意组合，但至少存在一个；不支持双向、reverse、projection、非零zoneout和动态Shape |
+| FP32 | 支持 | 仅支持静态、非空FP32张量，以及单层、单向、forward LSTM；seq_length、batch_size、input_size和hidden_size均必须大于0。训练输入X的逻辑形状为[seq_length, batch_size, input_size]；initial_h和initial_c的逻辑形状均为[1, batch_size, hidden_size]；W、R和偏置张量B的形状分别为[1, 4×hidden_size, input_size]、[1, 4×hidden_size, hidden_size]和[1, 8×hidden_size]，门维按I/O/F/C顺序排列。仅支持direction=forward、layout=0和input_forget=0；Y、Y_h、Y_c中的任意一个或多个均可作为反向传播的梯度来源，至少需要一个输出连接到损失路径。 |
 
 #### Tile<a name="ZH-CN_TOPIC_0000002513105051" id="ZH-CN_TOPIC_0000002513105051"></a>
 
