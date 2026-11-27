@@ -150,7 +150,7 @@ export ADAPTOR_PATH=${ADAPTOR_PATH}
 1. 使用[BurnTool工具](https://developers.hisilicon.com/cn/devcenter/tools?tool=BurnTool)将编译生成的fwpkg镜像烧录到WS63单板
 2. 烧录成功运行后，会看到串口打印的推理结果信息，Gru打印如下：
     ```
-    [AI_MCU] Get Tcxo Time 115 ms
+    [AI_MCU] Get Tcxo Time 115000 us
     [AI_MCU] Data size: [48]
     Shape: [1 12 ]
     DataType: 43

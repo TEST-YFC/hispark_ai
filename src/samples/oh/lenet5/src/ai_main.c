@@ -33,7 +33,6 @@
 #define TASKS_MCU_AI_STACK_SIZE 0x1000       /* Max Stack Size in this task */
 #define TASKS_MCU_AI_PRIO (osPriority_t)(17) /* Task Priority in LiteOS */
 #define TASKS_MCU_AI_DELAY_MS 10              /* Default */
-#define TASKS_MCU_AI_TICKS_PER_SECOND 24000  /* Ticks to ms */
 #define TASKS_MCU_AI_PRINT_FLOAT_MULTIPILER 100000 /* Float Print Bits. For example: 0.99998 */
 
 /* Model Param */
@@ -254,10 +253,10 @@ static OH_AI_Status ai_mcu_sample_process(struct ai_mcu_param sample_param)
     */
 
     /* MS Model Predict */
-    uint64_t l1 = uapi_tcxo_get_count();
+    uint64_t l1 = uapi_tcxo_get_us();
     OH_AI_Status ret = OH_AI_ModelPredict(sample_param.model, sample_param.inputs, &(sample_param.outputs));
-    uint64_t l2 = uapi_tcxo_get_count();
-    osal_printk("[AI_MCU] Get Tcxo Time %d ms\n", ((int)l2 - (int)l1) / TASKS_MCU_AI_TICKS_PER_SECOND);
+    uint64_t l2 = uapi_tcxo_get_us();
+    osal_printk("[AI_MCU] Get Tcxo Time %llu us\n", (unsigned long long)(l2 - l1));
     if (ret != OH_AI_STATUS_SUCCESS) {
         osal_printk("[AI_MCU] OH_AI_ModelPredict failed (%d)\n", ret);
         return ret;
