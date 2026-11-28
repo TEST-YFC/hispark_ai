@@ -23,89 +23,53 @@ extern "C" {
 #endif
 #endif
 
+ static OH_AI_Status BuildLinkedModel(OH_AI_ModelHandle model, const char *name, const void *data,
+    size_t size, OH_AI_ContextHandle context)
+{
+    MSModelHandle native = ModelState_Select(model, name);
+    if (native == NULL || context == NULL) {
+        return OH_AI_STATUS_FAILED;
+    }
+    if (MSModelBuild(native, data, size, kMSModelTypeMindIR, (MSContextHandle)context) != kMSStatusSuccess) {
+        return OH_AI_STATUS_FAILED;
+    }
+    ModelState_SetBuilt(model, native);
+    return OH_AI_STATUS_SUCCESS;
+}
+
 OH_AI_ModelHandle OH_AI_ModelCreate(void)
 {
-    MSModelHandle model_handle = MSModelCreate();
-    if (model_handle == NULL) {
-        return NULL;
-    }
-    int index = ModelState_BindHandle(model_handle);
-    if (index == INVALID_INDEX) {
-        MSModelDestroy(&model_handle);
-        return NULL;
-    }
-    return (OH_AI_ModelHandle)model_handle;
+    return ModelState_Reserve();
 }
 
 OH_AI_Status OH_AI_ModelBuildFromFile(
     OH_AI_ModelHandle model, const char *model_path, const OH_AI_ContextHandle model_context)
 {
-    (void)(model_path);
-    if (model_context == NULL) {
-        return OH_AI_STATUS_FAILED;
-    }
-    int index = ModelState_FindIndex(model);
-    if (!ModelState_Check(index, MODEL_STATE_CREATED)) {
-        return OH_AI_STATUS_FAILED;
-    }
-
-    ModelState_Transition(index, MODEL_STATE_BUILT);
-    return OH_AI_STATUS_SUCCESS;
+    (void)model_path;
+    return BuildLinkedModel(model, NULL, NULL, 0, model_context);
 }
 
 OH_AI_Status OH_AI_ModelBuild(
     OH_AI_ModelHandle model, const void *model_data, size_t data_size, const OH_AI_ContextHandle model_context)
 {
-    if (model_context == NULL) {
-        return OH_AI_STATUS_FAILED;
-    }
-    int index = ModelState_FindIndex(model);
-    if (!ModelState_Check(index, MODEL_STATE_CREATED)) {
-        return OH_AI_STATUS_FAILED;
-    }
-    
-    MSStatus status = MSModelBuild(
-        (MSModelHandle)model,
-        model_data,
-        data_size,
-        kMSModelTypeMindIR,
-        (MSContextHandle)model_context
-    );
-    if (status == kMSStatusSuccess) {
-        ModelState_Transition(index, MODEL_STATE_BUILT);
-        return OH_AI_STATUS_SUCCESS;
-    } else {
-        return OH_AI_STATUS_FAILED;
-    }
+    return BuildLinkedModel(model, NULL, model_data, data_size, model_context);
 }
 
 OH_AI_Status OH_AI_ModelBuildFromName(
     OH_AI_ModelHandle model, const char *model_name, const OH_AI_ContextHandle model_context)
 {
-    (void)(model_name);
-    if (model_context == NULL) {
+    if (model_name == NULL || *model_name == '\0') {
         return OH_AI_STATUS_FAILED;
     }
-    int index = ModelState_FindIndex(model);
-    if (!ModelState_Check(index, MODEL_STATE_CREATED)) {
-        return OH_AI_STATUS_FAILED;
-    }
-    
-    ModelState_Transition(index, MODEL_STATE_BUILT);
-    return OH_AI_STATUS_SUCCESS;
+    return BuildLinkedModel(model, model_name, NULL, 0, model_context);
 }
 
 void OH_AI_ModelDestroy(OH_AI_ModelHandle *model)
 {
-    if (model == NULL || *model == NULL) {
-        return;
+    if (model != NULL) {
+        ModelState_Release(*model);
+        *model = NULL;
     }
-
-    int index = ModelState_FindIndex(*model);
-    MSModelDestroy((MSModelHandle *)model);
-    ModelState_Transition(index, MODEL_STATE_UNINIT);
-
-    *model = NULL;
 }
 
 OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle model)
@@ -114,11 +78,12 @@ OH_AI_TensorHandleArray OH_AI_ModelGetInputs(const OH_AI_ModelHandle model)
     stub_array.handle_num = 0;
     stub_array.handle_list = NULL;
 
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (native == NULL) {
         return stub_array;
     }
 
-    MSTensorHandleArray inputs = MSModelGetInputs((MSModelHandle)model);
+    MSTensorHandleArray inputs = MSModelGetInputs(native);
 
     stub_array.handle_num = inputs.handle_num;
     stub_array.handle_list = (OH_AI_TensorHandle *)inputs.handle_list;
@@ -132,11 +97,12 @@ OH_AI_TensorHandleArray OH_AI_ModelGetLabels(const OH_AI_ModelHandle model)
     stub_array.handle_num = 0;
     stub_array.handle_list = NULL;
 
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (native == NULL) {
         return stub_array;
     }
 
-    MSTensorHandleArray labels = MSModelGetLabels((MSModelHandle)model);
+    MSTensorHandleArray labels = MSModelGetLabels(native);
 
     stub_array.handle_num = labels.handle_num;
     stub_array.handle_list = (OH_AI_TensorHandle *)labels.handle_list;
@@ -150,15 +116,16 @@ OH_AI_TensorHandleArray OH_AI_ModelGetOutputs(const OH_AI_ModelHandle model)
     stub_array.handle_num = 0;
     stub_array.handle_list = NULL;
 
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (native == NULL) {
         return stub_array;
     }
 
-    MSTensorHandleArray outputs = MSModelGetOutputs((MSModelHandle)model);
-    
+    MSTensorHandleArray outputs = MSModelGetOutputs(native);
+
     stub_array.handle_num = outputs.handle_num;
     stub_array.handle_list = (OH_AI_TensorHandle *)outputs.handle_list;
-    
+
     return stub_array;
 }
 
@@ -166,7 +133,8 @@ OH_AI_TensorHandle OH_AI_ModelGetInputByTensorName(const OH_AI_ModelHandle model
 {
     OH_AI_TensorHandle stub_tensor = NULL;
 
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (native == NULL) {
         return stub_tensor;
     }
 
@@ -174,7 +142,7 @@ OH_AI_TensorHandle OH_AI_ModelGetInputByTensorName(const OH_AI_ModelHandle model
         return stub_tensor;
     }
 
-    MSTensorHandle ms_tensor = MSModelGetInputByTensorName((MSModelHandle)model, tensor_name);
+    MSTensorHandle ms_tensor = MSModelGetInputByTensorName(native, tensor_name);
 
     stub_tensor = (OH_AI_TensorHandle)ms_tensor;
 
@@ -185,7 +153,8 @@ OH_AI_TensorHandle OH_AI_ModelGetOutputByTensorName(const OH_AI_ModelHandle mode
 {
     OH_AI_TensorHandle stub_tensor = NULL;
 
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (native == NULL) {
         return stub_tensor;
     }
 
@@ -193,7 +162,7 @@ OH_AI_TensorHandle OH_AI_ModelGetOutputByTensorName(const OH_AI_ModelHandle mode
         return stub_tensor;
     }
 
-    MSTensorHandle ms_tensor = MSModelGetOutputByTensorName((MSModelHandle)model, tensor_name);
+    MSTensorHandle ms_tensor = MSModelGetOutputByTensorName(native, tensor_name);
 
     stub_tensor = (OH_AI_TensorHandle)ms_tensor;
 
@@ -203,17 +172,16 @@ OH_AI_TensorHandle OH_AI_ModelGetOutputByTensorName(const OH_AI_ModelHandle mode
 OH_AI_Status OH_AI_ModelPredict(
     OH_AI_ModelHandle model, const OH_AI_TensorHandleArray inputs, OH_AI_TensorHandleArray *outputs)
 {
-    if (outputs == NULL || inputs.handle_list == NULL || inputs.handle_num == 0 ||
-        !ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (outputs == NULL || inputs.handle_list == NULL || inputs.handle_num == 0 || native == NULL) {
         return OH_AI_STATUS_FAILED;
     }
-    MSModelHandle ms_model = (MSModelHandle)model;
-    
+
     MSTensorHandleArray ms_inputs;
     ms_inputs.handle_num = inputs.handle_num;
     ms_inputs.handle_list = (MSTensorHandle *)inputs.handle_list;
 
-    MSStatus status = MSModelPredict(ms_model, ms_inputs, (MSTensorHandleArray*)outputs, NULL, NULL);
+    MSStatus status = MSModelPredict(native, ms_inputs, (MSTensorHandleArray*)outputs, NULL, NULL);
     if (status == kMSStatusSuccess) {
         return OH_AI_STATUS_SUCCESS;
     } else {
@@ -223,48 +191,53 @@ OH_AI_Status OH_AI_ModelPredict(
 
 OH_AI_Status OH_AI_ModelRunStep(OH_AI_ModelHandle model)
 {
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (native == NULL) {
         return OH_AI_STATUS_FAILED;
     }
 
-    MSStatus status = MSModelRunStep((MSModelHandle)model, NULL, NULL);
+    MSStatus status = MSModelRunStep(native, NULL, NULL);
     return status == kMSStatusSuccess ? OH_AI_STATUS_SUCCESS : OH_AI_STATUS_FAILED;
 }
 
 OH_AI_Status OH_AI_ModelSetTrainMode(OH_AI_ModelHandle model, bool train)
 {
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (native == NULL) {
         return OH_AI_STATUS_FAILED;
     }
 
-    MSStatus status = MSModelSetTrainMode((MSModelHandle)model, train);
+    MSStatus status = MSModelSetTrainMode(native, train);
     return status == kMSStatusSuccess ? OH_AI_STATUS_SUCCESS : OH_AI_STATUS_FAILED;
 }
 
 OH_AI_Status OH_AI_ModelGetTrainMode(OH_AI_ModelHandle model, bool *train)
 {
-    if (train == NULL || !ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (train == NULL || native == NULL) {
         return OH_AI_STATUS_FAILED;
     }
 
-    *train = MSModelGetTrainMode((MSModelHandle)model);
+    *train = MSModelGetTrainMode(native);
     return OH_AI_STATUS_SUCCESS;
 }
 
 OH_AI_Status OH_AI_ModelLoadWeight(OH_AI_ModelHandle model, uintptr_t flash_addr)
 {
-    if (!ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (native == NULL) {
         return OH_AI_STATUS_FAILED;
     }
 
     const void *weight_addr = (flash_addr == 0U) ? NULL : (const void *)flash_addr;
-    MSStatus status = MSModelLoadWeight((MSModelHandle)model, weight_addr);
+    MSStatus status = MSModelLoadWeight(native, weight_addr);
     return status == kMSStatusSuccess ? OH_AI_STATUS_SUCCESS : OH_AI_STATUS_FAILED;
 }
 
 OH_AI_Status OH_AI_ModelSaveWeight(OH_AI_ModelHandle model, uintptr_t flash_addr)
 {
-    if (flash_addr == 0U || !ModelState_Check(ModelState_FindIndex(model), MODEL_STATE_BUILT)) {
+    MSModelHandle native = ModelState_BuiltHandle(model);
+    if (flash_addr == 0U || native == NULL) {
         return OH_AI_STATUS_FAILED;
     }
 

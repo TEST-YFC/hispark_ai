@@ -16,6 +16,7 @@
 #include "ai_mcu.h"
 #include "ai.h"
 #include "env.h"
+#include "context.h"
 #include "model_state.h"
 
 #ifdef __cplusplus
@@ -25,6 +26,11 @@ extern "C" {
 #endif
 
 static MSContextHandle g_singleton_context = NULL;
+
+bool Context_IsLive(void)
+{
+    return g_singleton_context != NULL;
+}
 
 OH_AI_ContextHandle OH_AI_ContextCreate(void)
 {

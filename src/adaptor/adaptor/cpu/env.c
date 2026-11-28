@@ -15,6 +15,8 @@
  */
 #include "ai_mcu.h"
 #include "ai.h"
+#include "model_state.h"
+#include "context.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -29,7 +31,7 @@ OH_AI_Status OH_AI_Init(void* config_data, size_t data_size)
 {
     (void)(config_data);
     (void)(data_size);
-    if (g_is_env_inited) {
+    if (g_is_env_inited || !ModelState_Init()) {
         return OH_AI_STATUS_FAILED;
     }
     g_is_env_inited = true;
@@ -38,9 +40,10 @@ OH_AI_Status OH_AI_Init(void* config_data, size_t data_size)
 
 OH_AI_Status OH_AI_Deinit(void)
 {
-    if (!g_is_env_inited) {
+    if (!g_is_env_inited || ModelState_HasUnreleasedModel() || Context_IsLive()) {
         return OH_AI_STATUS_FAILED;
     }
+    ModelState_Clear();
     g_is_env_inited = false;
     return OH_AI_STATUS_SUCCESS;
 }
