@@ -16,6 +16,7 @@
 #ifndef MODEL_STATE_H
 #define MODEL_STATE_H
 
+#include "ai.h"
 #include "ai_mcu.h"
 
 #ifdef __cplusplus
@@ -31,18 +32,14 @@ typedef enum {
 } ModelState;
 
 #define MAX_MODEL_NUM 4
-#define INVALID_INDEX  (-1)
 
-#define IS_INDEX_VALID(index)  ((index) >= 0 && (index) < MAX_MODEL_NUM && g_model_handles[(index)] != NULL)
-
-int ModelState_FindIndex(MSModelHandle handle);
-
-int ModelState_BindHandle(MSModelHandle handle);
-
-bool ModelState_Check(int index, ModelState expect);
-
-void ModelState_Transition(int index, ModelState target);
-
+bool ModelState_Init(void);
+void ModelState_Clear(void);
+OH_AI_ModelHandle ModelState_Reserve(void);
+MSModelHandle ModelState_Select(OH_AI_ModelHandle model, const char *name);
+void ModelState_SetBuilt(OH_AI_ModelHandle model, MSModelHandle native);
+MSModelHandle ModelState_BuiltHandle(OH_AI_ModelHandle model);
+void ModelState_Release(OH_AI_ModelHandle model);
 bool ModelState_HasUnreleasedModel(void);
 
 #ifdef __cplusplus

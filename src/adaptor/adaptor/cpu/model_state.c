@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "model_state.h"
+#include <string.h>
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -21,72 +22,152 @@ extern "C" {
 #endif
 #endif
 
-static ModelState    g_model_status[MAX_MODEL_NUM] = {MODEL_STATE_UNINIT};
-static MSModelHandle g_model_handles[MAX_MODEL_NUM] = {NULL};
+extern MSModelHandle MSGetModelByIndex(size_t index, const char **file) __attribute__((weak));
 
-static inline bool IsValidStateTransition(ModelState curr, ModelState target)
+typedef struct {
+    const char *filename;
+    size_t stem_len;
+    MSModelHandle native;
+} ModelSource;
+
+typedef struct {
+    ModelState state;
+    MSModelHandle native;
+} ModelSlot;
+
+static ModelSource g_sources[MAX_MODEL_NUM];
+static ModelSlot g_slots[MAX_MODEL_NUM];
+static size_t g_count;
+
+bool ModelState_Init(void)
 {
-    switch (curr) {
-        case MODEL_STATE_UNINIT:
-            return (target == MODEL_STATE_CREATED);
-        case MODEL_STATE_CREATED:
-            return (target == MODEL_STATE_BUILT || target == MODEL_STATE_UNINIT);
-        case MODEL_STATE_BUILT:
-            return (target == MODEL_STATE_UNINIT);
-        default:
+    ModelSource sources[MAX_MODEL_NUM] = {0};
+
+    memset(g_sources, 0, sizeof(g_sources));
+    memset(g_slots, 0, sizeof(g_slots));
+    g_count = 0;
+    if (MSGetModelByIndex == NULL) {
+        g_count = 1;
+        return true;
+    }
+    for (size_t i = 0; i <= MAX_MODEL_NUM; ++i) {
+        const char *file = NULL;
+        MSModelHandle native = MSGetModelByIndex(i, &file);
+        if (native == NULL) {
+            if (i == 0) {
+                return false;
+            }
+            memcpy(g_sources, sources, i * sizeof(sources[0]));
+            g_count = i;
+            return true;
+        }
+        if (i == MAX_MODEL_NUM || file == NULL || *file == '\0') {
             return false;
+        }
+        const char *dot = strrchr(file, '.');
+        size_t len = (dot != NULL && dot != file) ? (size_t)(dot - file) : strlen(file);
+        for (size_t j = 0; j < i; ++j) {
+            if (native == sources[j].native ||
+                (len == sources[j].stem_len && memcmp(file, sources[j].filename, len) == 0)) {
+                return false;
+            }
+        }
+        sources[i] = (ModelSource){file, len, native};
     }
+    return false;
 }
 
-int ModelState_FindIndex(MSModelHandle handle)
+void ModelState_Clear(void)
 {
-    if (handle == NULL) {
-        return INVALID_INDEX;
-    }
+    memset(g_sources, 0, sizeof(g_sources));
+    memset(g_slots, 0, sizeof(g_slots));
+    g_count = 0;
+}
 
-    for (int i = 0; i < MAX_MODEL_NUM; i++) {
-        if (g_model_handles[i] == handle) {
-            return i;
+OH_AI_ModelHandle ModelState_Reserve(void)
+{
+    for (size_t i = 0; i < g_count; ++i) {
+        if (g_slots[i].state == MODEL_STATE_UNINIT) {
+            if (MSGetModelByIndex == NULL) {
+                g_slots[i].native = MSModelCreate();
+                if (g_slots[i].native == NULL) {
+                    return NULL;
+                }
+            }
+            g_slots[i].state = MODEL_STATE_CREATED;
+            return &g_slots[i];
         }
     }
-    return INVALID_INDEX;
+    return NULL;
 }
 
-int ModelState_BindHandle(MSModelHandle handle)
+static ModelSlot *FindSlot(OH_AI_ModelHandle model)
 {
-    for (int i = 0; i < MAX_MODEL_NUM; i++) {
-        if (g_model_status[i] == MODEL_STATE_UNINIT && g_model_handles[i] == NULL) {
-            g_model_handles[i] = handle;
-            g_model_status[i] = MODEL_STATE_CREATED;
-            return i;
+    for (size_t i = 0; i < g_count; ++i) {
+        if (model == &g_slots[i] && g_slots[i].state != MODEL_STATE_UNINIT) {
+            return &g_slots[i];
         }
     }
-    return INVALID_INDEX;
+    return NULL;
 }
 
-bool ModelState_Check(int index, ModelState expect)
+MSModelHandle ModelState_Select(OH_AI_ModelHandle model, const char *name)
 {
-    return IS_INDEX_VALID(index) && g_model_status[index] == expect;
+    ModelSlot *slot = FindSlot(model);
+    if (slot == NULL || slot->state != MODEL_STATE_CREATED) {
+        return NULL;
+    }
+    if (MSGetModelByIndex == NULL) {
+        return name == NULL ? slot->native : NULL;
+    }
+    size_t len = name == NULL ? 0 : strlen(name);
+    for (size_t i = 0; i < g_count; ++i) {
+        const ModelSource *src = &g_sources[i];
+        if (name != NULL && (src->stem_len != len || memcmp(src->filename, name, len) != 0)) {
+            continue;
+        }
+        for (size_t j = 0; j < g_count; ++j) {
+            if (g_slots[j].native == src->native) {
+                return NULL;
+            }
+        }
+        return src->native;
+    }
+    return NULL;
 }
 
-void ModelState_Transition(int index, ModelState target)
+void ModelState_SetBuilt(OH_AI_ModelHandle model, MSModelHandle native)
 {
-    if (!IS_INDEX_VALID(index) || !IsValidStateTransition(g_model_status[index], target)) {
+    ModelSlot *slot = FindSlot(model);
+    if (slot == NULL || native == NULL) {
         return;
     }
+    slot->native = native;
+    slot->state = MODEL_STATE_BUILT;
+}
 
-    if (target == MODEL_STATE_UNINIT) {
-        g_model_handles[index] = NULL;
-        g_model_status[index] = MODEL_STATE_UNINIT;
-    } else {
-        g_model_status[index] = target;
+MSModelHandle ModelState_BuiltHandle(OH_AI_ModelHandle model)
+{
+    ModelSlot *slot = FindSlot(model);
+    return slot != NULL && slot->state == MODEL_STATE_BUILT ? slot->native : NULL;
+}
+
+void ModelState_Release(OH_AI_ModelHandle model)
+{
+    ModelSlot *slot = FindSlot(model);
+    if (slot != NULL) {
+        if (slot->native != NULL) {
+            MSModelDestroy(&slot->native);
+        }
+        slot->native = NULL;
+        slot->state = MODEL_STATE_UNINIT;
     }
 }
 
 bool ModelState_HasUnreleasedModel(void)
 {
-    for (int i = 0; i < MAX_MODEL_NUM; i++) {
-        if (g_model_status[i] != MODEL_STATE_UNINIT) {
+    for (size_t i = 0; i < g_count; ++i) {
+        if (g_slots[i].state != MODEL_STATE_UNINIT) {
             return true;
         }
     }

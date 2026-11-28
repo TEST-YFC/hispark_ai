@@ -16,4 +16,20 @@
 #ifndef MCU_CONTEXT_H
 #define MCU_CONTEXT_H
 
+#include <stdbool.h>
+
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif
+
+bool Context_IsLive(void);
+
+#ifdef __cplusplus
+#if __cplusplus
+}
+#endif
+#endif
+
 #endif /* MCU_CONTEXT_H */
